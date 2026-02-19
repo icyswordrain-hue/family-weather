@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Family Weather Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ── Profile Switcher ──────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner">
+    <h1 class="site-title">天氣廣播 Weather Broadcast</h1>
+    <nav class="profile-switcher" role="tablist" aria-label="Family profiles">
+      <button class="profile-btn active" data-profile="me"     role="tab" aria-selected="true">Me</button>
+      <button class="profile-btn"        data-profile="spouse" role="tab">Spouse</button>
+      <button class="profile-btn"        data-profile="dad"    role="tab">Dad</button>
+      <button class="profile-btn"        data-profile="kids"   role="tab">Kids</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ── Global Audio Player ─────────────────────────────────────────────── -->
+<div class="audio-bar" id="audioBar">
+  <button class="play-btn" id="playBtn" aria-label="Play broadcast">
+    <span class="play-icon">▶</span>
+    <span class="play-label">Play Broadcast</span>
+  </button>
+  <div class="audio-progress-wrap">
+    <div class="audio-progress" id="audioProgress"></div>
+  </div>
+  <span class="audio-time" id="audioTime">0:00</span>
+  <audio id="audioPlayer" preload="none"></audio>
+</div>
+
+<!-- ── Loading / Error States ─────────────────────────────────────────── -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <p>Loading today's broadcast…</p>
+</div>
+
+<div class="error-screen hidden" id="errorScreen">
+  <p class="error-msg" id="errorMsg">Could not load broadcast.</p>
+  <button onclick="window.app.fetchBroadcast()" class="retry-btn">Retry</button>
+</div>
+
+<!-- ── Main Content ────────────────────────────────────────────────────── -->
+<main class="main-content hidden" id="mainContent">
+
+  <!-- ── Me (Full View) ─────────────────────────────────────────────── -->
+  <section class="profile-view active" id="view-me" role="tabpanel">
+    <div class="cards-grid" id="cards-me"></div>
+    <div class="raw-toggle-wrap">
+      <button class="raw-toggle-btn" id="rawToggleBtn">Show Raw Data</button>
+    </div>
+    <pre class="raw-data hidden" id="rawData"></pre>
+  </section>
+
+  <!-- ── Spouse ─────────────────────────────────────────────────────── -->
+  <section class="profile-view" id="view-spouse" role="tabpanel">
+    <div class="cards-grid" id="cards-spouse"></div>
+  </section>
+
+  <!-- ── Dad (Accessibility-First) ─────────────────────────────────── -->
+  <section class="profile-view dad-view" id="view-dad" role="tabpanel">
+    <div class="cards-grid" id="cards-dad"></div>
+  </section>
+
+  <!-- ── Kids ──────────────────────────────────────────────────────── -->
+  <section class="profile-view kids-view" id="view-kids" role="tabpanel">
+    <div class="kids-content" id="kids-content"></div>
+  </section>
+
+</main>
+
+<!-- ── Generated Timestamp ────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <span id="generatedAt"></span>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
