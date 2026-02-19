@@ -1,39 +1,38 @@
 """
-gemini_client.py — Calls Vertex AI Gemini Flash to generate the narration text.
+gemini_client.py — Calls Anthropic Claude to generate the narration text.
 Also extracts per-paragraph text and metadata from the response.
+
+Note: This module is still named gemini_client.py for import compatibility,
+but now uses the Anthropic Claude API under the hood.
 """
 
 from __future__ import annotations
 
 import logging
 import re
-from typing import Optional
 
-import vertexai
-from vertexai.generative_models import GenerativeModel, GenerationConfig, Part, Content
+import anthropic
 
 from config import (
-    GCP_PROJECT_ID,
-    GCP_REGION,
-    GEMINI_MODEL,
+    ANTHROPIC_API_KEY,
+    CLAUDE_MODEL,
     GEMINI_MAX_TOKENS,
 )
 
 logger = logging.getLogger(__name__)
 
-_model: Optional[GenerativeModel] = None
+_client: anthropic.Anthropic | None = None
 
 
-def _get_model() -> GenerativeModel:
-    """Lazy-initialise the Vertex AI Gemini model (singleton)."""
-    global _model
-    if _model is None:
-        vertexai.init(project=GCP_PROJECT_ID, location=GCP_REGION)
-        _model = GenerativeModel(
-            model_name=GEMINI_MODEL,
-            system_instruction=_load_system_prompt(),
+def _get_client() -> anthropic.Anthropic:
+    """Lazy-initialise the Anthropic client (singleton)."""
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic(
+            api_key=ANTHROPIC_API_KEY,
+            timeout=60.0,
         )
-    return _model
+    return _client
 
 
 def _load_system_prompt() -> str:
@@ -44,7 +43,7 @@ def _load_system_prompt() -> str:
 
 def generate_narration(messages: list[dict]) -> str:
     """
-    Send the prepared message list to Gemini and return the narration text.
+    Send the prepared message list to Claude and return the narration text.
 
     Args:
         messages: Output of prompt_builder.build_prompt()
@@ -55,42 +54,43 @@ def generate_narration(messages: list[dict]) -> str:
     Raises:
         RuntimeError if the API call fails.
     """
-    model = _get_model()
+    client = _get_client()
+    system_prompt = _load_system_prompt()
 
-    # Convert our message format to Vertex AI Content objects
-    contents = []
+    # Convert our message format to Anthropic messages format
+    # Each message has role + parts[{text}]; flatten parts into a single string
+    claude_messages = []
     for msg in messages:
         role = msg.get("role", "user")
-        parts = [Part.from_text(p["text"]) for p in msg.get("parts", [])]
-        contents.append(Content(role=role, parts=parts))
-
-    config = GenerationConfig(
-        max_output_tokens=GEMINI_MAX_TOKENS,
-        temperature=0.7,        # conversational warmth
-        top_p=0.9,
-    )
+        text = " ".join(p["text"] for p in msg.get("parts", []) if "text" in p)
+        if text:
+            claude_messages.append({"role": role, "content": text})
 
     try:
-        response = model.generate_content(contents, generation_config=config)
-        text = response.text
+        response = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=GEMINI_MAX_TOKENS,
+            system=system_prompt,
+            messages=claude_messages,
+            temperature=0.7,
+        )
+        text = response.content[0].text if response.content else ""
         if not text:
-            raise RuntimeError("Gemini returned an empty response")
+            raise RuntimeError("Claude returned an empty response")
         return text.strip()
     except Exception as exc:
-        logger.error("Gemini API call failed: %s", exc)
-        raise RuntimeError(f"Gemini narration generation failed: {exc}") from exc
+        logger.error("Claude API call failed: %s", exc)
+        raise RuntimeError(f"Claude narration generation failed: {exc}") from exc
 
 
 def extract_paragraphs(narration_text: str) -> dict[str, str]:
     """
-    Attempt to extract individual paragraphs from the narration text.
+    Extract individual paragraphs from the narration text using content heuristics.
 
-    Paragraphs are identified by position (P1–P7) since the output is
-    plain text. We split on double newlines and assign sequentially.
+    Paragraphs are identified by keyword matching, not sequential position,
+    because P4 and P5 may be conditionally omitted by Claude.
 
     Returns a dict with keys p1_current through p7_accountability.
-    The mapping is best-effort — the model may merge or omit paragraphs
-    depending on conditional rules.
     """
     para_keys = [
         "p1_current",
@@ -105,10 +105,36 @@ def extract_paragraphs(narration_text: str) -> dict[str, str]:
     # Split on blank lines; filter empty chunks
     raw_chunks = [c.strip() for c in re.split(r"\n{2,}", narration_text) if c.strip()]
 
+    # Content-based keyword matchers (checked in priority order)
+    _HEURISTICS = [
+        ("p7_accountability", ["forecast accuracy", "forecast called for", "actual reading", "solid call", "prediction", "verdict", "call overall", "yesterday's forecast"]),
+        ("p5_climate_cardiac", ["The AC", "air condition", "indoor air", "keep it set", "heater", "climate control", "dehumidify", "heating mode", "cooling mode", "cardiac alert", "heart health"]),
+        ("p4_meals", ["lunch", "dinner", "dish", "meal suggestion", "niú", "miàn", "guō", "fàn", "tāng", "jī"]),
+        ("p3_garden_health", ["gardening", "parkinson", "outdoor activity", "dad", "seedling", "plant", "prune", "soil"]),
+        ("p2_commute", ["commute", "drive", "traffic", "road conditions", "shulin", "sanxia", "route"]),
+        ("p6_forecast", ["today's story", "unfolding story", "bottom line", "throughout the day", "overnight"]),
+    ]
+
     paragraphs: dict[str, str] = {}
+    used_indices: set[int] = set()
+
+    # First pass: match chunks to paragraph keys using heuristics
+    for key, keywords in _HEURISTICS:
+        for i, chunk in enumerate(raw_chunks):
+            if i in used_indices:
+                continue
+            chunk_lower = chunk.lower()
+            if any(kw.lower() in chunk_lower for kw in keywords):
+                paragraphs[key] = chunk
+                used_indices.add(i)
+                break
+
+    # P1 is always the first unmatched chunk (current conditions / heads-up)
     for i, chunk in enumerate(raw_chunks):
-        if i < len(para_keys):
-            paragraphs[para_keys[i]] = chunk
+        if i not in used_indices:
+            paragraphs["p1_current"] = chunk
+            used_indices.add(i)
+            break
 
     # Ensure all keys exist (empty string if not present)
     for key in para_keys:
@@ -117,13 +143,18 @@ def extract_paragraphs(narration_text: str) -> dict[str, str]:
     return paragraphs
 
 
-def extract_metadata(narration_text: str, meal_suggestions: list[str]) -> dict:
+def extract_metadata(
+    narration_text: str,
+    meal_suggestions: list[str],
+    location_suggestions: list[str] = [],
+) -> dict:
     """
     Extract structured metadata from the narration text for history storage.
 
     Args:
-        narration_text:   Full narration output.
-        meal_suggestions: List of dish name strings that were offered to the model.
+        narration_text:       Full narration output (English with pinyin).
+        meal_suggestions:     Dish name strings offered to the model.
+        location_suggestions: Location names from the curated pool (for exact matching).
 
     Returns:
         Dict with meals_suggested, gardening_tip_topic, location_suggested,
@@ -137,29 +168,53 @@ def extract_metadata(narration_text: str, meal_suggestions: list[str]) -> dict:
     }
 
     # Detect which dish names from the suggestion pool appear in the narration
+    # Since narration is now in English with pinyin, match the pinyin portion
+    text_lower = narration_text.lower()
     for dish in meal_suggestions:
-        # Match the Chinese characters portion before the parenthetical
-        chinese = dish.split("(")[0].strip()
-        if chinese and chinese in narration_text:
-            metadata["meals_suggested"].append(chinese)
+        # Extract pinyin portion from format: "涼麵 (liáng miàn, cold sesame noodles)"
+        pinyin_match = re.search(r"\(([^)]+?)(?:,|\))", dish)
+        if pinyin_match:
+            pinyin = pinyin_match.group(1).strip().lower()
+            if pinyin in text_lower:
+                metadata["meals_suggested"].append(dish.split("(")[0].strip())
+        else:
+            dish_clean = dish.split("(")[0].strip()
+            if dish_clean and dish_clean.lower() in text_lower:
+                metadata["meals_suggested"].append(dish_clean)
 
-    # Look for a location mention (heuristic: text in 「」 or known keywords)
-    location_match = re.search(r"[「]([^」]{2,20})[」]", narration_text)
-    if location_match:
-        metadata["location_suggested"] = location_match.group(1)
+    # Match location names from the curated pool (exact name matching for rotation dedup)
+    if location_suggestions:
+        for loc_name in location_suggestions:
+            if loc_name.lower() in text_lower:
+                metadata["location_suggested"] = loc_name
+                break
+
+    # Fallback: regex pattern for Taipei-area place names
+    if not metadata["location_suggested"]:
+        location_patterns = [
+            r"(\b(?:Banqiao|Shulin|Sanxia|Yingge|Tucheng|Zhonghe|Xinzhuang|Tamsui|Bitan|Daan|Zhongshan)\b[^.]{0,30}(?:park|trail|riverside|plaza|forest|garden|bikeway|greenway|museum|center|courtyard))",
+            r"(\b(?:park|trail|riverside|plaza|garden|bikeway|greenway)\b)",
+        ]
+        for pattern in location_patterns:
+            location_match = re.search(pattern, narration_text, re.IGNORECASE)
+            if location_match:
+                metadata["location_suggested"] = location_match.group(1).strip()
+                break
 
     # Look for activity keywords
-    for activity in ["hiking", "biking", "kite", "walking", "jogging", "cycling"]:
-        if activity.lower() in narration_text.lower():
+    for activity in ["hiking", "biking", "kite", "walking", "jogging", "cycling",
+                     "tai chi", "stretching", "strolling", "paddleboat", "e-bike"]:
+        if activity.lower() in text_lower:
             metadata["activity_suggested"] = activity
             break
 
     # Gardening topic — extract first mention of a plant or gardening term
     gardening_match = re.search(
-        r"(seedling|transplant|watering|pruning|fertiliz|harvest|sowing|compost|soil|pot|seedbed)",
+        r"(seedling|transplant|watering|pruning|fertiliz|harvest|sowing|compost|soil|pot|seedbed|mulch|weed|pest|herb)",
         narration_text, re.IGNORECASE
     )
     if gardening_match:
         metadata["gardening_tip_topic"] = gardening_match.group(1).lower()
 
     return metadata
+

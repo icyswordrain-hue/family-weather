@@ -14,13 +14,28 @@ import json
 import logging
 import sys
 from datetime import datetime, timezone, timedelta
+from config import RUN_MODE
+
+# ── SSL Patch for Local Mode ──────────────────────────────────────────────────
+if RUN_MODE == "LOCAL":
+    import requests
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+    old_get = requests.get
+    def new_get(*args, **kwargs):
+        kwargs["verify"] = False
+        return old_get(*args, **kwargs)
+    requests.get = new_get
 
 from flask import Flask, jsonify, render_template, request, abort
 
 import config
+from config import RUN_MODE, LOCAL_DATA_DIR
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts
 from data.fetch_moenv import fetch_all_aqi
 from data.processor import process
+from narration.template_narrator import build_narration
 from narration.prompt_builder import build_prompt
 from narration.gemini_client import generate_narration, extract_paragraphs, extract_metadata
 from narration.tts_client import synthesize_and_upload
@@ -43,14 +58,25 @@ app = Flask(
 )
 
 _TAIPEI_TZ = timezone(timedelta(hours=8))
+_refresh_counter = 0  # Track refreshes for periodic meal list regeneration
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+
 
 @app.route("/")
 def index():
     """Serve the family dashboard."""
     return render_template("dashboard.html")
+
+
+if RUN_MODE == "LOCAL":
+    @app.route("/local_assets/<path:filename>")
+    def local_assets(filename):
+        from flask import send_from_directory
+        # filename might contain slashes (broadcasts/2023-10-27/broadcast.mp3)
+        return send_from_directory(LOCAL_DATA_DIR, filename)
+
 
 
 @app.route("/api/health")
@@ -108,10 +134,13 @@ def refresh():
 
 def _run_pipeline(date_str: str) -> dict:
     """
-    Full data-fetch → process → narrate → TTS → save pipeline.
-    Returns the complete broadcast dict.
+    Full data-fetch → process → narrate (Claude LLM) → TTS → save pipeline.
+    Falls back to template narrator if Claude fails.
     """
-    logger.info("Starting pipeline for %s", date_str)
+    global _refresh_counter
+    # pyre-ignore[41]: Module-level mutation
+    _refresh_counter += 1
+    logger.info("Starting pipeline for %s (refresh #%d)", date_str, _refresh_counter)
 
     # 1. Fetch raw data
     logger.info("Fetching CWA current conditions...")
@@ -130,24 +159,35 @@ def _run_pipeline(date_str: str) -> dict:
     logger.info("Processing data...")
     processed = process(current, forecasts, aqi, history)
 
-    # 4. Build Gemini prompt
-    logger.info("Building narration prompt...")
-    messages = build_prompt(processed, history, today_date=date_str)
+    # 3b. Every 21 refreshes, ask Claude to regenerate meal suggestion lists
+    if _refresh_counter % 21 == 1:
+        logger.info("Refresh #%d — triggering meal list regeneration via Claude", _refresh_counter)
+        processed["regenerate_meal_lists"] = True
 
-    # 5. Generate narration
-    logger.info("Generating narration via Gemini...")
-    narration_text = generate_narration(messages)
+    # 4. Generate narration via Claude LLM (with template fallback)
+    logger.info("Building narration via Claude Sonnet 4.6...")
+    try:
+        messages = build_prompt(processed, history, date_str)
+        narration_text = generate_narration(messages)
+        logger.info("Claude narration generated successfully (%d chars)", len(narration_text))
+    except Exception as exc:
+        logger.warning("Claude narration failed, falling back to template: %s", exc)
+        narration_text = build_narration(processed, date_str=date_str)
 
-    # 6. Extract paragraphs and metadata
+    # 5. Extract paragraphs and metadata
     paragraphs = extract_paragraphs(narration_text)
     meal_suggestions = processed.get("meal_mood", {}).get("all_suggestions", [])
-    metadata = extract_metadata(narration_text, meal_suggestions)
+    location_suggestions = [
+        loc["name"]
+        for loc in processed.get("location_rec", {}).get("top_locations", [])
+    ]
+    metadata = extract_metadata(narration_text, meal_suggestions, location_suggestions)
 
-    # 7. TTS + upload
+    # 6. TTS + upload
     logger.info("Synthesizing speech and uploading to GCS...")
     audio_urls = synthesize_and_upload(narration_text, date_str=date_str)
 
-    # 8. Save to history
+    # 7. Save to history
     logger.info("Saving to conversation history...")
     save_day(
         date_str=date_str,
@@ -159,7 +199,7 @@ def _run_pipeline(date_str: str) -> dict:
         audio_urls=audio_urls,
     )
 
-    # 9. Build and return full result
+    # 8. Build and return full result
     result = {
         "date": date_str,
         "generated_at": datetime.now(_TAIPEI_TZ).isoformat(),

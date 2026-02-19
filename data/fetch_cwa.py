@@ -2,10 +2,11 @@
 fetch_cwa.py — CWA Open Data API client.
 
 Fetches:
-  - Current station observations from Banqiao station (O-A0003-001)
+  - Current station observations from Banqiao station (C0AC70)
   - Township 36-hour forecasts for Sanxia and Banqiao (F-D0047-071)
 """
 
+import json
 import logging
 import requests
 from config import (
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def fetch_current_conditions() -> dict:
     """
-    Fetch latest automatic station observations for Banqiao (C0D660).
+    Fetch latest automatic station observations for Banqiao (C0AC70).
 
     Returns a dict with keys:
         station_id, station_name, obs_time,
@@ -34,63 +35,61 @@ def fetch_current_conditions() -> dict:
     params = {
         "Authorization": CWA_API_KEY,
         "StationId": CWA_STATION_ID,
-        "WeatherElement": "AT,RH,WDSD,WDIR,RAIN,Weather",
+        "WeatherElement": "AirTemperature,RelativeHumidity,WindSpeed,WindDirection,Now,Weather,Visibility",
         "format": "JSON",
     }
 
-    resp = requests.get(url, params=params, timeout=15)
-    resp.raise_for_status()
-    body = resp.json()
-
     try:
-        records = body["records"]["Station"]
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        
+        # Robust decoding: skip invalid characters (e.g. Big5 artifacts)
+        # This prevents 3rd party encoding guesses from introducing mojibake or crashes
+        raw_text = resp.content.decode("utf-8", errors="ignore")
+        body = json.loads(raw_text)
+
+        records = body.get("records", {}).get("Station", [])
         if not records:
             raise ValueError(f"No station data returned for StationId={CWA_STATION_ID}")
+        
         station = records[0]
-        obs = station["WeatherElement"]
+        # O-A0001-001 structure: WeatherElement is a dict
+        obs = station.get("WeatherElement", {})
 
-        def _val(element_name: str):
-            """Return the numeric value for a named weather element, or None."""
-            for el in obs if isinstance(obs, list) else obs.values():
-                # The API returns a list of element dicts
-                if isinstance(el, dict) and el.get("ElementName") == element_name:
-                    v = el.get("ElementValue", [{}])
-                    if isinstance(v, list) and v:
-                        raw = v[0].get("ElementValue") or v[0].get("value")
-                    else:
-                        raw = v
-                    try:
-                        return float(raw)
-                    except (TypeError, ValueError):
-                        return raw
-            return None
+        # Parse numeric values
+        at = _safe_float(obs.get("AirTemperature"))
+        rh = _safe_float(obs.get("RelativeHumidity"))
+        ws = _safe_float(obs.get("WindSpeed"))
+        wd = _safe_float(obs.get("WindDirection"))
+        vis = _safe_float(obs.get("Visibility"))
+        
+        # Rain is nested in Now -> Precipitation
+        rain_now = obs.get("Now", {}).get("Precipitation")
+        rain = _safe_float(rain_now)
 
-        # O-A0003-001 returns elements as a dict keyed by element name
-        weather_elements = station.get("WeatherElement", {})
-
-        def _get(key, sub="value"):
-            """Extract a value from the WeatherElement dict."""
-            el = weather_elements.get(key, {})
-            if isinstance(el, dict):
-                return el.get(sub) or el.get("ElementValue")
-            return el
+        # Weather code might be missing or -99
+        wx_raw = obs.get("Weather")
+        wx = _safe_int(wx_raw)
+        if wx is not None and wx < 0:
+            wx = None
 
         return {
             "station_id": station.get("StationId"),
             "station_name": station.get("StationName"),
             "obs_time": station.get("ObsTime", {}).get("DateTime"),
-            "AT": _safe_float(_get("AT")),
-            "RH": _safe_float(_get("RH")),
-            "WDSD": _safe_float(_get("WDSD")),
-            "WDIR": _safe_float(_get("WDIR")),
-            "RAIN": _safe_float(_get("RAIN")),
-            "Wx": _safe_int(_get("Weather")),
+            "AT": at, # Using AirTemp as proxy for AT
+            "RH": rh,
+            "WDSD": ws,
+            "WDIR": wd,
+            "RAIN": rain, 
+            "Wx": wx,
+            "visibility": vis,
         }
 
-    except (KeyError, IndexError, TypeError) as exc:
-        logger.error("Unexpected CWA current-conditions response structure: %s", exc)
-        logger.debug("Response body: %s", body)
-        raise RuntimeError(f"Failed to parse CWA current conditions: {exc}") from exc
+    except Exception as exc:
+        logger.error("CWA current-conditions fetch failed: %s", exc)
+        # logger.debug("Response body: %s", body)
+        raise RuntimeError(f"Failed to fetch CWA current conditions: {exc}") from exc
 
 
 def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
@@ -108,13 +107,16 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
     params = {
         "Authorization": CWA_API_KEY,
         "LocationName": location_name,
-        "ElementName": "AT,RH,WS,WD,PoP6h,Wx",
+        # "ElementName" filter removed to get all elements
         "format": "JSON",
     }
 
     resp = requests.get(url, params=params, timeout=15)
     resp.raise_for_status()
-    body = resp.json()
+    
+    # Robust decoding
+    raw_text = resp.content.decode("utf-8", errors="ignore")
+    body = json.loads(raw_text)
 
     try:
         locations = body["records"]["Locations"][0]["Location"]
@@ -129,46 +131,63 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
         time_slots: dict[str, dict] = {}
 
         for element in target.get("WeatherElement", []):
-            el_name = element["ElementName"]
-            for tv in element.get("Time", []):
+            # Inspect first value to guess element type
+            time_list = element.get("Time", [])
+            if not time_list:
+                continue
+            
+            first_val = time_list[0].get("ElementValue", [{}])[0]
+            val_keys = first_val.keys()
+
+            for tv in time_list:
                 start = tv["StartTime"]
                 end = tv["EndTime"]
                 slot = time_slots.setdefault(start, {"start_time": start, "end_time": end})
 
-                # Each element may have multiple values; pick the first meaningful one
                 values = tv.get("ElementValue", [{}])
-                raw = None
-                for v in values:
-                    # Try common key names
-                    for key in ("ApparentTemperature", "RelativeHumidity",
-                                "WindSpeed", "WindDirection",
-                                "ProbabilityOfPrecipitation", "WeatherCode",
-                                "value", "Value"):
-                        if key in v:
-                            raw = v[key]
-                            break
-                    if raw is not None:
-                        break
+                v = values[0] if values else {}
 
-                if el_name == "AT":
-                    slot["AT"] = _safe_float(raw)
-                elif el_name == "RH":
-                    slot["RH"] = _safe_float(raw)
-                elif el_name == "WS":
-                    slot["WS"] = _safe_float(raw)
-                elif el_name == "WD":
-                    slot["WD"] = _safe_float(raw)
-                elif el_name == "PoP6h":
-                    slot["PoP6h"] = _safe_float(raw)
-                elif el_name == "Wx":
-                    slot["Wx"] = _safe_int(raw)
+                # Map based on keys found
+                if "ApparentTemperature" in val_keys: # Strict match unlikely, usually Max/Min
+                    slot["AT"] = _safe_float(v.get("ApparentTemperature"))
+                elif "MaxApparentTemperature" in val_keys:
+                    slot["MaxAT"] = _safe_float(v.get("MaxApparentTemperature"))
+                elif "MinApparentTemperature" in val_keys:
+                    slot["MinAT"] = _safe_float(v.get("MinApparentTemperature"))
+                elif "RelativeHumidity" in val_keys:
+                    slot["RH"] = _safe_float(v.get("RelativeHumidity"))
+                elif "WindSpeed" in val_keys:
+                    slot["WS"] = _safe_float(v.get("WindSpeed"))
+                elif "WindDirection" in val_keys:
+                    slot["WD"] = _safe_float(v.get("WindDirection"))
+                elif "ProbabilityOfPrecipitation" in val_keys:
+                    slot["PoP6h"] = _safe_float(v.get("ProbabilityOfPrecipitation"))
+                elif "WeatherCode" in val_keys:
+                    slot["Wx"] = _safe_int(v.get("WeatherCode"))
 
-        # Return sorted by start_time
-        return sorted(time_slots.values(), key=lambda s: s["start_time"])
+        # Post-process slots
+        results = []
+        for slot in sorted(time_slots.values(), key=lambda s: s["start_time"]):
+            # Calculate AT average if Min/Max exist
+            if "MaxAT" in slot and "MinAT" in slot:
+                if slot["MaxAT"] is not None and slot["MinAT"] is not None:
+                    slot["AT"] = (slot["MaxAT"] + slot["MinAT"]) / 2.0
+                elif slot["MaxAT"] is not None:
+                    slot["AT"] = slot["MaxAT"]
+                elif slot["MinAT"] is not None:
+                    slot["AT"] = slot["MinAT"]
+            
+            # Ensure required keys exist (default None)
+            for k in ("AT", "RH", "WS", "WD", "PoP6h", "Wx"):
+                slot.setdefault(k, None)
+            
+            results.append(slot)
+
+        return results
 
     except (KeyError, IndexError, TypeError) as exc:
         logger.error("Unexpected CWA forecast response structure: %s", exc)
-        logger.debug("Response body: %s", body)
+        # logger.debug("Response body: %s", body)
         raise RuntimeError(f"Failed to parse CWA forecast for '{location_name}': {exc}") from exc
 
 

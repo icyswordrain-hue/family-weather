@@ -51,7 +51,8 @@ def _slice_me(paragraphs: dict) -> dict:
         "profile": "me",
         "cards": [
             {"id": "current", "title": "Now",         "text": paragraphs.get("p1_current", "")},
-            {"id": "commute", "title": "Commute",     "text": paragraphs.get("p2_commute", "")},
+            {"id": "commute", "title": "Commute",     "text": paragraphs.get("p2_commute", ""),
+             "omit_if_empty": True},
             {"id": "health",  "title": "Garden & Dad","text": paragraphs.get("p3_garden_health", "")},
             {"id": "meals",   "title": "Meals",       "text": paragraphs.get("p4_meals", ""),
              "omit_if_empty": True},

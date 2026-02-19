@@ -1,84 +1,272 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Family Weather Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
+
 <body>
 
-<!-- ── Profile Switcher ──────────────────────────────────────────────────── -->
-<header class="site-header">
-  <div class="header-inner">
-    <h1 class="site-title">天氣廣播 Weather Broadcast</h1>
-    <nav class="profile-switcher" role="tablist" aria-label="Family profiles">
-      <button class="profile-btn active" data-profile="me"     role="tab" aria-selected="true">Me</button>
-      <button class="profile-btn"        data-profile="spouse" role="tab">Spouse</button>
-      <button class="profile-btn"        data-profile="dad"    role="tab">Dad</button>
-      <button class="profile-btn"        data-profile="kids"   role="tab">Kids</button>
-    </nav>
-  </div>
-</header>
+  <!-- ── App Shell ─────────────────────────────────────────────────────────── -->
+  <div class="app-shell">
 
-<!-- ── Global Audio Player ─────────────────────────────────────────────── -->
-<div class="audio-bar" id="audioBar">
-  <button class="play-btn" id="playBtn" aria-label="Play broadcast">
-    <span class="play-icon">▶</span>
-    <span class="play-label">Play Broadcast</span>
-  </button>
-  <div class="audio-progress-wrap">
-    <div class="audio-progress" id="audioProgress"></div>
-  </div>
-  <span class="audio-time" id="audioTime">0:00</span>
-  <audio id="audioPlayer" preload="none"></audio>
-</div>
+    <!-- ── Left Sidebar ──────────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">⚡</div>
+        <span class="logo-text">天氣</span>
+      </div>
 
-<!-- ── Loading / Error States ─────────────────────────────────────────── -->
-<div class="loading-screen" id="loadingScreen">
-  <div class="spinner"></div>
-  <p>Loading today's broadcast…</p>
-</div>
+      <nav class="sidebar-nav" role="tablist" aria-label="Family profiles">
+        <p class="nav-section-label">Views</p>
+        <button class="nav-item active" data-profile="me" role="tab" aria-selected="true" id="nav-me">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-profile="spouse" role="tab" aria-selected="false" id="nav-spouse">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </span>
+          <span>Spouse</span>
+        </button>
+        <button class="nav-item" data-profile="dad" role="tab" aria-selected="false" id="nav-dad">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </span>
+          <span>Dad</span>
+        </button>
+        <button class="nav-item" data-profile="kids" role="tab" aria-selected="false" id="nav-kids">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/><path d="M8 14l-2 4"/><path d="M16 14l2 4"/></svg>
+          </span>
+          <span>Kids</span>
+        </button>
+      </nav>
 
-<div class="error-screen hidden" id="errorScreen">
-  <p class="error-msg" id="errorMsg">Could not load broadcast.</p>
-  <button onclick="window.app.fetchBroadcast()" class="retry-btn">Retry</button>
-</div>
+      <div class="sidebar-bottom">
+        <p class="nav-section-label">System</p>
+        <button class="nav-item" id="refreshBtn" title="Fetch latest data & regenerate broadcast">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </span>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </aside>
 
-<!-- ── Main Content ────────────────────────────────────────────────────── -->
-<main class="main-content hidden" id="mainContent">
+    <!-- ── Main Content ────────────────────────────────────────────────────── -->
+    <main class="main-panel">
 
-  <!-- ── Me (Full View) ─────────────────────────────────────────────── -->
-  <section class="profile-view active" id="view-me" role="tabpanel">
-    <div class="cards-grid" id="cards-me"></div>
-    <div class="raw-toggle-wrap">
-      <button class="raw-toggle-btn" id="rawToggleBtn">Show Raw Data</button>
+      <!-- ── Top Bar ────────────────────────────────────────────────────── -->
+      <div class="topbar">
+        <div class="topbar-date">
+          <h1 id="topbarMonth">Loading…</h1>
+          <p id="topbarDate"></p>
+        </div>
+        <div class="topbar-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span>Search location here</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" title="Alerts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button class="icon-btn" title="Profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Loading / Error States ──────────────────────────────────────── -->
+      <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <p>Loading today's broadcast…</p>
+      </div>
+
+      <div class="error-screen hidden" id="errorScreen">
+        <div class="error-icon">⚠️</div>
+        <p class="error-msg" id="errorMsg">Could not load broadcast.</p>
+        <button onclick="window.app.fetchBroadcast()" class="retry-btn">Retry</button>
+      </div>
+
+      <!-- ── Content (shown after load) ────────────────────────────────── -->
+      <div class="main-content hidden" id="mainContent">
+
+        <!-- ── Overview Cards ─────────────────────────────────────────── -->
+        <section class="overview-section">
+          <h2 class="section-title">Today overview</h2>
+          <a href="#" class="section-link">More detail ↗</a>
+        </section>
+        <div class="overview-grid">
+          <div class="overview-card" id="card-wind">
+            <div class="ov-icon ov-icon-wind">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+            </div>
+            <div class="ov-label">Wind Speed</div>
+            <div class="ov-value" id="ov-wind-val">—</div>
+            <div class="ov-delta" id="ov-wind-delta"></div>
+          </div>
+          <div class="overview-card" id="card-rain">
+            <div class="ov-icon ov-icon-rain">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="8" y1="20" x2="8.01" y2="20"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="12" y1="22" x2="12.01" y2="22"/><line x1="16" y1="16" x2="16.01" y2="16"/><line x1="16" y1="20" x2="16.01" y2="20"/></svg>
+            </div>
+            <div class="ov-label">Rain Chance</div>
+            <div class="ov-value" id="ov-rain-val">—</div>
+            <div class="ov-delta" id="ov-rain-delta"></div>
+          </div>
+          <div class="overview-card" id="card-pressure">
+            <div class="ov-icon ov-icon-pressure">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="ov-label">Pressure</div>
+            <div class="ov-value" id="ov-pressure-val">—</div>
+            <div class="ov-delta" id="ov-pressure-delta"></div>
+          </div>
+          <div class="overview-card" id="card-uv">
+            <div class="ov-icon ov-icon-uv">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </div>
+            <div class="ov-label">UV Index</div>
+            <div class="ov-value" id="ov-uv-val">—</div>
+            <div class="ov-delta" id="ov-uv-delta"></div>
+          </div>
+        </div>
+
+        <!-- ── Weekly Chart ───────────────────────────────────────────── -->
+        <div class="chart-section">
+          <div class="chart-header">
+            <h2 class="section-title">Average Weekly Temperature</h2>
+            <div class="chart-location" id="chartLocation">
+              <span id="chartLocationText">—</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="tempChart"></canvas>
+          </div>
+        </div>
+
+        <!-- ── Profile Views ───────────────────────────────────────────── -->
+        <section class="profile-view active" id="view-me" role="tabpanel">
+          <div class="cards-grid" id="cards-me"></div>
+          <div class="raw-toggle-wrap">
+            <button class="raw-toggle-btn" id="rawToggleBtn">Show Raw Data</button>
+          </div>
+          <pre class="raw-data hidden" id="rawData"></pre>
+        </section>
+
+        <section class="profile-view" id="view-spouse" role="tabpanel">
+          <div class="cards-grid" id="cards-spouse"></div>
+        </section>
+
+        <section class="profile-view dad-view" id="view-dad" role="tabpanel">
+          <div class="cards-grid" id="cards-dad"></div>
+        </section>
+
+        <section class="profile-view kids-view" id="view-kids" role="tabpanel">
+          <div class="kids-content" id="kids-content"></div>
+        </section>
+
+      </div><!-- /main-content -->
+
+    </main><!-- /main-panel -->
+
+    <!-- ── Right Panel ────────────────────────────────────────────────────── -->
+    <aside class="right-panel">
+
+      <div class="rp-location">
+        <div>
+          <div class="rp-city" id="rpCity">—</div>
+          <div class="rp-region" id="rpRegion">—</div>
+        </div>
+        <div class="rp-time" id="rpTime">—</div>
+      </div>
+
+      <div class="rp-main-weather">
+        <div class="rp-weather-icon" id="rpWeatherIcon">⛅</div>
+        <div>
+          <div class="rp-temp" id="rpTemp">—</div>
+          <div class="rp-condition" id="rpCondition">—</div>
+        </div>
+      </div>
+
+      <hr class="rp-divider">
+
+      <div class="rp-section-header">
+        <span class="rp-section-title">Chance of rain</span>
+      </div>
+      <div class="rp-rain-bars" id="rpRainBars">
+        <!-- Populated by JS -->
+      </div>
+
+      <hr class="rp-divider">
+
+      <div class="rp-section-header">
+        <span class="rp-section-title">Sunrise &amp; Sunset</span>
+        <span class="rp-location-tag" id="rpSunLocation">—</span>
+      </div>
+      <div class="rp-sun-cards">
+        <div class="rp-sun-card">
+          <div class="rp-sun-icon">☀️</div>
+          <div>
+            <div class="rp-sun-label">Sunrise</div>
+            <div class="rp-sun-time" id="rpSunrise">—</div>
+          </div>
+          <div class="rp-sun-ago" id="rpSunriseAgo"></div>
+        </div>
+        <div class="rp-sun-card">
+          <div class="rp-sun-icon">🌅</div>
+          <div>
+            <div class="rp-sun-label">Sunset</div>
+            <div class="rp-sun-time" id="rpSunset">—</div>
+          </div>
+          <div class="rp-sun-in" id="rpSunsetIn"></div>
+        </div>
+      </div>
+
+    </aside><!-- /right-panel -->
+
+  </div><!-- /app-shell -->
+
+  <!-- ── Audio Bar (sticky bottom) ────────────────────────────────────────── -->
+  <div class="audio-bar" id="audioBar">
+    <button class="play-btn" id="playBtn" aria-label="Play broadcast">
+      <span class="play-icon">▶</span>
+      <span class="play-label">Play Broadcast</span>
+    </button>
+
+    <div class="audio-progress-wrap">
+      <div class="audio-progress" id="audioProgress"></div>
     </div>
-    <pre class="raw-data hidden" id="rawData"></pre>
-  </section>
 
-  <!-- ── Spouse ─────────────────────────────────────────────────────── -->
-  <section class="profile-view" id="view-spouse" role="tabpanel">
-    <div class="cards-grid" id="cards-spouse"></div>
-  </section>
+    <div class="audio-controls-right">
+      <div class="speed-control">
+        <button class="speed-btn active" data-speed="1.0">1x</button>
+        <button class="speed-btn" data-speed="1.2">1.2x</button>
+        <button class="speed-btn" data-speed="1.4">1.4x</button>
+      </div>
+      <span class="audio-time" id="audioTime">0:00</span>
+    </div>
 
-  <!-- ── Dad (Accessibility-First) ─────────────────────────────────── -->
-  <section class="profile-view dad-view" id="view-dad" role="tabpanel">
-    <div class="cards-grid" id="cards-dad"></div>
-  </section>
+    <audio id="audioPlayer" preload="none"></audio>
+  </div>
 
-  <!-- ── Kids ──────────────────────────────────────────────────────── -->
-  <section class="profile-view kids-view" id="view-kids" role="tabpanel">
-    <div class="kids-content" id="kids-content"></div>
-  </section>
+  <!-- ── Footer ────────────────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span id="generatedAt"></span>
+  </footer>
 
-</main>
-
-<!-- ── Generated Timestamp ────────────────────────────────────────────── -->
-<footer class="site-footer">
-  <span id="generatedAt"></span>
-</footer>
-
-<script src="/static/app.js"></script>
+  <script src="/static/app.js?v=3"></script>
 </body>
+
 </html>
