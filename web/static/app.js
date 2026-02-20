@@ -1,418 +1,458 @@
 /**
- * app.js — Family Weather Dashboard frontend logic (v3 — Srawana layout).
+ * app.js — Family Weather Dashboard frontend logic (v4 — Revamp).
  *
- * Responsibilities:
- *  - Fetch broadcast JSON from /api/broadcast
- *  - Render per-profile cards (Me, Spouse, Dad, Kids)
- *  - Render overview metric cards, right panel, weekly temp chart
- *  - Handle sidebar profile switching
- *  - Audio player with progress tracking & speed control
- *  - Raw data toggle (Me view)
- *  - Live clock in right panel
+ * Views:
+ *  1. Current: Big gauges (Temp, Hum, Wind, AQI)
+ *  2. Overview: Timeline, Trend Chart, Alerts
+ *  3. Lifestyle: Wardrobe, Commute, Outdoor, Meals, HVAC
+ *  4. Narration: Full text script
+ *
+ * Features:
+ *  - Dynamic Right Panel (Context-aware)
+ *  - Mobile "Info" Drawer
  */
 
 'use strict';
 
+// ── Global Error Handler (Top Level) ───────────────────────────────────────
+function remoteLog(type, msg) {
+  fetch('/debug/log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, msg, ts: new Date().toISOString() })
+  }).catch(() => { });
+}
+
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+  const logList = document.getElementById('rp-log-list');
+  if (logList) {
+    const div = document.createElement('div');
+    div.className = 'log-entry error';
+    div.innerHTML = `<span class="log-msg">Runtime Error: ${msg}</span>`;
+    logList.appendChild(div);
+  }
+  remoteLog('error', `${msg} at ${url}:${lineNo}`);
+  console.error("Global Error:", msg, error);
+  return false;
+};
+
+remoteLog('info', 'app.js loaded');
+console.log("App.js Loaded");
+
 // ── State ──────────────────────────────────────────────────────────────────
 let broadcastData = null;
-let currentProfile = 'me';
-let audioSrc = { me: null, spouse: null, dad: null, kids: null };
+let currentView = 'dashboard'; // 'dashboard' | 'lifestyle' | 'narration'
 let tempChart = null;
+let loadingInterval = null;
+const LOADING_MSGS = [
+  "Connecting to CWA Banqiao Station...",
+  "Retrieving Township Forecasts...",
+  "Checking MOENV Air Quality...",
+  "Processing V5 Logic...",
+  "Generating Narration...",
+  "Synthesizing Audio...",
+  "Finalizing..."
+];
 
-// Weather icon emoji map
 const ICONS = {
-  'sunny': '☀️',
-  'partly-cloudy': '⛅',
-  'cloudy': '☁️',
-  'rainy': '🌧️',
+  'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
+  'partly-cloudy': '⛅', 'Mixed Clouds': '⛅', '2': '⛅', '3': '⛅',
+  'cloudy': '☁️', 'Overcast': '☁️', '4': '☁️', '5': '☁️', '6': '☁️', '7': '☁️',
+  'rainy': '🌧️', '8': '🌧️', '9': '🌧️', '10': '🌧️', '11': '🌧️', '12': '🌧️', '13': '🌧️',
+  '14': '🌧️', '15': '🌧️', '16': '🌧️', '17': '🌧️', '18': '🌧️', '19': '🌧️', '20': '🌧️'
 };
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  window.app = { fetchBroadcast, triggerRefresh };
-  initSidebarNav();
-  initRefreshButton();
-  initAudioPlayer();
-  initClock();
-  updateTopbarDate();
-  fetchBroadcast();
-});
+  window.app = {
+    fetchBroadcast,
+    triggerRefresh
+  };
 
-// ── Clock ──────────────────────────────────────────────────────────────────
-function initClock() {
+  // Show first log entry immediately
+  addLog("System Boot: Initiating connection...");
+
+  initSidebarNav();
+  initMobileDrawer();
+  initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
-}
 
-function updateClock() {
-  const el = document.getElementById('rpTime');
-  if (!el) return;
-  const now = new Date();
-  el.textContent = now.toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Taipei'
-  });
-}
-
-function updateTopbarDate() {
-  const now = new Date();
-  const month = document.getElementById('topbarMonth');
-  const date = document.getElementById('topbarDate');
-  if (month) month.textContent = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'Asia/Taipei' });
-  if (date) date.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'Asia/Taipei' });
-}
+  fetchBroadcast();
+});
 
 // ── API fetch ──────────────────────────────────────────────────────────────
 async function fetchBroadcast() {
   showLoading();
+  addLog("System Boot: Fetching latest broadcast...");
   try {
     const res = await fetch('/api/broadcast');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
+    addLog("Data received successfully.");
     render(broadcastData);
     showContent();
   } catch (err) {
+    addLog(`Error: ${err.message || 'Unknown error'}`);
     showError(err.message || 'Unknown error');
   }
 }
 
-// ── Refresh ────────────────────────────────────────────────────────────────
-function initRefreshButton() {
-  const btn = document.getElementById('refreshBtn');
-  if (btn) btn.addEventListener('click', triggerRefresh);
-}
-
-async function triggerRefresh() {
-  const btn = document.getElementById('refreshBtn');
-  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
-  showLoading();
-  try {
-    const res = await fetch('/api/refresh', { method: 'POST' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    broadcastData = data;
-    render(broadcastData);
-    showContent();
-    document.getElementById('audioPlayer').load();
-  } catch (err) {
-    showError(err.message || 'Refresh failed');
-  } finally {
-    if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-  }
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
+// ── Render Dispatch ────────────────────────────────────────────────────────
 function render(data) {
   const slices = data.slices || {};
-  const proc = data.processed_data || {};
 
-  renderOverviewCards(proc);
-  renderRightPanel(proc, slices);
-  renderWeeklyChart(proc, slices);
+  // Render all views (they are hidden/shown via CSS class)
+  renderCurrentView(slices.current);
+  renderOverviewView(slices.overview);
+  renderLifestyleView(slices.lifestyle);
+  renderNarrationView(slices.narration, data.audio_urls);
 
-  renderMe(slices.me, data);
-  renderSpouse(slices.spouse);
-  renderDad(slices.dad);
-  renderKids(slices.kids, data.audio_urls);
+  // Initial Right Panel update
+  updateRightPanel(currentView, slices.context);
 
-  // Audio URLs
-  const urls = data.audio_urls || {};
-  audioSrc.me = urls.full_audio_url || null;
-  audioSrc.spouse = urls.full_audio_url || null;
-  audioSrc.dad = urls.full_audio_url || null;
-  audioSrc.kids = urls.kids_audio_url || null;
-
-  // Footer timestamp
+  // Footer / Meta
   const ts = data.generated_at || '';
   if (ts) {
-    document.getElementById('generatedAt').textContent =
-      'Generated: ' + new Date(ts).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+    let dateStr = ts;
+    try {
+      dateStr = new Date(ts).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+    } catch (e) {
+      console.warn("Timezone zh-TW/Taipei not supported, falling back to default.", e);
+      dateStr = new Date(ts).toLocaleString();
+    }
+    const msg = `Last updated: ${dateStr}`;
+    setText('rp-last-updated', msg);
   }
 }
 
-// ── Overview Cards ─────────────────────────────────────────────────────────
-function renderOverviewCards(proc) {
-  const cur = proc.current || {};
+// ── View 1: Dashboard (Merged Current + Overview) ──────────────────────────
+function renderCurrentView(data) {
+  if (!data) return;
+  setText('cur-temp', Math.round(data.temp) + '°');
+  setText('cur-weather-text', data.weather_text || '—');
+  setText('cur-icon', ICONS[data.weather_code] || ICONS[data.weather_text] || '🌤️');
 
-  // Wind Speed
-  const wdsd = cur.WDSD;
-  setText('ov-wind-val', wdsd != null ? `${wdsd} m/s` : '—');
-  clearDelta('ov-wind-delta');
-
-  // Rain Chance — pull from first available forecast segment
-  const segs = proc.forecast_segments || {};
-  const firstSeg = segs.Morning || segs.Afternoon || segs.Evening || segs.Night || null;
-  const rainPct = firstSeg && firstSeg.pop != null ? firstSeg.pop : null;
-  setText('ov-rain-val', rainPct != null ? `${rainPct}%` : '—');
-  clearDelta('ov-rain-delta');
-
-  // Pressure — not in data, show AQI as substitute with note
-  const aqi = cur.aqi;
-  setText('ov-pressure-val', aqi != null ? `AQI ${aqi}` : '—');
-  const aqiStatus = cur.aqi_status || '';
-  setDelta('ov-pressure-delta', aqiStatus, null);
-
-  // UV Index — placeholder (not in API data yet)
-  setText('ov-uv-val', '—');
-  clearDelta('ov-uv-delta');
+  // Gauge Cards (Restructured)
+  renderGauge('gauge-ground', data.ground_state, 'Ground', '', `lvl-${data.ground_level}`);
+  renderGauge('gauge-wind', data.wind.text, 'Wind', `${data.wind.val} m/s ${data.wind.dir}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-hum', data.hum.text, 'Humidity', data.hum.val + '%', `lvl-${data.hum.level}`);
+  renderGauge('gauge-aqi', data.aqi.text, 'Air Quality', `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
+  renderGauge('gauge-uv', data.uv.text, 'UV Index', `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
+  renderGauge('gauge-pres', data.pres.text, 'Pressure', `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
+  renderGauge('gauge-vis', data.vis.text, 'Visibility', `${data.vis.val != null ? data.vis.val + ' km' : '—'}`, `lvl-${data.vis.level}`);
 }
 
-// ── Right Panel ────────────────────────────────────────────────────────────
-function renderRightPanel(proc, slices) {
-  const cur = proc.current || {};
+function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="gauge-label">${label}</div>
+    <div class="gauge-value ${valueClass}">${mainVal}</div>
+    ${subVal ? `<div class="gauge-sub">${subVal}</div>` : ''}
+  `;
+}
 
-  // Location from station name
-  const stationName = cur.station_name || '—';
-  setText('rpCity', stationName);
-  setText('rpRegion', 'Taiwan');
+// ── View 2: Overview ───────────────────────────────────────────────────────
+function renderOverviewView(data) {
+  if (!data) return;
 
-  // Weather icon & temp
-  const dadSlice = (slices.dad && slices.dad.cards) || [];
-  const condCard = dadSlice.find(c => c.id === 'conditions');
-  const iconKey = condCard ? (condCard.icon || 'cloudy') : 'cloudy';
-  setText('rpWeatherIcon', ICONS[iconKey] || '⛅');
+  // Alerts (Unified Grouping)
+  const alertContainer = document.getElementById('ov-alerts');
+  alertContainer.innerHTML = '';
 
-  const temp = cur.AT ?? null;
-  setText('rpTemp', temp != null ? `${temp}° C` : '—');
+  if (data.alerts) {
+    const alerts = data.alerts;
+    const items = [];
 
-  const wx = cur.Wx || cur.beaufort_desc || '—';
-  setText('rpCondition', wx);
+    // 1. Cardiac Risk
+    if (alerts.cardiac && alerts.cardiac.triggered) {
+      items.push({
+        type: 'health',
+        icon: '❤️',
+        title: 'Cardiac Alert',
+        text: alerts.cardiac.reason,
+        guidance: 'Keep warm and avoid sudden cold exposure.'
+      });
+    }
 
-  // Hourly rain bars — build from forecast segments
-  const segs = proc.forecast_segments || {};
-  const segMap = [
-    { label: 'Morning', key: 'Morning' },
-    { label: 'Afternoon', key: 'Afternoon' },
-    { label: 'Evening', key: 'Evening' },
-    { label: 'Night', key: 'Night' },
-  ];
+    // 2. Ménière's Alert
+    if (alerts.menieres && alerts.menieres.triggered) {
+      items.push({
+        type: 'health',
+        icon: '🦻',
+        title: 'Ménière\'s Alert',
+        text: alerts.menieres.reason,
+        guidance: 'Watch for vertigo or ear fullness; stay hydrated.'
+      });
+    }
 
-  const bars = document.getElementById('rpRainBars');
-  if (bars) {
-    bars.innerHTML = '';
-    const available = segMap.filter(s => segs[s.key] && segs[s.key].pop != null);
-    const toShow = available.length ? available : segMap;
+    // 3. Narrative Heads Up
+    if (alerts.heads_up) {
+      items.push({
+        type: 'narrative',
+        icon: '📢',
+        title: 'Heads Up',
+        text: alerts.heads_up
+      });
+    }
 
-    toShow.forEach(s => {
-      const seg = segs[s.key] || {};
-      const pct = seg.pop != null ? seg.pop : null;
-      const row = document.createElement('div');
-      row.className = 'rp-rain-row';
-      row.innerHTML = `
-        <span class="rp-rain-label">${s.label.slice(0, 3)}</span>
-        <div class="rp-bar-track">
-          <div class="rp-bar-fill" style="width:${pct != null ? pct : 0}%"></div>
-        </div>
-        <span class="rp-rain-pct">${pct != null ? pct + '%' : '—'}</span>
-      `;
-      bars.appendChild(row);
+    if (items.length > 0) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'unified-alerts';
+      if (items.some(i => i.type === 'health')) {
+        wrapper.classList.add('has-health');
+      }
+
+      const group = document.createElement('div');
+      group.className = 'alert-group';
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `alert-item ${item.type}`;
+        div.innerHTML = `
+          <div class="alert-icon">${item.icon}</div>
+          <div class="alert-content">
+            <div class="alert-title">${item.title}</div>
+            <div class="alert-text">${item.text}</div>
+            ${item.guidance ? `<div class="alert-guidance">${item.guidance}</div>` : ''}
+          </div>
+        `;
+        group.appendChild(div);
+      });
+
+      wrapper.appendChild(group);
+      alertContainer.appendChild(wrapper);
+    }
+  }
+
+  // Timeline (Dynamic Order)
+  const timelineGrid = document.getElementById('ov-timeline');
+  timelineGrid.innerHTML = '';
+  const timeline = data.timeline || [];
+
+  timeline.forEach(seg => {
+    const slotName = seg.display_name || 'Forecast';
+    const card = document.createElement('div');
+    card.className = 'time-card';
+    card.innerHTML = `
+      <div class="tc-header">${slotName}</div>
+      <div class="tc-icon">${ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️'}</div>
+      <div class="tc-temp">${Math.round(seg.AT)}°</div>
+      <div class="tc-details">
+         <div class="tc-row">
+           <span class="tc-label">Rain</span>
+           <span class="tc-val lvl-${seg.precip_level || 1}">${seg.precip_text}</span>
+         </div>
+         <div class="tc-row">
+           <span class="tc-label">Wind</span>
+           <span class="tc-val lvl-${seg.wind_level || 1}">${seg.wind_text}</span>
+         </div>
+      </div>
+    `;
+    timelineGrid.appendChild(card);
+  });
+
+  // Trend Chart removed
+}
+
+// ── View 3: Lifestyle ──────────────────────────────────────────────────────
+function renderLifestyleView(data) {
+  if (!data) return;
+  const grid = document.getElementById('lifestyle-grid');
+  grid.innerHTML = '';
+
+  // 1. Wardrobe & Rain Gear (Row 1)
+  if (data.wardrobe) {
+    const feelsLike = data.wardrobe.feels_like != null
+      ? `<div class="ls-sub">Feels like ${Math.round(data.wardrobe.feels_like)}°</div>`
+      : '';
+    grid.appendChild(makeIconCard('🧥', 'Wardrobe', data.wardrobe.text, feelsLike));
+  }
+  if (data.rain_gear) {
+    grid.appendChild(makeIconCard('☂️', 'Rain Gear', data.rain_gear.text));
+  }
+
+  // 2. Commute & HVAC (Row 2)
+  if (data.commute) {
+    const hazards = (data.commute.hazards || []);
+    const hazardsHtml = hazards.length > 0
+      ? `<ul class="ls-hazards">${hazards.map(h => `<li>${h}</li>`).join('')}</ul>`
+      : '';
+    grid.appendChild(makeIconCard('🚗', 'Commute', data.commute.text, hazardsHtml));
+  }
+  if (data.hvac) {
+    const mode = data.hvac.mode;
+    const modeHtml = mode
+      ? `<span class="ls-badge hvac-${mode.toLowerCase()}">${mode}</span>`
+      : '';
+    grid.appendChild(makeIconCard('🌡️', 'HVAC Advice', data.hvac.text, modeHtml));
+  }
+
+  // 3. Meals
+  if (data.meals && data.meals.text) {
+    const moodHtml = data.meals.mood
+      ? `<span class="ls-badge mood-badge">${data.meals.mood}</span>`
+      : '';
+    grid.appendChild(makeIconCard('🍱', 'Meals', data.meals.text, moodHtml));
+  }
+
+  // 4. Garden & Outdoors (WIDE)
+  if (data.garden && data.garden.text) {
+    const card = makeIconCard('🌱', 'Garden Health', data.garden.text);
+    card.classList.add('wide');
+    grid.appendChild(card);
+  }
+  if (data.outdoor && data.outdoor.text) {
+    const card = makeIconCard('🌳', 'Outdoor Activities', data.outdoor.text);
+    card.classList.add('wide');
+    grid.appendChild(card);
+  }
+}
+
+function makeIconCard(icon, title, text, extra = '') {
+  const el = document.createElement('div');
+  el.className = 'ls-card';
+  el.innerHTML = `
+    <div class="ls-icon">${icon}</div>
+    <div class="ls-content">
+      <div class="ls-title">${title}</div>
+      <div class="ls-text">${text}</div>
+      ${extra}
+    </div>
+  `;
+  return el;
+}
+
+// ── View 4: Narration ──────────────────────────────────────────────────────
+function renderNarrationView(data, audioUrls) {
+  if (!data) return;
+
+  // Text Script
+  const container = document.getElementById('narration-text');
+  container.innerHTML = '';
+  (data.paragraphs || []).forEach(p => {
+    if (!p.text) return;
+    const block = document.createElement('div');
+    block.className = 'narration-block';
+    const htmlText = p.text.replace(/\n/g, '<br>');
+    block.innerHTML = `<h3>${p.title}</h3><p>${htmlText}</p>`;
+    container.appendChild(block);
+  });
+
+  // Source Badge
+  const badge = document.getElementById('narration-meta');
+  if (badge && data.meta) {
+    badge.textContent = `${data.meta.source} (${data.meta.model})`;
+    let badgeClass = 'source-template';
+    const s = data.meta.source.toLowerCase();
+    if (s.includes('gemini')) badgeClass = 'source-gemini';
+    if (s.includes('claude')) badgeClass = 'source-claude';
+    badge.className = 'narration-badge ' + badgeClass;
+  }
+
+  // Audio Player
+  const player = document.getElementById('audio-player-native');
+  if (player && audioUrls && audioUrls.full_audio_url) {
+    player.src = audioUrls.full_audio_url;
+  }
+}
+
+async function updateRightPanel(view, contextData) {
+  const contentEl = document.getElementById('rp-dynamic');
+  if (!contentEl || !contextData) return;
+
+  contentEl.innerHTML = ''; // Clear existing content
+
+  // Location update
+  setText('rp-location', contextData.location || 'Sanxi, TW');
+
+  // Context Bubble content
+  const bubble = document.createElement('div');
+  bubble.className = 'context-bubble-inner';
+  bubble.innerHTML = `
+    <div class="rp-label">Daily Forecast</div>
+    <div class="rp-text">${contextData.rain_forecast_text || 'No rain expected today.'}</div>
+  `;
+  contentEl.appendChild(bubble);
+
+  // Additional context-specific info could go here
+}
+
+// ── Sidebar & Navigation ───────────────────────────────────────────────────
+function initSidebarNav() {
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view) switchView(view);
+    });
+  });
+}
+
+function switchView(viewName) {
+  currentView = viewName;
+
+  // Update Nav
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === viewName);
+  });
+
+  // Update Main Views
+  document.querySelectorAll('.view-container').forEach(v => {
+    v.classList.toggle('active', v.id === `view-${viewName}`);
+  });
+
+  // Update Right Panel Context
+  if (broadcastData && broadcastData.slices) {
+    updateRightPanel(viewName, broadcastData.slices.context);
+  }
+
+  // Mobile drawer: close on switch
+  closeMobileDrawer();
+}
+
+// ── Mobile Drawer ──────────────────────────────────────────────────────────
+function initMobileDrawer() {
+  const toggle = document.getElementById('drawer-toggle');
+  const backdrop = document.getElementById('drawer-backdrop');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('drawer-open');
     });
   }
-
-  // Sunrise & Sunset — compute from Taiwan location (fixed approximations)
-  const now = new Date();
-  const twDate = now.toLocaleDateString('en-US', { timeZone: 'Asia/Taipei' });
-  // Use approximate times for New Taipei
-  const sunrise = new Date(`${twDate} 05:55 GMT+0800`);
-  const sunset = new Date(`${twDate} 18:00 GMT+0800`);
-
-  setText('rpSunrise', sunrise.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Taipei' }));
-  setText('rpSunset', sunset.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Taipei' }));
-  setText('rpSunLocation', stationName);
-
-  const diffRise = Math.round((now - sunrise) / 60000);
-  const diffSet = Math.round((sunset - now) / 60000);
-
-  setText('rpSunriseAgo', diffRise > 0 ? `${fmtMinutes(diffRise)} ago` : 'soon');
-  setText('rpSunsetIn', diffSet > 0 ? `in ${fmtMinutes(diffSet)}` : 'passed');
-}
-
-function fmtMinutes(mins) {
-  if (mins < 60) return `${mins}m`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-}
-
-// ── Weekly Chart ────────────────────────────────────────────────────────────
-function renderWeeklyChart(proc, slices) {
-  const segs = proc.forecast_segments || {};
-  const stationName = (proc.current || {}).station_name || '—';
-  setText('chartLocationText', stationName);
-
-  // Build temperature data from segments or use illustrative placeholders
-  const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-  // Use current temp + simulated weekly trend
-  const baseTemp = (proc.current || {}).AT ?? 20;
-  const dataPoints = [
-    Math.round(baseTemp - 3 + Math.random() * 2),
-    Math.round(baseTemp - 1 + Math.random() * 2),
-    Math.round(baseTemp + 1 + Math.random() * 2),  // peak — current week
-    Math.round(baseTemp + 0 + Math.random() * 3),
-  ];
-
-  const ctx = document.getElementById('tempChart');
-  if (!ctx) return;
-
-  if (tempChart) { tempChart.destroy(); }
-
-  // Generate smooth gradient
-  const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 160);
-  gradient.addColorStop(0, 'rgba(44, 92, 230, 0.18)');
-  gradient.addColorStop(1, 'rgba(44, 92, 230, 0.00)');
-
-  tempChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Temperature (°C)',
-        data: dataPoints,
-        borderColor: '#2b5ce6',
-        backgroundColor: gradient,
-        borderWidth: 2.5,
-        pointRadius: dataPoints.map((_, i) => i === 2 ? 7 : 3),
-        pointBackgroundColor: dataPoints.map((_, i) => i === 2 ? '#2b5ce6' : '#fff'),
-        pointBorderColor: '#2b5ce6',
-        pointBorderWidth: 2,
-        tension: 0.45,
-        fill: true,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.raw}° C`,
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#7a8ca0', font: { size: 11, family: 'Inter' } },
-          border: { display: false },
-        },
-        y: {
-          grid: {
-            color: '#e8ecf3',
-            drawTicks: false,
-          },
-          ticks: {
-            color: '#7a8ca0',
-            font: { size: 11, family: 'Inter' },
-            callback: v => v + '°',
-            maxTicksLimit: 5,
-          },
-          border: { display: false },
-        }
-      }
-    }
-  });
-}
-
-// ── Me (Full View) ─────────────────────────────────────────────────────────
-function renderMe(slice, fullData) {
-  const grid = document.getElementById('cards-me');
-  grid.innerHTML = '';
-  if (!slice) return;
-
-  slice.cards.forEach(card => {
-    if (card.omit_if_empty && !card.text) return;
-    const wide = ['forecast', 'accuracy'].includes(card.id);
-    grid.appendChild(makeCard(card.title, card.text, { wide }));
-  });
-
-  document.getElementById('rawData').textContent =
-    JSON.stringify(fullData, null, 2);
-}
-
-// ── Spouse ─────────────────────────────────────────────────────────────────
-function renderSpouse(slice) {
-  const grid = document.getElementById('cards-spouse');
-  grid.innerHTML = '';
-  if (!slice) return;
-
-  slice.cards.forEach(card => {
-    if (card.omit_if_empty && !card.text) return;
-    grid.appendChild(makeCard(card.title, card.text));
-  });
-
-  const hazards = slice.commute_hazards || {};
-  const allHazards = [...(hazards.morning || []), ...(hazards.evening || [])];
-  if (allHazards.length > 0) {
-    const el2 = makeCard('⚠️ Driving Hazards', allHazards.join('\n'), { warn: true });
-    grid.insertBefore(el2, grid.firstChild);
+  if (backdrop) {
+    backdrop.addEventListener('click', closeMobileDrawer);
   }
+  // Also close on swipe down? (Maybe later)
 }
 
-// ── Dad ────────────────────────────────────────────────────────────────────
-function renderDad(slice) {
-  const grid = document.getElementById('cards-dad');
-  grid.innerHTML = '';
-  if (!slice) return;
-
-  slice.cards.forEach(card => {
-    const cardEl = makeCard(card.title, card.text, { cardiac: card.cardiac_warning });
-
-    if (card.id === 'conditions') {
-      const icon = ICONS[card.icon] || '🌤️';
-      const iconEl = document.createElement('div');
-      iconEl.style.cssText = 'font-size:2.5rem;margin-bottom:8px;';
-      iconEl.textContent = icon;
-      cardEl.insertBefore(iconEl, cardEl.querySelector('.card-text'));
-
-      if (card.aqi != null) {
-        const badge = document.createElement('div');
-        badge.className = 'aqi-badge ' + aqiClass(card.aqi);
-        badge.textContent = `AQI ${card.aqi}${card.aqi_status ? ' — ' + card.aqi_status : ''}`;
-        cardEl.appendChild(badge);
-      }
-    }
-    grid.appendChild(cardEl);
-  });
+function closeMobileDrawer() {
+  document.body.classList.remove('drawer-open');
 }
 
-// ── Kids ───────────────────────────────────────────────────────────────────
-function renderKids(slice, audioUrls) {
-  const container = document.getElementById('kids-content');
-  container.innerHTML = '';
-  if (!slice) return;
-
-  const iconWrap = el('div', 'kids-icon-wrap');
-  iconWrap.textContent = ICONS[slice.icon] || '🌤️';
-  iconWrap.title = 'Tap to hear the weather!';
-  iconWrap.addEventListener('click', () => {
-    const src = (audioUrls || {}).kids_audio_url;
-    if (src) playAudio(src);
-  });
-
-  const feels = el('p', 'kids-feels', slice.feels_like || '');
-  const wardrobe = el('p', 'kids-wardrobe', slice.wardrobe || '');
-  const fact = el('p', 'kids-fun-fact', slice.fun_fact || '');
-
-  container.append(iconWrap, feels, wardrobe, fact);
+// ── Helpers ────────────────────────────────────────────────────────────────
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
-// ── Card factory ───────────────────────────────────────────────────────────
-function makeCard(title, text, opts = {}) {
+function renderHealthCard(title, reason, guidance) {
   const card = document.createElement('div');
-  let cls = 'card';
-  if (opts.wide) cls += ' card-wide';
-  if (opts.cardiac) cls += ' cardiac';
-  if (opts.warn) cls += ' cardiac';
-  card.className = cls;
-  card.append(el('h2', 'card-title', title), el('p', 'card-text', text));
+  card.className = 'alert-card alert-health';
+  card.innerHTML = `
+    <div class="ac-header">${title}</div>
+    <div class="ac-reason">${reason}</div>
+    <div class="ac-guidance">${guidance}</div>
+  `;
   return card;
 }
 
-function el(tag, cls, text) {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text) e.textContent = text;
-  return e;
+function makeCard(title, text, opts = {}) {
+  const card = document.createElement('div');
+  card.className = 'card ' + (opts.warn ? 'card-warn' : '') + (opts.wide ? 'card-wide' : '');
+  card.innerHTML = `<h3 class="card-title">${title}</h3><div class="card-text">${text}</div>`;
+  return card;
 }
 
 function aqiClass(aqi) {
@@ -421,155 +461,196 @@ function aqiClass(aqi) {
   return 'aqi-poor';
 }
 
-function setText(id, val) {
-  const el2 = document.getElementById(id);
-  if (el2) el2.textContent = val;
-}
+function updateClock() {
+  const now = new Date();
 
-function setDelta(id, val, direction) {
-  const el2 = document.getElementById(id);
-  if (!el2) return;
-  el2.textContent = val || '';
-  el2.className = 'ov-delta' + (direction === 'up' ? ' up' : direction === 'down' ? ' down' : '');
-}
-
-function clearDelta(id) {
-  const el2 = document.getElementById(id);
-  if (el2) { el2.textContent = ''; el2.className = 'ov-delta'; }
-}
-
-// ── Sidebar Nav / Profile Switcher ─────────────────────────────────────────
-function initSidebarNav() {
-  document.querySelectorAll('.nav-item[data-profile]').forEach(btn => {
-    btn.addEventListener('click', () => switchProfile(btn.dataset.profile));
-  });
-}
-
-function switchProfile(profile) {
-  currentProfile = profile;
-
-  document.querySelectorAll('.nav-item[data-profile]').forEach(btn => {
-    const isActive = btn.dataset.profile === profile;
-    btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-
-  document.querySelectorAll('.profile-view').forEach(view => {
-    view.classList.toggle('active', view.id === `view-${profile}`);
-  });
-
-  const src = audioSrc[profile];
-  if (src) {
-    const player = document.getElementById('audioPlayer');
-    if (player.src !== src) {
-      player.src = src;
-      player.load();
-      resetAudioUI();
+  // Digital Subtitle
+  const el = document.getElementById('rp-time');
+  if (el) {
+    try {
+      el.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei'
+      });
+    } catch (e) {
+      el.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
     }
   }
 
-  document.body.classList.toggle('dad-mode', profile === 'dad');
-}
+  // Analog Hands
+  const hourHand = document.getElementById('clock-hour');
+  const minuteHand = document.getElementById('clock-minute');
+  const secondHand = document.getElementById('clock-second');
 
-// ── Audio Player ───────────────────────────────────────────────────────────
-function initAudioPlayer() {
-  const player = document.getElementById('audioPlayer');
-  const playBtn = document.getElementById('playBtn');
-  const progress = document.getElementById('audioProgress');
-  const timeEl = document.getElementById('audioTime');
-  const progWrap = document.querySelector('.audio-progress-wrap');
+  if (hourHand && minuteHand && secondHand) {
+    const seconds = now.getSeconds();
+    const minutes = now.getMinutes();
+    const hours = now.getHours();
 
-  playBtn.addEventListener('click', () => {
-    if (!player.src && audioSrc[currentProfile]) player.src = audioSrc[currentProfile];
-    if (player.paused) { player.play().catch(() => { }); }
-    else { player.pause(); }
-  });
+    const secondDeg = ((seconds / 60) * 360);
+    const minuteDeg = ((minutes / 60) * 360) + ((seconds / 60) * 6);
+    const hourDeg = ((hours / 12) * 360) + ((minutes / 60) * 30);
 
-  player.addEventListener('play', () => {
-    playBtn.querySelector('.play-icon').textContent = '⏸';
-    playBtn.querySelector('.play-label').textContent = 'Pause';
-  });
-
-  player.addEventListener('pause', () => {
-    playBtn.querySelector('.play-icon').textContent = '▶';
-    playBtn.querySelector('.play-label').textContent = 'Play Broadcast';
-  });
-
-  player.addEventListener('timeupdate', () => {
-    if (!player.duration) return;
-    const pct = (player.currentTime / player.duration) * 100;
-    progress.style.width = pct + '%';
-    timeEl.textContent = fmtTime(player.currentTime);
-  });
-
-  player.addEventListener('ended', resetAudioUI);
-
-  progWrap.addEventListener('click', e => {
-    if (!player.duration) return;
-    const rect = progWrap.getBoundingClientRect();
-    player.currentTime = ((e.clientX - rect.left) / rect.width) * player.duration;
-  });
-
-  document.querySelectorAll('.speed-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      player.playbackRate = parseFloat(btn.dataset.speed);
-      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-}
-
-function playAudio(src) {
-  const player = document.getElementById('audioPlayer');
-  player.src = src;
-  player.play().catch(() => { });
-}
-
-function resetAudioUI() {
-  document.querySelector('.play-icon').textContent = '▶';
-  document.querySelector('.play-label').textContent = 'Play Broadcast';
-  document.getElementById('audioProgress').style.width = '0%';
-  document.getElementById('audioTime').textContent = '0:00';
-}
-
-function fmtTime(secs) {
-  const m = Math.floor(secs / 60);
-  const s = Math.floor(secs % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
-
-// ── Raw Data Toggle ────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('rawToggleBtn');
-  const raw = document.getElementById('rawData');
-  if (btn && raw) {
-    btn.addEventListener('click', () => {
-      const showing = !raw.classList.contains('hidden');
-      raw.classList.toggle('hidden', showing);
-      btn.textContent = showing ? 'Show Raw Data' : 'Hide Raw Data';
-    });
+    secondHand.style.transform = `rotate(${secondDeg}deg)`;
+    minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+    hourHand.style.transform = `rotate(${hourDeg}deg)`;
   }
-});
+}
 
-// ── UI State Helpers ───────────────────────────────────────────────────────
 function showLoading() {
-  document.getElementById('loadingScreen').classList.remove('hidden');
-  document.getElementById('errorScreen').classList.add('hidden');
-  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('loading-screen').classList.remove('hidden');
+  document.getElementById('error-screen').classList.add('hidden');
+  document.getElementById('main-content').classList.add('hidden');
+  startLoadingAnimation();
 }
 
 function showContent() {
-  document.getElementById('loadingScreen').classList.add('hidden');
-  document.getElementById('errorScreen').classList.add('hidden');
-  document.getElementById('mainContent').classList.remove('hidden');
-
-  const src = audioSrc[currentProfile];
-  if (src) document.getElementById('audioPlayer').src = src;
+  stopLoadingAnimation();
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('error-screen').classList.add('hidden');
+  document.getElementById('main-content').classList.remove('hidden');
 }
 
 function showError(msg) {
-  document.getElementById('loadingScreen').classList.add('hidden');
-  document.getElementById('mainContent').classList.add('hidden');
-  document.getElementById('errorScreen').classList.remove('hidden');
-  document.getElementById('errorMsg').textContent = msg;
+  stopLoadingAnimation();
+  console.error(msg);
+  const errEl = document.getElementById('error-msg');
+  if (errEl) errEl.textContent = msg;
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('error-screen').classList.remove('hidden');
+  document.getElementById('main-content').classList.add('hidden');
 }
+
+function initRefreshButton() {
+  const btn = document.getElementById('refresh-btn');
+  if (btn) btn.addEventListener('click', triggerRefresh);
+}
+
+async function triggerRefresh() {
+  const btn = document.getElementById('refresh-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('spinning');
+  }
+
+  showLoading();
+  startLoadingAnimation(); // Start fake messages until connection established
+  addLog("Initiating connection...");
+
+  // Read selected provider
+  const providerInput = document.querySelector('input[name="provider"]:checked');
+  const provider = providerInput ? providerInput.value : 'CLAUDE';
+
+  try {
+    const res = await fetch('/api/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        provider
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // Stream reader
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const {
+        done,
+        value
+      } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, {
+        stream: true
+      });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep incomplete line
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const msg = JSON.parse(line);
+          if (msg.type === 'log') {
+            stopLoadingAnimation(); // Switch to real logs
+            addLog(msg.message);
+            const loadingTxt = document.getElementById('loading-text');
+            if (loadingTxt) loadingTxt.textContent = msg.message;
+          } else if (msg.type === 'result') {
+            addLog("Pipeline success. Rendering...");
+            broadcastData = msg.payload;
+            render(broadcastData);
+            showContent();
+          } else if (msg.type === 'error') {
+            throw new Error(msg.message);
+          }
+        } catch (e) {
+          console.warn("JSON parse error", e, line);
+        }
+      }
+    }
+  } catch (err) {
+    addLog(`Error: ${err.message}`);
+    showError(err.message || 'Refresh failed');
+  } finally {
+    stopLoadingAnimation();
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('spinning');
+    }
+  }
+}
+
+
+function startLoadingAnimation() {
+  const txt = document.getElementById('loading-text');
+  if (!txt) return;
+  let i = 0;
+  txt.textContent = LOADING_MSGS[0];
+  addLog(`Step: ${LOADING_MSGS[0]}`);
+
+  if (loadingInterval) clearInterval(loadingInterval);
+  loadingInterval = setInterval(() => {
+    i = (i + 1) % LOADING_MSGS.length;
+    txt.textContent = LOADING_MSGS[i];
+    addLog(`Step: ${LOADING_MSGS[i]}`);
+  }, 1200);
+}
+
+function stopLoadingAnimation() {
+  if (loadingInterval) {
+    clearInterval(loadingInterval);
+    loadingInterval = null;
+  }
+}
+
+function addLog(msg) {
+  const list = document.getElementById('rp-log-list');
+  if (!list) return;
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+
+  let ts = '';
+  try {
+    ts = new Date().toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  } catch (e) {
+    const now = new Date();
+    ts = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+  }
+
+  div.innerHTML = `<span class="log-ts">${ts}</span><span class="log-msg">${msg}</span>`;
+  list.appendChild(div);
+  list.scrollTop = list.scrollHeight;
+}
+
+// ── Chart ──────────────────────────────────────────────────────────────────

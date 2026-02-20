@@ -4,11 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Context-aware, voice-enabled family weather broadcaster" />
+  <meta name="theme-color" content="#1a2235" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" href="/static/icon-192.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/icon-192.svg" />
   <title>Family Weather Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css?v=3" />
+  <link rel="stylesheet" href="/static/style.css?v=12" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -20,253 +28,202 @@
 
     <!-- ── Left Sidebar ──────────────────────────────────────────────────── -->
     <aside class="sidebar">
-      <div class="sidebar-logo">
-        <div class="logo-icon">⚡</div>
-        <span class="logo-text">天氣</span>
+      <div class="sidebar-header">
+        <div class="clock-wrapper">
+          <div class="analog-clock">
+            <div class="hand hour" id="clock-hour"></div>
+            <div class="hand minute" id="clock-minute"></div>
+            <div class="hand second" id="clock-second"></div>
+            <div class="center-dot"></div>
+            <!-- Face markers -->
+            <div class="marker m-12"></div>
+            <div class="marker m-3"></div>
+            <div class="marker m-6"></div>
+            <div class="marker m-9"></div>
+          </div>
+          <div class="digital-time-sub" id="rp-time">—:—</div>
+        </div>
+        <div class="rp-location" id="rp-location">—</div>
       </div>
 
-      <nav class="sidebar-nav" role="tablist" aria-label="Family profiles">
+      <nav class="sidebar-nav">
         <p class="nav-section-label">Views</p>
-        <button class="nav-item active" data-profile="me" role="tab" aria-selected="true" id="nav-me">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          </span>
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
           <span>Dashboard</span>
         </button>
-        <button class="nav-item" data-profile="spouse" role="tab" aria-selected="false" id="nav-spouse">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          </span>
-          <span>Spouse</span>
+        <button class="nav-item" data-view="lifestyle">
+          <span class="nav-icon">🚲</span>
+          <span>Lifestyle</span>
         </button>
-        <button class="nav-item" data-profile="dad" role="tab" aria-selected="false" id="nav-dad">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </span>
-          <span>Dad</span>
-        </button>
-        <button class="nav-item" data-profile="kids" role="tab" aria-selected="false" id="nav-kids">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/><path d="M8 14l-2 4"/><path d="M16 14l2 4"/></svg>
-          </span>
-          <span>Kids</span>
+        <button class="nav-item" data-view="narration">
+          <span class="nav-icon">📝</span>
+          <span>Narration</span>
         </button>
       </nav>
 
-      <div class="sidebar-bottom">
-        <p class="nav-section-label">System</p>
-        <button class="nav-item" id="refreshBtn" title="Fetch latest data & regenerate broadcast">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          </span>
-          <span>Refresh</span>
-        </button>
-      </div>
+      <!-- Context bubble removed -->
+
+      <!-- System controls moved to Right Panel -->
     </aside>
 
     <!-- ── Main Content ────────────────────────────────────────────────────── -->
     <main class="main-panel">
 
-      <!-- ── Top Bar ────────────────────────────────────────────────────── -->
-      <div class="topbar">
-        <div class="topbar-date">
-          <h1 id="topbarMonth">Loading…</h1>
-          <p id="topbarDate"></p>
-        </div>
-        <div class="topbar-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <span>Search location here</span>
-        </div>
-        <div class="topbar-actions">
-          <button class="icon-btn" title="Alerts">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          </button>
-          <button class="icon-btn" title="Profile">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </button>
-        </div>
-      </div>
-
       <!-- ── Loading / Error States ──────────────────────────────────────── -->
-      <div class="loading-screen" id="loadingScreen">
+      <div class="loading-screen" id="loading-screen">
         <div class="spinner"></div>
-        <p>Loading today's broadcast…</p>
+        <p id="loading-text">Fetching forecast…</p>
       </div>
 
-      <div class="error-screen hidden" id="errorScreen">
+      <div class="error-screen hidden" id="error-screen">
         <div class="error-icon">⚠️</div>
-        <p class="error-msg" id="errorMsg">Could not load broadcast.</p>
+        <p class="error-msg" id="error-msg">Could not load broadcast.</p>
         <button onclick="window.app.fetchBroadcast()" class="retry-btn">Retry</button>
       </div>
 
       <!-- ── Content (shown after load) ────────────────────────────────── -->
-      <div class="main-content hidden" id="mainContent">
+      <div class="main-content hidden" id="main-content">
 
-        <!-- ── Overview Cards ─────────────────────────────────────────── -->
-        <section class="overview-section">
-          <h2 class="section-title">Today overview</h2>
-          <a href="#" class="section-link">More detail ↗</a>
-        </section>
-        <div class="overview-grid">
-          <div class="overview-card" id="card-wind">
-            <div class="ov-icon ov-icon-wind">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+        <!-- DASHBOARD VIEW: Merged Current + Overview -->
+        <div id="view-dashboard" class="view-container active">
+          <header class="view-header">
+            <h1>Weather Dashboard</h1>
+          </header>
+          <div class="current-conditions-wrapper">
+            <div class="current-top-row">
+              <div class="gauge-card" id="gauge-ground"></div>
+              <div class="current-hero">
+                <div class="hero-main">
+                  <span id="cur-icon"></span>
+                  <span id="cur-temp">--</span>
+                </div>
+                <div id="cur-weather-text">--</div>
+              </div>
+              <div class="gauge-card" id="gauge-wind"></div>
             </div>
-            <div class="ov-label">Wind Speed</div>
-            <div class="ov-value" id="ov-wind-val">—</div>
-            <div class="ov-delta" id="ov-wind-delta"></div>
+
+            <div class="gauges-grid">
+              <div class="gauge-card" id="gauge-hum"></div>
+              <div class="gauge-card" id="gauge-aqi"></div>
+              <div class="gauge-card" id="gauge-uv"></div>
+              <div class="gauge-card" id="gauge-pres"></div>
+              <div class="gauge-card" id="gauge-vis"></div>
+            </div>
           </div>
-          <div class="overview-card" id="card-rain">
-            <div class="ov-icon ov-icon-rain">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="8" y1="20" x2="8.01" y2="20"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="12" y1="22" x2="12.01" y2="22"/><line x1="16" y1="16" x2="16.01" y2="16"/><line x1="16" y1="20" x2="16.01" y2="20"/></svg>
-            </div>
-            <div class="ov-label">Rain Chance</div>
-            <div class="ov-value" id="ov-rain-val">—</div>
-            <div class="ov-delta" id="ov-rain-delta"></div>
-          </div>
-          <div class="overview-card" id="card-pressure">
-            <div class="ov-icon ov-icon-pressure">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
-            </div>
-            <div class="ov-label">Pressure</div>
-            <div class="ov-value" id="ov-pressure-val">—</div>
-            <div class="ov-delta" id="ov-pressure-delta"></div>
-          </div>
-          <div class="overview-card" id="card-uv">
-            <div class="ov-icon ov-icon-uv">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            </div>
-            <div class="ov-label">UV Index</div>
-            <div class="ov-value" id="ov-uv-val">—</div>
-            <div class="ov-delta" id="ov-uv-delta"></div>
+
+          <hr class="view-divider">
+
+          <div class="dashboard-overview-section">
+            <h2 class="section-title">24-Hour Forecast</h2>
+            <div class="timeline-grid" id="ov-timeline"></div>
+
+            <div id="ov-alerts" class="alerts-container"></div>
           </div>
         </div>
 
-        <!-- ── Weekly Chart ───────────────────────────────────────────── -->
-        <div class="chart-section">
-          <div class="chart-header">
-            <h2 class="section-title">Average Weekly Temperature</h2>
-            <div class="chart-location" id="chartLocation">
-              <span id="chartLocationText">—</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="tempChart"></canvas>
-          </div>
+        <!-- VIEW 3: Lifestyle -->
+        <div id="view-lifestyle" class="view-container">
+          <header class="view-header">
+            <h1>Lifestyle Guide</h1>
+          </header>
+          <div class="lifestyle-grid" id="lifestyle-grid"></div>
         </div>
 
-        <!-- ── Profile Views ───────────────────────────────────────────── -->
-        <section class="profile-view active" id="view-me" role="tabpanel">
-          <div class="cards-grid" id="cards-me"></div>
-          <div class="raw-toggle-wrap">
-            <button class="raw-toggle-btn" id="rawToggleBtn">Show Raw Data</button>
-          </div>
-          <pre class="raw-data hidden" id="rawData"></pre>
-        </section>
+        <!-- VIEW 4: Narration -->
+        <div id="view-narration" class="view-container">
+          <header class="view-header">
+            <h1>Weather Briefing</h1>
+            <span id="narration-meta"></span>
+          </header>
 
-        <section class="profile-view" id="view-spouse" role="tabpanel">
-          <div class="cards-grid" id="cards-spouse"></div>
-        </section>
+          <audio id="audio-player-native" controls class="native-audio"></audio>
 
-        <section class="profile-view dad-view" id="view-dad" role="tabpanel">
-          <div class="cards-grid" id="cards-dad"></div>
-        </section>
+          <div class="narration-text" id="narration-text"></div>
+        </div>
 
-        <section class="profile-view kids-view" id="view-kids" role="tabpanel">
-          <div class="kids-content" id="kids-content"></div>
-        </section>
+      </div>
 
-      </div><!-- /main-content -->
+    </main>
 
-    </main><!-- /main-panel -->
-
-    <!-- ── Right Panel ────────────────────────────────────────────────────── -->
+    <!-- ── Right Panel (Dynamic Context) ────────────────────────────────── -->
     <aside class="right-panel">
+      <div class="rp-top">
+        <div id="rp-dynamic"></div>
+        <div class="rp-controls-section">
+          <div id="rp-last-updated" class="rp-last-updated"></div>
+          <p class="rp-label">System Controls</p>
 
-      <div class="rp-location">
-        <div>
-          <div class="rp-city" id="rpCity">—</div>
-          <div class="rp-region" id="rpRegion">—</div>
-        </div>
-        <div class="rp-time" id="rpTime">—</div>
-      </div>
-
-      <div class="rp-main-weather">
-        <div class="rp-weather-icon" id="rpWeatherIcon">⛅</div>
-        <div>
-          <div class="rp-temp" id="rpTemp">—</div>
-          <div class="rp-condition" id="rpCondition">—</div>
-        </div>
-      </div>
-
-      <hr class="rp-divider">
-
-      <div class="rp-section-header">
-        <span class="rp-section-title">Chance of rain</span>
-      </div>
-      <div class="rp-rain-bars" id="rpRainBars">
-        <!-- Populated by JS -->
-      </div>
-
-      <hr class="rp-divider">
-
-      <div class="rp-section-header">
-        <span class="rp-section-title">Sunrise &amp; Sunset</span>
-        <span class="rp-location-tag" id="rpSunLocation">—</span>
-      </div>
-      <div class="rp-sun-cards">
-        <div class="rp-sun-card">
-          <div class="rp-sun-icon">☀️</div>
-          <div>
-            <div class="rp-sun-label">Sunrise</div>
-            <div class="rp-sun-time" id="rpSunrise">—</div>
+          <div class="provider-toggle-group">
+            <label class="provider-option">
+              <input type="radio" name="provider" value="CLAUDE" checked>
+              <span class="prov-label">Claude Sonnet</span>
+            </label>
+            <label class="provider-option">
+              <input type="radio" name="provider" value="GEMINI">
+              <span class="prov-label">Gemini Pro</span>
+            </label>
           </div>
-          <div class="rp-sun-ago" id="rpSunriseAgo"></div>
-        </div>
-        <div class="rp-sun-card">
-          <div class="rp-sun-icon">🌅</div>
-          <div>
-            <div class="rp-sun-label">Sunset</div>
-            <div class="rp-sun-time" id="rpSunset">—</div>
+
+          <div class="rp-actions">
+            <button class="rp-btn" id="refresh-btn" title="Fetch latest data">
+              <span>🔄 Refresh</span>
+            </button>
+            <button class="rp-btn" id="theme-toggle" title="Toggle dark mode">
+              <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+            </button>
           </div>
-          <div class="rp-sun-in" id="rpSunsetIn"></div>
         </div>
       </div>
 
-    </aside><!-- /right-panel -->
+      <!-- System Log -->
+      <div class="rp-log-container">
+        <div class="rp-log-header">
+          <span>System Log</span>
+          <span class="log-clear-btn" onclick="document.getElementById('rp-log-list').innerHTML=''"
+            title="Clear Log">🗑️</span>
+        </div>
+        <div class="rp-log-list" id="rp-log-list"></div>
+      </div>
+    </aside>
+
+    <!-- ── Mobile Drawer Toggle ────────────────────────────────────────── -->
+    <button id="drawer-toggle" class="drawer-toggle-btn" aria-label="Open Info">
+      ℹ️
+    </button>
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
 
   </div><!-- /app-shell -->
 
-  <!-- ── Audio Bar (sticky bottom) ────────────────────────────────────────── -->
-  <div class="audio-bar" id="audioBar">
-    <button class="play-btn" id="playBtn" aria-label="Play broadcast">
-      <span class="play-icon">▶</span>
-      <span class="play-label">Play Broadcast</span>
-    </button>
+  <script src="/static/app.js?v=14"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => { });
+    }
 
-    <div class="audio-progress-wrap">
-      <div class="audio-progress" id="audioProgress"></div>
-    </div>
+    // Dark Mode Toggle
+    (function () {
+      const btn = document.getElementById('dark-mode-btn');
+      const icon = document.getElementById('dark-mode-icon');
+      const label = document.getElementById('dark-mode-label');
+      const saved = localStorage.getItem('darkMode');
+      if (saved === 'true') document.documentElement.classList.add('dark');
 
-    <div class="audio-controls-right">
-      <div class="speed-control">
-        <button class="speed-btn active" data-speed="1.0">1x</button>
-        <button class="speed-btn" data-speed="1.2">1.2x</button>
-        <button class="speed-btn" data-speed="1.4">1.4x</button>
-      </div>
-      <span class="audio-time" id="audioTime">0:00</span>
-    </div>
+      function update() {
+        const isDark = document.documentElement.classList.contains('dark');
+        icon.textContent = isDark ? '☀️' : '🌙';
+        label.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      }
+      update();
 
-    <audio id="audioPlayer" preload="none"></audio>
-  </div>
-
-  <!-- ── Footer ────────────────────────────────────────────────────────────── -->
-  <footer class="site-footer">
-    <span id="generatedAt"></span>
-  </footer>
-
-  <script src="/static/app.js?v=3"></script>
+      btn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        update();
+      });
+    })();
+  </script>
 </body>
 
 </html>

@@ -1,252 +1,339 @@
 """
-slices.py — Extracts per-user profile slices from the full broadcast.
+slices.py — Extracts view-specific data slices from the full broadcast.
 
-Each profile receives only the paragraph subsets and current-condition
-fields relevant to their view. The dashboard JS uses these slices to
-render the correct cards per profile.
-
-Profiles:
-  me      — Full view (all paragraphs)
-  spouse  — Heads-up + commute + meals
-  dad     — Heads-up + outdoor health + current icons (accessibility-first)
-  kids    — Icon + feels-like + wardrobe tip
+Views:
+  current   — Real-time metrics (Big Gauges)
+  overview  — Timeline, Trend Chart, Alerts
+  lifestyle — Wardrobe, Commute, Outdoor, Meals, HVAC
+  narration — Full text script
+  context   — Dynamic Right Panel data (Rain Text, Location)
 """
 
 from __future__ import annotations
+from typing import cast, Optional
 
 
 def build_slices(broadcast: dict) -> dict:
     """
-    Build per-profile data slices from a broadcast record.
+    Build per-view data slices from a broadcast record.
 
     Args:
         broadcast: Dict with at minimum 'paragraphs', 'metadata', 'processed_data'.
 
     Returns:
-        Dict with keys 'me', 'spouse', 'dad', 'kids'.
+        Dict with keys 'current', 'overview', 'lifestyle', 'narration', 'context'.
     """
     paragraphs = broadcast.get("paragraphs", {})
-    metadata = broadcast.get("metadata", {})
     processed = broadcast.get("processed_data", {})
+    summaries = broadcast.get("summaries", {})
 
-    current = processed.get("current", {})
+    current_data = processed.get("current", {})
+    forecast_segs = processed.get("forecast_segments", {})
     climate = processed.get("climate_control", {})
     cardiac = processed.get("cardiac_alert")
-    meal_mood = processed.get("meal_mood", {})
+    menieres = processed.get("menieres_alert")
     commute = processed.get("commute", {})
+    aqi_realtime = processed.get("aqi_realtime", {})
+    aqi_forecast = processed.get("aqi_forecast", {})
+    transitions = processed.get("transitions", [])
+    heads_ups = processed.get("heads_ups", [])
+
+    meta = broadcast.get("metadata", {})
 
     return {
-        "me": _slice_me(paragraphs),
-        "spouse": _slice_spouse(paragraphs, commute),
-        "dad": _slice_dad(paragraphs, current, cardiac),
-        "kids": _slice_kids(current, paragraphs),
+        "current": _slice_current(current_data, aqi_realtime),
+        "overview": _slice_overview(forecast_segs, cardiac, menieres, paragraphs, commute, heads_ups, aqi_forecast, transitions),
+        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries),
+        "narration": _slice_narration(paragraphs, meta),
+        "context": _slice_context(current_data, forecast_segs),
     }
 
 
-# ── Profile slices ────────────────────────────────────────────────────────────
+# ── View Slices ──────────────────────────────────────────────────────────────
 
-def _slice_me(paragraphs: dict) -> dict:
-    """Full view — all paragraphs as ordered cards."""
+def _slice_current(current: dict, aqi_realtime: dict | None = None) -> dict:
+    """Current View: Real-time conditions with 5-level insights."""
+    aqi_realtime = aqi_realtime or {}
     return {
-        "profile": "me",
-        "cards": [
-            {"id": "current", "title": "Now",         "text": paragraphs.get("p1_current", "")},
-            {"id": "commute", "title": "Commute",     "text": paragraphs.get("p2_commute", ""),
-             "omit_if_empty": True},
-            {"id": "health",  "title": "Garden & Dad","text": paragraphs.get("p3_garden_health", "")},
-            {"id": "meals",   "title": "Meals",       "text": paragraphs.get("p4_meals", ""),
-             "omit_if_empty": True},
-            {"id": "climate", "title": "Climate",     "text": paragraphs.get("p5_climate_cardiac", ""),
-             "omit_if_empty": True},
-            {"id": "forecast","title": "Forecast",    "text": paragraphs.get("p6_forecast", "")},
-            {"id": "accuracy","title": "Accuracy",    "text": paragraphs.get("p7_accountability", "")},
-        ],
-        "show_raw_data_toggle": True,
+        "temp": current.get("AT"),
+        "obs_time": current.get("obs_time"),
+        "weather_code": current.get("Wx"),
+        "weather_text": current.get("Wx_text"),
+        "ground_state": current.get("ground_state", "Dry"),
+        "ground_level": current.get("ground_level", 1),
+
+        # 5-Level Metrics
+        "hum": {
+            "val": current.get("RH"),
+            "text": current.get("hum_text", "Normal"),
+            "level": current.get("hum_level", 3)
+        },
+        "wind": {
+            "val": current.get("WDSD"),
+            "text": current.get("wind_text", "Calm"),
+            "level": current.get("wind_level", 1),
+            "dir": current.get("wind_dir_text")
+        },
+        "aqi": {
+            "val": current.get("aqi"),
+            "text": current.get("aqi_status", "Good"),
+            "level": current.get("aqi_level", 1),
+            "pm25": aqi_realtime.get("pm25"),
+            "pm10": aqi_realtime.get("pm10"),
+        },
+        "vis": {
+            "val": current.get("visibility"),
+            "text": current.get("vis_text", "Good"),
+            "level": current.get("vis_level", 1)
+        },
+        "uv": {
+            "val": current.get("UVI"),
+            "text": current.get("uv_text", "Low"),
+            "level": current.get("uv_level", 1)
+        },
+        "pres": {
+            "val": current.get("PRES"),
+            "text": current.get("pres_text", "Normal"),
+            "level": current.get("pres_level", 3)
+        }
     }
 
 
-def _slice_spouse(paragraphs: dict, commute: dict) -> dict:
-    """Spouse view — heads-up + commute + meals."""
+def _slice_overview(
+    segments: dict,
+    cardiac: dict | None,
+    menieres: dict | None,
+    paragraphs: dict,
+    commute: dict | None = None,
+    heads_ups: list | None = None,
+    aqi_forecast: dict | None = None,
+    transitions: list | None = None,
+) -> dict:
+    """Overview View: Timeline, Alerts, AQI Forecast, Transitions."""
+    commute = commute or {}
+    heads_ups = heads_ups or []
+    aqi_forecast = aqi_forecast or {}
+    transitions = transitions or []
+
+    timeline_list = []
+    for name, seg in segments.items():
+        if seg:
+            seg_copy = dict(seg)
+            seg_copy["display_name"] = name
+            timeline_list.append(seg_copy)
+
+    timeline_list.sort(key=lambda x: x["start_time"])
+
+    commute_hazards = (
+        commute.get("morning", {}).get("hazards", []) +
+        commute.get("evening", {}).get("hazards", [])
+    )
+
     return {
-        "profile": "spouse",
-        "cards": [
-            {"id": "alerts",  "title": "Alerts & Wardrobe", "text": _extract_heads_up(paragraphs.get("p1_current", ""))},
-            {"id": "commute", "title": "Commute",            "text": paragraphs.get("p2_commute", "")},
-            {"id": "meals",   "title": "Meals",              "text": paragraphs.get("p4_meals", ""),
-             "omit_if_empty": True},
-        ],
-        "commute_hazards": {
-            "morning": commute.get("morning", {}).get("hazards", []),
-            "evening": commute.get("evening", {}).get("hazards", []),
+        "timeline": timeline_list,
+        "aqi_forecast": aqi_forecast,
+        "transitions": transitions,
+        "alerts": {
+            "cardiac": cardiac,
+            "menieres": menieres,
+            "heads_up": paragraphs.get("heads_up") or paragraphs.get("p1_summary"),
+            "heads_ups": heads_ups,
+            "commute_hazards": commute_hazards,
         },
     }
 
 
-def _slice_dad(paragraphs: dict, current: dict, cardiac_alert: dict | None) -> dict:
-    """
-    Dad view — accessibility-first, large text.
-    Cardiac warning is surfaced as a top-level flag for CSS styling.
-    """
-    has_cardiac_warning = cardiac_alert is not None and cardiac_alert.get("triggered", False)
-
-    cards = []
-
-    # Heads-up + cardiac warning first
-    heads_up_text = _extract_heads_up(paragraphs.get("p1_current", ""))
-    climate_text = paragraphs.get("p5_climate_cardiac", "")
-    alert_text = (heads_up_text + "\n\n" + climate_text).strip() if climate_text else heads_up_text
-
-    cards.append({
-        "id": "alerts",
-        "title": "Today's Alerts",
-        "text": alert_text,
-        "cardiac_warning": has_cardiac_warning,
-    })
-
-    # Outdoor activity recommendation
-    cards.append({
-        "id": "outdoor",
-        "title": "Going Outside?",
-        "text": paragraphs.get("p3_garden_health", ""),
-    })
-
-    # Current conditions as simple summary
-    cards.append({
-        "id": "conditions",
-        "title": "Right Now",
-        "text": _simple_conditions(current),
-        "icon": _weather_icon(current.get("cloud_cover", "")),
-        "aqi": current.get("aqi"),
-        "aqi_status": current.get("aqi_status"),
-    })
-
-    return {
-        "profile": "dad",
-        "cards": cards,
-        "accessibility": {
-            "min_font_size": "24px",
-            "high_contrast": True,
-            "large_tap_targets": True,
-        },
-        "cardiac_warning": has_cardiac_warning,
-    }
-
-
-def _slice_kids(current: dict, paragraphs: dict) -> dict:
-    """Kids view — cartoon icon, feels-like, wardrobe tip, fun fact."""
+def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None) -> dict:
+    """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
+    summaries = summaries or {}
+    
+    # 1. Wardrobe & Rain Gear
     at = current.get("AT")
-    cloud = current.get("cloud_cover", "Unknown")
     rain_recent = (current.get("RAIN") or 0) > 0
+    
+    wardrobe_text = summaries.get("wardrobe")
+    if not wardrobe_text:
+        wardrobe_text = _wardrobe_tip(at, rain_recent)
+        
+    rain_gear_text = summaries.get("rain_gear")
+    if not rain_gear_text:
+        rain_gear_text = "No precipitation gear expected." if not rain_recent else "Carry an umbrella."
 
-    feels_like = _kids_feels_like(at, cloud, rain_recent)
-    wardrobe = _kids_wardrobe(at, rain_recent)
-    fun_fact = _kids_fun_fact(current)
-    icon = _weather_icon(cloud, rain=rain_recent)
+    # 2. Commute (v6: p2_garden_commute contains garden + commute)
+    commute_text = summaries.get("commute") or paragraphs.get("p2_garden_commute")
+    if not commute_text:
+        am = commute.get("morning", {}).get("hazards", [])
+        pm = commute.get("evening", {}).get("hazards", [])
+        if am:
+            commute_text = f"Morning alert: {am[0]}."
+        elif pm:
+            commute_text = f"Evening alert: {pm[0]}."
+        else:
+            commute_text = "Traffic conditions look normal."
+
+    # 3. HVAC (v6: p4_meal_climate contains meals + climate control)
+    hvac_text = summaries.get("hvac") or paragraphs.get("p4_meal_climate")
+    if not hvac_text:
+        hvac_mode = climate.get("mode", "Off")
+        rh = current.get("RH", 0)
+        aqi = current.get("aqi", 0)
+        hvac_parts = [f"System: {hvac_mode}."]
+        if int(rh) > 70:
+            hvac_parts.append("Dehumidifier recommended.")
+        elif int(aqi) > 100:
+            hvac_parts.append("Air purifier recommended.")
+        hvac_text = " ".join(hvac_parts)
+
+    # 4. Meals (v6: p4_meal_climate)
+    meals_text = summaries.get("meals") or paragraphs.get("p4_meal_climate")
+    if not meals_text:
+        meal_suggestions = processed.get("meal_mood", {}).get("suggestions", [])
+        if meal_suggestions:
+            meals_text = f"Suggested: {', '.join(meal_suggestions[:2])}."
+        else:
+            meals_text = "No specific suggestions."
+
+    # 5. Garden (v6: first sentence of p2_garden_commute) & Outdoor (v6: p3_outdoor)
+    garden_text = summaries.get("garden")
+    outdoor_text = summaries.get("outdoor") or paragraphs.get("p3_outdoor")
+
+    if not garden_text:
+        p2 = paragraphs.get("p2_garden_commute", "")
+        if p2:
+            parts = p2.split(". ", 1)
+            garden_text = parts[0] + "."
+        else:
+            garden_text = "Check soil moisture."
+
+    if not outdoor_text:
+        activity = processed.get("location_rec", {}).get("activity_suggested")
+        outdoor_text = f"Great day for {activity}." if activity else "Good day for a walk."
+
+    # Outdoor location structured data (first top location from processor)
+    top_locations = processed.get("location_rec", {}).get("top_locations", [])
+    location_obj = top_locations[0] if top_locations else None
+
+    # Meal mood category
+    meal_mood = processed.get("meal_mood", {}).get("mood")
 
     return {
-        "profile": "kids",
-        "icon": icon,
-        "feels_like": feels_like,
-        "wardrobe": wardrobe,
-        "fun_fact": fun_fact,
-        "icon_label": cloud,
+        "wardrobe": {
+            "text": wardrobe_text,
+            "feels_like": at,
+        },
+        "rain_gear": {
+            "text": rain_gear_text,
+        },
+        "commute": {
+            "text": commute_text,
+            "hazards": commute.get("morning", {}).get("hazards", []) + commute.get("evening", {}).get("hazards", [])
+        },
+        "hvac": {
+            "text": hvac_text,
+            "mode": climate.get("mode", "Off")
+        },
+        "meals": {
+            "text": meals_text,
+            "mood": meal_mood,
+        },
+        "garden": {
+            "text": garden_text,
+        },
+        "outdoor": {
+            "text": outdoor_text,
+            "location": location_obj,
+        }
     }
 
 
-# ── Helper functions ──────────────────────────────────────────────────────────
+def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
+    """Narration View: Full text and metadata."""
+    
+    # Determined source/model from metadata (saved in main.py)
+    source = metadata.get("narration_source", "template").title() # "Gemini", "Claude", "Template"
+    model = metadata.get("narration_model", "Unknown")
+
+    # Fallback legacy logic if missing
+    if source == "Template" and "gemini" in metadata.get("llm_model", "").lower():
+        source = "Gemini"
+
+    return {
+        "paragraphs": [
+            {"title": "Current & Outlook",    "text": paragraphs.get("p1_conditions", "")},
+            {"title": "Garden & Commute",     "text": paragraphs.get("p2_garden_commute", "")},
+            {"title": "Outdoor with Dad",     "text": paragraphs.get("p3_outdoor", "")},
+            {"title": "Meals & Climate",      "text": paragraphs.get("p4_meal_climate", "")},
+            {"title": "Forecast",             "text": paragraphs.get("p5_forecast", "")},
+            {"title": "Yesterday's Accuracy", "text": paragraphs.get("p6_accuracy", "")},
+        ],
+        "meta": {
+            "model": model,
+            "source": source,
+        }
+    }
+
+
+def _slice_context(current: dict, segments: dict) -> dict:
+    """Right Panel Context: Location, Time, Rain Text."""
+    
+    # Generate simple rain text forecast
+    rain_text = "No precipitation expected."
+    
+    # Check probability in segments
+    pops = []
+    for k in ["Morning", "Afternoon", "Evening", "Night"]:
+        seg = segments.get(k)
+        if seg:
+            pop = seg.get("PoP6h") or 0
+            pops.append((k, pop))
+            
+    # Simple logic: First segment > 30% gets mentioned
+    for period, pop in pops:
+        if pop >= 60:
+            rain_text = f"Rain likely ({pop}%) this {period.lower()}."
+            break
+        elif pop >= 30:
+            rain_text = f"Chance of rain ({pop}%) this {period.lower()}."
+            break
+            
+    return {
+        "location": current.get("station_name", "Unknown"),
+        "rain_forecast_text": rain_text,
+    }
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _extract_heads_up(p1_text: str) -> str:
-    """
-    Extract just the heads-up portion of Paragraph 1.
-    Since P1 is plain text, we take the first 2 sentences as the heads-up.
-    """
+    """Extract first few sentences of P1."""
     if not p1_text:
         return ""
-    # Split on sentence boundaries (。.!?)
     import re
     sentences = re.split(r"(?<=[。.!?！？])\s*", p1_text.strip())
-    return " ".join(sentences[:3]).strip()
+    # Slicing is causing lint issues, use explicit list slicing and joining
+    res_sentences = []
+    for i, s in enumerate(sentences):
+        if i < 2:
+            res_sentences.append(s)
+    return " ".join(res_sentences).strip()
 
 
-def _simple_conditions(current: dict) -> str:
-    """Generate a one-line conditions description for the Dad view."""
-    at = current.get("AT")
-    cloud = current.get("cloud_cover", "")
-    wind = current.get("beaufort_desc", "")
-    aqi = current.get("aqi")
-
-    parts = []
-    if at is not None:
-        parts.append(f"Feels like {at:.0f}°C")
-    if cloud:
-        parts.append(cloud)
-    if wind and wind != "Unknown":
-        parts.append(wind)
-    if aqi is not None:
-        parts.append(f"AQI {aqi}")
-
-    return " · ".join(parts)
-
-
-def _weather_icon(cloud_cover: str, rain: bool = False) -> str:
-    """Map cloud cover classification to an icon name."""
-    if rain:
-        return "rainy"
-    mapping = {
-        "Sunny/Clear": "sunny",
-        "Mixed Clouds": "partly-cloudy",
-        "Overcast": "cloudy",
-    }
-    return mapping.get(cloud_cover, "cloudy")
-
-
-def _kids_feels_like(at: float | None, cloud: str, rain: bool) -> str:
-    """Generate a kid-friendly feels-like description."""
-    if at is None:
-        return "Today's weather is a mystery! 🌈"
-    if rain:
-        return f"It's rainy and feels like {at:.0f}°C ☔"
-    if at >= 30:
-        return f"Super hot! It feels like {at:.0f}°C 🌞"
-    if at >= 24:
-        return f"Nice and warm — feels like {at:.0f}°C 😊"
-    if at >= 18:
-        return f"A little cool — feels like {at:.0f}°C 🍃"
-    if at >= 12:
-        return f"Chilly! It feels like {at:.0f}°C 🧥"
-    return f"Very cold! Feels like {at:.0f}°C 🥶"
-
-
-def _kids_wardrobe(at: float | None, rain: bool) -> str:
-    """Generate a kid-friendly wardrobe tip."""
+def _wardrobe_tip(at: float | None, rain: bool) -> str:
+    """Generate simple wardrobe advice."""
     parts = []
     if rain:
-        parts.append("Rain jacket and boots! ☔")
+        parts.append("Rain gear needed ☔")
+    
     if at is None:
-        return "Check with a grown-up about what to wear!"
+        return "Check forecast."
+        
     if at < 15:
-        parts.append("Big warm coat 🧥 + hat + scarf")
-    elif at < 22:
-        parts.append("Light jacket or sweater 👕")
-    elif at < 28:
-        parts.append("T-shirt and comfortable pants 😎")
+        parts.append("Heavy coat & layers 🧥")
+    elif at < 20:
+        parts.append("Light jacket or sweater 🧥")
+    elif at < 26:
+        parts.append("Comfortable / T-shirt 👕")
     else:
-        parts.append("Cool summer clothes 🌞 — and drink water!")
-    return " ".join(parts)
-
-
-def _kids_fun_fact(current: dict) -> str:
-    """Generate a simple weather fun fact based on current conditions."""
-    aqi = current.get("aqi") or 0
-    wind = current.get("beaufort_desc", "Calm")
-    cloud = current.get("cloud_cover", "")
-
-    if aqi > 100:
-        return "The air has lots of tiny particles today — it's good to stay indoors! 🏠"
-    if "Gentle" in wind or "Moderate" in wind or "Fresh" in wind:
-        return "The wind is strong enough to fly a kite today! 🪁"
-    if cloud == "Sunny/Clear":
-        return "The sun is shining bright — don't forget sunscreen! ☀️"
-    if cloud == "Overcast":
-        return "Clouds are like giant fluffy blankets in the sky! ☁️"
-    return "Every day has different weather — that's what makes it fun! 🌤️"
+        parts.append("Light clothing & sunscreen 🌞")
+        
+    return " + ".join(parts)
