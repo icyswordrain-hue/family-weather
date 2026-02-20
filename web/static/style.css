@@ -410,15 +410,9 @@ button {
 
 .gauges-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 1rem;
-}
-
-@media (max-width: 780px) {
-  .gauges-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .gauge-card {
@@ -463,6 +457,11 @@ button {
 }
 
 /* Level Colors (5-Level Scale) */
+.lvl-0 {
+  color: var(--muted);
+}
+
+/* Data unavailable */
 .lvl-1 {
   color: #00b894;
 }
@@ -489,14 +488,12 @@ button {
 
 /* Extreme / Dangerous */
 
-/* Specialized Dark Mode overrides for levels if needed */
-[data-theme="dark"] .lvl-1 {
-  color: #55efc4;
-}
-
-[data-theme="dark"] .lvl-5 {
-  color: #ff7675;
-}
+/* Dark mode level color overrides */
+html.dark .lvl-1 { color: #00cec9; }
+html.dark .lvl-2 { color: #55efc4; }
+html.dark .lvl-3 { color: #fdcb6e; }
+html.dark .lvl-4 { color: #e17055; }
+html.dark .lvl-5 { color: #ff7675; }
 
 /* AQI Colors */
 .aqi-good {
@@ -522,6 +519,14 @@ button {
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .timeline-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .timeline-grid { grid-template-columns: 1fr; }
 }
 
 .time-card {
@@ -590,6 +595,179 @@ button {
 }
 
 /* ... existing code ... */
+
+/* ── AQI Forecast block (#10) ────────────────────────────────────────────── */
+.aqi-forecast-block {
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.aqi-fc-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+.aqi-fc-body { flex: 1; }
+
+.aqi-fc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.aqi-fc-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.aqi-fc-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.aqi-fc-status {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.aqi-fc-content {
+  font-size: 0.87rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ── Timeline transition badges (#11) ────────────────────────────────────── */
+.time-card { position: relative; }
+
+.tc-transition {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(255, 200, 0, 0.15);
+  color: #b8860b;
+  border: 1px solid rgba(255, 200, 0, 0.3);
+}
+
+html.dark .tc-transition {
+  background: rgba(255, 200, 0, 0.1);
+  color: #f9ca24;
+  border-color: rgba(255, 200, 0, 0.25);
+}
+
+/* ── Kids audio toggle (#12) ─────────────────────────────────────────────── */
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.audio-controls .native-audio {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+
+.audio-toggle-btn {
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.audio-toggle-btn:hover { background: var(--hover); }
+.audio-toggle-btn.active {
+  background: rgba(77,124,254,0.12);
+  border-color: rgba(77,124,254,0.4);
+  color: #4d7cfe;
+}
+
+html.dark .audio-toggle-btn.active {
+  background: rgba(77,124,254,0.18);
+  color: #7da4ff;
+}
+
+/* ── Outdoor venue card (#13) ────────────────────────────────────────────── */
+.venue-block {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.venue-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.venue-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0.15rem 0 0.4rem;
+}
+
+.venue-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.venue-badge {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+.venue-badge.parkinsons {
+  background: rgba(77,124,254,0.12);
+  color: #4d7cfe;
+  border: 1px solid rgba(77,124,254,0.3);
+}
+
+html.dark .venue-badge.parkinsons {
+  background: rgba(77,124,254,0.18);
+  color: #7da4ff;
+}
+
+.venue-notes {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 0.4rem;
+}
+
+.venue-map-link {
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.venue-map-link:hover { text-decoration: underline; }
 
 /* ── View 3: Lifestyle ───────────────────────────────────────────────────── */
 .lifestyle-grid {
@@ -696,15 +874,6 @@ html.dark .ls-badge.mood-badge      { background: rgba(77,124,254,0.15);    colo
   line-height: 1.7;
 }
 
-/* ── Right Panel Dynamic Context ─────────────────────────────────────────── */
-#rp-dynamic:empty { display: none; }
-
-.context-bubble-inner {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
 
 /* ── View 4: Narration ───────────────────────────────────────────────────── */
 .narration-text {
@@ -1286,12 +1455,6 @@ html.dark .error-screen {
   color: var(--text);
 }
 
-/* Audio player dark */
-html.dark audio {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-/* Heads-up/alert cards in dark mode */
 /* Audio player dark */
 html.dark audio {
   filter: invert(1) hue-rotate(180deg);

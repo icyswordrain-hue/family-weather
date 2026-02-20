@@ -17,22 +17,44 @@ Rules applied:
 from __future__ import annotations
 
 import logging
+import random
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Any, cast
+
+from config import (
+    MEAL_FALLBACK_DISH,
+    AQI_ALERT_THRESHOLD,
+    CLIMATE_TEMP_HOT,
+    CLIMATE_TEMP_WARM_UPPER,
+    CLIMATE_TEMP_WARM_LOWER,
+    CLIMATE_TEMP_COLD_UPPER,
+    CLIMATE_TEMP_COLD_LOWER,
+    CLIMATE_TEMP_FREEZE,
+    CLIMATE_RH_HOT,
+    CLIMATE_RH_WARM,
+    CLIMATE_RH_AC_TRIGGER,
+)
 
 logger = logging.getLogger(__name__)
 
 # ── Time segment boundaries (local hour, 24h) ────────────────────────────────
 SEGMENTS = {
-    "Night":     (0, 6),
+    "Overnight": (0, 6),
     "Morning":   (6, 12),
     "Afternoon": (12, 18),
     "Evening":   (18, 24),
 }
 
-SEGMENT_ORDER = ["Night", "Morning", "Afternoon", "Evening"]
+SEGMENT_ORDER = ["Morning", "Afternoon", "Evening", "Overnight"]
 
 # ── Beaufort scale — wind speed (m/s) upper bounds ───────────────────────────
+BEAUFORT_SCALE_5 = [
+    (1.5,  "Calm", 1),
+    (5.4,  "Breezy", 2),
+    (10.7, "Windy", 3),
+    (17.1, "Strong", 4),
+    (float("inf"), "Stormy", 5),
+]
 BEAUFORT_SCALE = [
     (0.3,  "Calm"),
     (1.5,  "Light air"),
@@ -49,19 +71,53 @@ BEAUFORT_SCALE = [
     (float("inf"), "Hurricane force"),
 ]
 
-# ── Precipitation text scale ──────────────────────────────────────────────────
-PRECIP_SCALE = [
-    (20,  "Very Unlikely"),
-    (40,  "Unlikely"),
-    (60,  "Moderate Chance"),
-    (80,  "Likely"),
-    (100, "Very Likely"),
+# ── 5-Level Scales ────────────────────────────────────────────────────────────
+
+UV_SCALE = [
+    (2,  "Low", 1),
+    (5,  "Moderate", 2),
+    (7,  "High", 3),
+    (10, "Very High", 4),
+    (float("inf"), "Extreme", 5),
+]
+
+HUM_SCALE_5 = [
+    (20,  "Dry", 1),
+    (40,  "Comfortable", 2),
+    (60,  "Normal", 3),
+    (80,  "Humid", 4),
+    (float("inf"), "Soggy", 5),
+]
+
+PRES_SCALE_5 = [
+    (1000, "Low", 5),
+    (1008, "Unsettled", 4),
+    (1018, "Normal", 3),
+    (1025, "Stable", 2),
+    (float("inf"), "High", 1),
+]
+
+VIS_SCALE_5 = [
+    (1.0,  "Very Poor", 5),
+    (2.0,  "Poor", 4),
+    (5.0,  "Fair", 3),
+    (10.0, "Good", 2),
+    (float("inf"), "Excellent", 1),
+]
+
+PRECIP_SCALE_5 = [
+    (0,   "Dry", 1),
+    (20,  "Very Unlikely", 1),
+    (40,  "Unlikely", 2),
+    (60,  "Possible", 3),
+    (80,  "Likely", 4),
+    (100, "Very Likely", 5),
 ]
 
 
-# ── Outdoor location pools (within 30km of 24.9955 N, 121.4279 E) ─────────────
+# ── Outdoor location pools (within 50km of 24.9955 N, 121.4279 E) ─────────────
 # Each entry: {name, activity, surface, parkinsons_suitability (good/ok/avoid), lat, lng, notes}
-# Grouped by weather mood: Nice / Warm / Cloudy & Breezy / Rainy or AQI-bad
+# Grouped by weather mood: Nice / Warm / Cloudy & Breezy / Stay In
 OUTDOOR_LOCATIONS: dict[str, list[dict]] = {
     "Nice": [
         {"name": "Dahan River Bikeway (Yingge section)", "activity": "cycling / walking",
@@ -107,7 +163,7 @@ OUTDOOR_LOCATIONS: dict[str, list[dict]] = {
          "notes": "Historic garden, very flat, shaded by large banyan trees"},
         {"name": "Tamsui Old Street & Waterfront", "activity": "walking / boat",
          "surface": "paved", "parkinsons": "good", "lat": 25.170, "lng": 121.432,
-         "notes": "Worth the 30km drive — waterfront promenade, sunset views"},
+         "notes": "Worth the 50km drive — waterfront promenade, sunset views"},
     ],
     "Cloudy & Breezy": [
         {"name": "Banqiao Station Underground Mall Walk", "activity": "indoor walking",
@@ -168,7 +224,7 @@ def process(
     history = history or []
 
     # ── 1. Enrich current conditions ─────────────────────────────────────────
-    print("MB: Step 1 - Enrich current", flush=True)
+    logger.debug("Step 1 - Enrich current")
     current_processed = _process_current(current, aqi["realtime"])
 
     # ── 2. Choose primary forecast location (Sanxia first, fallback Banqiao) ─
@@ -176,51 +232,56 @@ def process(
     banqiao_slots = forecasts.get("板橋區") or []
 
     # ── 3. Segment the forecast ───────────────────────────────────────────────
-    print("MB: Step 3 - Segment forecast calling...", flush=True)
+    logger.debug("Step 3 - Segment forecast calling...")
     segmented = _segment_forecast(primary_slots)
-    print(f"MB: Step 3 - Segmented done. Keys: {list(segmented.keys())}", flush=True)
+    logger.debug("Step 3 - Segmented done. Keys: %s", list(segmented.keys()))
 
     # ── 4. Enrich each segment ────────────────────────────────────────────────
-    print("MB: Step 4 - Starting loop", flush=True)
+    logger.debug("Step 4 - Enriching segments")
     for seg_name, seg in segmented.items():
-        print(f"MB: Step 4 - Processing {seg_name}", flush=True)
         if seg:
-            seg["beaufort_desc"] = wind_ms_to_beaufort(seg.get("WS"))
-            seg["precip_text"] = pop_to_text(seg.get("PoP6h"))
+            # Compute proper feels-like AT from raw AT + RH + WS
+            raw_at = seg.get("AT")
+            rh = seg.get("RH")
+            ws = seg.get("WS")
+            feels_like = _calculate_apparent_temp(raw_at, rh, ws)
+            if feels_like is not None:
+                seg["AT"] = feels_like
+            
+            # 5-Level Metrics
+            seg["wind_text"], seg["wind_level"] = _val_to_scale(ws, BEAUFORT_SCALE_5)
+            seg["wind_dir_text"] = degrees_to_cardinal(seg.get("WD"))
+            
+            seg["precip_text"], seg["precip_level"] = _val_to_scale(seg.get("PoP6h"), PRECIP_SCALE_5)
             seg["cloud_cover"] = wx_to_cloud_cover(seg.get("Wx"))
-    print("MB: Step 4 - Loop done", flush=True)
+            
+            # Add placeholders for text segments if needed
+            seg["beaufort_desc"] = seg["wind_text"] 
 
     # ── 5. Low Deviation Detection ────────────────────────────────────────────
-    print("MB: Step 5 - Transitions", flush=True)
+    logger.debug("Step 5 - Transitions")
     transitions = _detect_transitions(segmented, aqi)
 
     # ── 6. Commute windows ────────────────────────────────────────────────────
-    print("MB: Step 6 - Commute", flush=True)
-    morning_commute = _commute_window(primary_slots, 7, 8.5)
-    evening_commute = _commute_window(primary_slots, 17, 18.5)
+    logger.debug("Step 6 - Commute")
+    morning_commute = _commute_window(primary_slots, 7, 8.5, current)
+    evening_commute = _commute_window(primary_slots, 17, 18.5, current)
 
     # ── 7. Meal mood ─────────────────────────────────────────────────────────
-    print("MB: Step 7 - Meal mood", flush=True)
+    logger.debug("Step 7 - Meal mood")
     meal_mood = _classify_meal_mood(segmented)
     recent_meals = _extract_recent_meals(history, days=3)
 
     # Filter meal suggestions to avoid recent repeats
     filtered_meals = [s for s in meal_mood.get("all_suggestions", []) if not any(r in s for r in recent_meals)]
     
-    # User Request: One meal per day (randomly Lunch or Dinner)
-    import random
-    if filtered_meals:
-        chosen_meal = random.choice(filtered_meals)
-        meal_label = random.choice(["Lunch", "Dinner"])
-        # Format as "Lunch: Beef Noodle Soup"
-        meal_mood["top_suggestions"] = [f"{meal_label}: {chosen_meal}"]
-    else:
-        # Fallback if all filtered out
-        fallback = random.choice(meal_mood.get("all_suggestions", ["Sandwich"]))
-        meal_mood["top_suggestions"] = [f"Meal: {fallback}"]
+    # Spec: Pick ONE dish for the day
+    pool = filtered_meals if filtered_meals else meal_mood.get("all_suggestions", [MEAL_FALLBACK_DISH])
+    dish = random.choice(pool) if pool else MEAL_FALLBACK_DISH
+    meal_mood["top_suggestions"] = [dish]
 
     # ── 7b. Outdoor location recommendations ─────────────────────────────────
-    print("MB: Step 7b - Outdoor locations", flush=True)
+    logger.debug("Step 7b - Outdoor locations")
     location_rec = _classify_outdoor_mood(segmented, aqi)
     recent_locations = _extract_recent_locations(history, days=3)
 
@@ -240,15 +301,16 @@ def process(
     raw_aqi_forecast = aqi.get("forecast", {})
     aqi_forecast = {
         "area": raw_aqi_forecast.get("area"),
-        "aqi": raw_aqi_forecast.get("aqi_range"), # Normalize key
+        "aqi": raw_aqi_forecast.get("aqi"),
         "status": raw_aqi_forecast.get("status"),
         "forecast_date": raw_aqi_forecast.get("forecast_date"),
         "content": raw_aqi_forecast.get("content"),
     }
 
     # ── 10. Heads-up priority system ─────────────────────────────────────────
+    menieres_alert = _detect_menieres_alert(current_processed, history, segmented)
     heads_ups = _compute_heads_ups(
-        segmented, morning_commute, evening_commute, aqi, cardiac_alert
+        segmented, morning_commute, evening_commute, aqi, cardiac_alert, menieres_alert
     )
 
     return {
@@ -266,6 +328,7 @@ def process(
         "recent_locations": recent_locations,
         "climate_control": climate_recs,
         "cardiac_alert": cardiac_alert,
+        "menieres_alert": menieres_alert,
         "aqi_realtime": aqi["realtime"],
         "aqi_forecast": aqi_forecast,
     }
@@ -279,53 +342,167 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     """Enrich raw current-condition dict with derived fields."""
     result = dict(current)
     
-    # Calculate more accurate AT (Feels-like)
-    ta = current.get("AT") # In fetch_cwa, AirTemp is mapped to AT
+    # 1. Temperature & Feels-like
+    ta = current.get("AT")
     rh = current.get("RH")
     ws = current.get("WDSD")
     calculated_at = _calculate_apparent_temp(ta, rh, ws)
     if calculated_at is not None:
         result["AT"] = calculated_at
 
-    result["beaufort_desc"] = wind_ms_to_beaufort(current.get("WDSD"))
+    # 2. Main Conditions & Icons
+    wx_code = current.get("Wx")
+    wx_source_text = current.get("WxText")
+    result["Wx_text"] = wx_source_text or wx_to_cloud_cover(wx_code)
+    
+    # 3. 5-Level Metrics
+    # UV
+    uv_val = current.get("UVI")
+    uv_txt, uv_lvl = _val_to_scale(uv_val, UV_SCALE)
+    result["uv_text"] = uv_txt
+    result["uv_level"] = uv_lvl
+    
+    # Humidity
+    hum_val = current.get("RH")
+    hum_txt, hum_lvl = _val_to_scale(hum_val, HUM_SCALE_5)
+    result["hum_text"] = hum_txt
+    result["hum_level"] = hum_lvl
+    
+    # Pressure
+    pres_val = current.get("PRES")
+    pres_txt, pres_lvl = _val_to_scale(pres_val, PRES_SCALE_5)
+    result["pres_text"] = pres_txt
+    result["pres_level"] = pres_lvl
+    
+    # Wind
+    wind_ms = current.get("WDSD")
+    result["wind_text"] = wind_ms_to_beaufort(wind_ms)
+    result["wind_level"] = _wind_to_level(wind_ms)
     result["wind_dir_text"] = degrees_to_cardinal(current.get("WDIR"))
-    result["cloud_cover"] = wx_to_cloud_cover(current.get("Wx"))
-    result["aqi"] = aqi_realtime.get("aqi")
+
+    # AQI
+    aqi_val = aqi_realtime.get("aqi")
+    result["aqi"] = aqi_val
     result["aqi_status"] = translate_aqi_status(aqi_realtime.get("status"))
-    result["visibility"] = current.get("visibility")
+    result["aqi_level"] = _aqi_to_level(aqi_val)
+    
+    # Visibility
+    vis_val = current.get("visibility")
+    vis_txt, vis_lvl = _val_to_scale(vis_val, VIS_SCALE_5)
+    result["vis_text"] = vis_txt
+    result["vis_level"] = vis_lvl
+    
+    # Ground State
+    rain_val = current.get("RAIN") or 0.0
+    if rain_val > 0 or (wx_code is not None and wx_code >= 10):
+        result["ground_state"] = "Wet"
+        result["ground_level"] = 5
+    else:
+        result["ground_state"] = "Dry"
+        result["ground_level"] = 1
+        
     return result
+
+# ... (rest of the file helpers) ...
+
+def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
+    """Helper to map a numeric value to a (text, level) tuple based on a scale."""
+    if val is None:
+        return "Unknown", 0
+    for threshold, label, level in scale:
+        if val <= threshold:
+            return label, level
+    return "Extreme", 5
+
+def _wind_to_level(ms: float | None) -> int:
+    """Map wind speed (m/s) to 1-5 level."""
+    if ms is None: return 0
+    if ms <= 1.5: return 1  # Calm/Light
+    if ms <= 5.4: return 2  # Gentle
+    if ms <= 10.7: return 3 # Moderate/Fresh
+    if ms <= 17.1: return 4 # Strong/Gale
+    return 5               # Storm
+
+def _aqi_to_level(aqi: int | None) -> int:
+    """Map AQI to 1-5 level."""
+    if aqi is None: return 0
+    if aqi <= 50: return 1
+    if aqi <= 100: return 2
+    if aqi <= 150: return 3
+    if aqi <= 200: return 4
+    return 5
 
 
 def _segment_forecast(slots: list[dict]) -> dict[str, Optional[dict]]:
     """
-    Assign each 6-hour forecast slot to a named time segment.
-    When multiple slots fall in the same segment, average numeric fields.
+    Assign each forecast slot to a named time segment.
+    Handles 6h slots and 12h slots (e.g. 18-06) that cover multiple segments.
     """
-    buckets: dict[str, list[dict[str, Any]]] = {s: [] for s in SEGMENT_ORDER}
+    if not slots:
+        return {s: None for s in SEGMENT_ORDER}
 
-    for slot in slots:
-        try:
-            dt = _parse_dt(slot["start_time"])
-        except Exception:
-            continue
-        hour = dt.hour
-        for seg_name, (lo, hi) in SEGMENTS.items():
-            if lo <= hour < hi:
-                # pyre-ignore[16]
-                buckets[seg_name].append(slot)
-                break
+    # Sort slots by start time
+    slots = sorted(slots, key=lambda x: x["start_time"])
+    found: dict[str, Optional[dict]] = {s: None for s in SEGMENT_ORDER}
+    now_dt = datetime.now()
 
-    segmented: dict[str, Optional[dict]] = {}
-    for seg_name in SEGMENT_ORDER:
-        seg_slots = buckets[seg_name]
-        if not seg_slots:
-            segmented[seg_name] = None
-        elif len(seg_slots) == 1:
-            segmented[seg_name] = dict(seg_slots[0])
+    # 1. Determine starting segment based on current time
+    current_hour = now_dt.hour
+    start_idx = 0
+    if 6 <= current_hour < 12:
+        start_idx = 0 # Morning
+    elif 12 <= current_hour < 18:
+        start_idx = 1 # Afternoon
+    elif 18 <= current_hour < 24:
+        start_idx = 2 # Evening
+    else:
+        start_idx = 3 # Overnight
+
+    # 2. Build target window sequence (next 4 segments)
+    target_sequence = []
+    current_seg_idx = start_idx
+    target_day = now_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    for i in range(4):
+        idx = int((current_seg_idx + i) % 4)
+        seg_name = SEGMENT_ORDER[idx]
+        lo, hi = SEGMENTS[seg_name]
+        
+        actual_day = target_day
+        if i > 0:
+            prev_lo, _ = SEGMENTS[SEGMENT_ORDER[int((current_seg_idx + i - 1) % 4)]]
+            if lo < prev_lo:
+                target_day += timedelta(days=1)
+                actual_day = target_day
         else:
-            segmented[seg_name] = _average_slots(seg_slots)
+            if current_hour >= hi and hi <= 6:
+                target_day += timedelta(days=1)
+                actual_day = target_day
+        
+        target_sequence.append((seg_name, actual_day, int(lo), int(hi)))
 
-    return segmented
+    # 3. Fill the found dict using target windows
+    for seg_name, day, lo, hi in target_sequence:
+        # Search for a slot that covers this day/hour window
+        for slot in slots:
+            try:
+                s_dt = _parse_dt(slot["start_time"]).replace(tzinfo=None)
+                e_dt = _parse_dt(slot["end_time"]).replace(tzinfo=None)
+                
+                # Normalize target start/end for comparison
+                t_start = day + timedelta(hours=lo)
+                t_end = day + timedelta(hours=hi)
+                
+                # Midpoint check
+                t_mid = t_start + (t_end - t_start) / 2
+                
+                if s_dt <= t_mid < e_dt:
+                    found[seg_name] = dict(slot)
+                    break
+            except Exception:
+                continue
+
+    return cast(dict[str, Optional[dict]], found)
 
 
 def _average_slots(slots: list[dict]) -> dict:
@@ -428,9 +605,9 @@ def _detect_transitions(
                 "to": b_cc,
             })
 
-        # AQI within 40 points (compare segment forecast AQI if available)
-        # Use realtime AQI as baseline; future: per-segment AQI if available
-        # For now, this check only fires if aqi_forecast differs significantly
+        # AQI within 40 points — per-segment AQI not available from API,
+        # so this threshold cannot be checked between adjacent segments.
+        logger.debug("AQI transition check skipped: per-segment AQI data unavailable")
 
         if breaches:
             transitions.append({
@@ -450,10 +627,12 @@ def _detect_transitions(
     return transitions
 
 
-def _commute_window(slots: list[dict], start_h: float, end_h: float) -> dict:
+def _commute_window(slots: list[dict], start_h: float, end_h: float,
+                    current: dict | None = None) -> dict:
     """
     Interpolate or extract forecast data for a commute window.
     start_h and end_h are decimal hours (e.g. 7.0, 8.5).
+    current: optional current conditions dict (for visibility data).
     """
     relevant = []
     for slot in slots:
@@ -470,16 +649,28 @@ def _commute_window(slots: list[dict], start_h: float, end_h: float) -> dict:
         return {}
 
     avg = _average_slots(relevant)
+    # Compute proper feels-like AT
+    feels_like = _calculate_apparent_temp(avg.get("AT"), avg.get("RH"), avg.get("WS"))
+    if feels_like is not None:
+        avg["AT"] = feels_like
     avg["beaufort_desc"] = wind_ms_to_beaufort(avg.get("WS"))
+    avg["wind_dir_text"] = degrees_to_cardinal(avg.get("WD"))
     avg["precip_text"] = pop_to_text(avg.get("PoP6h"))
     avg["cloud_cover"] = wx_to_cloud_cover(avg.get("Wx"))
-    avg["hazards"] = _detect_driving_hazards(avg)
+    avg["hazards"] = _detect_driving_hazards(avg, current)
+    # Pass through visibility from current conditions for narration
+    if isinstance(current, dict):
+        curr_vis = current.get("visibility")
+        if curr_vis is not None:
+            avg["visibility"] = curr_vis
     return avg
 
 
-def _detect_driving_hazards(slot: dict) -> list[str]:
-    """Flag notable driving hazards."""
+def _detect_driving_hazards(slot: dict | None, current: dict | None = None) -> list[str]:
+    """Flag notable driving hazards including rain, wind, and fog/visibility."""
     hazards = []
+    if slot is None:
+        return hazards
     pop = slot.get("PoP6h") or 0
     ws = slot.get("WS") or 0
 
@@ -493,6 +684,20 @@ def _detect_driving_hazards(slot: dict) -> list[str]:
         hazards.append("Strong crosswinds — high-profile vehicles use caution")
     elif bf >= 5:
         hazards.append("Noticeable gusts — keep hands on the wheel")
+
+    # Fog / poor visibility (use current conditions visibility if available)
+    vis = None
+    if current:
+        vis = current.get("visibility")
+    if vis is not None:
+        try:
+            vis_km = float(vis)
+            if vis_km < 1.0:
+                hazards.append(f"Dense fog ({vis_km}km visibility) — use fog lights, reduce speed")
+            elif vis_km < 2.0:
+                hazards.append(f"Low visibility ({vis_km}km) — possible fog, drive with extra caution")
+        except (ValueError, TypeError):
+            pass
 
     return hazards
 
@@ -520,7 +725,7 @@ def _classify_meal_mood(segmented: dict) -> dict:
     avg_at = sum(ats) / len(ats) if ats else 20.0
     avg_rh = sum(rhs) / len(rhs) if rhs else 60.0
 
-    if avg_at >= 30 and avg_rh >= 70:
+    if avg_at >= CLIMATE_TEMP_HOT and avg_rh >= CLIMATE_RH_HOT:
         mood = "Hot & Humid"
         suggestions = [
             "涼麵 (liáng miàn, cold sesame noodles)",
@@ -529,7 +734,7 @@ def _classify_meal_mood(segmented: dict) -> dict:
             "竹筍湯 (bamboo shoot soup)",
             "豆花 (dòuhuā) with shaved ice",
         ]
-    elif avg_at >= 22 and avg_rh < 70:
+    elif avg_at >= 22 and avg_rh < CLIMATE_RH_HOT:
         mood = "Warm & Pleasant"
         suggestions = [
             "滷肉飯 (lǔ ròu fàn)",
@@ -583,7 +788,7 @@ def _extract_recent_meals(history: list[dict], days: int = 3) -> list[str]:
 def _classify_outdoor_mood(segmented: dict, aqi: dict) -> dict:
     """
     Classify the day's outdoor suitability and return a pool of curated
-    locations within 30km of Shulin/Banqiao, filtered by weather mood.
+    locations within 50km of Shulin/Banqiao, filtered by weather mood.
 
     Mood categories:
       "Nice"           — clear, pleasant AT, low wind, good AQI
@@ -616,11 +821,11 @@ def _classify_outdoor_mood(segmented: dict, aqi: dict) -> dict:
     max_pop = max(pops) if pops else 0
 
     # Determine outdoor mood
-    if is_rainy or aqi_val > 100:
+    if is_rainy or aqi_val > AQI_ALERT_THRESHOLD:
         mood = "Stay In"
     elif is_windy or max_pop >= 41:
         mood = "Cloudy & Breezy"
-    elif avg_at >= 30:
+    elif avg_at >= CLIMATE_TEMP_HOT:
         mood = "Warm"
     else:
         mood = "Nice"
@@ -679,16 +884,16 @@ def _climate_control(segmented: dict, aqi: dict) -> dict:
         if at is None:
             continue
 
-        if at >= 30 or rh >= 80:
+        if at >= CLIMATE_TEMP_HOT or rh >= CLIMATE_RH_AC_TRIGGER:
             # pyre-ignore[58]
             hours_hot += 6
-        elif 26 <= at < 30 and 60 <= rh < 80:
+        elif CLIMATE_TEMP_WARM_LOWER <= at < CLIMATE_TEMP_WARM_UPPER and CLIMATE_RH_WARM <= rh < CLIMATE_RH_AC_TRIGGER:
             # pyre-ignore[58]
             hours_optional_ac += 6
-        elif at <= 14:
+        elif at <= CLIMATE_TEMP_FREEZE:
             # pyre-ignore[58]
             hours_cold += 6
-        elif 15 <= at <= 18:
+        elif CLIMATE_TEMP_COLD_LOWER <= at <= CLIMATE_TEMP_COLD_UPPER:
             # pyre-ignore[58]
             hours_optional_heat += 6
 
@@ -716,7 +921,7 @@ def _climate_control(segmented: dict, aqi: dict) -> dict:
         recs["estimated_hours"] = 0
 
     # Window / AQI guidance
-    if aqi_val > 100:
+    if aqi_val > AQI_ALERT_THRESHOLD:
         recs["windows_open"] = False
         recs["notes"].append(f"AQI at {aqi_val} — keep windows closed, use air purifier in recirculation mode")
     elif recs["mode"] in ("fan", None):
@@ -755,12 +960,12 @@ def _cardiac_alert(segmented: dict) -> Optional[dict]:
                 }
 
     # Check overnight low below 10°C
-    night_at = ats.get("Night")
+    night_at = ats.get("Overnight")
     if night_at is not None and night_at < 10:
         return {
             "triggered": True,
             "reason": f"Overnight low is {night_at}°C — below 10°C threshold",
-            "from_segment": "Night",
+            "from_segment": "Overnight",
             "to_segment": None,
             "from_at": night_at,
             "to_at": None,
@@ -782,12 +987,111 @@ def _cardiac_alert(segmented: dict) -> Optional[dict]:
     return None
 
 
+def _detect_menieres_alert(current: dict, history: list[dict], segments: dict | None = None) -> dict:
+    """
+    Check for Ménière's Disease triggers with severity grading.
+
+    Triggers:
+    1. PRESSURE DROP: ≥ 6 hPa decrease within 24h (typhoon: ≥ 10 hPa → escalates to "high")
+    2. LOW ABSOLUTE PRESSURE: current < 1,005 hPa
+    3. HIGH HUMIDITY: RH ≥ 90% in 2+ forecast segments
+    4. TYPHOON PROXIMITY: drop ≥ 10 hPa (subset of trigger 1, forces "high")
+
+    Severity:
+    - "moderate": exactly 1 trigger (non-typhoon)
+    - "high": 2+ triggers OR typhoon proximity
+    """
+    pres = current.get("PRES")
+    rh = current.get("RH")
+    if segments is None:
+        segments = {}
+
+    triggers: list[str] = []
+    pressure_change_24h: float | None = None
+    typhoon = False
+
+    # 1 & 4. Pressure drop (24h)
+    if pres is not None and history:
+        last_pres = None
+        for day in reversed(history):
+            h_pres = day.get("raw_data", {}).get("current", {}).get("PRES")
+            if h_pres is not None:
+                last_pres = float(h_pres)
+                break
+        if last_pres is not None:
+            drop = last_pres - pres
+            pressure_change_24h = round(-drop, 1)  # negative = drop
+            if drop >= 10.0:
+                typhoon = True
+                triggers.append(f"Typhoon-level pressure drop: {drop:.1f} hPa in 24h")
+            elif drop >= 6.0:
+                triggers.append(f"Pressure drop of {drop:.1f} hPa in 24h")
+
+    # 2. Low absolute pressure
+    if pres is not None and pres < 1005.0:
+        triggers.append(f"Low pressure: {pres:.1f} hPa")
+
+    # 3. Sustained high humidity (2+ segments ≥ 90%)
+    seg_order = ["Morning", "Afternoon", "Evening", "Overnight"]
+    high_rh_segs = [
+        s for s in seg_order
+        if (segments.get(s) or {}).get("RH") is not None
+        and (segments.get(s) or {}).get("RH") >= 90
+    ]
+    max_rh: float | None = None
+    all_rhs = [segments[s]["RH"] for s in seg_order if (segments.get(s) or {}).get("RH") is not None]
+    if all_rhs:
+        max_rh = max(all_rhs)
+    if len(high_rh_segs) >= 2:
+        triggers.append(f"Sustained high humidity: RH ≥ 90% in {', '.join(high_rh_segs)}")
+
+    if not triggers:
+        return {
+            "triggered": False,
+            "severity": None,
+            "triggers": [],
+            "pressure_current": pres,
+            "pressure_change_24h": pressure_change_24h,
+            "max_rh": max_rh,
+            "message": None,
+        }
+
+    severity = "high" if (typhoon or len(triggers) >= 2) else "moderate"
+    message = _menieres_message(severity, triggers)
+
+    return {
+        "triggered": True,
+        "severity": severity,
+        "triggers": triggers,
+        "pressure_current": pres,
+        "pressure_change_24h": pressure_change_24h,
+        "max_rh": max_rh,
+        "message": message,
+    }
+
+
+def _menieres_message(severity: str, triggers: list[str]) -> str:
+    """Build a concise heads-up message for the Ménière's alert."""
+    if severity == "high":
+        return (
+            f"High Ménière's risk — {len(triggers)} trigger(s) active: "
+            + "; ".join(triggers)
+            + ". Rest indoors and monitor for vertigo or ear fullness."
+        )
+    return (
+        "Moderate Ménière's risk — "
+        + triggers[0]
+        + ". Watch for early symptoms."
+    )
+
+
 def _compute_heads_ups(
     segmented: dict,
     morning_commute: dict,
     evening_commute: dict,
     aqi: dict,
     cardiac_alert: Optional[dict],
+    menieres_alert: Optional[dict],
 ) -> list[str]:
     """
     Generate 0–3 heads-up alerts — the most actionable items for the listener.
@@ -799,8 +1103,13 @@ def _compute_heads_ups(
     if cardiac_alert and cardiac_alert.get("triggered"):
         alerts.append(f"Health alert: {cardiac_alert['reason']} — keep warm and avoid sudden cold exposure.")
 
+    # 1b. Ménière's alert
+    if menieres_alert and menieres_alert.get("triggered"):
+        msg = menieres_alert.get("message") or "Watch for vertigo or ear fullness."
+        alerts.append(f"Ménière's alert: {msg}")
+
     # 2. High precipitation in any upcoming segment
-    for seg_name in ["Morning", "Afternoon", "Evening"]:
+    for seg_name in ["Morning", "Afternoon", "Evening", "Overnight"]:
         seg = segmented.get(seg_name)
         if seg and (seg.get("PoP6h") or 0) >= 61:
             alerts.append(f"Grab an umbrella — rain is {'Likely' if seg['PoP6h'] < 81 else 'Very Likely'} this {seg_name.lower()}.")
@@ -808,7 +1117,7 @@ def _compute_heads_ups(
 
     # 3. AQI warning
     aqi_val = aqi.get("realtime", {}).get("aqi") or 0
-    if aqi_val > 100:
+    if aqi_val > AQI_ALERT_THRESHOLD:
         alerts.append(f"AQI is {aqi_val} — keep windows closed and limit outdoor time, especially for Dad.")
 
     # 4. Low visibility (fog/mist)
@@ -852,22 +1161,14 @@ def _beaufort_index(ms: float | None) -> int:
 
 def pop_to_text(pop: float | None) -> str:
     """Convert PoP6h percentage to 5-point text scale."""
-    if pop is None:
-        return "Unknown"
-    for threshold, label in PRECIP_SCALE:
-        if pop <= threshold:
-            return label
-    return "Very Likely"
+    text, _ = _val_to_scale(pop, PRECIP_SCALE_5)
+    return text
 
 
 def _pop_category(pop: float | None) -> int:
     """Return 0–4 category index for PoP6h."""
-    if pop is None:
-        return 0
-    for i, (threshold, _) in enumerate(PRECIP_SCALE):
-        if pop <= threshold:
-            return i
-    return 4
+    _, level = _val_to_scale(pop, PRECIP_SCALE_5)
+    return level - 1
 
 
 def wx_to_cloud_cover(wx: int | None) -> str:

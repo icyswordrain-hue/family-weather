@@ -25,21 +25,27 @@ def build_narration(processed: dict, date_str: str | None = None) -> str:
     date_str = date_str or datetime.now().strftime("%Y-%m-%d")
     lines: list[str] = []
 
-    # ── Current conditions ────────────────────────────────────────────────────
+    # ── P1: Heads-Up & Current conditions ─────────────────────────────────────
+    heads_ups = processed.get("heads_ups", [])
+    if heads_ups:
+        lines.append("Heads up! " + " ".join(heads_ups))
+
     current = processed.get("current", {})
     if current:
         temp = current.get("AT")
         humidity = current.get("RH")
         wind = current.get("beaufort_desc", "")
+        wind_dir = current.get("wind_dir_text", "")
         rain = current.get("RAIN", 0)
 
         parts = [f"Feels like {temp:.0f}C right now." if temp is not None else ""]
         if humidity is not None:
             parts.append(f"Humidity {humidity:.0f}%.")
         if wind and wind != "Unknown":
-            parts.append(f"Wind: {wind}.")
+            wind_str = f"{wind} from the {wind_dir}" if wind_dir and wind_dir != "Unknown" else wind
+            parts.append(f"Wind: {wind_str}.")
         if rain is not None and float(rain) > 0:
-            parts.append(f"Rainfall in past 2 hours: {rain} mm.")
+            parts.append(f"Rainfall in past hour: {rain} mm — ground is wet.")
         lines.append(" ".join(p for p in parts if p))
 
     # ── AQI ───────────────────────────────────────────────────────────────────
@@ -50,33 +56,70 @@ def build_narration(processed: dict, date_str: str | None = None) -> str:
         if aqi_val:
             lines.append(f"Tucheng Air Quality: AQI {aqi_val}, {category}.")
 
-    # ── Commute ───────────────────────────────────────────────────────────────
+    # ── P2: Commute ───────────────────────────────────────────────────────────
     commute = processed.get("commute", {})
     morning = commute.get("morning", {})
     evening = commute.get("evening", {})
-    if morning:
-        precip = morning.get("precip_text", "")
-        temp_m = morning.get("AT")
-        s = "Morning commute"
-        if temp_m is not None:
-            s += f", feels like {temp_m:.0f}C"
+    commute_parts = []
+    # Helper to format a commute leg
+    def _fmt_commute(label: str, leg: dict) -> str:
+        s = label
+        t = leg.get("AT")
+        if t is not None:
+            s += f", feels like {t:.0f}C"
+        precip = leg.get("precip_text", "")
         if precip:
             s += f", rain chance {precip}"
-        s += "."
-        lines.append(s)
-    if evening:
-        precip = evening.get("precip_text", "")
-        temp_e = evening.get("AT")
-        s = "Evening commute"
-        if temp_e is not None:
-            s += f", feels like {temp_e:.0f}C"
-        if precip:
-            s += f", rain chance {precip}"
-        s += "."
-        lines.append(s)
+        w = leg.get("beaufort_desc", "")
+        wd = leg.get("wind_dir_text", "")
+        if w and w != "Unknown":
+            w_str = f"{w} from the {wd}" if wd and wd != "Unknown" else w
+            s += f", {w_str}"
+        vis = leg.get("visibility")
+        if vis is not None:
+            try:
+                vis_km = float(vis)
+                if vis_km < 5.0:
+                    s += f", visibility {vis_km:.1f}km"
+            except (ValueError, TypeError):
+                pass
+        hazards = leg.get("hazards", [])
+        if hazards:
+            s += f". Watch out: {hazards[0]}"
+        return s + "."
 
-    # ── Today's forecast summary ──────────────────────────────────────────────
-    # processor.py returns "forecast_segments" as a dict keyed by segment name
+    if morning:
+        commute_parts.append(_fmt_commute("Morning commute", morning))
+    if evening:
+        commute_parts.append(_fmt_commute("Evening commute", evening))
+    if commute_parts:
+        lines.append(" ".join(commute_parts))
+
+    # ── P3: Gardening & Parkinson's / Outdoor ─────────────────────────────────
+    location_rec = processed.get("location_rec", {})
+    top_locations = location_rec.get("top_locations", [])
+    if top_locations:
+        loc = top_locations[0]
+        loc_name = loc.get("name", "")
+        activity = loc.get("activity", "")
+        notes = loc.get("notes", "")
+        parkinsons = loc.get("parkinsons", "")
+        parts = [f"Today's outdoor pick: {loc_name}."]
+        if activity:
+            parts.append(f"Activity: {activity}.")
+        if parkinsons == "good":
+            parts.append("Parkinson's friendly — flat, accessible terrain.")
+        elif parkinsons == "ok":
+            parts.append("Manageable for Parkinson's with a cane or companion.")
+        if notes:
+            parts.append(notes)
+        lines.append(" ".join(parts))
+    else:
+        outdoor_mood = location_rec.get("mood", "")
+        if outdoor_mood:
+            lines.append(f"Outdoor conditions: {outdoor_mood}. Consider indoor activities today.")
+
+    # ── P6: Today's forecast summary ──────────────────────────────────────────
     forecast_segments = processed.get("forecast_segments", {})
     transitions = processed.get("transitions", [])
 
@@ -123,36 +166,55 @@ def build_narration(processed: dict, date_str: str | None = None) -> str:
                     breach_descs.append(f"{metric} change")
             lines.append(f"Weather shift {from_seg} to {to_seg}: {', '.join(breach_descs)}.")
 
-    # ── Meal suggestion ───────────────────────────────────────────────────────
+    # ── P4: Meal suggestion (conditional — skip if Warm & Pleasant) ──────────
     meal = processed.get("meal_mood", {})
     mood = meal.get("mood", "")
-    suggestions = meal.get("all_suggestions", []) or meal.get("top_suggestions", [])
+    suggestions = meal.get("top_suggestions", []) or meal.get("all_suggestions", [])
     if mood and mood != "Warm & Pleasant" and suggestions:
-        dish = suggestions[0] if suggestions else ""
-        lines.append(f"Weather mood: {mood}. Suggested meal: {dish}.")
+        lines.append(f"Weather mood: {mood}. " + " / ".join(suggestions) + ".")
 
-    # ── Climate control ───────────────────────────────────────────────────────
+    # ── P5: Climate control & Cardiac (conditional — v4 skip logic) ───────────
     climate = processed.get("climate_control", {})
     mode = climate.get("mode", "")
-    if mode in ("cooling", "heating", "dehumidify"):
-        mode_map = {"cooling": "AC cooling", "heating": "Heating", "dehumidify": "Dehumidifier"}
-        notes = climate.get("notes", [])
-        reason = notes[0] if notes else ""
-        msg = f"Suggestion: use {mode_map[mode]} indoors"
-        if climate.get("set_temp"):
-            msg += f" at {climate['set_temp']}"
-        if reason:
-            msg += f" - {reason}"
-        lines.append(msg + ".")
-
-    # ── Cardiac alert ─────────────────────────────────────────────────────────
     cardiac = processed.get("cardiac_alert")
-    if cardiac and isinstance(cardiac, dict):
-        reason = cardiac.get("reason", "")
-        if reason:
-            lines.append(f"Health alert: {reason}")
-    elif cardiac and isinstance(cardiac, str):
-        lines.append(f"Health alert: {cardiac}")
+    est_hours = climate.get("estimated_hours", 0)
+
+    # v4 rule: skip P5 if comfortable (fan/none mode) AND no cardiac alert
+    p5_skip = mode in ("fan", "none", None, "") and not cardiac
+
+    if not p5_skip:
+        if mode == "heating_optional":
+            msg = "Layering indoors recommended"
+            if est_hours:
+                msg += f" — space heater briefly in morning or evening, roughly {est_hours} hours"
+            lines.append(msg + ".")
+        elif mode in ("cooling", "heating", "dehumidify"):
+            mode_map = {"cooling": "AC cooling", "heating": "Heating", "dehumidify": "Dehumidifier"}
+            notes = climate.get("notes", [])
+            reason = notes[0] if notes else ""
+            msg = f"Suggestion: use {mode_map[mode]} indoors"
+            if climate.get("set_temp"):
+                msg += f" at {climate['set_temp']}"
+            if est_hours:
+                msg += f", estimated ~{est_hours} hours"
+            if reason:
+                msg += f" — {reason}"
+            lines.append(msg + ".")
+
+        # Cardiac alert (inside P5)
+        if cardiac and isinstance(cardiac, dict):
+            reason = cardiac.get("reason", "")
+            if reason:
+                lines.append(f"Health alert: {reason}")
+        elif cardiac and isinstance(cardiac, str):
+            lines.append(f"Health alert: {cardiac}")
+    else:
+        # Fold comfort note into the output (per v4 spec)
+        lines.append("Comfortable conditions today — no AC or heating needed, open the windows.")
+
+    # ── P7: Accountability ────────────────────────────────────────────────────
+    # Template can't do a full forecast-vs-actual comparison, but we note it
+    lines.append("Forecast accuracy: no previous forecast available for comparison in template mode.")
 
     # ── AQI Forecast ──────────────────────────────────────────────────────────
     aqi_forecast = processed.get("aqi_forecast", {})

@@ -1,22 +1,24 @@
-"""
-main.py — Flask application entry point for the Family Weather Dashboard.
-
-Routes:
-  GET  /                → serves the dashboard HTML
-  GET  /api/broadcast   → returns today's broadcast JSON (cached or fresh)
-  POST /api/refresh     → triggers a full data fetch + narration + TTS pipeline
-  GET  /api/health      → health check for Cloud Run
-"""
-
 from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from datetime import datetime, timezone, timedelta
-from config import RUN_MODE
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
+
+from flask import Flask, jsonify, render_template, request, abort, Response, stream_with_context
 
 # ── SSL Patch for Local Mode ──────────────────────────────────────────────────
+# Must run BEFORE other data/narration imports that might use requests
+from config import RUN_MODE
 if RUN_MODE == "LOCAL":
     import requests
     import urllib3
@@ -28,27 +30,17 @@ if RUN_MODE == "LOCAL":
         return old_get(*args, **kwargs)
     requests.get = new_get
 
-from flask import Flask, jsonify, render_template, request, abort
-
 import config
-from config import RUN_MODE, LOCAL_DATA_DIR
+from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts
 from data.fetch_moenv import fetch_all_aqi
 from data.processor import process
 from narration.template_narrator import build_narration
 from narration.prompt_builder import build_prompt
-from narration.gemini_client import generate_narration, extract_paragraphs, extract_metadata
+
 from narration.tts_client import synthesize_and_upload
 from history.conversation import load_history, save_day, get_today_broadcast
 from web.slices import build_slices
-
-# ── Logging ───────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    stream=sys.stdout,
-)
-logger = logging.getLogger(__name__)
 
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(
@@ -59,6 +51,17 @@ app = Flask(
 
 _TAIPEI_TZ = timezone(timedelta(hours=8))
 _refresh_counter = 0  # Track refreshes for periodic meal list regeneration
+
+if RUN_MODE == "LOCAL":
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
+    
+    @app.after_request
+    def add_header(response):
+        """Disable caching in local mode to force browser to load latest changes."""
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -83,6 +86,17 @@ if RUN_MODE == "LOCAL":
 def health():
     """Health check endpoint required by Cloud Run."""
     return jsonify({"status": "ok", "timestamp": datetime.now(_TAIPEI_TZ).isoformat()})
+
+
+@app.route("/debug/log", methods=["POST"])
+def debug_log():
+    """Receive and log frontend messages."""
+    data = request.get_json(silent=True) or {}
+    type_ = data.get("type", "info").upper()
+    msg = data.get("msg", "")
+    ts = data.get("ts", "")
+    logger.info(f"[BROWSER][{type_}][{ts}] {msg}")
+    return jsonify({"status": "ok"})
 
 
 @app.route("/api/broadcast")
@@ -115,79 +129,144 @@ def get_broadcast():
 @app.route("/api/refresh", methods=["POST"])
 def refresh():
     """
-    Scheduled endpoint (called by Cloud Scheduler at 05:30, 11:30, 17:30).
-    Runs the full pipeline and returns the new broadcast JSON.
+    Triggers a full data fetch + narration + TTS pipeline.
+    Returns an NDJSON stream of log events and the final result.
     """
-    # Optionally accept a date override in the JSON body (useful for back-filling)
+    # Optionally accept a date/provider override in the JSON body
     body = request.get_json(silent=True) or {}
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+    provider = body.get("provider") # Optional: "GEMINI" or "CLAUDE"
 
-    try:
-        result = _run_pipeline(date_str)
-        return jsonify(result)
-    except Exception as exc:
-        logger.error("Pipeline error: %s", exc, exc_info=True)
-        return jsonify({"error": str(exc)}), 500
+    def generate():
+        try:
+            for step in _pipeline_steps(date_str, provider_override=provider):
+                yield json.dumps(step) + "\n"
+        except Exception as exc:
+            logger.error("Pipeline error: %s", exc, exc_info=True)
+            yield json.dumps({"type": "error", "message": str(exc)}) + "\n"
+
+    return Response(stream_with_context(generate()), mimetype='application/x-ndjson')
 
 
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
-def _run_pipeline(date_str: str) -> dict:
+def _pipeline_steps(date_str: str, provider_override: str | None = None):
     """
-    Full data-fetch → process → narrate (Claude LLM) → TTS → save pipeline.
-    Falls back to template narrator if Claude fails.
+    Generator that yields log messages and finally the result dict.
+    Yields: {"type": "log", "message": str} OR {"type": "result", "payload": dict}
     """
     global _refresh_counter
     # pyre-ignore[41]: Module-level mutation
     _refresh_counter += 1
+    yield {"type": "log", "message": f"Starting pipeline for {date_str} (refresh #{_refresh_counter})"}
     logger.info("Starting pipeline for %s (refresh #%d)", date_str, _refresh_counter)
 
     # 1. Fetch raw data
+    yield {"type": "log", "message": "Fetching CWA current conditions..."}
     logger.info("Fetching CWA current conditions...")
     current = fetch_current_conditions()
 
+    yield {"type": "log", "message": "Fetching CWA forecasts..."}
     logger.info("Fetching CWA forecasts...")
     forecasts = fetch_all_forecasts()
 
+    yield {"type": "log", "message": "Fetching MOENV AQI..."}
     logger.info("Fetching MOENV AQI...")
     aqi = fetch_all_aqi()
 
-    # 2. Load history for context
-    history = load_history(days=3)
+    # 2. Load history
+    yield {"type": "log", "message": "Loading conversation history..."}
+    history = load_history(days=HISTORY_DAYS)
 
     # 3. Process data
+    yield {"type": "log", "message": "Processing weather data & logic..."}
     logger.info("Processing data...")
     processed = process(current, forecasts, aqi, history)
 
-    # 3b. Every 21 refreshes, ask Claude to regenerate meal suggestion lists
-    if _refresh_counter % 21 == 1:
-        logger.info("Refresh #%d — triggering meal list regeneration via Claude", _refresh_counter)
+    # 3b. Meal/Location Database Regen (14-day cycle)
+    last_regen_date = None
+    # Look back through history for the most recent regeneration event
+    for day in reversed(history):
+        if day.get("metadata", {}).get("regen") or day.get("processed_data", {}).get("regenerate_meal_lists"):
+            last_regen_date_str = day.get("generated_at", "")[:10]
+            try:
+                last_regen_date = datetime.strptime(last_regen_date_str, "%Y-%m-%d")
+                break
+            except ValueError:
+                continue
+    
+    should_regen = False
+    if last_regen_date:
+        today_dt = datetime.strptime(date_str, "%Y-%m-%d")
+        if (today_dt - last_regen_date).days >= REGEN_CYCLE_DAYS:
+            should_regen = True
+    else:
+        # No history of regen found, trigger on first run
+        should_regen = True
+
+    if should_regen:
+        yield {"type": "log", "message": f"Triggering periodic database regeneration ({REGEN_CYCLE_DAYS}-day cycle)..."}
+        logger.info("Regen cycle triggered for %s", date_str)
         processed["regenerate_meal_lists"] = True
 
-    # 4. Generate narration via Claude LLM (with template fallback)
-    logger.info("Building narration via Claude Sonnet 4.6...")
+    # 4. Generate narration
+    # Use override if provided, else config
+    narration_provider = (provider_override or config.NARRATION_PROVIDER).upper()
+    
+    yield {"type": "log", "message": f"Building narration via {narration_provider}..."}
+    logger.info("Building narration via %s...", narration_provider)
+    
+    narration_source = narration_provider.lower()
+    narration_text = ""
+
     try:
-        messages = build_prompt(processed, history, date_str)
-        narration_text = generate_narration(messages)
-        logger.info("Claude narration generated successfully (%d chars)", len(narration_text))
+        # Import inside function to avoid circular deps if any
+        if narration_provider == "CLAUDE":
+            from narration.claude_client import generate_narration as generate_claude
+            messages = build_prompt(processed, history, date_str)
+            yield {"type": "log", "message": "Sending prompt to Claude..."}
+            narration_text = generate_claude(messages)
+        elif narration_provider == "GEMINI":
+            from narration.gemini_client import generate_narration as generate_gemini
+            messages = build_prompt(processed, history, date_str)
+            yield {"type": "log", "message": "Sending prompt to Gemini..."}
+            narration_text = generate_gemini(messages)
+        else:
+            raise ValueError(f"Unknown provider: {narration_provider}")
+
+        logger.info("%s narration success", narration_provider)
+        yield {"type": "log", "message": "Narration generated successfully."}
+
     except Exception as exc:
-        logger.warning("Claude narration failed, falling back to template: %s", exc)
+        logger.warning("Narration failed, using template: %s", exc)
+        yield {"type": "log", "message": f"LLM failed ({exc}), falling back to template..."}
         narration_text = build_narration(processed, date_str=date_str)
+        narration_source = "template"
 
-    # 5. Extract paragraphs and metadata
-    paragraphs = extract_paragraphs(narration_text)
-    meal_suggestions = processed.get("meal_mood", {}).get("all_suggestions", [])
-    location_suggestions = [
-        loc["name"]
-        for loc in processed.get("location_rec", {}).get("top_locations", [])
-    ]
-    metadata = extract_metadata(narration_text, meal_suggestions, location_suggestions)
+    # 5. Extract paragraphs and metadata using v6 parser
+    yield {"type": "log", "message": "Parsing narration structure & metadata (v6)..."}
+    from narration.prompt_builder import parse_narration_response
+    
+    parsed = parse_narration_response(narration_text)
+    paragraphs = parsed["paragraphs"]
+    metadata = parsed["metadata"]
+    regen_data = parsed["regen"]
 
-    # 6. TTS + upload
-    logger.info("Synthesizing speech and uploading to GCS...")
+    metadata["narration_source"] = narration_source
+    metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
+
+    # 5.5 Summarize for Lifestyle (Haiku)
+    yield {"type": "log", "message": "Summarizing for lifestyle cards (Haiku)..."}
+    from narration.summarizer import summarize_for_lifestyle
+    summaries = summarize_for_lifestyle(paragraphs)
+
+    # 6. TTS
+    yield {"type": "log", "message": "Synthesizing speech (TTS) and uploading..."}
+    logger.info("Synthesizing speech and uploading...")
     audio_urls = synthesize_and_upload(narration_text, date_str=date_str)
 
-    # 7. Save to history
+    # 7. Save
+    yield {"type": "log", "message": "Saving broadcast to history..."}
     logger.info("Saving to conversation history...")
     save_day(
         date_str=date_str,
@@ -199,23 +278,55 @@ def _run_pipeline(date_str: str) -> dict:
         audio_urls=audio_urls,
     )
 
-    # 8. Build and return full result
+    # Persist regen data to regen.json
+    if regen_data:
+        yield {"type": "log", "message": "Persisting regenerated meal/location database..."}
+        logger.info("Regen data received, writing to regen.json")
+        regen_path = os.path.join(LOCAL_DATA_DIR, "regen.json")
+        try:
+            os.makedirs(LOCAL_DATA_DIR, exist_ok=True)
+            with open(regen_path, "w", encoding="utf-8") as _f:
+                json.dump({
+                    **regen_data,
+                    "updated_at": datetime.now(_TAIPEI_TZ).isoformat(),
+                }, _f, ensure_ascii=False, indent=2)
+            logger.info("Regen data written to %s", regen_path)
+        except Exception as exc:
+            logger.warning("Failed to write regen.json: %s", exc)
+
+    # 8. Result
     result = {
         "date": date_str,
         "generated_at": datetime.now(_TAIPEI_TZ).isoformat(),
+        "narration_source": narration_source,
         "narration_text": narration_text,
         "paragraphs": paragraphs,
         "metadata": metadata,
         "audio_urls": audio_urls,
+        "processed_data": processed,
+        "regen": regen_data,
         "slices": build_slices({
             "paragraphs": paragraphs,
             "metadata": metadata,
             "processed_data": processed,
+            "summaries": summaries,
         }),
     }
+    
+    yield {"type": "log", "message": "Pipeline complete."}
+    yield {"type": "result", "payload": result}
 
-    logger.info("Pipeline complete for %s", date_str)
-    return result
+
+def _run_pipeline(date_str: str) -> dict:
+    """Synchronous wrapper for on-demand calls."""
+    last_result = None
+    for step in _pipeline_steps(date_str):
+        if step["type"] == "result":
+            last_result = step["payload"]
+    
+    if not last_result:
+        raise RuntimeError("Pipeline finished without result")
+    return last_result
 
 
 def _serialize_forecasts(forecasts: dict) -> dict:

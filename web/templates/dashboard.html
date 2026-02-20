@@ -12,7 +12,7 @@
   <link rel="icon" href="/static/icon-192.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icon-192.svg" />
   <title>Family Weather Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css?v=12" />
+  <link rel="stylesheet" href="/static/style.css?v=15" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap"
@@ -108,7 +108,6 @@
               <div class="gauge-card" id="gauge-aqi"></div>
               <div class="gauge-card" id="gauge-uv"></div>
               <div class="gauge-card" id="gauge-pres"></div>
-              <div class="gauge-card" id="gauge-vis"></div>
             </div>
           </div>
 
@@ -119,6 +118,7 @@
             <div class="timeline-grid" id="ov-timeline"></div>
 
             <div id="ov-alerts" class="alerts-container"></div>
+            <div id="ov-aqi-forecast"></div>
           </div>
         </div>
 
@@ -137,7 +137,12 @@
             <span id="narration-meta"></span>
           </header>
 
-          <audio id="audio-player-native" controls class="native-audio"></audio>
+          <div class="audio-controls">
+            <audio id="audio-player-native" controls class="native-audio"></audio>
+            <button id="audio-kids-toggle" class="audio-toggle-btn" style="display:none">
+              <span id="audio-kids-icon">👶</span> <span id="audio-kids-label">Kids Version</span>
+            </button>
+          </div>
 
           <div class="narration-text" id="narration-text"></div>
         </div>
@@ -149,7 +154,6 @@
     <!-- ── Right Panel (Dynamic Context) ────────────────────────────────── -->
     <aside class="right-panel">
       <div class="rp-top">
-        <div id="rp-dynamic"></div>
         <div class="rp-controls-section">
           <div id="rp-last-updated" class="rp-last-updated"></div>
           <p class="rp-label">System Controls</p>
@@ -195,7 +199,7 @@
 
   </div><!-- /app-shell -->
 
-  <script src="/static/app.js?v=14"></script>
+  <script src="/static/app.js?v=17"></script>
   <script>
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -204,9 +208,9 @@
 
     // Dark Mode Toggle
     (function () {
-      const btn = document.getElementById('dark-mode-btn');
-      const icon = document.getElementById('dark-mode-icon');
-      const label = document.getElementById('dark-mode-label');
+      const btn = document.getElementById('theme-toggle');
+      const icon = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-text');
       const saved = localStorage.getItem('darkMode');
       if (saved === 'true') document.documentElement.classList.add('dark');
 

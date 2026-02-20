@@ -28,9 +28,9 @@ from config import (
     TTS_SPEAKING_RATE,
     TTS_KIDS_SPEAKING_RATE,
     RUN_MODE,
-    RUN_MODE,
     LOCAL_DATA_DIR,
     TTS_PROVIDER,
+    TTS_TIMEOUT,
 )
 import config
 
@@ -53,6 +53,9 @@ def synthesize_and_upload(
     """
     date_str = date_str or datetime.now().strftime("%Y-%m-%d")
     prefix = f"{GCS_BROADCAST_PREFIX}/{date_str}"
+
+    # Strip ---METADATA--- and anything after it — not meant to be spoken
+    narration_text = narration_text.split("---METADATA---")[0].strip()
 
     if config.TTS_PROVIDER == "EDGE":
         return _generate_edge_audio(narration_text, date_str)
@@ -111,23 +114,6 @@ def synthesize_and_upload(
         "full_audio_url": full_url,
         "kids_audio_url": kids_url,
     }
-
-def _generate_dummy_audio(date_str: str) -> dict[str, str]:
-    """Generate dummy audio files for testing without credentials."""
-    dummy_bytes = b"ID3\x03\x00\x00\x00\x00\x00\x00" # Minimal fake MP3 header
-    
-    prefix = f"{GCS_BROADCAST_PREFIX}/{date_str}"
-    full_blob = f"{prefix}/{GCS_AUDIO_FILENAME}"
-    kids_blob = f"{prefix}/{GCS_KIDS_AUDIO_FILENAME}"
-    
-    full_url = _save_local_audio(dummy_bytes, full_blob)
-    kids_url = _save_local_audio(dummy_bytes, kids_blob)
-    
-    return {
-        "full_audio_url": full_url,
-        "kids_audio_url": kids_url,
-    }
-
 
 def _synthesize(
     client: texttospeech.TextToSpeechClient,
@@ -228,6 +214,7 @@ def _synthesize_chunk(
         input=synthesis_input,
         voice=voice,
         audio_config=audio_config,
+        timeout=float(TTS_TIMEOUT),
     )
     return response.audio_content
 
@@ -318,7 +305,10 @@ def _generate_edge_audio(narration_text: str, date_str: str) -> dict[str, str]:
 def _synthesize_edge(text: str, voice: str, rate: str = "+0%") -> bytes:
     """Synchronous wrapper for async Edge TTS."""
     try:
-        return asyncio.run(_synthesize_edge_async(text, voice, rate))
+        return asyncio.run(asyncio.wait_for(_synthesize_edge_async(text, voice, rate), timeout=TTS_TIMEOUT))
+    except asyncio.TimeoutError:
+        logger.error("Edge TTS synthesis timed out")
+        return b""
     except Exception as exc:
         logger.error("Edge TTS failed: %s", exc)
         # return silent or empty bytes? 
@@ -326,9 +316,15 @@ def _synthesize_edge(text: str, voice: str, rate: str = "+0%") -> bytes:
 
 
 async def _synthesize_edge_async(text: str, voice: str, rate: str) -> bytes:
+    # edge-tts doesn't have a direct timeout arg in Communicate, 
+    # so we use asyncio.wait_for
     communicate = edge_tts.Communicate(text, voice, rate=rate)
     audio_data = b""
-    async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
-            audio_data += chunk["data"]
+    try:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_data += chunk["data"]
+    except asyncio.TimeoutError:
+        logger.error("Edge TTS timed out after %d seconds", TTS_TIMEOUT)
+        return b""
     return audio_data

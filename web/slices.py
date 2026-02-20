@@ -45,7 +45,6 @@ def build_slices(broadcast: dict) -> dict:
         "overview": _slice_overview(forecast_segs, cardiac, menieres, paragraphs, commute, heads_ups, aqi_forecast, transitions),
         "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries),
         "narration": _slice_narration(paragraphs, meta),
-        "context": _slice_context(current_data, forecast_segs),
     }
 
 
@@ -57,6 +56,7 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None) -> dict:
     return {
         "temp": current.get("AT"),
         "obs_time": current.get("obs_time"),
+        "location": current.get("station_name"),
         "weather_code": current.get("Wx"),
         "weather_text": current.get("Wx_text"),
         "ground_state": current.get("ground_state", "Dry"),
@@ -178,16 +178,17 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         rh = current.get("RH", 0)
         aqi = current.get("aqi", 0)
         hvac_parts = [f"System: {hvac_mode}."]
-        if int(rh) > 70:
+        if int(rh or 0) > 70:
             hvac_parts.append("Dehumidifier recommended.")
-        elif int(aqi) > 100:
+        elif int(aqi or 0) > 100:
             hvac_parts.append("Air purifier recommended.")
         hvac_text = " ".join(hvac_parts)
 
     # 4. Meals (v6: p4_meal_climate)
     meals_text = summaries.get("meals") or paragraphs.get("p4_meal_climate")
     if not meals_text:
-        meal_suggestions = processed.get("meal_mood", {}).get("suggestions", [])
+        meal_mood_data = processed.get("meal_mood", {})
+        meal_suggestions = meal_mood_data.get("top_suggestions", []) or meal_mood_data.get("all_suggestions", [])
         if meal_suggestions:
             meals_text = f"Suggested: {', '.join(meal_suggestions[:2])}."
         else:
@@ -206,7 +207,8 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             garden_text = "Check soil moisture."
 
     if not outdoor_text:
-        activity = processed.get("location_rec", {}).get("activity_suggested")
+        top_loc = processed.get("location_rec", {}).get("top_locations", [])
+        activity = top_loc[0].get("activity") if top_loc else None
         outdoor_text = f"Great day for {activity}." if activity else "Good day for a walk."
 
     # Outdoor location structured data (first top location from processor)
@@ -273,50 +275,7 @@ def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
     }
 
 
-def _slice_context(current: dict, segments: dict) -> dict:
-    """Right Panel Context: Location, Time, Rain Text."""
-    
-    # Generate simple rain text forecast
-    rain_text = "No precipitation expected."
-    
-    # Check probability in segments
-    pops = []
-    for k in ["Morning", "Afternoon", "Evening", "Night"]:
-        seg = segments.get(k)
-        if seg:
-            pop = seg.get("PoP6h") or 0
-            pops.append((k, pop))
-            
-    # Simple logic: First segment > 30% gets mentioned
-    for period, pop in pops:
-        if pop >= 60:
-            rain_text = f"Rain likely ({pop}%) this {period.lower()}."
-            break
-        elif pop >= 30:
-            rain_text = f"Chance of rain ({pop}%) this {period.lower()}."
-            break
-            
-    return {
-        "location": current.get("station_name", "Unknown"),
-        "rain_forecast_text": rain_text,
-    }
-
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
-
-def _extract_heads_up(p1_text: str) -> str:
-    """Extract first few sentences of P1."""
-    if not p1_text:
-        return ""
-    import re
-    sentences = re.split(r"(?<=[。.!?！？])\s*", p1_text.strip())
-    # Slicing is causing lint issues, use explicit list slicing and joining
-    res_sentences = []
-    for i, s in enumerate(sentences):
-        if i < 2:
-            res_sentences.append(s)
-    return " ".join(res_sentences).strip()
-
 
 def _wardrobe_tip(at: float | None, rain: bool) -> str:
     """Generate simple wardrobe advice."""

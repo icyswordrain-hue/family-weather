@@ -109,9 +109,6 @@ function render(data) {
   renderLifestyleView(slices.lifestyle);
   renderNarrationView(slices.narration, data.audio_urls);
 
-  // Initial Right Panel update
-  updateRightPanel(currentView, slices.context);
-
   // Footer / Meta
   const ts = data.generated_at || '';
   if (ts) {
@@ -133,15 +130,15 @@ function renderCurrentView(data) {
   setText('cur-temp', Math.round(data.temp) + '°');
   setText('cur-weather-text', data.weather_text || '—');
   setText('cur-icon', ICONS[data.weather_code] || ICONS[data.weather_text] || '🌤️');
+  setText('rp-location', data.location || '—');
 
   // Gauge Cards (Restructured)
   renderGauge('gauge-ground', data.ground_state, 'Ground', '', `lvl-${data.ground_level}`);
-  renderGauge('gauge-wind', data.wind.text, 'Wind', `${data.wind.val} m/s ${data.wind.dir}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-wind', data.wind.text, 'Wind', `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
   renderGauge('gauge-hum', data.hum.text, 'Humidity', data.hum.val + '%', `lvl-${data.hum.level}`);
   renderGauge('gauge-aqi', data.aqi.text, 'Air Quality', `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
   renderGauge('gauge-uv', data.uv.text, 'UV Index', `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
   renderGauge('gauge-pres', data.pres.text, 'Pressure', `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
-  renderGauge('gauge-vis', data.vis.text, 'Visibility', `${data.vis.val != null ? data.vis.val + ' km' : '—'}`, `lvl-${data.vis.level}`);
 }
 
 function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
@@ -227,34 +224,74 @@ function renderOverviewView(data) {
     }
   }
 
-  // Timeline (Dynamic Order)
+  // Timeline (Dynamic Order) + Transition indicators (#11)
   const timelineGrid = document.getElementById('ov-timeline');
   timelineGrid.innerHTML = '';
   const timeline = data.timeline || [];
 
-  timeline.forEach(seg => {
+  // Build transition lookup: from_segment -> transition object
+  const transitionMap = {};
+  (data.transitions || []).forEach(t => {
+    if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t;
+  });
+
+  timeline.forEach((seg, idx) => {
     const slotName = seg.display_name || 'Forecast';
+    const nextSeg = timeline[idx + 1];
+    const transition = nextSeg ? transitionMap[slotName] : null;
+
+    // Build transition badge HTML
+    let transitionHtml = '';
+    if (transition) {
+      const parts = [];
+      if (transition.at_delta != null) parts.push(`${transition.at_delta > 0 ? '+' : ''}${Math.round(transition.at_delta)}°`);
+      if (transition.pop_shift && transition.pop_shift !== 'none') parts.push(`rain ${transition.pop_shift}`);
+      transitionHtml = `<div class="tc-transition">→ ${parts.length ? parts.join(' · ') : 'change'}</div>`;
+    }
+
     const card = document.createElement('div');
     card.className = 'time-card';
     card.innerHTML = `
       <div class="tc-header">${slotName}</div>
       <div class="tc-icon">${ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️'}</div>
-      <div class="tc-temp">${Math.round(seg.AT)}°</div>
+      <div class="tc-temp">${Math.round(seg.AT ?? seg.T ?? 0)}°</div>
       <div class="tc-details">
          <div class="tc-row">
            <span class="tc-label">Rain</span>
-           <span class="tc-val lvl-${seg.precip_level || 1}">${seg.precip_text}</span>
+           <span class="tc-val lvl-${seg.precip_level || 1}">${seg.precip_text || '—'}</span>
          </div>
          <div class="tc-row">
            <span class="tc-label">Wind</span>
-           <span class="tc-val lvl-${seg.wind_level || 1}">${seg.wind_text}</span>
+           <span class="tc-val lvl-${seg.wind_level || 1}">${seg.wind_text || '—'}</span>
          </div>
       </div>
+      ${transitionHtml}
     `;
     timelineGrid.appendChild(card);
   });
 
-  // Trend Chart removed
+  // AQI Forecast block (#10)
+  const aqiFcEl = document.getElementById('ov-aqi-forecast');
+  if (aqiFcEl) {
+    aqiFcEl.innerHTML = '';
+    const aqi = data.aqi_forecast;
+    if (aqi && (aqi.status || aqi.content)) {
+      const aqiVal = aqi.aqi ? ` · AQI ${aqi.aqi}` : '';
+      const dateLabel = aqi.forecast_date ? ` (${aqi.forecast_date})` : '';
+      aqiFcEl.className = 'aqi-forecast-block';
+      aqiFcEl.innerHTML = `
+        <div class="aqi-fc-icon">🌫️</div>
+        <div class="aqi-fc-body">
+          <div class="aqi-fc-header">
+            <span class="aqi-fc-title">Tomorrow's Air Quality</span>
+            <span class="aqi-fc-date">${dateLabel}${aqiVal}</span>
+          </div>
+          <div class="aqi-fc-status">${aqi.status || ''}</div>
+          ${aqi.content ? `<div class="aqi-fc-content">${aqi.content}</div>` : ''}
+        </div>
+      `;
+    }
+  }
 }
 
 // ── View 3: Lifestyle ──────────────────────────────────────────────────────
@@ -305,7 +342,24 @@ function renderLifestyleView(data) {
     grid.appendChild(card);
   }
   if (data.outdoor && data.outdoor.text) {
-    const card = makeIconCard('🌳', 'Outdoor Activities', data.outdoor.text);
+    // Build venue details block if structured location data available (#13)
+    let venueHtml = '';
+    const loc = data.outdoor.location;
+    if (loc && loc.name) {
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+      const parkBadge = loc.parkinsons ? `<span class="venue-badge parkinsons">♿ Parkinson's friendly</span>` : '';
+      const surfaceBadge = loc.surface ? `<span class="venue-badge">${loc.surface}</span>` : '';
+      venueHtml = `
+        <div class="venue-block">
+          <div class="venue-name">${loc.name}</div>
+          <div class="venue-meta">${loc.activity || ''}</div>
+          <div class="venue-badges">${parkBadge}${surfaceBadge}</div>
+          ${loc.notes ? `<div class="venue-notes">${loc.notes}</div>` : ''}
+          <a class="venue-map-link" href="${mapsUrl}" target="_blank" rel="noopener">📍 Open in Maps</a>
+        </div>
+      `;
+    }
+    const card = makeIconCard('🌳', 'Outdoor Activities', data.outdoor.text, venueHtml);
     card.classList.add('wide');
     grid.appendChild(card);
   }
@@ -352,32 +406,29 @@ function renderNarrationView(data, audioUrls) {
     badge.className = 'narration-badge ' + badgeClass;
   }
 
-  // Audio Player
+  // Audio Player + Kids Toggle (#12)
   const player = document.getElementById('audio-player-native');
+  const kidsBtn = document.getElementById('audio-kids-toggle');
   if (player && audioUrls && audioUrls.full_audio_url) {
     player.src = audioUrls.full_audio_url;
+
+    if (kidsBtn && audioUrls.kids_audio_url) {
+      kidsBtn.style.display = '';
+      let kidsMode = false;
+
+      kidsBtn.onclick = () => {
+        kidsMode = !kidsMode;
+        const wasPlaying = !player.paused;
+        player.src = kidsMode ? audioUrls.kids_audio_url : audioUrls.full_audio_url;
+        document.getElementById('audio-kids-label').textContent = kidsMode ? 'Full Version' : 'Kids Version';
+        document.getElementById('audio-kids-icon').textContent = kidsMode ? '🎙️' : '👶';
+        kidsBtn.classList.toggle('active', kidsMode);
+        if (wasPlaying) player.play().catch(() => {});
+      };
+    } else if (kidsBtn) {
+      kidsBtn.style.display = 'none';
+    }
   }
-}
-
-async function updateRightPanel(view, contextData) {
-  const contentEl = document.getElementById('rp-dynamic');
-  if (!contentEl || !contextData) return;
-
-  contentEl.innerHTML = ''; // Clear existing content
-
-  // Location update
-  setText('rp-location', contextData.location || 'Sanxi, TW');
-
-  // Context Bubble content
-  const bubble = document.createElement('div');
-  bubble.className = 'context-bubble-inner';
-  bubble.innerHTML = `
-    <div class="rp-label">Daily Forecast</div>
-    <div class="rp-text">${contextData.rain_forecast_text || 'No rain expected today.'}</div>
-  `;
-  contentEl.appendChild(bubble);
-
-  // Additional context-specific info could go here
 }
 
 // ── Sidebar & Navigation ───────────────────────────────────────────────────
@@ -402,11 +453,6 @@ function switchView(viewName) {
   document.querySelectorAll('.view-container').forEach(v => {
     v.classList.toggle('active', v.id === `view-${viewName}`);
   });
-
-  // Update Right Panel Context
-  if (broadcastData && broadcastData.slices) {
-    updateRightPanel(viewName, broadcastData.slices.context);
-  }
 
   // Mobile drawer: close on switch
   closeMobileDrawer();

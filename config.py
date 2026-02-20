@@ -15,7 +15,6 @@ LOCAL_DATA_DIR = os.environ.get("LOCAL_DATA_DIR", "local_data")
 # ── API Keys ──────────────────────────────────────────────────────────────────
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "").strip()
 MOENV_API_KEY = os.environ.get("MOENV_API_KEY", "").strip()
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 # ── Google Cloud ───────────────────────────────────────────────────────────────
@@ -23,15 +22,13 @@ GCP_PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "")
 GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "family-weather-dashboard")
 GCP_REGION = os.environ.get("GCP_REGION", "asia-east1")
 
-# ── CWA Endpoints ─────────────────────────────────────────────────────────────
+# ── CWA Data ────────────────────────────────────────────────────────────────────
 CWA_BASE_URL = "https://opendata.cwa.gov.tw/api/v1/rest/datastore"
+CWA_STATION_ID = "466881"  # Banqiao (Manual) - Full synoptic station (Vis, Cloud, WxText) + Auto sensors
+CWA_CURRENT_DATASET = "O-A0003-001" # Manual stations
+CWA_FORECAST_DATASET = "F-D0047-071" # New Taipei City Township Forecast (36h)
+# Visibility data
 
-# Current conditions — Station observations (O-A0001-001)
-CWA_CURRENT_DATASET = "O-A0001-001"
-CWA_STATION_ID = "C0AJ80"  # Banqiao (Real) - was C0AC70 (Xinyi)
-
-# Forecast — Township forecast (F-D0047-071 = New Taipei City townships)
-CWA_FORECAST_DATASET = "F-D0047-071"
 # Location names for Sanxia and Banqiao townships
 CWA_FORECAST_LOCATIONS = ["三峽區", "板橋區"]
 
@@ -48,9 +45,44 @@ LOCATION_LAT = 24.9955
 LOCATION_LON = 121.4279
 TIMEZONE = "Asia/Taipei"
 
-# ── Anthropic Claude ──────────────────────────────────────────────────────────
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-3-haiku-20240307")
-GEMINI_MAX_TOKENS = 8192  # max_tokens for Claude narration output
+# ── Google Gemini ─────────────────────────────────────────────────────────
+GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL", "gemini-3.1-pro-preview")
+GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL", "gemini-1.5-flash")
+GEMINI_MAX_TOKENS = 4096
+
+# ── Anthropic Claude ──────────────────────────────────────────────────────
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
+CLAUDE_MAX_TOKENS = 4096
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+
+# ── Pipeline Behaviour ────────────────────────────────────────────────────────
+HISTORY_DAYS = int(os.environ.get("HISTORY_DAYS", 3))
+REGEN_CYCLE_DAYS = int(os.environ.get("REGEN_CYCLE_DAYS", 14))
+
+# ── Processor Thresholds ──────────────────────────────────────────────────────
+MEAL_FALLBACK_DISH = "Sandwich"
+AQI_ALERT_THRESHOLD = 100          # heads-up + outdoor/windows alert
+CLIMATE_TEMP_HOT = 30              # °C — cooling needed
+CLIMATE_TEMP_WARM_UPPER = 30       # °C — optional AC upper bound
+CLIMATE_TEMP_WARM_LOWER = 26       # °C — optional AC lower bound
+CLIMATE_TEMP_COLD_UPPER = 18       # °C — optional heating upper bound
+CLIMATE_TEMP_COLD_LOWER = 15       # °C — optional heating lower bound
+CLIMATE_TEMP_FREEZE = 14           # °C — definite heating needed
+CLIMATE_RH_HOT = 70               # % — hot & humid threshold
+CLIMATE_RH_WARM = 60              # % — warm & pleasant lower RH bound
+CLIMATE_RH_AC_TRIGGER = 80        # % — high RH triggers cooling/AC
+
+# ── Timeouts (Seconds) ──────────────────────────────────────────────────
+CWA_TIMEOUT = 20
+MOENV_TIMEOUT = 20
+NARRATION_TIMEOUT_PRO = 120
+NARRATION_TIMEOUT_FLASH = 60
+TTS_TIMEOUT = 30
+
+# ── Narration Provider ────────────────────────────────────────────────────
+# Options: "GEMINI", "CLAUDE", "TEMPLATE"
+NARRATION_PROVIDER = os.environ.get("NARRATION_PROVIDER", "CLAUDE").upper()
 
 # ── Google Cloud Credentials (Local) ──────────────────────────────────────────
 _LOCAL_KEY_PATH = os.path.join(os.getcwd(), LOCAL_DATA_DIR, "service-account.json")
@@ -76,5 +108,8 @@ GCS_KIDS_AUDIO_FILENAME = "broadcast_kids.mp3"
 GCS_TEXT_FILENAME = "broadcast.json"
 
 # ── Flask ─────────────────────────────────────────────────────────────────────
-FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+if RUN_MODE == "LOCAL":
+    FLASK_DEBUG = True
+else:
+    FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
 FLASK_PORT = int(os.environ.get("PORT", 8080))
