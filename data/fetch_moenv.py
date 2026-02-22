@@ -18,8 +18,6 @@ from config import (
     MOENV_TIMEOUT,
 )
 
-# Disable SSL warnings for MOENV API
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +38,7 @@ def fetch_realtime_aqi() -> dict:
         "limit": "1",
     }
 
-    resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+    resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
     resp.raise_for_status()
     body = json.loads(resp.content)  # Use raw bytes → UTF-8 (bypasses requests encoding guessing)
 
@@ -88,7 +86,7 @@ def fetch_forecast_aqi() -> dict:
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+        resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
         resp.raise_for_status()
         body = json.loads(resp.content.decode("utf-8", errors="ignore"))
 

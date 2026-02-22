@@ -43,7 +43,7 @@ def fetch_current_conditions() -> dict:
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=CWA_TIMEOUT, verify=False)
+        resp = requests.get(url, params=params, timeout=CWA_TIMEOUT)
         resp.raise_for_status()
         
         # Robust decoding
@@ -142,7 +142,7 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
         # "locationName": location_name, # Filter client-side to be safe
     }
 
-    resp = requests.get(url, params=params, timeout=15, verify=False)
+    resp = requests.get(url, params=params, timeout=15)
     resp.raise_for_status()
     
     # Robust decoding
@@ -278,7 +278,7 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
         "format": "JSON",
     }
 
-    resp = requests.get(url, params=params, timeout=15, verify=False)
+    resp = requests.get(url, params=params, timeout=15)
     resp.raise_for_status()
     
     raw_text = resp.content.decode("utf-8", errors="ignore")

@@ -16,19 +16,7 @@ logger = logging.getLogger(__name__)
 
 from flask import Flask, jsonify, render_template, request, abort, Response, stream_with_context
 
-# ── SSL Patch for Local Mode ──────────────────────────────────────────────────
-# Must run BEFORE other data/narration imports that might use requests
 from config import RUN_MODE
-if RUN_MODE == "LOCAL":
-    import requests
-    import urllib3
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    
-    old_get = requests.get
-    def new_get(*args, **kwargs):
-        kwargs["verify"] = False
-        return old_get(*args, **kwargs)
-    requests.get = new_get
 
 import config
 from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS
