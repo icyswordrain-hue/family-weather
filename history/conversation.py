@@ -57,26 +57,33 @@ def load_history(days: int = 3) -> list[dict]:
     Returns a list of day dicts (oldest first), each being the value from
     the top-level date key. Returns [] if the history file does not exist.
     """
-    try:
-        if RUN_MODE in ["LOCAL", "MODAL"]:
-            return _load_history_local()
-
-        client = storage.Client()
-        bucket = client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(GCS_HISTORY_KEY)
-        raw = blob.download_as_text(encoding="utf-8")
-        history_map: dict[str, dict] = json.loads(raw)
-    except (NotFound, FileNotFoundError):
-        logger.info(f"No conversation history found ({RUN_MODE}) — starting fresh")
-        return []
-    except Exception as exc:
-        logger.warning("Could not load conversation history: %s", exc)
+    history_map = _load_history_map()
+    if not history_map:
         return []
 
     # Sort dates and return the last N
     sorted_dates = sorted(history_map.keys())
     recent_dates = sorted_dates[-days:] if len(sorted_dates) >= days else sorted_dates
     return [history_map[d] for d in recent_dates]
+
+
+def _load_history_map() -> dict[str, dict]:
+    """Unified helper to load the full history map from GCS or Local."""
+    try:
+        if RUN_MODE in ["LOCAL", "MODAL"]:
+            return _load_history_map_local()
+
+        client = storage.Client()
+        bucket = client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob(GCS_HISTORY_KEY)
+        raw = blob.download_as_text(encoding="utf-8")
+        return json.loads(raw)
+    except (NotFound, FileNotFoundError):
+        logger.info(f"No conversation history found ({RUN_MODE}) — starting fresh")
+        return {}
+    except Exception as exc:
+        logger.warning("Could not load conversation history: %s", exc)
+        return {}
 
 
 def save_day(
@@ -155,11 +162,8 @@ def get_today_broadcast(date_str: str | None = None) -> Optional[dict]:
     Used by the dashboard API to serve cached results without regenerating.
     """
     date_str = date_str or _today_str()
-    history = load_history(days=30)
-    for day in history:
-        if day.get("generated_at", "")[:10] == date_str:
-            return day
-    return None
+    history_map = _load_history_map()
+    return history_map.get(date_str)
 
 
 def _today_str() -> str:
