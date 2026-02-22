@@ -30,6 +30,11 @@ from narration.llm_prompt_builder import build_prompt
 from narration.tts_client import synthesize_and_upload
 from history.conversation import load_history, save_day, get_today_broadcast
 from web.routes import build_slices
+from backend.pipeline import (
+    check_regen_cycle,
+    generate_narration_with_fallback,
+    run_parallel_summarization,
+)
 
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(
@@ -206,25 +211,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
     processed = process(current, forecasts, aqi, history, forecasts_7day)
 
     # 3b. Meal/Location Database Regen (14-day cycle)
-    last_regen_date = None
-    # Look back through history for the most recent regeneration event
-    for day in reversed(history):
-        if day.get("metadata", {}).get("regen") or day.get("processed_data", {}).get("regenerate_meal_lists"):
-            last_regen_date_str = day.get("generated_at", "")[:10]
-            try:
-                last_regen_date = datetime.strptime(last_regen_date_str, "%Y-%m-%d")
-                break
-            except ValueError:
-                continue
-    
-    should_regen = False
-    if last_regen_date:
-        today_dt = datetime.strptime(date_str, "%Y-%m-%d")
-        if (today_dt - last_regen_date).days >= REGEN_CYCLE_DAYS:
-            should_regen = True
-    else:
-        # No history of regen found, trigger on first run
-        should_regen = True
+    should_regen = check_regen_cycle(history, date_str, REGEN_CYCLE_DAYS)
 
     if should_regen:
         yield {"type": "log", "message": f"Triggering periodic database regeneration ({REGEN_CYCLE_DAYS}-day cycle)..."}
@@ -232,38 +219,14 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
         processed["regenerate_meal_lists"] = True
 
     # 4. Generate narration
-    # Use override if provided, else config
     narration_provider = (provider_override or config.NARRATION_PROVIDER).upper()
-    
     yield {"type": "log", "message": f"Building narration via {narration_provider}..."}
     logger.info("Building narration via %s...", narration_provider)
-    
-    narration_source = narration_provider.lower()
-    narration_text = ""
 
-    try:
-        # Import inside function to avoid circular deps if any
-        if narration_provider == "CLAUDE":
-            from narration.claude_client import generate_narration as generate_claude
-            messages = build_prompt(processed, history, date_str)
-            yield {"type": "log", "message": "Sending prompt to Claude..."}
-            narration_text = generate_claude(messages)
-        elif narration_provider == "GEMINI":
-            from narration.gemini_client import generate_narration as generate_gemini
-            messages = build_prompt(processed, history, date_str)
-            yield {"type": "log", "message": "Sending prompt to Gemini..."}
-            narration_text = generate_gemini(messages)
-        else:
-            raise ValueError(f"Unknown provider: {narration_provider}")
-
-        logger.info("%s narration success", narration_provider)
-        yield {"type": "log", "message": "Narration generated successfully."}
-
-    except Exception as exc:
-        logger.warning("Narration failed, using template: %s", exc)
-        yield {"type": "log", "message": f"LLM failed ({exc}), falling back to template..."}
-        narration_text = build_narration(processed, date_str=date_str)
-        narration_source = "template"
+    narration_text, narration_source = generate_narration_with_fallback(
+        narration_provider, processed, history, date_str
+    )
+    yield {"type": "log", "message": "Narration generated."}
 
     # 5. Extract paragraphs and metadata using v6 parser
     yield {"type": "log", "message": "Parsing narration structure & metadata (v6)..."}
@@ -283,35 +246,25 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
 
     # 5.5 Parallel Processing: Lifestyle Summaries, AQI Summary, and TTS
     yield {"type": "log", "message": "Parallel processing: Summarization & TTS..."}
-    from narration.llm_summarizer import summarize_for_lifestyle, summarize_aqi_forecast
     from concurrent.futures import ThreadPoolExecutor
+    from narration.tts_client import synthesize_and_upload as _synth
 
     aqi_forecast_raw = aqi.get("forecast", {}).get("content", "")
-    
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        # Submit tasks
-        future_lifestyle = executor.submit(summarize_for_lifestyle, paragraphs)
-        future_tts = executor.submit(synthesize_and_upload, narration_text, date_str=date_str)
-        
-        future_aqi = None
-        if aqi_forecast_raw:
-            future_aqi = executor.submit(summarize_aqi_forecast, aqi_forecast_raw)
-        
-        # Collect results with logging
-        yield {"type": "log", "message": "Collecting lifestyle summaries..."}
-        summaries = future_lifestyle.result()
-        
+
+    with ThreadPoolExecutor(max_workers=2) as _tts_exec:
+        future_tts = _tts_exec.submit(_synth, narration_text, date_str=date_str)
+        yield {"type": "log", "message": "Collecting Summarization..."}
+        summaries, aqi_summary_en = run_parallel_summarization(paragraphs, aqi_forecast_raw)
         yield {"type": "log", "message": "Collecting TTS audio..."}
         audio_urls = future_tts.result()
-        
-        if future_aqi:
-            yield {"type": "log", "message": "Collecting AQI English summary..."}
-            summary_en = future_aqi.result()
-            aqi["forecast"]["summary_en"] = summary_en
-            if "aqi_forecast" in processed:
-                processed["aqi_forecast"]["summary_en"] = summary_en
-        
-        yield {"type": "log", "message": "Parallel processing complete."}
+
+    if aqi_summary_en:
+        yield {"type": "log", "message": "AQI summary collected."}
+        aqi["forecast"]["summary_en"] = aqi_summary_en
+        if "aqi_forecast" in processed:
+            processed["aqi_forecast"]["summary_en"] = aqi_summary_en
+
+    yield {"type": "log", "message": "Parallel processing complete."}
 
     # 7. Save
     yield {"type": "log", "message": "Saving broadcast to history..."}
