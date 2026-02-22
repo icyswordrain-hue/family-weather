@@ -1,0 +1,168 @@
+"""scales.py — Centrally defines 5-level and 13-level weather scales and lookup helpers."""
+
+from typing import Optional
+
+# ── 13-Level Beaufort scale — wind speed (m/s) upper bounds ─────────────────────
+BEAUFORT_SCALE = [
+    (0.3,  "Calm"),
+    (1.5,  "Light air"),
+    (3.3,  "Light breeze"),
+    (5.4,  "Gentle breeze"),
+    (7.9,  "Moderate breeze"),
+    (10.7, "Fresh breeze"),
+    (13.8, "Strong breeze"),
+    (17.1, "Near gale"),
+    (20.7, "Gale"),
+    (24.4, "Strong gale"),
+    (28.4, "Storm"),
+    (32.6, "Violent storm"),
+    (float("inf"), "Hurricane force"),
+]
+
+# ── 5-Level Scales ────────────────────────────────────────────────────────────
+
+BEAUFORT_SCALE_5 = [
+    (1.5,  "Calm", 1),
+    (5.4,  "Breezy", 2),
+    (10.7, "Windy", 3),
+    (17.1, "Strong", 4),
+    (float("inf"), "Stormy", 5),
+]
+
+UV_SCALE = [
+    (2,  "Low", 1),
+    (5,  "Moderate", 2),
+    (7,  "High", 3),
+    (10, "Very High", 4),
+    (float("inf"), "Extreme", 5),
+]
+
+HUM_SCALE_5 = [
+    (20,  "Dry", 1),
+    (40,  "Comfortable", 2),
+    (60,  "Normal", 3),
+    (80,  "Humid", 4),
+    (float("inf"), "Soggy", 5),
+]
+
+PRES_SCALE_5 = [
+    (1000, "Low", 5),
+    (1008, "Unsettled", 4),
+    (1018, "Normal", 3),
+    (1025, "Stable", 2),
+    (float("inf"), "High", 1),
+]
+
+VIS_SCALE_5 = [
+    (1.0,  "Very Poor", 5),
+    (2.0,  "Poor", 4),
+    (5.0,  "Fair", 3),
+    (10.0, "Good", 2),
+    (float("inf"), "Excellent", 1),
+]
+
+PRECIP_SCALE_5 = [
+    (0,   "Dry", 1),
+    (20,  "Very Unlikely", 1),
+    (40,  "Unlikely", 2),
+    (60,  "Possible", 3),
+    (80,  "Likely", 4),
+    (100, "Very Likely", 5),
+]
+
+# ── Lookups ───────────────────────────────────────────────────────────────────
+
+def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
+    """Helper to map a numeric value to a (text, level) tuple based on a scale."""
+    if val is None:
+        return "Unknown", 0
+    for item in scale:
+        threshold, label, level = item[0], item[1], item[2]
+        if val <= threshold:
+            return label, level
+    return "Extreme", 5
+
+def _wind_to_level(ms: float | None) -> int:
+    """Map wind speed (m/s) to 1-5 level."""
+    if ms is None: return 0
+    if ms <= 1.5: return 1
+    if ms <= 5.4: return 2
+    if ms <= 10.7: return 3
+    if ms <= 17.1: return 4
+    return 5
+
+def _aqi_to_level(aqi: int | None) -> int:
+    """Map AQI to 1-5 level."""
+    if aqi is None: return 0
+    if aqi <= 50: return 1
+    if aqi <= 100: return 2
+    if aqi <= 150: return 3
+    if aqi <= 200: return 4
+    return 5
+
+def wind_ms_to_beaufort(ms: float | None) -> str:
+    """Map wind speed (m/s) to Beaufort text."""
+    if ms is None: return "Unknown"
+    for threshold, label in BEAUFORT_SCALE:
+        if ms <= threshold:
+            return label
+    return "Hurricane force"
+
+def _beaufort_index(ms: float | None) -> int:
+    """Get the 0-12 index of the Beaufort scale."""
+    if ms is None: return 0
+    for i, (threshold, _) in enumerate(BEAUFORT_SCALE):
+        if ms <= threshold:
+            return i
+    return 12
+
+def wx_to_cloud_cover(wx_code: int | None) -> str:
+    """Map Wx code to Sunny / Mixed Clouds / Overcast / Rain."""
+    if wx_code is None: return "Unknown"
+    if wx_code <= 1: return "Sunny"
+    if wx_code <= 3: return "Fair"
+    if wx_code <= 7: return "Mixed Clouds"
+    if wx_code <= 10: return "Overcast"
+    return "Rain"
+
+def degrees_to_cardinal(deg: float | None) -> str:
+    """Map degrees (0-360) to 16 cardinal points."""
+    if deg is None: return "Unknown"
+    deg %= 360
+    points = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+              "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    return points[int((deg + 11.25) / 22.5) % 16]
+
+def pop_to_text(pop: float | None) -> str:
+    """Map PoP % to descriptive text."""
+    if pop is None: return "Unknown"
+    if pop <= 0: return "Dry"
+    if pop <= 20: return "Very Unlikely"
+    if pop <= 40: return "Unlikely"
+    if pop <= 60: return "Possible"
+    if pop <= 80: return "Likely"
+    return "Very Likely"
+
+def translate_aqi_status(status: str | None) -> str:
+    """Translate AQI status to English."""
+    mapping = {
+        "良好": "Good",
+        "普通": "Moderate",
+        "對敏感族群不健康": "Unhealthy for Sensitive Groups",
+        "不健康": "Unhealthy",
+        "非常不健康": "Very Unhealthy",
+        "危害": "Hazardous"
+    }
+    return mapping.get(status or "", status or "Unknown")
+
+def translate_pollutant(name: str | None) -> str:
+    """Translate common pollutant names."""
+    mapping = {
+        "細懸浮微粒": "PM2.5",
+        "懸浮微粒": "PM10",
+        "臭氧": "O3",
+        "二氧化氮": "NO2",
+        "二氧化硫": "SO2",
+        "一氧化碳": "CO"
+    }
+    return mapping.get(name or "", name or "Unknown")
