@@ -24,6 +24,14 @@ def test_segmentation_afternoon_anchor():
     assert result["Afternoon"] is not None
     assert result["Afternoon"]["start_time"] == "2026-02-22T12:00:00+08:00"
 
+def test_segmentation_overnight_anchor():
+    # 2 AM local time — falls in Overnight segment (0-6)
+    now = datetime(2026, 2, 22, 2, 0, 0)
+    result = _segment_forecast(SLOTS, now=now)
+    assert "Overnight" in result
+    # Our fixture only has slots 06-12 and 12-18; overnight (00-06) has no matching slot
+    assert result["Overnight"] is None
+
 def test_segmentation_evening_anchor():
     # 7 PM local time
     now = datetime(2026, 2, 22, 19, 0, 0)
