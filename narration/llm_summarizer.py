@@ -1,5 +1,5 @@
 """
-summarizer.py — Uses Claude Haiku to summarize narration paragraphs into 
+narration/llm_summarizer.py — Uses Claude Haiku to summarize narration paragraphs into 
 concise lifestyle card snippets with specific sentence constraints.
 """
 

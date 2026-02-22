@@ -1,2 +1,2 @@
 $env:RUN_MODE = "CLOUD"
-python main.py
+python app.py

@@ -39,8 +39,14 @@ def fetch_realtime_aqi() -> dict:
         "limit": "1",
     }
 
-    resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
-    resp.raise_for_status()
+    try:
+        resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
+        resp.raise_for_status()
+    except requests.exceptions.SSLError:
+        logger.warning("MOENV realtime SSL verification failed, retrying with verify=False")
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+        resp.raise_for_status()
     body = json.loads(resp.content)  # Use raw bytes → UTF-8 (bypasses requests encoding guessing)
 
     try:
@@ -87,8 +93,14 @@ def fetch_forecast_aqi() -> dict:
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
-        resp.raise_for_status()
+        try:
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            logger.warning("MOENV forecast SSL verification failed, retrying with verify=False")
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+            resp.raise_for_status()
         body = json.loads(resp.content.decode("utf-8", errors="ignore"))
 
         if isinstance(body, list):

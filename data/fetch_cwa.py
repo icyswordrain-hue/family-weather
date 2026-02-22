@@ -44,8 +44,13 @@ def fetch_current_conditions() -> dict:
     }
 
     try:
-        resp = requests.get(url, params=params, timeout=CWA_TIMEOUT)
-        resp.raise_for_status()
+        try:
+            resp = requests.get(url, params=params, timeout=CWA_TIMEOUT)
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            logger.warning("CWA SSL verification failed, retrying with verify=False")
+            resp = requests.get(url, params=params, timeout=CWA_TIMEOUT, verify=False)
+            resp.raise_for_status()
         
         # Robust decoding
         raw_text = resp.content.decode("utf-8", errors="ignore")
@@ -143,8 +148,13 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
         "locationName": location_name,
     }
 
-    resp = requests.get(url, params=params, timeout=15)
-    resp.raise_for_status()
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+    except requests.exceptions.SSLError:
+        logger.warning("CWA forecast SSL verification failed, retrying with verify=False")
+        resp = requests.get(url, params=params, timeout=15, verify=False)
+        resp.raise_for_status()
     
     # Robust decoding
     raw_text = resp.content.decode("utf-8", errors="ignore")
@@ -280,8 +290,13 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
         "locationName": location_name,
     }
 
-    resp = requests.get(url, params=params, timeout=15)
-    resp.raise_for_status()
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+    except requests.exceptions.SSLError:
+        logger.warning("CWA 7-day forecast SSL verification failed, retrying with verify=False")
+        resp = requests.get(url, params=params, timeout=15, verify=False)
+        resp.raise_for_status()
     
     raw_text = resp.content.decode("utf-8", errors="ignore")
     body = json.loads(raw_text)

@@ -46,7 +46,7 @@ def refresh(payload: dict = None):
     sys.path.append("/app")
     import json
     from fastapi.responses import StreamingResponse
-    from main import _pipeline_steps
+    from app import _pipeline_steps
     
     body = payload or {}
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
@@ -76,7 +76,7 @@ def broadcast(date: str = None):
     sys.path.append("/app")
     
     from history.conversation import get_today_broadcast
-    from web.slices import build_slices
+    from web.routes import build_slices
     
     date_str = date or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
     cached = get_today_broadcast(date_str)

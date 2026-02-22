@@ -28,7 +28,7 @@ def _get_client() -> anthropic.Anthropic:
 
 def _load_system_prompt() -> str:
     """Import the system prompt from prompt_builder."""
-    from narration.prompt_builder import build_system_prompt
+    from narration.llm_prompt_builder import build_system_prompt
     return build_system_prompt()
 
 

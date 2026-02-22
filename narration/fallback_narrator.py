@@ -1,5 +1,5 @@
 """
-template_narrator.py — Builds a plain-text weather broadcast from processed data
+narration/fallback_narrator.py — Builds a plain-text weather broadcast from processed data
 without using any LLM. The text is suitable for direct input into Cloud TTS.
 """
 
