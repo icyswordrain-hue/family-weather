@@ -111,6 +111,16 @@ def save_day(
     except Exception as exc:
         logger.warning("Could not load existing history for merge: %s — starting fresh", exc)
         history_map = {}
+        # Ensure blob is defined for the subsequent upload if we are in non-local mode
+        if RUN_MODE != "LOCAL":
+            try:
+                client = storage.Client()
+                bucket = client.bucket(GCS_BUCKET_NAME)
+                blob = bucket.blob(GCS_HISTORY_KEY)
+            except Exception:
+                # If we still can't get a blob, we might have to just log it 
+                # but for simplicity of this fix we'll let it be handled later or just define it as None
+                blob = None
 
     # Build today's entry
     history_map[date_str] = {
@@ -128,14 +138,14 @@ def save_day(
     history_map = {k: v for k, v in history_map.items() if k >= cutoff}
 
     # Write back
-    if RUN_MODE in ["LOCAL", "MODAL"]:
-        _save_history_local(history_map)
+    if RUN_MODE == "LOCAL":
+        _save_history_map_local(history_map)
     else:
-        # pyre-ignore[61]: Local variable `blob` is undefined, or not always defined.
-        blob.upload_from_string(
-            json.dumps(history_map, ensure_ascii=False, indent=2),
-            content_type="application/json",
-        )
+        # history_map contains everything
+        if blob:
+            blob.upload_from_string(json.dumps(history_map, indent=2, ensure_ascii=False), content_type="application/json")
+        else:
+            logger.error("Could not save history: blob is not initialized")
     logger.info("Saved conversation history for %s (%s)", date_str, RUN_MODE)
 
 
