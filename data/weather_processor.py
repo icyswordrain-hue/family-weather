@@ -58,78 +58,7 @@ def _parse_dt(dt_str: str) -> datetime:
     return datetime.fromisoformat(dt_str)
 
 # ── Public Entry Point ────────────────────────────────────────────────────────
-
-
-# General (activity-agnostic) penalty weights
-OUTDOOR_WEIGHTS_GENERAL = {
-    "rain_active": -50, "rain_light": -25,
-    "pop_high": -25, "pop_mid": -12,
-    "at_extreme_hot": -30, "at_hot": -15, "at_cold": -10, "at_extreme_cold": -20,
-    "heat_humidity": -10,
-    "wind_strong": -35, "wind_moderate": -10,
-    "rh_very_high": -20, "rh_high": -10,
-    "aqi_unhealthy": -40, "aqi_sensitive": -15,
-    "uvi_extreme": -15, "uvi_very_high": -8,
-    "wet_ground": -8,
-    "vis_very_poor": -30, "vis_poor": -20,
-    "menieres_high": -35, "menieres_moderate": -20,
-    "cardiac": -15,
-}
-
-# Per-activity overrides (only keys that differ from GENERAL; rest inherit)
-OUTDOOR_WEIGHTS_BY_ACTIVITY: dict[str, dict] = {
-    "strolling": {
-        "wet_ground": -20,  # slip risk (Parkinson's)
-    },
-    "cycling": {
-        "rain_active": -50, "rain_light": -40,   # slippery roads
-        "wind_strong": -40, "wind_moderate": -15, # crosswind danger
-        "wet_ground": -25,                         # road grip
-        "vis_very_poor": -40, "vis_poor": -25,
-    },
-    "hiking": {
-        "rain_light": -35,
-        "at_hot": -20, "at_extreme_hot": -35,      # exposed exertion
-        "aqi_sensitive": -20, "aqi_unhealthy": -45, # sustained breathing
-        "uvi_very_high": -12, "uvi_extreme": -20,  # exposed ridgeline
-        "vis_poor": -30, "vis_very_poor": -45,
-    },
-    "picnic": {
-        "wind_strong": -30, "wind_moderate": -15,  # blows everything
-        "wet_ground": -10,
-    },
-    "swimming": {
-        "rain_active": 0, "rain_light": 0,          # you're already wet
-        "pop_high": -10, "pop_mid": -5,             # thunderstorm risk only
-        "at_extreme_hot": 0, "at_hot": 0,           # IDEAL conditions
-        "at_cold": -50, "at_extreme_cold": -80,     # hard blocker
-        "heat_humidity": 0,                          # irrelevant in water
-        "wind_strong": -15, "wind_moderate": -5,
-        "aqi_unhealthy": -20, "aqi_sensitive": -5,  # less exposure
-        "uvi_extreme": -10, "uvi_very_high": -5,    # sunscreen helps
-        "wet_ground": 0,
-    },
-    "sports": {
-        "at_extreme_hot": -35, "at_hot": -15,       # fatigue risk
-        "heat_humidity": -20,
-        "wet_ground": -20,                           # slippery courts
-        "aqi_unhealthy": -40, "aqi_sensitive": -15,
-    },
-    "photography": {
-        "rain_active": -15, "rain_light": 0,        # dramatic skies
-        "pop_high": -5, "pop_mid": 0,
-        "at_extreme_hot": -10, "at_hot": -5,
-        "at_cold": -5, "at_extreme_cold": -15,
-        "heat_humidity": -5,
-        "wind_strong": -10, "wind_moderate": -5,    # camera stability
-        "aqi_unhealthy": -20, "aqi_sensitive": -5,  # haze = low contrast
-        "uvi_extreme": 0, "uvi_very_high": 0,       # shoot in shade
-        "wet_ground": 0,
-        "vis_very_poor": -50, "vis_poor": -25,      # visibility IS the subject
-    },
-}
-
-
+# OUTDOOR_WEIGHTS extracted to data/outdoor_scoring.py
 # OUTDOOR_LOCATIONS extracted to locations.json and served via location_loader.py
 
 
@@ -356,34 +285,6 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
         
     return result
 
-# ... (rest of the file helpers) ...
-
-def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
-    """Helper to map a numeric value to a (text, level) tuple based on a scale."""
-    if val is None:
-        return "Unknown", 0
-    for threshold, label, level in scale:
-        if val <= threshold:
-            return label, level
-    return "Extreme", 5
-
-def _wind_to_level(ms: float | None) -> int:
-    """Map wind speed (m/s) to 1-5 level."""
-    if ms is None: return 0
-    if ms <= 1.5: return 1  # Calm/Light
-    if ms <= 5.4: return 2  # Gentle
-    if ms <= 10.7: return 3 # Moderate/Fresh
-    if ms <= 17.1: return 4 # Strong/Gale
-    return 5               # Storm
-
-def _aqi_to_level(aqi: int | None) -> int:
-    """Map AQI to 1-5 level."""
-    if aqi is None: return 0
-    if aqi <= 50: return 1
-    if aqi <= 100: return 2
-    if aqi <= 150: return 3
-    if aqi <= 200: return 4
-    return 5
 
 
 def _segment_forecast(
