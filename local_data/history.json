@@ -1,0 +1,2345 @@
+{
+  "2026-02-20": {
+    "generated_at": "2026-02-20T23:47:09.695381+08:00",
+    "raw_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-20T23:30:00+08:00",
+        "AT": 14.6,
+        "RH": 94.0,
+        "WDSD": 1.6,
+        "WDIR": 110.0,
+        "RAIN": 1.0,
+        "Wx": null,
+        "WxText": "多雲",
+        "visibility": null,
+        "PRES": 1014.3,
+        "UVI": 0.0
+      },
+      "forecasts": {
+        "三峽區": [
+          {
+            "start_time": "2026-02-21T00:00:00+08:00",
+            "end_time": "2026-02-21T06:00:00+08:00",
+            "AT": 15.0,
+            "RH": 94.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-21T06:00:00+08:00",
+            "end_time": "2026-02-21T18:00:00+08:00",
+            "AT": 21.0,
+            "RH": 76.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-21T18:00:00+08:00",
+            "end_time": "2026-02-22T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-22T06:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 72.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 83.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 71.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 88.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 78.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 89.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 21.0,
+            "RH": 85.0,
+            "WS": 6.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 10
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 86.0,
+            "WS": 6.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 88.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 88.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 10
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 95.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          }
+        ],
+        "板橋區": [
+          {
+            "start_time": "2026-02-21T00:00:00+08:00",
+            "end_time": "2026-02-21T06:00:00+08:00",
+            "AT": 16.0,
+            "RH": 89.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-21T06:00:00+08:00",
+            "end_time": "2026-02-21T18:00:00+08:00",
+            "AT": 21.0,
+            "RH": 72.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-21T18:00:00+08:00",
+            "end_time": "2026-02-22T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 84.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T06:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 69.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 78.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 68.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 86.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 76.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 83.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 21.0,
+            "RH": 83.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 10
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 82.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 24.0,
+            "RH": 82.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 97.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 86.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 10
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 91.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          }
+        ]
+      },
+      "aqi": {
+        "realtime": {
+          "station_name": "土城",
+          "aqi": 64,
+          "status": "普通",
+          "pm25": 16.0,
+          "pm10": 32.0,
+          "publish_time": "2026/02/20 23:00:00"
+        },
+        "forecast": {
+          "area": "北部",
+          "aqi": 90,
+          "status": "細懸浮微粒",
+          "forecast_date": "2026-02-24",
+          "content": "今（20）日環境風場為偏東風，清晨至上午西半部擴散條件差，午後已逐漸轉好，污染物稍易累積；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升。依18時監測結果，花東空品區為「良好」等級；北部、竹苗、中部、雲嘉南、高屏、宜蘭空品區及金門、澎湖為「普通」等級；馬祖為「橘色提醒」等級。\n依監測資料及氣象署20日18時氣象資料顯示：21日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；清晨至上午中部以北地區及晚間馬祖、金門易有低雲或局部霧影響能見度。宜蘭、花東空品區為「良好」等級；北部、竹苗、中部空品區及馬祖、澎湖為「普通」等級；雲嘉南、高屏空品區及金門為「橘色提醒」等級。\n22日環境風場為東南風至偏東風，西半部污染物易累積，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；馬祖、金門易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、澎湖為「普通」等級；中部、雲嘉南、高屏空品區及金門為「橘色提醒」等級。\n23日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區及為「橘色提醒」等級。\n未來一週，21日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+          "summary_en": "Northern Taiwan faces persistent easterly winds through at least February 26th, with the western half in a pollution-trapping pattern — ozone concentrations will climb in afternoons, and particulate matter will accumulate, especially during Lunar New Year festivities. Today through the 23rd, most northern regions hold \"moderate\" air quality, but central and southern zones are already at \"orange alert\" levels. A frontal system on the 25th will briefly strengthen northeasterly winds and may draw in trace transboundary pollution before conditions deteriorate again."
+        }
+      }
+    },
+    "processed_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-20T23:30:00+08:00",
+        "AT": 14.6,
+        "RH": 94.0,
+        "WDSD": 1.6,
+        "WDIR": 110.0,
+        "RAIN": 1.0,
+        "Wx": null,
+        "WxText": "多雲",
+        "visibility": null,
+        "PRES": 1014.3,
+        "UVI": 0.0,
+        "Wx_text": "多雲",
+        "uv_text": "Low",
+        "uv_level": 1,
+        "hum_text": "Soggy",
+        "hum_level": 5,
+        "pres_text": "Normal",
+        "pres_level": 3,
+        "wind_text": "Light breeze",
+        "wind_level": 2,
+        "wind_dir_text": "E",
+        "aqi": 64,
+        "aqi_status": "Moderate",
+        "aqi_level": 2,
+        "vis_text": "Unknown",
+        "vis_level": 0,
+        "ground_state": "Wet",
+        "ground_level": 5
+      },
+      "forecast_segments": {
+        "Morning": {
+          "start_time": "2026-02-21T06:00:00+08:00",
+          "end_time": "2026-02-21T18:00:00+08:00",
+          "AT": 21.1,
+          "RH": 76.0,
+          "WS": 3.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Afternoon": {
+          "start_time": "2026-02-21T06:00:00+08:00",
+          "end_time": "2026-02-21T18:00:00+08:00",
+          "AT": 21.1,
+          "RH": 76.0,
+          "WS": 3.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Evening": null,
+        "Overnight": {
+          "start_time": "2026-02-21T00:00:00+08:00",
+          "end_time": "2026-02-21T06:00:00+08:00",
+          "AT": 14.9,
+          "RH": 94.0,
+          "WS": 2.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        }
+      },
+      "transitions": [
+        {
+          "from_segment": "Morning",
+          "to_segment": "Afternoon",
+          "breaches": [],
+          "is_transition": false
+        }
+      ],
+      "heads_ups": [],
+      "commute": {
+        "morning": {
+          "start_time": "2026-02-21T06:00:00+08:00",
+          "end_time": "2026-02-27T18:00:00+08:00",
+          "AT": 22.6,
+          "RH": 79.7,
+          "WS": 3.6,
+          "WD": null,
+          "PoP6h": 13.3,
+          "Wx": 10,
+          "beaufort_desc": "Gentle breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        },
+        "evening": {
+          "start_time": "2026-02-21T18:00:00+08:00",
+          "end_time": "2026-02-28T06:00:00+08:00",
+          "AT": 19.6,
+          "RH": 89.1,
+          "WS": 3.3,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 11,
+          "beaufort_desc": "Light breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        }
+      },
+      "meal_mood": {
+        "mood": "Cool & Damp",
+        "avg_at": 21.1,
+        "avg_rh": 76.0,
+        "is_rainy": false,
+        "all_suggestions": [
+          "牛肉麵 (niú ròu miàn)",
+          "麻油雞 (má yóu jī)",
+          "藥燉排骨 (herbal pork rib soup)",
+          "火鍋 (huǒ guō)",
+          "鹹粥 (savory congee)",
+          "四神湯 (sì shén tāng)"
+        ],
+        "top_suggestions": [
+          "藥燉排骨 (herbal pork rib soup)"
+        ]
+      },
+      "recent_meals": [],
+      "location_rec": {
+        "mood": "Nice",
+        "avg_at": 21.1,
+        "aqi": 64,
+        "is_rainy": false,
+        "is_windy": false,
+        "all_locations": [
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ],
+        "top_locations": [
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ]
+      },
+      "recent_locations": [],
+      "climate_control": {
+        "mode": "cooling",
+        "set_temp": "26–27°C",
+        "estimated_hours": 6,
+        "dehumidify": false,
+        "windows_open": false,
+        "notes": []
+      },
+      "cardiac_alert": null,
+      "menieres_alert": {
+        "triggered": false,
+        "severity": null,
+        "triggers": [],
+        "pressure_current": 1014.3,
+        "pressure_change_24h": 0.0,
+        "max_rh": 94.0,
+        "reason": null
+      },
+      "aqi_realtime": {
+        "station_name": "土城",
+        "aqi": 64,
+        "status": "普通",
+        "pm25": 16.0,
+        "pm10": 32.0,
+        "publish_time": "2026/02/20 23:00:00"
+      },
+      "aqi_forecast": {
+        "area": "北部",
+        "aqi": 90,
+        "status": "細懸浮微粒",
+        "forecast_date": "2026-02-24",
+        "content": "今（20）日環境風場為偏東風，清晨至上午西半部擴散條件差，午後已逐漸轉好，污染物稍易累積；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升。依18時監測結果，花東空品區為「良好」等級；北部、竹苗、中部、雲嘉南、高屏、宜蘭空品區及金門、澎湖為「普通」等級；馬祖為「橘色提醒」等級。\n依監測資料及氣象署20日18時氣象資料顯示：21日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；清晨至上午中部以北地區及晚間馬祖、金門易有低雲或局部霧影響能見度。宜蘭、花東空品區為「良好」等級；北部、竹苗、中部空品區及馬祖、澎湖為「普通」等級；雲嘉南、高屏空品區及金門為「橘色提醒」等級。\n22日環境風場為東南風至偏東風，西半部污染物易累積，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；馬祖、金門易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、澎湖為「普通」等級；中部、雲嘉南、高屏空品區及金門為「橘色提醒」等級。\n23日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區及為「橘色提醒」等級。\n未來一週，21日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+        "summary_en": "Northern Taiwan faces persistent easterly winds through at least February 26th, with the western half in a pollution-trapping pattern — ozone concentrations will climb in afternoons, and particulate matter will accumulate, especially during Lunar New Year festivities. Today through the 23rd, most northern regions hold \"moderate\" air quality, but central and southern zones are already at \"orange alert\" levels. A frontal system on the 25th will briefly strengthen northeasterly winds and may draw in trace transboundary pollution before conditions deteriorate again."
+      }
+    },
+    "narration_text": "Feels like 15C right now. Humidity 94%. Rainfall in past hour: 1.0 mm — ground is wet.\n\nTucheng Air Quality: AQI 64, 普通.\n\nForecast accuracy: no previous forecast available for comparison in template mode.\n\nAQI Forecast: 90, 細懸浮微粒.",
+    "paragraphs": {
+      "p1_conditions": "Feels like 15C right now. Humidity 94%. Rainfall in past hour: 1.0 mm — ground is wet.",
+      "p2_garden_commute": "Tucheng Air Quality: AQI 64, 普通.",
+      "p5_forecast": "Forecast accuracy: no previous forecast available for comparison in template mode.",
+      "p6_accuracy": "AQI Forecast: 90, 細懸浮微粒."
+    },
+    "metadata": {
+      "narration_source": "template",
+      "narration_model": "Template"
+    },
+    "audio_urls": {
+      "full_audio_url": "/local_assets/broadcasts/2026-02-20/broadcast.mp3"
+    }
+  },
+  "2026-02-21": {
+    "generated_at": "2026-02-21T23:14:08.708727+08:00",
+    "raw_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-21T23:00:00+08:00",
+        "AT": 16.2,
+        "RH": 97.0,
+        "WDSD": 0.3,
+        "WDIR": 210.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "晴",
+        "visibility": null,
+        "PRES": 1009.8,
+        "UVI": 0.0
+      },
+      "forecasts": {
+        "三峽區": [
+          {
+            "start_time": "2026-02-21T18:00:00+08:00",
+            "end_time": "2026-02-22T06:00:00+08:00",
+            "AT": 17.0,
+            "RH": 88.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T06:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 70.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 83.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 24.0,
+            "RH": 70.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 87.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 78.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 86.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 89.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 84.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T06:00:00+08:00",
+            "end_time": "2026-02-28T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 86.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T18:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "AT": 17.0,
+            "RH": 84.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          }
+        ],
+        "板橋區": [
+          {
+            "start_time": "2026-02-21T18:00:00+08:00",
+            "end_time": "2026-02-22T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 86.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T06:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 69.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 80.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 70.0,
+            "WS": 6.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 86.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 76.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 83.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 84.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 84.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 82.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 21.0,
+            "RH": 94.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 93.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 89.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T06:00:00+08:00",
+            "end_time": "2026-02-28T18:00:00+08:00",
+            "AT": 19.0,
+            "RH": 82.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T18:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "AT": 17.0,
+            "RH": 81.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          }
+        ]
+      },
+      "aqi": {
+        "realtime": {
+          "station_name": "土城",
+          "aqi": 79,
+          "status": "普通",
+          "pm25": 21.0,
+          "pm10": 40.0,
+          "publish_time": "2026/02/21 23:00:00"
+        },
+        "forecast": {
+          "area": "北部",
+          "aqi": 90,
+          "status": "細懸浮微粒",
+          "forecast_date": "2026-02-25",
+          "content": "今（21）日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍上升，入夜後已趨緩；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升。依18時監測結果，北部、竹苗、高屏、宜蘭、花東空品區及金門、澎湖為「普通」等級；中部、雲嘉南空品區及馬祖為「橘色提醒」等級。\n依監測資料及氣象署21日18時氣象資料顯示：22日環境風場為東南風至偏東風，清晨至上午西半部擴散條件較差，污染物易累積，午後擴散條件轉好，晚間東風可能挾帶微量境外污染物影響臺灣及離島，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；馬祖易有低雲或局部霧影響能見度。北部、竹苗、高屏、宜蘭、花東空品區及澎湖為「普通」等級，竹苗以北及高屏地區短時間達橘色提醒等級；中部、雲嘉南空品區及馬祖、金門為「橘色提醒」等級。\n23日環境風場為偏東風至東南風，東風可能挾帶微量境外污染物影響臺灣及離島，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n24日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；清晨至上午西半部地區易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n未來一週，22日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積；27日另一鋒面及低壓影響，環境風場轉為東南風至偏南風，北部位於下風處，污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+          "summary_en": "Northern Taiwan faces moderate air quality challenges through the weekend. Easterly winds will trap pollutants on the western side, with ozone concentrations rising in afternoons—central and southern regions already showing orange alerts today. A cold front on the 25th will bring temporary improvement before conditions settle back into stagnation, so keep an eye on air quality updates if you're sensitive to pollution."
+        }
+      }
+    },
+    "processed_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-21T23:00:00+08:00",
+        "AT": 17.9,
+        "RH": 97.0,
+        "WDSD": 0.3,
+        "WDIR": 210.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "晴",
+        "visibility": null,
+        "PRES": 1009.8,
+        "UVI": 0.0,
+        "Wx_text": "晴",
+        "uv_text": "Low",
+        "uv_level": 1,
+        "hum_text": "Soggy",
+        "hum_level": 5,
+        "pres_text": "Normal",
+        "pres_level": 3,
+        "wind_text": "Calm",
+        "wind_level": 1,
+        "wind_dir_text": "SW",
+        "aqi": 79,
+        "aqi_status": "Moderate",
+        "aqi_level": 2,
+        "vis_text": "Unknown",
+        "vis_level": 0,
+        "ground_state": "Dry",
+        "ground_level": 1
+      },
+      "forecast_segments": {
+        "Morning": {
+          "start_time": "2026-02-22T06:00:00+08:00",
+          "end_time": "2026-02-22T18:00:00+08:00",
+          "AT": 21.3,
+          "RH": 70.0,
+          "WS": 4.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Afternoon": {
+          "start_time": "2026-02-22T06:00:00+08:00",
+          "end_time": "2026-02-22T18:00:00+08:00",
+          "AT": 21.3,
+          "RH": 70.0,
+          "WS": 4.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Evening": {
+          "start_time": "2026-02-21T18:00:00+08:00",
+          "end_time": "2026-02-22T06:00:00+08:00",
+          "AT": 17.9,
+          "RH": 88.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Calm"
+        },
+        "Overnight": {
+          "start_time": "2026-02-21T18:00:00+08:00",
+          "end_time": "2026-02-22T06:00:00+08:00",
+          "AT": 17.9,
+          "RH": 88.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Calm"
+        }
+      },
+      "forecast_7day": [
+        {
+          "start_time": "2026-02-21T18:00:00+08:00",
+          "AT": 19.0,
+          "RH": 87.5,
+          "WS": 1.0,
+          "PoP12h": 0.0,
+          "Wx": 7,
+          "wind_text": "Light air",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-02-22T06:00:00+08:00",
+          "AT": 23.7,
+          "RH": 70.8,
+          "WS": 2.0,
+          "PoP12h": 0.0,
+          "Wx": 1,
+          "wind_text": "Light breeze",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-22T18:00:00+08:00",
+          "AT": 20.4,
+          "RH": 82.8,
+          "WS": 4.0,
+          "PoP12h": 10.0,
+          "Wx": 1,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-23T06:00:00+08:00",
+          "AT": 24.0,
+          "RH": 71.8,
+          "WS": 4.0,
+          "PoP12h": 10.0,
+          "Wx": 1,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-23T18:00:00+08:00",
+          "AT": 22.2,
+          "RH": 84.5,
+          "WS": 2.5,
+          "PoP12h": 20.0,
+          "Wx": 1,
+          "wind_text": "Light breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-24T06:00:00+08:00",
+          "AT": 25.2,
+          "RH": 79.5,
+          "WS": 2.2,
+          "PoP12h": 20.0,
+          "Wx": 7,
+          "wind_text": "Light breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-02-24T18:00:00+08:00",
+          "AT": 21.2,
+          "RH": 85.0,
+          "WS": 1.5,
+          "PoP12h": 20.0,
+          "Wx": 1,
+          "wind_text": "Light air",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-25T06:00:00+08:00",
+          "AT": 20.2,
+          "RH": 87.0,
+          "WS": 3.8,
+          "PoP12h": 20.0,
+          "Wx": 1,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        }
+      ],
+      "transitions": [
+        {
+          "from_segment": "Morning",
+          "to_segment": "Afternoon",
+          "breaches": [],
+          "is_transition": false
+        },
+        {
+          "from_segment": "Afternoon",
+          "to_segment": "Evening",
+          "breaches": [],
+          "is_transition": false
+        },
+        {
+          "from_segment": "Evening",
+          "to_segment": "Overnight",
+          "breaches": [],
+          "is_transition": false
+        }
+      ],
+      "heads_ups": [],
+      "commute": {
+        "morning": {
+          "start_time": "2026-02-22T06:00:00+08:00",
+          "end_time": "2026-02-28T18:00:00+08:00",
+          "AT": 22.6,
+          "RH": 81.4,
+          "WS": 3.6,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 11,
+          "beaufort_desc": "Gentle breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        },
+        "evening": {
+          "start_time": "2026-02-21T18:00:00+08:00",
+          "end_time": "2026-03-01T06:00:00+08:00",
+          "AT": 19.5,
+          "RH": 88.8,
+          "WS": 2.8,
+          "WD": null,
+          "PoP6h": 12.5,
+          "Wx": 6,
+          "beaufort_desc": "Light breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Mixed Clouds",
+          "hazards": []
+        }
+      },
+      "meal_mood": {
+        "mood": "Cool & Damp",
+        "avg_at": 20.2,
+        "avg_rh": 76.0,
+        "is_rainy": false,
+        "all_suggestions": [
+          "牛肉麵 (niú ròu miàn)",
+          "麻油雞 (má yóu jī)",
+          "藥燉排骨 (herbal pork rib soup)",
+          "火鍋 (huǒ guō)",
+          "鹹粥 (savory congee)",
+          "四神湯 (sì shén tāng)"
+        ],
+        "top_suggestions": [
+          "麻油雞 (má yóu jī)"
+        ]
+      },
+      "recent_meals": [],
+      "location_rec": {
+        "mood": "Nice",
+        "avg_at": 20.2,
+        "aqi": 79,
+        "is_rainy": false,
+        "is_windy": false,
+        "all_locations": [
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ],
+        "top_locations": [
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ]
+      },
+      "recent_locations": [],
+      "climate_control": {
+        "mode": "cooling",
+        "set_temp": "26–27°C",
+        "estimated_hours": 12,
+        "dehumidify": false,
+        "windows_open": false,
+        "notes": []
+      },
+      "cardiac_alert": null,
+      "menieres_alert": {
+        "triggered": false,
+        "severity": null,
+        "triggers": [],
+        "pressure_current": 1009.8,
+        "pressure_change_24h": -0.2,
+        "max_rh": 88.0,
+        "reason": null
+      },
+      "aqi_realtime": {
+        "station_name": "土城",
+        "aqi": 79,
+        "status": "普通",
+        "pm25": 21.0,
+        "pm10": 40.0,
+        "publish_time": "2026/02/21 23:00:00"
+      },
+      "aqi_forecast": {
+        "area": "北部",
+        "aqi": 90,
+        "status": "PM2.5",
+        "forecast_date": "2026-02-25",
+        "content": "今（21）日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍上升，入夜後已趨緩；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升。依18時監測結果，北部、竹苗、高屏、宜蘭、花東空品區及金門、澎湖為「普通」等級；中部、雲嘉南空品區及馬祖為「橘色提醒」等級。\n依監測資料及氣象署21日18時氣象資料顯示：22日環境風場為東南風至偏東風，清晨至上午西半部擴散條件較差，污染物易累積，午後擴散條件轉好，晚間東風可能挾帶微量境外污染物影響臺灣及離島，午後臭氧濃度稍易上升；須留意春節期間，各地節慶活動可能造成短時間污染物濃度上升；馬祖易有低雲或局部霧影響能見度。北部、竹苗、高屏、宜蘭、花東空品區及澎湖為「普通」等級，竹苗以北及高屏地區短時間達橘色提醒等級；中部、雲嘉南空品區及馬祖、金門為「橘色提醒」等級。\n23日環境風場為偏東風至東南風，東風可能挾帶微量境外污染物影響臺灣及離島，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n24日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；清晨至上午西半部地區易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n未來一週，22日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積；27日另一鋒面及低壓影響，環境風場轉為東南風至偏南風，北部位於下風處，污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+        "summary_en": "Northern Taiwan faces moderate air quality challenges through the weekend. Easterly winds will trap pollutants on the western side, with ozone concentrations rising in afternoons—central and southern regions already showing orange alerts today. A cold front on the 25th will bring temporary improvement before conditions settle back into stagnation, so keep an eye on air quality updates if you're sensitive to pollution."
+      },
+      "outdoor_index": {
+        "score": 100,
+        "grade": "A",
+        "label": "Excellent",
+        "best_window": "Morning",
+        "segments": {
+          "Morning": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          },
+          "Afternoon": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          },
+          "Evening": {
+            "score": 90,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": [
+              "humid"
+            ]
+          },
+          "Overnight": {
+            "score": 90,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": [
+              "humid"
+            ]
+          }
+        },
+        "activity_scores": {
+          "strolling": 100,
+          "cycling": 100,
+          "hiking": 100,
+          "picnic": 100,
+          "swimming": 100,
+          "sports": 100,
+          "photography": 100
+        },
+        "top_activity": "strolling",
+        "parkinsons_safe": true,
+        "blockers": [],
+        "cautions": []
+      },
+      "regenerate_meal_lists": true
+    },
+    "narration_text": "Feels like 18C right now. Humidity 97%.\n\nTucheng Air Quality: AQI 79, 普通.\n\nForecast accuracy: no previous forecast available for comparison in template mode.\n\nAQI Forecast: 90, PM2.5.",
+    "paragraphs": {
+      "p1_conditions": "Feels like 18C right now. Humidity 97%.",
+      "p2_garden_commute": "Tucheng Air Quality: AQI 79, 普通.",
+      "p5_forecast": "Forecast accuracy: no previous forecast available for comparison in template mode.",
+      "p6_accuracy": "AQI Forecast: 90, PM2.5."
+    },
+    "metadata": {
+      "narration_source": "template",
+      "narration_model": "Template"
+    },
+    "audio_urls": {
+      "full_audio_url": "/local_assets/broadcasts/2026-02-21/broadcast.mp3"
+    }
+  },
+  "2026-02-22": {
+    "generated_at": "2026-02-22T15:48:45.707472+08:00",
+    "raw_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-22T15:30:00+08:00",
+        "AT": 25.9,
+        "RH": 52.0,
+        "WDSD": 0.4,
+        "WDIR": 30.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "多雲",
+        "visibility": null,
+        "PRES": 1008.4,
+        "UVI": 2.0
+      },
+      "forecasts": {
+        "三峽區": [
+          {
+            "start_time": "2026-02-22T12:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 25.0,
+            "RH": 63.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 83.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 24.0,
+            "RH": 70.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 87.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 78.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 3
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 87.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 21.0,
+            "RH": 86.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 89.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 84.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 96.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 17.0,
+            "RH": 96.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T06:00:00+08:00",
+            "end_time": "2026-02-28T18:00:00+08:00",
+            "AT": 19.0,
+            "RH": 86.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T18:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 84.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          }
+        ],
+        "板橋區": [
+          {
+            "start_time": "2026-02-22T12:00:00+08:00",
+            "end_time": "2026-02-22T18:00:00+08:00",
+            "AT": 25.0,
+            "RH": 59.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 0.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-22T18:00:00+08:00",
+            "end_time": "2026-02-23T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 80.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T06:00:00+08:00",
+            "end_time": "2026-02-23T18:00:00+08:00",
+            "AT": 24.0,
+            "RH": 70.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-23T18:00:00+08:00",
+            "end_time": "2026-02-24T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 86.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T06:00:00+08:00",
+            "end_time": "2026-02-24T18:00:00+08:00",
+            "AT": 23.0,
+            "RH": 76.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-24T18:00:00+08:00",
+            "end_time": "2026-02-25T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 83.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 2
+          },
+          {
+            "start_time": "2026-02-25T06:00:00+08:00",
+            "end_time": "2026-02-25T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 84.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-25T18:00:00+08:00",
+            "end_time": "2026-02-26T06:00:00+08:00",
+            "AT": 19.0,
+            "RH": 84.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          },
+          {
+            "start_time": "2026-02-26T06:00:00+08:00",
+            "end_time": "2026-02-26T18:00:00+08:00",
+            "AT": 22.0,
+            "RH": 82.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-02-26T18:00:00+08:00",
+            "end_time": "2026-02-27T06:00:00+08:00",
+            "AT": 20.0,
+            "RH": 94.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T06:00:00+08:00",
+            "end_time": "2026-02-27T18:00:00+08:00",
+            "AT": 20.0,
+            "RH": 93.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-27T18:00:00+08:00",
+            "end_time": "2026-02-28T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 89.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T06:00:00+08:00",
+            "end_time": "2026-02-28T18:00:00+08:00",
+            "AT": 19.0,
+            "RH": 82.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 11
+          },
+          {
+            "start_time": "2026-02-28T18:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "AT": 18.0,
+            "RH": 81.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": 6
+          }
+        ]
+      },
+      "aqi": {
+        "realtime": {
+          "station_name": "土城",
+          "aqi": 76,
+          "status": "普通",
+          "pm25": 24.0,
+          "pm10": 32.0,
+          "publish_time": "2026/02/22 15:00:00"
+        },
+        "forecast": {
+          "area": "北部",
+          "aqi": 100,
+          "status": "細懸浮微粒",
+          "forecast_date": "2026-02-22",
+          "content": "今（22）日環境風場為東南風至偏東風，清晨至上午西半部擴散條件較差，污染物易累積。依10時監測結果，花東空品區為「良好」等級；竹苗、高屏、宜蘭空品區及澎湖為「普通」等級；北部、中部空品區及馬祖、金門地區為「橘色提醒」等級；雲嘉南空品區為「紅色警示」等級。\n依監測資料及氣象署22日10時氣象資料顯示：22日中國沿海污染物濃度偏高，臺灣受海峽污染物影響，且環境風場為東南風至偏東風，清晨至上午西半部垂直及水平擴散條件較差，污染物濃度易上升；午後受光化作用影響，須留意臭氧濃度上升；馬祖及西半部清晨易有低雲或局部霧影響能見度。花東為「良好」等級；北部、竹苗、高屏、宜蘭空品區及澎湖為「普通」等級，竹苗以北及高屏地區短時間達橘色提醒等級；中部、雲嘉南空品區及馬祖、金門為「橘色提醒」等級，彰化至雲林一帶清晨至上午因海峽污染物濃度偏高且水平及垂直擴散條件不佳，空氣品質短時間達紅色警示等級。\n23日環境風場為偏東風至東南風，東風可能挾帶微量境外污染物影響臺灣及離島，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n24日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；清晨至上午西半部地區易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n未來一週，22日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積；27日另一鋒面及低壓影響，環境風場轉為東南風至偏南風，北部位於下風處，污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+          "summary_en": "Northern Taiwan faces elevated air quality challenges today through the 24th due to easterly winds trapping pollutants against the western coast; the Changhua-Yunlin corridor will see brief red-alert conditions this morning as cross-strait pollution accumulates, while afternoon ozone levels will climb region-wide. Eastern Taiwan remains clean, but central and southern areas will stay in the orange-alert range through at least the 24th. A frontal system on the 25th will temporarily improve conditions before stagnant patterns return by mid-week."
+        }
+      }
+    },
+    "processed_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-02-22T15:30:00+08:00",
+        "AT": 27.3,
+        "RH": 52.0,
+        "WDSD": 0.4,
+        "WDIR": 30.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "多雲",
+        "visibility": null,
+        "PRES": 1008.4,
+        "UVI": 2.0,
+        "Wx_text": "多雲",
+        "uv_text": "Low",
+        "uv_level": 1,
+        "hum_text": "Normal",
+        "hum_level": 3,
+        "pres_text": "Normal",
+        "pres_level": 3,
+        "wind_text": "Light air",
+        "wind_level": 1,
+        "wind_dir_text": "NE",
+        "aqi": 76,
+        "aqi_status": "Moderate",
+        "aqi_level": 2,
+        "vis_text": "Unknown",
+        "vis_level": 0,
+        "ground_state": "Dry",
+        "ground_level": 1
+      },
+      "forecast_segments": {
+        "Morning": {
+          "start_time": "2026-02-23T06:00:00+08:00",
+          "end_time": "2026-02-23T18:00:00+08:00",
+          "AT": 24.1,
+          "RH": 70.0,
+          "WS": 4.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 3,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Afternoon": {
+          "start_time": "2026-02-22T12:00:00+08:00",
+          "end_time": "2026-02-22T18:00:00+08:00",
+          "AT": 25.5,
+          "RH": 63.0,
+          "WS": 3.0,
+          "WD": null,
+          "PoP6h": 0.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Evening": {
+          "start_time": "2026-02-22T18:00:00+08:00",
+          "end_time": "2026-02-23T06:00:00+08:00",
+          "AT": 17.5,
+          "RH": 83.0,
+          "WS": 5.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        },
+        "Overnight": {
+          "start_time": "2026-02-22T18:00:00+08:00",
+          "end_time": "2026-02-23T06:00:00+08:00",
+          "AT": 17.5,
+          "RH": 83.0,
+          "WS": 5.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 2,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear",
+          "beaufort_desc": "Breezy"
+        }
+      },
+      "forecast_7day": [
+        {
+          "start_time": "2026-02-22T06:00:00+08:00",
+          "AT": 27.3,
+          "RH": 62.2,
+          "WS": 2.5,
+          "PoP12h": 0.0,
+          "Wx": 1,
+          "wind_text": "Light breeze",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-22T18:00:00+08:00",
+          "AT": 19.2,
+          "RH": 82.8,
+          "WS": 4.2,
+          "PoP12h": 10.0,
+          "Wx": 1,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-23T06:00:00+08:00",
+          "AT": 25.4,
+          "RH": 70.2,
+          "WS": 3.8,
+          "PoP12h": 10.0,
+          "Wx": 4,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        },
+        {
+          "start_time": "2026-02-23T18:00:00+08:00",
+          "AT": 21.8,
+          "RH": 84.2,
+          "WS": 2.2,
+          "PoP12h": 10.0,
+          "Wx": 1,
+          "wind_text": "Light breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-24T06:00:00+08:00",
+          "AT": 25.0,
+          "RH": 79.5,
+          "WS": 1.5,
+          "PoP12h": 10.0,
+          "Wx": 4,
+          "wind_text": "Light air",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        },
+        {
+          "start_time": "2026-02-24T18:00:00+08:00",
+          "AT": 21.5,
+          "RH": 85.0,
+          "WS": 1.8,
+          "PoP12h": 20.0,
+          "Wx": 1,
+          "wind_text": "Light breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Sunny/Clear"
+        },
+        {
+          "start_time": "2026-02-25T06:00:00+08:00",
+          "AT": 21.0,
+          "RH": 87.0,
+          "WS": 3.5,
+          "PoP12h": 20.0,
+          "Wx": 4,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        },
+        {
+          "start_time": "2026-02-25T18:00:00+08:00",
+          "AT": 18.8,
+          "RH": 88.0,
+          "WS": 4.0,
+          "PoP12h": 20.0,
+          "Wx": 7,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-02-26T06:00:00+08:00",
+          "AT": 19.5,
+          "RH": 89.0,
+          "WS": 2.5,
+          "PoP12h": 10.0,
+          "Wx": 4,
+          "wind_text": "Light breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        }
+      ],
+      "transitions": [
+        {
+          "from_segment": "Morning",
+          "to_segment": "Afternoon",
+          "breaches": [],
+          "is_transition": false
+        },
+        {
+          "from_segment": "Afternoon",
+          "to_segment": "Evening",
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 25.5,
+              "to": 17.5,
+              "delta": -8.0
+            }
+          ],
+          "is_transition": true
+        },
+        {
+          "from_segment": "Evening",
+          "to_segment": "Overnight",
+          "breaches": [],
+          "is_transition": false
+        }
+      ],
+      "heads_ups": [],
+      "commute": {
+        "morning": {
+          "start_time": "2026-02-23T06:00:00+08:00",
+          "end_time": "2026-02-28T18:00:00+08:00",
+          "AT": 21.9,
+          "RH": 83.3,
+          "WS": 3.7,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 11,
+          "beaufort_desc": "Gentle breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        },
+        "evening": {
+          "start_time": "2026-02-22T12:00:00+08:00",
+          "end_time": "2026-03-01T06:00:00+08:00",
+          "AT": 18.8,
+          "RH": 85.6,
+          "WS": 3.8,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 6,
+          "beaufort_desc": "Gentle breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "cloud_cover": "Mixed Clouds",
+          "hazards": []
+        }
+      },
+      "meal_mood": {
+        "mood": "Cool & Damp",
+        "avg_at": 22.4,
+        "avg_rh": 72.0,
+        "is_rainy": false,
+        "all_suggestions": [
+          "牛肉麵 (niú ròu miàn)",
+          "麻油雞 (má yóu jī)",
+          "藥燉排骨 (herbal pork rib soup)",
+          "火鍋 (huǒ guō)",
+          "鹹粥 (savory congee)",
+          "四神湯 (sì shén tāng)"
+        ],
+        "top_suggestions": [
+          "火鍋 (huǒ guō)"
+        ]
+      },
+      "recent_meals": [],
+      "location_rec": {
+        "mood": "Nice",
+        "avg_at": 22.4,
+        "aqi": 76,
+        "is_rainy": false,
+        "is_windy": false,
+        "all_locations": [
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ],
+        "top_locations": [
+          {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+          },
+          {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+          },
+          {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+          },
+          {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+          },
+          {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+          },
+          {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+          }
+        ]
+      },
+      "recent_locations": [],
+      "climate_control": {
+        "mode": "cooling",
+        "set_temp": "26–27°C",
+        "estimated_hours": 12,
+        "dehumidify": false,
+        "windows_open": false,
+        "notes": []
+      },
+      "cardiac_alert": null,
+      "menieres_alert": {
+        "triggered": false,
+        "severity": null,
+        "triggers": [],
+        "pressure_current": 1008.4,
+        "pressure_change_24h": 3.7,
+        "max_rh": 83.0,
+        "reason": null
+      },
+      "aqi_realtime": {
+        "station_name": "土城",
+        "aqi": 76,
+        "status": "普通",
+        "pm25": 24.0,
+        "pm10": 32.0,
+        "publish_time": "2026/02/22 15:00:00"
+      },
+      "aqi_forecast": {
+        "area": "北部",
+        "aqi": 100,
+        "status": "PM2.5",
+        "forecast_date": "2026-02-22",
+        "content": "今（22）日環境風場為東南風至偏東風，清晨至上午西半部擴散條件較差，污染物易累積。依10時監測結果，花東空品區為「良好」等級；竹苗、高屏、宜蘭空品區及澎湖為「普通」等級；北部、中部空品區及馬祖、金門地區為「橘色提醒」等級；雲嘉南空品區為「紅色警示」等級。\n依監測資料及氣象署22日10時氣象資料顯示：22日中國沿海污染物濃度偏高，臺灣受海峽污染物影響，且環境風場為東南風至偏東風，清晨至上午西半部垂直及水平擴散條件較差，污染物濃度易上升；午後受光化作用影響，須留意臭氧濃度上升；馬祖及西半部清晨易有低雲或局部霧影響能見度。花東為「良好」等級；北部、竹苗、高屏、宜蘭空品區及澎湖為「普通」等級，竹苗以北及高屏地區短時間達橘色提醒等級；中部、雲嘉南空品區及馬祖、金門為「橘色提醒」等級，彰化至雲林一帶清晨至上午因海峽污染物濃度偏高且水平及垂直擴散條件不佳，空氣品質短時間達紅色警示等級。\n23日環境風場為偏東風至東南風，東風可能挾帶微量境外污染物影響臺灣及離島，西半部污染物易累積，午後臭氧濃度稍易上升。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n24日環境風場為偏東風至東南風，西半部污染物易累積，午後臭氧濃度稍易上升；清晨至上午西半部地區易有低雲或局部霧影響能見度。花東空品區為「良好」等級；北部、竹苗、宜蘭空品區及馬祖、金門、澎湖為「普通」等級；中部、雲嘉南、高屏空品區為「橘色提醒」等級。\n未來一週，22日至24日環境風場為偏東風至東南風，西半部位於背風側，污染物易累積；25日鋒面通過及東北季風稍增強，環境風場轉為東北風，東北風可能挾帶微量境外污染物移入，中南部污染物仍稍易累積；26日東北季風減弱，環境風場為東北風至偏東風，西半部位於背風側，污染物易累積；27日另一鋒面及低壓影響，環境風場轉為東南風至偏南風，北部位於下風處，污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+        "summary_en": "Northern Taiwan faces elevated air quality challenges today through the 24th due to easterly winds trapping pollutants against the western coast; the Changhua-Yunlin corridor will see brief red-alert conditions this morning as cross-strait pollution accumulates, while afternoon ozone levels will climb region-wide. Eastern Taiwan remains clean, but central and southern areas will stay in the orange-alert range through at least the 24th. A frontal system on the 25th will temporarily improve conditions before stagnant patterns return by mid-week."
+      },
+      "outdoor_index": {
+        "score": 100,
+        "grade": "A",
+        "label": "Excellent",
+        "best_window": "Morning",
+        "segments": {
+          "Morning": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          },
+          "Afternoon": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          },
+          "Evening": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          },
+          "Overnight": {
+            "score": 100,
+            "grade": "A",
+            "label": "Excellent",
+            "blockers": [],
+            "cautions": []
+          }
+        },
+        "activity_scores": {
+          "strolling": 100,
+          "cycling": 100,
+          "hiking": 100,
+          "picnic": 100,
+          "swimming": 100,
+          "sports": 100,
+          "photography": 100
+        },
+        "top_activity": "strolling",
+        "parkinsons_safe": true,
+        "blockers": [],
+        "cautions": []
+      }
+    },
+    "narration_text": "Good afternoon, everyone. Nothing to flag today — the heads-up list is completely empty, which is a nice way to end the weekend.\n\nRight now at half past three, it feels warm and comfortable outside, around twenty-seven degrees with humidity sitting at a normal fifty-two percent — noticeably drier than the sticky, heavy air we've had the past few days. There's barely a whisper of wind, just light air drifting in from the northeast. Skies are partly cloudy, the ground is dry, and AQI is at seventy-six — moderate, so nothing to worry about for a short outing, but worth keeping in mind if anyone is sensitive. No rain gear needed today — the afternoon is completely dry and this evening stays very unlikely to produce anything.\n\nToday's story is a beautiful sunny afternoon giving way to a noticeably cool evening — enjoy the warmth while it lasts. Right now we're at twenty-seven degrees, clear and breezy, with the afternoon holding dry and comfortable through around five or six o'clock. Then the temperature drops away quickly — we're talking a fall of around eight degrees as the sun goes down, landing near seventeen or eighteen degrees by this evening. Humidity rises with it, up to around eighty-three percent, so it will feel a bit damp even if it stays dry. Rain stays very unlikely through the night. Tomorrow morning starts fresh around twenty-four degrees with mixed clouds and a gentle breeze — a very pleasant Monday commute. AQI is worth watching: currently moderate at seventy-six, but the forecast suggests the northern region could see orange-level air quality at times tomorrow, so keep windows shut in the morning if you notice it climbing. Bottom line — the afternoon is gorgeous, but layer up before dinner and expect a cool night.\n\nYesterday's forecast called for a clean, sunny Sunday holding steady through the afternoon and cooling in the evening — and that's pretty much exactly what happened. We hit twenty-three and a half degrees with low humidity and calm winds, right in line with what was predicted. Spot on for today.",
+    "paragraphs": {
+      "p1_conditions": "Good afternoon, everyone. Nothing to flag today — the heads-up list is completely empty, which is a nice way to end the weekend.",
+      "p2_garden_commute": "Right now at half past three, it feels warm and comfortable outside, around twenty-seven degrees with humidity sitting at a normal fifty-two percent — noticeably drier than the sticky, heavy air we've had the past few days. There's barely a whisper of wind, just light air drifting in from the northeast. Skies are partly cloudy, the ground is dry, and AQI is at seventy-six — moderate, so nothing to worry about for a short outing, but worth keeping in mind if anyone is sensitive. No rain gear needed today — the afternoon is completely dry and this evening stays very unlikely to produce anything.",
+      "p5_forecast": "Today's story is a beautiful sunny afternoon giving way to a noticeably cool evening — enjoy the warmth while it lasts. Right now we're at twenty-seven degrees, clear and breezy, with the afternoon holding dry and comfortable through around five or six o'clock. Then the temperature drops away quickly — we're talking a fall of around eight degrees as the sun goes down, landing near seventeen or eighteen degrees by this evening. Humidity rises with it, up to around eighty-three percent, so it will feel a bit damp even if it stays dry. Rain stays very unlikely through the night. Tomorrow morning starts fresh around twenty-four degrees with mixed clouds and a gentle breeze — a very pleasant Monday commute. AQI is worth watching: currently moderate at seventy-six, but the forecast suggests the northern region could see orange-level air quality at times tomorrow, so keep windows shut in the morning if you notice it climbing. Bottom line — the afternoon is gorgeous, but layer up before dinner and expect a cool night.",
+      "p6_accuracy": "Yesterday's forecast called for a clean, sunny Sunday holding steady through the afternoon and cooling in the evening — and that's pretty much exactly what happened. We hit twenty-three and a half degrees with low humidity and calm winds, right in line with what was predicted. Spot on for today."
+    },
+    "metadata": {
+      "wardrobe": "Light top or long sleeve is fine now, but bring a jacket — temperatures drop hard after sunset.",
+      "rain_gear": false,
+      "commute_am": "Monday morning to Shulin around seven is fresh and comfortable at twenty-two degrees, gentle breeze, overcast but dry.",
+      "commute_pm": "Evening return to Sanxia is slightly cooler around nineteen degrees with mixed clouds and very low rain chance — no issues.",
+      "meal": "huo guo",
+      "outdoor": "Dahan River Bikeway at the Yingge end is ideal for a flat riverside walk with Dad this afternoon — paved, shaded, easy parking.",
+      "garden": "water evening before temperature drop",
+      "climate": "Run cooling through the warm afternoon, then switch off as the sun sets and let the cooler evening air in briefly.",
+      "cardiac_alert": false,
+      "menieres_alert": false,
+      "forecast_oneliner": "Gorgeous warm afternoon, but layer up before dinner — it drops eight degrees after sunset.",
+      "accuracy_grade": "spot on",
+      "narration_source": "claude",
+      "narration_model": "claude-sonnet-4-6"
+    },
+    "audio_urls": {
+      "full_audio_url": "/local_assets/broadcasts/2026-02-22/broadcast.mp3"
+    }
+  }
+}

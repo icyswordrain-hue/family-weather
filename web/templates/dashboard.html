@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Context-aware, voice-enabled family weather broadcaster" />
+  <meta name="theme-color" content="#1a2235" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" href="/static/icon-192.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/icon-192.svg" />
+  <title>Family Weather Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css?v=15" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ── App Shell ─────────────────────────────────────────────────────────── -->
+  <div class="app-shell">
+
+    <!-- ── Left Sidebar ──────────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="clock-wrapper">
+          <div class="analog-clock">
+            <div class="hand hour" id="clock-hour"></div>
+            <div class="hand minute" id="clock-minute"></div>
+            <div class="hand second" id="clock-second"></div>
+            <div class="center-dot"></div>
+            <!-- Face markers -->
+            <div class="marker m-12"></div>
+            <div class="marker m-3"></div>
+            <div class="marker m-6"></div>
+            <div class="marker m-9"></div>
+          </div>
+          <div class="digital-time-sub" id="rp-time">—:—</div>
+        </div>
+        <div class="rp-location" id="rp-location">—</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-label">Views</p>
+        <button class="nav-item active" data-view="lifestyle">
+          <span class="nav-icon">🚲</span>
+          <span>Lifestyle</span>
+        </button>
+        <button class="nav-item" data-view="narration">
+          <span class="nav-icon">📝</span>
+          <span>Narration</span>
+        </button>
+        <button class="nav-item" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </button>
+      </nav>
+
+      <!-- Context bubble removed -->
+
+      <!-- System controls moved to Right Panel -->
+    </aside>
+
+    <!-- ── Main Content ────────────────────────────────────────────────────── -->
+    <main class="main-panel">
+
+      <!-- ── Loading / Error States ──────────────────────────────────────── -->
+      <div class="loading-screen" id="loading-screen">
+        <div class="spinner"></div>
+        <p id="loading-text">Fetching forecast…</p>
+      </div>
+
+      <div class="error-screen hidden" id="error-screen">
+        <div class="error-icon">⚠️</div>
+        <p class="error-msg" id="error-msg">Could not load broadcast.</p>
+        <button onclick="window.app.fetchBroadcast()" class="retry-btn">Retry</button>
+      </div>
+
+      <!-- ── Content (shown after load) ────────────────────────────────── -->
+      <div class="main-content hidden" id="main-content">
+
+        <!-- VIEW 1: Lifestyle (Default) -->
+        <div id="view-lifestyle" class="view-container active">
+          <header class="view-header">
+            <h1>Lifestyle Guide</h1>
+          </header>
+          <div class="lifestyle-grid" id="lifestyle-grid"></div>
+        </div>
+
+        <!-- VIEW 2: Narration -->
+        <div id="view-narration" class="view-container">
+          <header class="view-header">
+            <h1>Weather Briefing</h1>
+            <span id="narration-meta"></span>
+          </header>
+
+          <div class="audio-controls">
+            <audio id="audio-player-native" controls class="native-audio"></audio>
+          </div>
+
+          <div class="narration-text" id="narration-text"></div>
+        </div>
+
+        <!-- VIEW 3: Dashboard (Overview) -->
+        <div id="view-dashboard" class="view-container">
+          <header class="view-header">
+            <h1>Weather Dashboard</h1>
+          </header>
+          <div class="current-conditions-wrapper">
+            <div class="current-top-row">
+              <div class="gauge-card" id="gauge-ground"></div>
+              <div class="current-hero">
+                <div class="hero-main">
+                  <span id="cur-icon"></span>
+                  <span id="cur-temp">--</span>
+                </div>
+                <div id="cur-weather-text">--</div>
+              </div>
+              <div class="gauge-card" id="gauge-wind"></div>
+            </div>
+
+            <div class="gauges-grid">
+              <div class="gauge-card" id="gauge-hum"></div>
+              <div class="gauge-card" id="gauge-aqi"></div>
+              <div class="gauge-card" id="gauge-uv"></div>
+              <div class="gauge-card" id="gauge-pres"></div>
+            </div>
+          </div>
+
+          <hr class="view-divider">
+
+          <div class="dashboard-overview-section">
+            <h2 class="section-title">24-Hour Forecast</h2>
+            <div class="timeline-grid" id="ov-timeline"></div>
+          </div>
+
+          <div class="dashboard-overview-section">
+            <h2 class="section-title">7-Day Forecast</h2>
+            <div class="timeline-scroll" id="ov-weekly-timeline"></div>
+
+            <div id="ov-alerts" class="alerts-container"></div>
+            <div id="ov-aqi-forecast"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- ── Right Panel (Dynamic Context) ────────────────────────────────── -->
+    <aside class="right-panel">
+      <div class="rp-top">
+        <div class="rp-controls-section">
+          <div id="rp-last-updated" class="rp-last-updated"></div>
+          <p class="rp-label">System Controls</p>
+
+          <div class="provider-toggle-group">
+            <label class="provider-option">
+              <input type="radio" name="provider" value="CLAUDE" checked>
+              <span class="prov-label">Claude Sonnet</span>
+            </label>
+            <label class="provider-option">
+              <input type="radio" name="provider" value="GEMINI">
+              <span class="prov-label">Gemini Pro</span>
+            </label>
+          </div>
+
+          <div class="rp-actions">
+            <button class="rp-btn" id="refresh-btn" title="Fetch latest data">
+              <span>🔄 Refresh</span>
+            </button>
+            <button class="rp-btn" id="theme-toggle" title="Toggle dark mode">
+              <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Log -->
+      <div class="rp-log-container">
+        <div class="rp-log-header">
+          <span>System Log</span>
+          <span class="log-clear-btn" onclick="document.getElementById('rp-log-list').innerHTML=''"
+            title="Clear Log">🗑️</span>
+        </div>
+        <div class="rp-log-list" id="rp-log-list"></div>
+      </div>
+    </aside>
+
+    <!-- ── Mobile Drawer Toggle ────────────────────────────────────────── -->
+    <button id="drawer-toggle" class="drawer-toggle-btn" aria-label="Open Info">
+      ℹ️
+    </button>
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+  </div><!-- /app-shell -->
+
+  <script src="/static/app.js?v=17"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => { });
+    }
+
+    // Dark Mode Toggle
+    (function () {
+      const btn = document.getElementById('theme-toggle');
+      const icon = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-text');
+      const saved = localStorage.getItem('darkMode');
+      if (saved === 'true') document.documentElement.classList.add('dark');
+
+      function update() {
+        const isDark = document.documentElement.classList.contains('dark');
+        icon.textContent = isDark ? '☀️' : '🌙';
+        label.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      }
+      update();
+
+      btn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        update();
+      });
+    })();
+  </script>
+</body>
+
+</html>
