@@ -6,7 +6,7 @@ All secrets are loaded from environment variables (set via Google Secret Manager
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # ── Local Execution Mode ──────────────────────────────────────────────────────
 RUN_MODE = os.environ.get("RUN_MODE", "CLOUD").upper() # "LOCAL", "CLOUD", or "MODAL"
@@ -51,8 +51,8 @@ LOCATION_LON = 121.4279
 TIMEZONE = "Asia/Taipei"
 
 # ── Google Gemini ─────────────────────────────────────────────────────────
-GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL", "gemini-pro-latest")
-GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL", "gemini-flash-latest")
+GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL", "gemini-1.5-pro-latest")
+GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL", "gemini-1.5-flash-latest")
 GEMINI_MAX_TOKENS = 4096
 
 # ── Anthropic Claude ──────────────────────────────────────────────────────

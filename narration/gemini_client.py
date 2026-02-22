@@ -21,21 +21,6 @@ from config import (
 
 logger = logging.getLogger(__name__)
 
-_client: genai.Client | None = None
-
-
-def _get_client(timeout: int = 120) -> genai.Client:
-    """Lazy-initialise the Gemini client (singleton or per-timeout)."""
-    global _client
-    # Re-init if timeout changed significantly or first run
-    if _client is None:
-        _client = genai.Client(
-            api_key=GEMINI_API_KEY,
-            http_options={'timeout': timeout}
-        )
-    return _client
-
-
 def _load_system_prompt() -> str:
     """Import the system prompt from prompt_builder to avoid duplication."""
     from narration.llm_prompt_builder import build_system_prompt
@@ -45,15 +30,6 @@ def _load_system_prompt() -> str:
 def generate_narration(messages: list[dict], model_override: str | None = None) -> str:
     """
     Send the prepared message list to Gemini and return the narration text.
-
-    Args:
-        messages: Output of prompt_builder.build_prompt()
-
-    Returns:
-        The full broadcast narration as a plain-text string.
-
-    Raises:
-        RuntimeError if the API call fails.
     """
     system_prompt = _load_system_prompt()
     gemini_contents = []
@@ -68,12 +44,17 @@ def generate_narration(messages: list[dict], model_override: str | None = None) 
                 )
             )
 
+    # Use a fresh client with a long timeout to avoid ReadTimeout
+    client = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': 120})
+
     # 1. Primary Attempt: GEMINI_PRO
     try:
         model_to_use = model_override or GEMINI_PRO_MODEL
-        logger.info("Attempting Gemini (%s) with %ds timeout", model_to_use, NARRATION_TIMEOUT_PRO)
-        client_pro = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': NARRATION_TIMEOUT_PRO})
-        response = client_pro.models.generate_content(
+        if not model_to_use.startswith("models/"):
+            model_to_use = f"models/{model_to_use}"
+            
+        logger.info("Attempting Gemini (%s) with 120s timeout", model_to_use)
+        response = client.models.generate_content(
             model=model_to_use,
             contents=gemini_contents,
             config=genai.types.GenerateContentConfig(
@@ -85,15 +66,19 @@ def generate_narration(messages: list[dict], model_override: str | None = None) 
         text = response.text or ""
         if text:
             return text.strip()
-    except Exception as exc:
-        logger.warning("Gemini Pro failed or timed out: %s", exc)
+    except Exception as e:
+        logger.error("Gemini Pro failed: %s: %s", type(e).__name__, e)
+        logger.debug("Full traceback:", exc_info=True)
 
     # 2. Fallback Attempt: GEMINI_FLASH
     try:
-        logger.info("Attempting Gemini Flash fallback (%s) with %ds timeout", GEMINI_FLASH_MODEL, NARRATION_TIMEOUT_FLASH)
-        client_flash = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': NARRATION_TIMEOUT_FLASH})
-        response = client_flash.models.generate_content(
-            model=GEMINI_FLASH_MODEL,
+        flash_model = GEMINI_FLASH_MODEL
+        if not flash_model.startswith("models/"):
+            flash_model = f"models/{flash_model}"
+            
+        logger.info("Attempting Gemini Flash fallback (%s) with 120s timeout", flash_model)
+        response = client.models.generate_content(
+            model=flash_model,
             contents=gemini_contents,
             config=genai.types.GenerateContentConfig(
                 system_instruction=system_prompt,
@@ -107,6 +92,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None) 
         else:
             raise RuntimeError("Gemini Flash returned an empty response")
     except Exception as exc:
-        logger.error("Gemini Flash fallback also failed: %s", exc)
+        logger.error("Gemini Flash fallback failed: %s: %s", type(exc).__name__, exc)
+        logger.debug("Full traceback:", exc_info=True)
         raise RuntimeError(f"All Gemini models failed: {exc}") from exc
 
