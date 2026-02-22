@@ -185,21 +185,26 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
     logger.info("Starting pipeline for %s (refresh #%d)", date_str, _refresh_counter)
 
     # 1. Fetch raw data
-    yield {"type": "log", "message": "Fetching CWA current conditions..."}
-    logger.info("Fetching CWA current conditions...")
-    current = fetch_current_conditions()
+    try:
+        yield {"type": "log", "message": "Fetching CWA current conditions..."}
+        logger.info("Fetching CWA current conditions...")
+        current = fetch_current_conditions()
 
-    yield {"type": "log", "message": "Fetching CWA forecasts..."}
-    logger.info("Fetching CWA forecasts...")
-    forecasts = fetch_all_forecasts()
+        yield {"type": "log", "message": "Fetching CWA forecasts..."}
+        logger.info("Fetching CWA forecasts...")
+        forecasts = fetch_all_forecasts()
 
-    yield {"type": "log", "message": "Fetching CWA 7-day forecasts..."}
-    logger.info("Fetching CWA 7-day forecasts...")
-    forecasts_7day = fetch_all_forecasts_7day()
+        yield {"type": "log", "message": "Fetching CWA 7-day forecasts..."}
+        logger.info("Fetching CWA 7-day forecasts...")
+        forecasts_7day = fetch_all_forecasts_7day()
 
-    yield {"type": "log", "message": "Fetching MOENV AQI..."}
-    logger.info("Fetching MOENV AQI...")
-    aqi = fetch_all_aqi()
+        yield {"type": "log", "message": "Fetching MOENV AQI..."}
+        logger.info("Fetching MOENV AQI...")
+        aqi = fetch_all_aqi()
+    except Exception as exc:
+        logger.error("Data fetch failed: %s", exc)
+        yield {"type": "error", "message": f"Data Fetch Failed: {exc}"}
+        return
 
     # 2. Load history
     yield {"type": "log", "message": "Loading conversation history..."}

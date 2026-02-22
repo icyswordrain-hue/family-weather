@@ -676,24 +676,29 @@ async function triggerRefresh() {
     let buffer = '';
 
     while (true) {
-      const {
-        done,
-        value
-      } = await reader.read();
+      const { done, value } = await reader.read();
       if (done) break;
 
-      buffer += decoder.decode(value, {
-        stream: true
-      });
+      buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop(); // Keep incomplete line
 
       for (const line of lines) {
         if (!line.trim()) continue;
         try {
+          // If the line is not JSON (e.g. raw error string from server), log it and move on
+          if (!line.trim().startsWith('{')) {
+            addLog(`Server: ${line.trim()}`);
+            if (line.toLowerCase().includes('error')) {
+              showError(line.trim());
+              return;
+            }
+            continue;
+          }
+
           const msg = JSON.parse(line);
           if (msg.type === 'log') {
-            stopLoadingAnimation(); // Switch to real logs
+            stopLoadingAnimation();
             addLog(msg.message);
             const loadingTxt = document.getElementById('loading-text');
             if (loadingTxt) loadingTxt.textContent = msg.message;
@@ -702,13 +707,24 @@ async function triggerRefresh() {
             broadcastData = msg.payload;
             render(broadcastData);
             showContent();
+            return; // Exit successfully
           } else if (msg.type === 'error') {
-            throw new Error(msg.message);
+            showError(msg.message || 'Pipeline failed');
+            return;
           }
         } catch (e) {
-          console.warn("JSON parse error", e, line);
+          console.error("Stream parse error:", e, "on line:", line);
+          // If it's a critical error keyword in a non-JSON line, catch it
+          if (line.toLowerCase().includes('failed') || line.toLowerCase().includes('error')) {
+            showError(line);
+            return;
+          }
         }
       }
+    }
+    // If we reach here without a 'result' or 'error' message but the stream is done
+    if (!broadcastData) {
+      showError("Pipeline ended without a result.");
     }
   } catch (err) {
     addLog(`Error: ${err.message}`);
