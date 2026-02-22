@@ -17,6 +17,7 @@ from config import (
     MOENV_STATION_NAME,
     MOENV_TIMEOUT,
 )
+from data.helpers import _safe_float, _safe_int
 
 
 logger = logging.getLogger(__name__)
@@ -146,17 +147,4 @@ def fetch_all_aqi() -> dict:
     }
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _safe_float(value) -> float | None:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _safe_int(value) -> int | None:
-    try:
-        return int(float(value))
-    except (TypeError, ValueError):
-        return None
+# ── Helpers removed (moved to data.helpers) ───────────────────────────────────

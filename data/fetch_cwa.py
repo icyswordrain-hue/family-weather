@@ -20,6 +20,7 @@ from config import (
     CWA_FORECAST_LOCATIONS,
     CWA_TIMEOUT,
 )
+from data.helpers import _safe_float, _safe_int
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
     params = {
         "Authorization": CWA_API_KEY,
         "format": "JSON",
-        # "locationName": location_name, # Filter client-side to be safe
+        "locationName": location_name,
     }
 
     resp = requests.get(url, params=params, timeout=15)
@@ -276,6 +277,7 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
     params = {
         "Authorization": CWA_API_KEY,
         "format": "JSON",
+        "locationName": location_name,
     }
 
     resp = requests.get(url, params=params, timeout=15)
@@ -415,17 +417,4 @@ def fetch_all_forecasts_7day() -> dict[str, list[dict]]:
     return result
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _safe_float(value) -> float | None:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _safe_int(value) -> int | None:
-    try:
-        return int(float(value))
-    except (TypeError, ValueError):
-        return None
+# ── Helpers removed (moved to data.helpers) ───────────────────────────────────

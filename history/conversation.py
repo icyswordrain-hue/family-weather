@@ -182,84 +182,15 @@ def _get_local_history_path() -> str:
 
 
 def _load_history_local() -> list[dict]:
-    """Load history list from local JSON file."""
+    """
+    Load all history entries from the local JSON file, sorted chronologically.
+
+    Returns the full history list; callers that need a slice (e.g. last N days)
+    should truncate the result themselves using ``history[-n:]``.
+    """
     history_map = _load_history_map_local()
-    sorted_dates = sorted(history_map.keys())
-    # Return all (load_history caller filters by days) — logic in load_history splits it?
-    # Actually load_history logic above does the sorting/slicing on the map keys.
-    # So we just need to return the list of values sorted by date here?
-    # Wait, the original load_history returned [history_map[d] for d in recent_dates]
-    # My modified load_history asks for `_load_history_local`, which I defined to return list[dict].
-    # But I should probably make it return the map to share logic? 
-    # Actually, let's look at `load_history` again.
-    
-    # Original:
-    # history_map = json.loads(raw)
-    # sorted_dates = ...
-    # return [history_map[d] ...]
-    
-    # My modified `load_history`:
-    # if RUN_MODE == "LOCAL": return _load_history_local()
-    # ...
-    # sorted_dates = ...
-    
-    # Ah, I replaced the block that returns `history_map`.
-    # So `_load_history_local` should actually return `history_map`?
-    # BUT the type hint on `load_history` is `list[dict]`.
-    # The original implementation had `history_map` as a local var, then processed it at the end.
-    
-    # Let me correct `load_history` to return `history_map` first, then process.
-    # Actually, in the replacement, I put `return _load_history_local()` which returns `list[dict]`.
-    # That skips the sorting logic at the bottom of `load_history`.
-    # That is fine as long as `_load_history_local` does the sorting.
-    
-    history_map = _load_history_map_local()
-    sorted_dates = sorted(history_map.keys())
-    # We don't have `days` arg here though.
-    # Better to have `_load_history_local` return the map and let `load_history` do the rest?
-    # I already committed to `return _load_history_local()` in the chunk above. 
-    # So I must implement `_load_history_local` to return the *list of dicts*.
-    # But I don't know `days` here... 
-    
-    # Wait, `load_history` takes `days`.
-    # I can't easily pass it unless I change the signature.
-    # I'll just return ALL history here, and `load_history` (the caller) expects...
-    # Wait, if I return from the `if RUN_MODE == "LOCAL"` block, I skip the tail of `load_history`.
-    # That tail does: `return [history_map[d] for d in recent_dates]`
-    
-    # I should have `_load_history_local` return the `history_map` and NOT return early in `load_history`.
-    # But I already sent the replacement chunk for `load_history` as returning early.
-    # Retcon: I will implement `_load_history_local` to return the full sorted list.
-    # The caller `load_history` will return that list.
-    # Does `load_history` caller expect it to be sliced?
-    # `load_history(days=3)`.
-    # If I return all, it might differ from expectation.
-    
-    # I will change the implementation of `_load_history_local` to be smart or just return all?
-    # The original code:
-    # recent_dates = sorted_dates[-days:] ...
-    
-    # If I return all, the app receives all history. `_run_pipeline` uses `load_history(days=3)`.
-    # It might be fine.
-    
-    # Alternative: I'll rewrite `load_history` in the replacement to NOT return early, 
-    # but instead assign `history_map` and let it fall through.
-    
-    # Re-reading my ReplacementChunk for `load_history`:
-    # if RUN_MODE == "LOCAL": return _load_history_local()
-    # Yes, it returns early.
-    
-    # So `_load_history_local` must return the list.
-    # I'll just return the *last 30 days* by default here to be safe, or ALL.
-    # The caller usually asks for 3.
-    # Returning 30 is safer for "all relevant history" than just 3.
-    # But `processor.py` might rely on exactly 3?
-    # `processor.py`: `recent_meals = _extract_recent_meals(history, days=3)` - it takes `history` list.
-    # `_extract_recent_meals` does `history[-days:]`.
-    # So if I return MORE than 3, it handles it correctly.
-    # So `_load_history_local` can return the full list sorted.
-    
-    return [history_map[d] for d in sorted_dates]
+    return [history_map[d] for d in sorted(history_map.keys())]
+
 
 
 def _load_history_map_local() -> dict[str, dict]:

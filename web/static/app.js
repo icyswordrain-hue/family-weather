@@ -28,7 +28,10 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
   if (logList) {
     const div = document.createElement('div');
     div.className = 'log-entry error';
-    div.innerHTML = `<span class="log-msg">Runtime Error: ${msg}</span>`;
+    const span = document.createElement('span');
+    span.className = 'log-msg';
+    span.textContent = `Runtime Error: ${msg}`;
+    div.appendChild(span);
     logList.appendChild(div);
   }
   remoteLog('error', `${msg} at ${url}:${lineNo}`);
@@ -144,11 +147,24 @@ function renderCurrentView(data) {
 function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
   const el = document.getElementById(id);
   if (!el) return;
-  el.innerHTML = `
-    <div class="gauge-label">${label}</div>
-    <div class="gauge-value ${valueClass}">${mainVal}</div>
-    ${subVal ? `<div class="gauge-sub">${subVal}</div>` : ''}
-  `;
+  el.innerHTML = '';
+  const l = document.createElement('div');
+  l.className = 'gauge-label';
+  l.textContent = label;
+
+  const v = document.createElement('div');
+  v.className = `gauge-value ${valueClass}`;
+  v.textContent = mainVal;
+
+  el.appendChild(l);
+  el.appendChild(v);
+
+  if (subVal) {
+    const s = document.createElement('div');
+    s.className = 'gauge-sub';
+    s.textContent = subVal;
+    el.appendChild(s);
+  }
 }
 
 // ── View 2: Overview ───────────────────────────────────────────────────────
@@ -157,226 +173,217 @@ function renderOverviewView(data) {
 
   // Alerts (Unified Grouping)
   const alertContainer = document.getElementById('ov-alerts');
-  alertContainer.innerHTML = '';
-
-  if (data.alerts) {
-    const alerts = data.alerts;
-    const items = [];
-
-    // 1. Cardiac Risk
-    if (alerts.cardiac && alerts.cardiac.triggered) {
-      items.push({
-        type: 'health',
-        icon: '❤️',
-        title: 'Cardiac Alert',
-        text: alerts.cardiac.reason,
-        guidance: 'Keep warm and avoid sudden cold exposure.'
-      });
-    }
-
-    // 2. Ménière's Alert
-    if (alerts.menieres && alerts.menieres.triggered) {
-      items.push({
-        type: 'health',
-        icon: '🦻',
-        title: 'Ménière\'s Alert',
-        text: alerts.menieres.reason,
-        guidance: 'Watch for vertigo or ear fullness; stay hydrated.'
-      });
-    }
-
-    // 3. Narrative Heads Up
-    if (alerts.heads_up) {
-      items.push({
-        type: 'narrative',
-        icon: '📢',
-        title: 'Heads Up',
-        text: alerts.heads_up
-      });
-    }
-
-    if (items.length > 0) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'unified-alerts';
-      if (items.some(i => i.type === 'health')) {
-        wrapper.classList.add('has-health');
+  if (alertContainer) {
+    alertContainer.innerHTML = '';
+    if (data.alerts) {
+      const items = [];
+      if (data.alerts.cardiac && data.alerts.cardiac.triggered) {
+        items.push({ type: 'health', icon: '❤️', title: 'Cardiac Alert', text: data.alerts.cardiac.reason, guidance: 'Keep warm and avoid sudden cold exposure.' });
+      }
+      if (data.alerts.menieres && data.alerts.menieres.triggered) {
+        items.push({ type: 'health', icon: '🦻', title: 'Ménière\'s Alert', text: data.alerts.menieres.reason, guidance: 'Watch for vertigo or ear fullness; stay hydrated.' });
+      }
+      if (data.alerts.heads_up) {
+        items.push({ type: 'narrative', icon: '📢', title: 'Heads Up', text: data.alerts.heads_up });
       }
 
-      const group = document.createElement('div');
-      group.className = 'alert-group';
+      if (items.length > 0) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'unified-alerts' + (items.some(i => i.type === 'health') ? ' has-health' : '');
+        const group = document.createElement('div');
+        group.className = 'alert-group';
 
-      items.forEach(item => {
-        const div = document.createElement('div');
-        div.className = `alert-item ${item.type}`;
-        div.innerHTML = `
-          <div class="alert-icon">${item.icon}</div>
-          <div class="alert-content">
-            <div class="alert-title">${item.title}</div>
-            <div class="alert-text">${item.text}</div>
-            ${item.guidance ? `<div class="alert-guidance">${item.guidance}</div>` : ''}
-          </div>
-        `;
-        group.appendChild(div);
-      });
-
-      wrapper.appendChild(group);
-      alertContainer.appendChild(wrapper);
+        items.forEach(item => {
+          const div = document.createElement('div');
+          div.className = `alert-item ${item.type}`;
+          const icon = document.createElement('div');
+          icon.className = 'alert-icon';
+          icon.textContent = item.icon;
+          const content = document.createElement('div');
+          content.className = 'alert-content';
+          const title = document.createElement('div');
+          title.className = 'alert-title';
+          title.textContent = item.title;
+          const text = document.createElement('div');
+          text.className = 'alert-text';
+          text.textContent = item.text;
+          content.appendChild(title);
+          content.appendChild(text);
+          if (item.guidance) {
+            const g = document.createElement('div');
+            g.className = 'alert-guidance';
+            g.textContent = item.guidance;
+            content.appendChild(g);
+          }
+          div.appendChild(icon);
+          div.appendChild(content);
+          group.appendChild(div);
+        });
+        wrapper.appendChild(group);
+        alertContainer.appendChild(wrapper);
+      }
     }
   }
 
-  // Timeline (Dynamic Order) + Transition indicators (#11)
+  // Timeline
   const timelineGrid = document.getElementById('ov-timeline');
-  timelineGrid.innerHTML = '';
-  const timeline = data.timeline || [];
+  if (timelineGrid) {
+    timelineGrid.innerHTML = '';
+    const transitionMap = {};
+    (data.transitions || []).forEach(t => { if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t; });
 
-  // Build transition lookup: from_segment -> transition object
-  const transitionMap = {};
-  (data.transitions || []).forEach(t => {
-    if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t;
-  });
+    (data.timeline || []).forEach((seg, idx) => {
+      const slotName = seg.display_name || 'Forecast';
+      const card = document.createElement('div');
+      card.className = 'time-card';
+      const header = document.createElement('div');
+      header.className = 'tc-header';
+      header.textContent = slotName;
+      const icon = document.createElement('div');
+      icon.className = 'tc-icon';
+      icon.textContent = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️';
+      const temp = document.createElement('div');
+      temp.className = 'tc-temp';
+      temp.textContent = `${Math.round(seg.AT ?? seg.T ?? 0)}°`;
+      const details = document.createElement('div');
+      details.className = 'tc-details';
 
-  timeline.forEach((seg, idx) => {
-    const slotName = seg.display_name || 'Forecast';
-    const nextSeg = timeline[idx + 1];
-    const transition = nextSeg ? transitionMap[slotName] : null;
+      const addRow = (label, val, lvl) => {
+        const row = document.createElement('div');
+        row.className = 'tc-row';
+        const l = document.createElement('span');
+        l.className = 'tc-label';
+        l.textContent = label;
+        const v = document.createElement('span');
+        v.className = `tc-val lvl-${lvl}`;
+        v.textContent = val;
+        row.appendChild(l);
+        row.appendChild(v);
+        details.appendChild(row);
+      };
+      addRow('Rain', seg.precip_text || '—', seg.precip_level || 1);
+      addRow('Wind', seg.wind_text || '—', seg.wind_level || 1);
+      if (seg.outdoor_grade) {
+        addRow('Outdoor', `${seg.outdoor_grade} · ${seg.outdoor_score}`, `grade-${seg.outdoor_grade}`);
+      }
+      card.appendChild(header);
+      card.appendChild(icon);
+      card.appendChild(temp);
+      card.appendChild(details);
 
-    // Build transition badge HTML
-    let transitionHtml = '';
-    if (transition && transition.is_transition) {
-      const parts = [];
-      (transition.breaches || []).forEach(b => {
-        if (b.metric === 'CloudCover') {
-          let label = b.to;
-          if (label === 'Sunny/Clear') label = 'Sunny';
-          if (label === 'Mixed Clouds') label = 'Cloudy';
-          parts.push(label);
-        } else if (b.metric === 'AT') {
-          parts.push(`${b.delta > 0 ? '+' : ''}${Math.round(b.delta)}°`);
-        } else if (b.metric === 'PoP6h') {
-          const intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"];
-          const fromIdx = intensity.indexOf(b.from);
-          const toIdx = intensity.indexOf(b.to);
-          if (toIdx > fromIdx) {
-            parts.push(toIdx >= 3 ? 'Rain expected' : 'More rain');
-          } else if (toIdx < fromIdx) {
-            parts.push('Less rain');
+      const nextSeg = data.timeline[idx + 1];
+      const transition = nextSeg ? transitionMap[slotName] : null;
+      if (transition && transition.is_transition) {
+        const parts = [];
+        (transition.breaches || []).forEach(b => {
+          if (b.metric === 'CloudCover') {
+            let label = b.to;
+            if (label === 'Sunny/Clear') label = 'Sunny';
+            if (label === 'Mixed Clouds') label = 'Cloudy';
+            parts.push(label);
+          } else if (b.metric === 'AT') {
+            parts.push(`${b.delta > 0 ? '+' : ''}${Math.round(b.delta)}°`);
+          } else if (b.metric === 'PoP6h') {
+            const intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"];
+            const fIdx = intensity.indexOf(b.from), tIdx = intensity.indexOf(b.to);
+            if (tIdx > fIdx) parts.push(tIdx >= 3 ? 'Rain expected' : 'More rain');
+            else if (tIdx < fIdx) parts.push('Less rain');
+          } else if (b.metric === 'RH') {
+            parts.push(b.delta > 0 ? 'Humid' : 'Dry air');
+          } else if (b.metric === 'WS') {
+            const bf = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze"];
+            const fIdx = bf.indexOf(b.from), tIdx = bf.indexOf(b.to);
+            if (tIdx > fIdx) parts.push('Windier');
+            else if (tIdx < fIdx) parts.push('Calmer');
           }
-        } else if (b.metric === 'RH') {
-          parts.push(b.delta > 0 ? 'Humid' : 'Dry air');
-        } else if (b.metric === 'WS') {
-          const bf = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze"];
-          const fromIdx = bf.indexOf(b.from);
-          const toIdx = bf.indexOf(b.to);
-          if (toIdx > fromIdx) parts.push('Windier');
-          else if (toIdx < fromIdx) parts.push('Calmer');
-        }
-      });
-      transitionHtml = `<div class="tc-transition">→ ${parts.length ? parts.join(' · ') : 'change'}</div>`;
-    }
+        });
+        const t = document.createElement('div');
+        t.className = 'tc-transition';
+        t.textContent = `→ ${parts.length ? parts.join(' · ') : 'change'}`;
+        card.appendChild(t);
+      }
+      timelineGrid.appendChild(card);
+    });
+  }
 
-    const outdoorGrade = seg.outdoor_grade;
-    const outdoorScore = seg.outdoor_score;
-    const outdoorHtml = outdoorGrade
-      ? `<div class="tc-row">
-           <span class="tc-label">Outdoor</span>
-           <span class="tc-val oi-grade-${outdoorGrade}">${outdoorGrade} · ${outdoorScore}</span>
-         </div>`
-      : '';
-
-    const card = document.createElement('div');
-    card.className = 'time-card';
-    card.innerHTML = `
-      <div class="tc-header">${slotName}</div>
-      <div class="tc-icon">${ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️'}</div>
-      <div class="tc-temp">${Math.round(seg.AT ?? seg.T ?? 0)}°</div>
-      <div class="tc-details">
-         <div class="tc-row">
-           <span class="tc-label">Rain</span>
-           <span class="tc-val lvl-${seg.precip_level || 1}">${seg.precip_text || '—'}</span>
-         </div>
-         <div class="tc-row">
-           <span class="tc-label">Wind</span>
-           <span class="tc-val lvl-${seg.wind_level || 1}">${seg.wind_text || '—'}</span>
-         </div>
-         ${outdoorHtml}
-      </div>
-      ${transitionHtml}
-    `;
-    timelineGrid.appendChild(card);
-  });
-
-  // 7-Day Timeline loop
+  // 7-Day Timeline
   const weeklyTimelineEl = document.getElementById('ov-weekly-timeline');
   if (weeklyTimelineEl && data.weekly_timeline) {
     weeklyTimelineEl.innerHTML = '';
     data.weekly_timeline.forEach(item => {
       let dt;
-      try {
-        // Remove offset for local Date parsing if needed
-        dt = new Date(item.start_time.replace('+08:00', ''));
-      } catch (e) {
-        dt = new Date();
-      }
+      try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
       const hours = dt.getHours();
       const isNight = (hours >= 18 || hours < 6);
-
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const dayName = days[dt.getDay()];
-      const timeLabel = isNight ? 'Night' : 'Day';
-      const displayTime = `${dayName} ${timeLabel}`;
-
-      const icon = ICONS[item.cloud_cover] || ICONS[item.Wx] || '☁️';
-      const rawTemp = item.AT;
-      const tempVal = rawTemp !== undefined && rawTemp !== null ? Math.round(rawTemp) : '--';
-      const tempStr = `${tempVal}°`;
-
-      // Use standard temp coloring classes or generic styling if desired
-      let tempColorClass = '';
-      if (rawTemp >= 30) tempColorClass = 'text-hot';
-      if (rawTemp <= 15) tempColorClass = 'text-cold';
-
-      const popRaw = item.PoP12h;
-      const popStr = popRaw !== undefined && popRaw !== null ? `${popRaw}%` : '--%';
-      const popIcon = (popRaw && popRaw >= 40) ? `<span class="tc-val lvl-3">💧 ${popStr}</span>` : `<span class="tc-val lvl-1">${popStr}</span>`;
+      const displayTime = `${days[dt.getDay()]} ${isNight ? 'Night' : 'Day'}`;
 
       const card = document.createElement('div');
-      card.className = 'time-card'; // Recycle existing styling
-      card.innerHTML = `
-        <div class="tc-header">${displayTime}</div>
-        <div class="tc-icon">${icon}</div>
-        <div class="tc-temp ${tempColorClass}">${tempStr}</div>
-        <div class="tc-details">
-           <div class="tc-row">
-             <span class="tc-label">Rain</span>
-             ${popIcon}
-           </div>
-        </div>
-      `;
+      card.className = 'time-card';
+      const header = document.createElement('div');
+      header.className = 'tc-header';
+      header.textContent = displayTime;
+      const icon = document.createElement('div');
+      icon.className = 'tc-icon';
+      icon.textContent = ICONS[item.cloud_cover] || ICONS[item.Wx] || '☁️';
+      const temp = document.createElement('div');
+      temp.className = 'tc-temp' + (item.AT >= 30 ? ' text-hot' : item.AT <= 15 ? ' text-cold' : '');
+      temp.textContent = `${Math.round(item.AT ?? 0)}°`;
+      const details = document.createElement('div');
+      details.className = 'tc-details';
+      const row = document.createElement('div');
+      row.className = 'tc-row';
+      const l = document.createElement('span');
+      l.className = 'tc-label';
+      l.textContent = 'Rain';
+      const v = document.createElement('span');
+      v.className = 'tc-val lvl-' + (item.PoP12h >= 40 ? '3' : '1');
+      v.textContent = (item.PoP12h ?? '--') + '%';
+      row.appendChild(l);
+      row.appendChild(v);
+      details.appendChild(row);
+      card.appendChild(header);
+      card.appendChild(icon);
+      card.appendChild(temp);
+      card.appendChild(details);
       weeklyTimelineEl.appendChild(card);
     });
   }
 
-  // AQI Forecast block (#10)
+  // AQI Forecast
   const aqiFcEl = document.getElementById('ov-aqi-forecast');
-  if (aqiFcEl) {
-    aqiFcEl.innerHTML = '';
+  if (aqiFcEl && data.aqi_forecast && (data.aqi_forecast.status || data.aqi_forecast.content)) {
     const aqi = data.aqi_forecast;
-    if (aqi && (aqi.status || aqi.content)) {
-      const aqiVal = aqi.aqi ? ` · AQI ${aqi.aqi}` : '';
-      const dateLabel = aqi.forecast_date ? ` (${aqi.forecast_date})` : '';
-      aqiFcEl.className = 'aqi-forecast-block';
-      aqiFcEl.innerHTML = `
-        <div class="aqi-fc-icon">🌫️</div>
-        <div class="aqi-fc-body">
-          <div class="aqi-fc-header">
-            <span class="aqi-fc-title">Tomorrow's Air Quality</span>
-            <span class="aqi-fc-date">${dateLabel}${aqiVal}</span>
-          </div>
-          <div class="aqi-fc-status">${translateAQIText(aqi.status)}</div>
-          ${(aqi.summary_en || aqi.content) ? `<div class="aqi-fc-content">${aqi.summary_en || aqi.content}</div>` : ''}
-        </div>
-      `;
+    aqiFcEl.className = 'aqi-forecast-block';
+    aqiFcEl.innerHTML = '';
+    const icon = document.createElement('div');
+    icon.className = 'aqi-fc-icon';
+    icon.textContent = '🌫️';
+    const body = document.createElement('div');
+    body.className = 'aqi-fc-body';
+    const header = document.createElement('div');
+    header.className = 'aqi-fc-header';
+    const title = document.createElement('span');
+    title.className = 'aqi-fc-title';
+    title.textContent = "Tomorrow's Air Quality";
+    const date = document.createElement('span');
+    date.className = 'aqi-fc-date';
+    date.textContent = (aqi.forecast_date ? ` (${aqi.forecast_date})` : '') + (aqi.aqi ? ` · AQI ${aqi.aqi}` : '');
+    header.appendChild(title);
+    header.appendChild(date);
+    const status = document.createElement('div');
+    status.className = 'aqi-fc-status';
+    status.textContent = translateAQIText(aqi.status);
+    body.appendChild(header);
+    body.appendChild(status);
+    if (aqi.summary_en || aqi.content) {
+      const content = document.createElement('div');
+      content.className = 'aqi-fc-content';
+      content.textContent = aqi.summary_en || aqi.content;
+      body.appendChild(content);
     }
+    aqiFcEl.appendChild(icon);
+    aqiFcEl.appendChild(body);
   }
 }
 
@@ -397,73 +404,88 @@ function translateAQIText(status) {
 function renderLifestyleView(data) {
   if (!data) return;
   const grid = document.getElementById('lifestyle-grid');
+  if (!grid) return;
   grid.innerHTML = '';
+
+  const add = (icon, title, text, extraNodes = []) => {
+    const card = document.createElement('div');
+    card.className = 'ls-card';
+    const ic = document.createElement('div');
+    ic.className = 'ls-icon';
+    ic.textContent = icon;
+    const content = document.createElement('div');
+    content.className = 'ls-content';
+    const t = document.createElement('div');
+    t.className = 'ls-title';
+    t.textContent = title;
+    const txt = document.createElement('div');
+    txt.className = 'ls-text';
+    txt.textContent = text;
+    content.appendChild(t);
+    content.appendChild(txt);
+    extraNodes.forEach(n => content.appendChild(n));
+    card.appendChild(ic);
+    card.appendChild(content);
+    grid.appendChild(card);
+  };
+
+  const mkBadge = (cls, text) => {
+    const s = document.createElement('span');
+    s.className = 'ls-badge ' + cls;
+    s.textContent = text;
+    return s;
+  };
+  const mkSub = (text) => {
+    const d = document.createElement('div');
+    d.className = 'ls-sub';
+    d.textContent = text;
+    return d;
+  };
 
   // 1. Wardrobe
   if (data.wardrobe) {
-    const feelsLike = data.wardrobe.feels_like != null
-      ? `<div class="ls-sub">Feels like ${Math.round(data.wardrobe.feels_like)}°</div>`
-      : '';
-    grid.appendChild(makeIconCard('🧥', 'Wardrobe', data.wardrobe.text, feelsLike));
+    const extras = [];
+    if (data.wardrobe.feels_like != null) extras.push(mkSub(`Feels like ${Math.round(data.wardrobe.feels_like)}°`));
+    add('🧥', 'Wardrobe', data.wardrobe.text, extras);
   }
   // 2. Rain Gear
-  if (data.rain_gear) {
-    grid.appendChild(makeIconCard('☂️', 'Rain Gear', data.rain_gear.text));
-  }
+  if (data.rain_gear) add('☂️', 'Rain Gear', data.rain_gear.text);
   // 3. Commute
   if (data.commute) {
-    const hazards = (data.commute.hazards || []);
-    const hazardsHtml = hazards.length > 0
-      ? `<ul class="ls-hazards">${hazards.map(h => `<li>${h}</li>`).join('')}</ul>`
-      : '';
-    grid.appendChild(makeIconCard('🚗', 'Commute', data.commute.text, hazardsHtml));
+    const extras = [];
+    if (data.commute.hazards && data.commute.hazards.length > 0) {
+      const ul = document.createElement('ul');
+      ul.className = 'ls-hazards';
+      data.commute.hazards.forEach(h => {
+        const li = document.createElement('li');
+        li.textContent = h;
+        ul.appendChild(li);
+      });
+      extras.push(ul);
+    }
+    add('🚗', 'Commute', data.commute.text, extras);
   }
   // 4. Garden Health
-  if (data.garden && data.garden.text) {
-    grid.appendChild(makeIconCard('🌱', 'Garden Health', data.garden.text));
-  }
+  if (data.garden && data.garden.text) add('🌱', 'Garden Health', data.garden.text);
   // 5. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
-    const grade = data.outdoor.grade;
-    const gradeHtml = grade
-      ? `<span class="ls-badge oi-grade-${grade}">Grade ${grade} · ${data.outdoor.label || ''}</span>`
-      : '';
-    const topAct = data.outdoor.top_activity;
-    const windowLabel = data.outdoor.best_window || '';
-    const subHtml = topAct
-      ? `<div class="ls-sub">Best: ${windowLabel} · Top activity: ${topAct}</div>`
-      : '';
-    grid.appendChild(makeIconCard('🌳', 'Outdoor Activities', data.outdoor.text, gradeHtml + subHtml));
+    const extras = [];
+    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, `Grade ${data.outdoor.grade} · ${data.outdoor.label || ''}`));
+    if (data.outdoor.top_activity) extras.push(mkSub(`Best: ${data.outdoor.best_window || ''} · Top: ${data.outdoor.top_activity}`));
+    add('🌳', 'Outdoor Activities', data.outdoor.text, extras);
   }
   // 6. Meals
   if (data.meals && data.meals.text) {
-    const moodHtml = data.meals.mood
-      ? `<span class="ls-badge mood-badge">${data.meals.mood}</span>`
-      : '';
-    grid.appendChild(makeIconCard('🍱', 'Meals', data.meals.text, moodHtml));
+    const extras = [];
+    if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
+    add('🍱', 'Meals', data.meals.text, extras);
   }
   // 7. HVAC Advice
   if (data.hvac) {
-    const mode = data.hvac.mode;
-    const modeHtml = mode
-      ? `<span class="ls-badge hvac-${mode.toLowerCase()}">${mode}</span>`
-      : '';
-    grid.appendChild(makeIconCard('🌡️', 'HVAC Advice', data.hvac.text, modeHtml));
+    const extras = [];
+    if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
+    add('🌡️', 'HVAC Advice', data.hvac.text, extras);
   }
-}
-
-function makeIconCard(icon, title, text, extra = '') {
-  const el = document.createElement('div');
-  el.className = 'ls-card';
-  el.innerHTML = `
-    <div class="ls-icon">${icon}</div>
-    <div class="ls-content">
-      <div class="ls-title">${title}</div>
-      <div class="ls-text">${text}</div>
-      ${extra}
-    </div>
-  `;
-  return el;
 }
 
 // ── View 4: Narration ──────────────────────────────────────────────────────
@@ -477,15 +499,17 @@ function renderNarrationView(data, audioUrls) {
     if (!p.text) return;
     const block = document.createElement('div');
     block.className = 'narration-block';
-    const htmlText = p.text.replace(/\n/g, '<br>');
-    block.innerHTML = `<p>${htmlText}</p>`;
+    const pEl = document.createElement('p');
+    pEl.textContent = p.text;
+    pEl.style.whiteSpace = 'pre-line';
+    block.appendChild(pEl);
     container.appendChild(block);
   });
 
   // Source Badge
   const badge = document.getElementById('narration-meta');
   if (badge && data.meta) {
-    badge.textContent = `${data.meta.source} (${data.meta.model})`;
+    badge.textContent = `${data.meta.source}(${data.meta.model})`;
     let badgeClass = 'source-template';
     const s = data.meta.source.toLowerCase();
     if (s.includes('gemini')) badgeClass = 'source-gemini';
@@ -518,7 +542,6 @@ function switchView(viewName) {
     b.classList.toggle('active', b.dataset.view === viewName);
   });
 
-  // Update Main Views
   document.querySelectorAll('.view-container').forEach(v => {
     v.classList.toggle('active', v.id === `view-${viewName}`);
   });
@@ -552,29 +575,7 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
-function renderHealthCard(title, reason, guidance) {
-  const card = document.createElement('div');
-  card.className = 'alert-card alert-health';
-  card.innerHTML = `
-    <div class="ac-header">${title}</div>
-    <div class="ac-reason">${reason}</div>
-    <div class="ac-guidance">${guidance}</div>
-  `;
-  return card;
-}
-
-function makeCard(title, text, opts = {}) {
-  const card = document.createElement('div');
-  card.className = 'card ' + (opts.warn ? 'card-warn' : '') + (opts.wide ? 'card-wide' : '');
-  card.innerHTML = `<h3 class="card-title">${title}</h3><div class="card-text">${text}</div>`;
-  return card;
-}
-
-function aqiClass(aqi) {
-  if (aqi <= 50) return 'aqi-good';
-  if (aqi <= 100) return 'aqi-moderate';
-  return 'aqi-poor';
-}
+// ── Clock ──────────────────────────────────────────────────────────────────
 
 function updateClock() {
   const now = new Date();
@@ -759,11 +760,19 @@ function addLog(msg) {
       second: '2-digit'
     });
   } catch (e) {
-    const now = new Date();
     ts = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
   }
 
-  div.innerHTML = `<span class="log-ts">${ts}</span><span class="log-msg">${msg}</span>`;
+  const tsSpan = document.createElement('span');
+  tsSpan.className = 'log-ts';
+  tsSpan.textContent = ts;
+
+  const msgSpan = document.createElement('span');
+  msgSpan.className = 'log-msg';
+  msgSpan.textContent = msg;
+
+  div.appendChild(tsSpan);
+  div.appendChild(msgSpan);
   list.appendChild(div);
   list.scrollTop = list.scrollHeight;
 }
