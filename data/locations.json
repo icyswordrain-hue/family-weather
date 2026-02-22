@@ -1,0 +1,190 @@
+{
+    "Nice": [
+        {
+            "name": "Dahan River Bikeway (Yingge section)",
+            "activity": "cycling / walking",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.907,
+            "lng": 121.349,
+            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+        },
+        {
+            "name": "Jiaoban Mountain Trail (Sanxia)",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.937,
+            "lng": 121.373,
+            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+        },
+        {
+            "name": "Bitan Scenic Area (Xindian)",
+            "activity": "walking / paddleboat",
+            "surface": "paved promenade",
+            "parkinsons": "good",
+            "lat": 24.956,
+            "lng": 121.541,
+            "notes": "Suspension bridge, shaded banks, gentle terrain"
+        },
+        {
+            "name": "Banqiao 435 Art Zone Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.465,
+            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+        },
+        {
+            "name": "Tucheng Chenfu Road Riverside Park",
+            "activity": "walking / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.974,
+            "lng": 121.427,
+            "notes": "10-min drive from Shulin, very flat, often breezy"
+        },
+        {
+            "name": "Longmen Camping Meadow (Sanxia)",
+            "activity": "walking / picnic",
+            "surface": "grass + packed dirt",
+            "parkinsons": "ok",
+            "lat": 24.863,
+            "lng": 121.371,
+            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+        }
+    ],
+    "Warm": [
+        {
+            "name": "Shulin Riverside Greenway",
+            "activity": "cycling / jogging",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.987,
+            "lng": 121.428,
+            "notes": "Local favourite — 5km flat loop, shaded sections, water stations"
+        },
+        {
+            "name": "Yingge Ceramics Museum Park",
+            "activity": "strolling",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.906,
+            "lng": 121.345,
+            "notes": "Outdoor sculpture garden, paved paths, interesting for all ages"
+        },
+        {
+            "name": "Sanxia Old Street & Zushi Temple",
+            "activity": "walking / culture",
+            "surface": "cobblestone + paved",
+            "parkinsons": "ok",
+            "lat": 24.942,
+            "lng": 121.369,
+            "notes": "Best in morning before crowds; cobblestones can be tricky — bring a cane"
+        },
+        {
+            "name": "Zhonghe Yuantong Mountain Trail",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.996,
+            "lng": 121.496,
+            "notes": "Shaded climb ~3km, cooler than valley floor, good workout"
+        },
+        {
+            "name": "Banqiao Lin Family Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved garden paths",
+            "parkinsons": "good",
+            "lat": 25.014,
+            "lng": 121.462,
+            "notes": "Historic garden, very flat, shaded by large banyan trees"
+        },
+        {
+            "name": "Tamsui Old Street & Waterfront",
+            "activity": "walking / boat",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.17,
+            "lng": 121.432,
+            "notes": "Worth the 50km drive — waterfront promenade, sunset views"
+        }
+    ],
+    "Cloudy & Breezy": [
+        {
+            "name": "Banqiao Station Underground Mall Walk",
+            "activity": "indoor walking",
+            "surface": "indoor tile",
+            "parkinsons": "good",
+            "lat": 25.014,
+            "lng": 121.463,
+            "notes": "Covered, climate-controlled, no wind; good fallback on breezy days"
+        },
+        {
+            "name": "Sanxia Dasi Bikeway (lower section)",
+            "activity": "cycling / e-bike",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.924,
+            "lng": 121.358,
+            "notes": "Flat, riverside section sheltered by tree line; wind-protected"
+        },
+        {
+            "name": "Tucheng Sports Center Indoor Track",
+            "activity": "indoor walking",
+            "surface": "rubberised track",
+            "parkinsons": "good",
+            "lat": 24.978,
+            "lng": 121.431,
+            "notes": "Fully covered 200m indoor track, climate-controlled, very accessible"
+        },
+        {
+            "name": "Xinzhuang Lihui Park",
+            "activity": "tai chi / stretching",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.034,
+            "lng": 121.445,
+            "notes": "Large sheltered pavilions, community tai chi groups in morning"
+        },
+        {
+            "name": "Shulin Community Center Courtyard",
+            "activity": "light exercise",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.994,
+            "lng": 121.432,
+            "notes": "Covered walkway, easy access, good for overcast days"
+        }
+    ],
+    "Stay In": [
+        {
+            "name": "Banqiao Far Eastern Department Store Sky Garden",
+            "activity": "indoor stroll",
+            "surface": "indoor tile + outdoor terrace",
+            "parkinsons": "good",
+            "lat": 25.011,
+            "lng": 121.464,
+            "notes": "Rooftop garden accessible by elevator; protected terrace on drizzly days"
+        },
+        {
+            "name": "Fuzhong Library Garden (Banciao)",
+            "activity": "reading / light walk",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.01,
+            "lng": 121.46,
+            "notes": "Quiet library garden courtyard, sheltered veranda, good AQI days only"
+        },
+        {
+            "name": "Sanxia Visitor Center & Museum",
+            "activity": "indoor culture",
+            "surface": "indoor tile",
+            "parkinsons": "good",
+            "lat": 24.94,
+            "lng": 121.368,
+            "notes": "Fully indoor, free entry, interesting local history exhibits"
+        }
+    ]
+}
