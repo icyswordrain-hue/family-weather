@@ -15,4 +15,4 @@ debug_*.py
 stations.txt
 stations_*.txt
 verify_*.py
-test_*.py
+
