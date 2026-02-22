@@ -227,8 +227,8 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
                     if wx_code:
                         slot["Wx"] = _safe_int(wx_code)
                     else:
-                        # Try parsing val as int
-                        slot["Wx"] = _safe_int(val)
+                        # Try parsing v.get("value") as int
+                        slot["Wx"] = _safe_int(v.get("value"))
 
         # Post-process slots
         results = []
@@ -302,13 +302,6 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
         time_slots: dict[str, dict] = {}
         we_list = target.get("WeatherElement", []) or target.get("weatherElement", [])
 
-        for element in we_list:
-            time_list = element.get("Time", []) or element.get("time", [])
-            if not time_list:
-                continue
-            
-            el_name = (element.get("ElementName") or element.get("elementName") or "").strip()
-            
         for element in we_list:
             time_list = element.get("Time", []) or element.get("time", [])
             if not time_list:
