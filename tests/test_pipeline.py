@@ -10,6 +10,13 @@ from backend.pipeline import (
     run_parallel_summarization,
 )
 
+import pytest
+from backend.pipeline import _narration_cache
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    _narration_cache.clear()
+
 # ── check_regen_cycle ─────────────────────────────────────────────────────────
 
 def test_regen_triggers_on_empty_history():
@@ -102,3 +109,38 @@ def test_parallel_summ_no_aqi(mock_lifestyle):
     summaries, aqi_en = run_parallel_summarization({"p1": "text"}, "")
     assert summaries == {"section1": "summary1"}
     assert aqi_en is None
+
+# ── build_system_prompt i18n ──────────────────────────────────────────────────
+
+from narration.llm_prompt_builder import build_system_prompt
+
+def test_build_system_prompt_en_returns_english_prompt():
+    prompt = build_system_prompt(lang='en')
+    assert 'English' in prompt or 'english' in prompt.lower()
+
+def test_build_system_prompt_zh_returns_chinese_prompt():
+    prompt = build_system_prompt(lang='zh-TW')
+    assert '繁體中文' in prompt or 'Traditional Chinese' in prompt
+
+def test_build_system_prompt_unknown_lang_falls_back_to_en():
+    prompt = build_system_prompt(lang='fr')
+    # Unknown lang → safe fallback to English
+    assert '---METADATA---' in prompt
+
+def test_zh_system_prompt_requires_chinese_output():
+    """ZH prompt must instruct Chinese output and not say 'English only'."""
+    prompt = build_system_prompt(lang='zh-TW')
+    assert "繁體中文" in prompt
+    assert "English only" not in prompt
+
+def test_zh_metadata_block_stays_english():
+    """ZH prompt must still instruct METADATA JSON keys in English."""
+    prompt = build_system_prompt(lang='zh-TW')
+    assert "---METADATA---" in prompt
+    assert '"wardrobe"' in prompt
+    assert '"accuracy_grade"' in prompt
+
+def test_en_prompt_unchanged():
+    """EN prompt must still contain 'English only' rule."""
+    prompt = build_system_prompt(lang='en')
+    assert "English only" in prompt

@@ -47,15 +47,7 @@ let broadcastData = null;
 let currentView = 'lifestyle'; // 'lifestyle' | 'narration' | 'dashboard'
 let tempChart = null;
 let loadingInterval = null;
-const LOADING_MSGS = [
-  "Connecting to CWA Banqiao Station...",
-  "Retrieving Township Forecasts...",
-  "Checking MOENV Air Quality...",
-  "Processing V5 Logic...",
-  "Generating Narration...",
-  "Synthesizing Audio...",
-  "Finalizing..."
-];
+let LOADING_MSGS = []; // Populated by applyLanguage
 
 const ICONS = {
   'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
@@ -65,6 +57,95 @@ const ICONS = {
   '14': '🌧️', '15': '🌧️', '16': '🌧️', '17': '🌧️', '18': '🌧️', '19': '🌧️', '20': '🌧️'
 };
 
+// ── Translations ───────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  en: {
+    loading: 'Fetching forecast…',
+    error_prefix: 'Error: ',
+    last_updated: 'Last updated: ',
+    ground: 'Ground',
+    wind: 'Wind',
+    humidity: 'Humidity',
+    air_quality: 'Air Quality',
+    uv: 'UV Index',
+    pressure: 'Pressure',
+    feels_like: 'Feels like',
+    rain: 'Rain',
+    outdoor: 'Outdoor',
+    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    night: 'Night', day: 'Day',
+    cardiac_title: 'Cardiac Alert',
+    cardiac_guidance: 'Keep warm and avoid sudden cold exposure.',
+    menieres_title: "Ménière's Alert",
+    menieres_guidance: 'Watch for vertigo or ear fullness; stay hydrated.',
+    heads_up_title: 'Heads Up',
+    aqi_title: "Tomorrow's Air Quality",
+    wardrobe: 'Wardrobe',
+    rain_gear: 'Rain Gear',
+    commute: 'Commute',
+    garden: 'Garden Health',
+    outdoor_act: 'Outdoor Activities',
+    meals: 'Meals',
+    hvac: 'HVAC Advice',
+    best_label: 'Best',
+    top_label: 'Top',
+    boot: 'System Boot: Initiating connection…',
+    data_ok: 'Data received successfully.',
+    render: 'Pipeline success. Rendering…',
+    step1: 'Connecting to CWA Banqiao Station…',
+    step2: 'Retrieving Township Forecasts…',
+    step3: 'Checking MOENV Air Quality…',
+    step4: 'Processing V5 Logic…',
+    step5: 'Generating Narration…',
+    step6: 'Synthesizing Audio…',
+    step7: 'Finalizing…',
+  },
+  'zh-TW': {
+    loading: '正在獲取天氣…',
+    error_prefix: '錯誤：',
+    last_updated: '最後更新：',
+    ground: '地面狀況',
+    wind: '風速',
+    humidity: '濕度',
+    air_quality: '空氣品質',
+    uv: '紫外線',
+    pressure: '氣壓',
+    feels_like: '體感溫度',
+    rain: '降雨',
+    outdoor: '戶外',
+    days: ['日', '一', '二', '三', '四', '五', '六'],
+    night: '晚', day: '早',
+    cardiac_title: '心臟警示',
+    cardiac_guidance: '請保持溫暖，避免突然暴露於冷空氣中。',
+    menieres_title: '梅尼爾氏症警示',
+    menieres_guidance: '注意眩暈或耳鳴；多補充水分。',
+    heads_up_title: '注意事項',
+    aqi_title: '明日空氣品質',
+    wardrobe: '穿搭建議',
+    rain_gear: '雨具準備',
+    commute: '通勤狀況',
+    garden: '花園照護',
+    outdoor_act: '戶外活動',
+    meals: '餐食建議',
+    hvac: '空調建議',
+    best_label: '最佳時段',
+    top_label: '推薦活動',
+    boot: '系統啟動：初始化連線…',
+    data_ok: '資料接收成功。',
+    render: '管道成功，正在渲染…',
+    step1: '連線至 CWA 板橋站…',
+    step2: '取得鄉鎮預報…',
+    step3: '查詢 MOENV 空氣品質…',
+    step4: '處理 V5 邏輯…',
+    step5: '生成廣播稿…',
+    step6: '合成語音…',
+    step7: '最終處理中…',
+  },
+};
+
+// Active translation map — updated by applyLanguage()
+let T = TRANSLATIONS['zh-TW'];
+
 // ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   window.app = {
@@ -72,8 +153,9 @@ window.addEventListener('DOMContentLoaded', () => {
     triggerRefresh
   };
 
-  // Show first log entry immediately
-  addLog("System Boot: Initiating connection...");
+  // Language must be applied first so T.boot is correct
+  initLangToggle();
+  addLog(T.boot);
 
   initSidebarNav();
   initMobileDrawer();
@@ -87,17 +169,16 @@ window.addEventListener('DOMContentLoaded', () => {
 // ── API fetch ──────────────────────────────────────────────────────────────
 async function fetchBroadcast() {
   showLoading();
-  addLog("System Boot: Fetching latest broadcast...");
   try {
     const res = await fetch('/api/broadcast');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
-    addLog("Data received successfully.");
+    addLog(T.data_ok);
     render(broadcastData);
     showContent();
   } catch (err) {
-    addLog(`Error: ${err.message || 'Unknown error'}`);
+    addLog(`${T.error_prefix}${err.message || 'Unknown error'}`);
     showError(err.message || 'Unknown error');
   }
 }
@@ -122,7 +203,7 @@ function render(data) {
       console.warn("Timezone zh-TW/Taipei not supported, falling back to default.", e);
       dateStr = new Date(ts).toLocaleString();
     }
-    const msg = `Last updated: ${dateStr}`;
+    const msg = `${T.last_updated}${dateStr}`;
     setText('rp-last-updated', msg);
   }
 }
@@ -136,12 +217,12 @@ function renderCurrentView(data) {
   setText('rp-location', data.location || '—');
 
   // Gauge Cards (Restructured)
-  renderGauge('gauge-ground', data.ground_state, 'Ground', '', `lvl-${data.ground_level}`);
-  renderGauge('gauge-wind', data.wind.text, 'Wind', `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
-  renderGauge('gauge-hum', data.hum.text, 'Humidity', data.hum.val + '%', `lvl-${data.hum.level}`);
-  renderGauge('gauge-aqi', data.aqi.text, 'Air Quality', `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
-  renderGauge('gauge-uv', data.uv.text, 'UV Index', `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
-  renderGauge('gauge-pres', data.pres.text, 'Pressure', `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
+  renderGauge('gauge-ground', data.ground_state, T.ground, '', `lvl-${data.ground_level}`);
+  renderGauge('gauge-wind', data.wind.text, T.wind, `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-hum', data.hum.text, T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`);
+  renderGauge('gauge-aqi', data.aqi.text, T.air_quality, `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
+  renderGauge('gauge-uv', data.uv.text, T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
+  renderGauge('gauge-pres', data.pres.text, T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
 }
 
 function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
@@ -178,13 +259,13 @@ function renderOverviewView(data) {
     if (data.alerts) {
       const items = [];
       if (data.alerts.cardiac && data.alerts.cardiac.triggered) {
-        items.push({ type: 'health', icon: '❤️', title: 'Cardiac Alert', text: data.alerts.cardiac.reason, guidance: 'Keep warm and avoid sudden cold exposure.' });
+        items.push({ type: 'health', icon: '❤️', title: T.cardiac_title, text: data.alerts.cardiac.reason, guidance: T.cardiac_guidance });
       }
       if (data.alerts.menieres && data.alerts.menieres.triggered) {
-        items.push({ type: 'health', icon: '🦻', title: 'Ménière\'s Alert', text: data.alerts.menieres.reason, guidance: 'Watch for vertigo or ear fullness; stay hydrated.' });
+        items.push({ type: 'health', icon: '🦻', title: T.menieres_title, text: data.alerts.menieres.reason, guidance: T.menieres_guidance });
       }
       if (data.alerts.heads_up) {
-        items.push({ type: 'narrative', icon: '📢', title: 'Heads Up', text: data.alerts.heads_up });
+        items.push({ type: 'narrative', icon: '📢', title: T.heads_up_title, text: data.alerts.heads_up });
       }
 
       if (items.length > 0) {
@@ -261,10 +342,10 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow('Rain', seg.precip_text || '—', seg.precip_level || 1);
-      addRow('Wind', seg.wind_text || '—', seg.wind_level || 1);
+      addRow(T.rain, seg.precip_text || '—', seg.precip_level || 1);
+      addRow(T.wind, seg.wind_text || '—', seg.wind_level || 1);
       if (seg.outdoor_grade) {
-        addRow('Outdoor', `${seg.outdoor_grade} · ${seg.outdoor_score}`, `grade-${seg.outdoor_grade}`);
+        addRow(T.outdoor, `${seg.outdoor_grade} · ${seg.outdoor_score}`, `grade-${seg.outdoor_grade}`);
       }
       card.appendChild(header);
       card.appendChild(icon);
@@ -315,8 +396,7 @@ function renderOverviewView(data) {
       try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
       const hours = dt.getHours();
       const isNight = (hours >= 18 || hours < 6);
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const displayTime = `${days[dt.getDay()]} ${isNight ? 'Night' : 'Day'}`;
+      const displayTime = `${T.days[dt.getDay()]} ${isNight ? T.night : T.day}`;
 
       const card = document.createElement('div');
       card.className = 'time-card';
@@ -335,7 +415,7 @@ function renderOverviewView(data) {
       row.className = 'tc-row';
       const l = document.createElement('span');
       l.className = 'tc-label';
-      l.textContent = 'Rain';
+      l.textContent = T.rain;
       const v = document.createElement('span');
       v.className = 'tc-val lvl-' + (item.PoP12h >= 40 ? '3' : '1');
       v.textContent = (item.PoP12h ?? '--') + '%';
@@ -365,7 +445,7 @@ function renderOverviewView(data) {
     header.className = 'aqi-fc-header';
     const title = document.createElement('span');
     title.className = 'aqi-fc-title';
-    title.textContent = "Tomorrow's Air Quality";
+    title.textContent = T.aqi_title;
     const date = document.createElement('span');
     date.className = 'aqi-fc-date';
     date.textContent = (aqi.forecast_date ? ` (${aqi.forecast_date})` : '') + (aqi.aqi ? ` · AQI ${aqi.aqi}` : '');
@@ -388,16 +468,8 @@ function renderOverviewView(data) {
 }
 
 function translateAQIText(status) {
-  if (!status) return '';
-  const map = {
-    '良好': 'Good',
-    '普通': 'Moderate',
-    '對敏感族群不健康': 'Unhealthy for Sensitive Groups',
-    '不健康': 'Unhealthy',
-    '非常不健康': 'Very Unhealthy',
-    '危害': 'Hazardous'
-  };
-  return map[status] || status;
+  // AQI status is returned in the active language directly — pass through.
+  return status || '';
 }
 
 // ── View 3: Lifestyle ──────────────────────────────────────────────────────
@@ -445,11 +517,11 @@ function renderLifestyleView(data) {
   // 1. Wardrobe
   if (data.wardrobe) {
     const extras = [];
-    if (data.wardrobe.feels_like != null) extras.push(mkSub(`Feels like ${Math.round(data.wardrobe.feels_like)}°`));
-    add('🧥', 'Wardrobe', data.wardrobe.text, extras);
+    if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
+    add('🧥', T.wardrobe, data.wardrobe.text, extras);
   }
   // 2. Rain Gear
-  if (data.rain_gear) add('☂️', 'Rain Gear', data.rain_gear.text);
+  if (data.rain_gear) add('☂️', T.rain_gear, data.rain_gear.text);
   // 3. Commute
   if (data.commute) {
     const extras = [];
@@ -463,28 +535,28 @@ function renderLifestyleView(data) {
       });
       extras.push(ul);
     }
-    add('🚗', 'Commute', data.commute.text, extras);
+    add('🚗', T.commute, data.commute.text, extras);
   }
   // 4. Garden Health
-  if (data.garden && data.garden.text) add('🌱', 'Garden Health', data.garden.text);
+  if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
   // 5. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
     const extras = [];
     if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, `Grade ${data.outdoor.grade} · ${data.outdoor.label || ''}`));
-    if (data.outdoor.top_activity) extras.push(mkSub(`Best: ${data.outdoor.best_window || ''} · Top: ${data.outdoor.top_activity}`));
-    add('🌳', 'Outdoor Activities', data.outdoor.text, extras);
+    if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
+    add('🌳', T.outdoor_act, data.outdoor.text, extras);
   }
   // 6. Meals
   if (data.meals && data.meals.text) {
     const extras = [];
     if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
-    add('🍱', 'Meals', data.meals.text, extras);
+    add('🍱', T.meals, data.meals.text, extras);
   }
   // 7. HVAC Advice
   if (data.hvac) {
     const extras = [];
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
-    add('🌡️', 'HVAC Advice', data.hvac.text, extras);
+    add('🌡️', T.hvac, data.hvac.text, extras);
   }
 }
 
@@ -521,6 +593,18 @@ function renderNarrationView(data, audioUrls) {
   const player = document.getElementById('audio-player-native');
   if (player && audioUrls && audioUrls.full_audio_url) {
     player.src = audioUrls.full_audio_url;
+  }
+
+  // Local TTS Button
+  const ttsBtn = document.getElementById('local-tts-btn');
+  if (ttsBtn) {
+    const fullText = (data.paragraphs || []).map(p => p.text).join('\n');
+    if (fullText) {
+      ttsBtn.style.display = 'block';
+      ttsBtn.onclick = () => initLocalTTS(fullText);
+    } else {
+      ttsBtn.style.display = 'none';
+    }
   }
 }
 
@@ -618,6 +702,8 @@ function showLoading() {
   document.getElementById('loading-screen').classList.remove('hidden');
   document.getElementById('error-screen').classList.add('hidden');
   document.getElementById('main-content').classList.add('hidden');
+  const txt = document.getElementById('loading-text');
+  if (txt) txt.textContent = T.loading;
   startLoadingAnimation();
 }
 
@@ -652,11 +738,14 @@ async function triggerRefresh() {
 
   showLoading();
   startLoadingAnimation(); // Start fake messages until connection established
-  addLog("Initiating connection...");
+  addLog(T.boot);
 
   // Read selected provider
   const providerInput = document.querySelector('input[name="provider"]:checked');
   const provider = providerInput ? providerInput.value : 'CLAUDE';
+
+  console.log("DEBUG: Selected provider for refresh:", provider);
+  addLog(`Requesting narration via: ${provider}`);
 
   try {
     const res = await fetch('/api/refresh', {
@@ -665,7 +754,8 @@ async function triggerRefresh() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        provider
+        provider,
+        lang: getLang()
       })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -703,7 +793,7 @@ async function triggerRefresh() {
             const loadingTxt = document.getElementById('loading-text');
             if (loadingTxt) loadingTxt.textContent = msg.message;
           } else if (msg.type === 'result') {
-            addLog("Pipeline success. Rendering...");
+            addLog(T.render);
             broadcastData = msg.payload;
             render(broadcastData);
             showContent();
@@ -793,4 +883,62 @@ function addLog(msg) {
   list.scrollTop = list.scrollHeight;
 }
 
+// ── Language Toggle ────────────────────────────────────────────────────────
+function initLangToggle() {
+  const saved = localStorage.getItem('lang') || 'zh-TW';
+  const radio = document.querySelector(`input[name="lang"][value="${saved}"]`);
+  if (radio) radio.checked = true;
+  applyLanguage(saved);
+
+  document.querySelectorAll('input[name="lang"]').forEach(r => {
+    r.addEventListener('change', () => {
+      localStorage.setItem('lang', r.value);
+      applyLanguage(r.value);
+    });
+  });
+}
+
+function getLang() {
+  return localStorage.getItem('lang') || 'zh-TW';
+}
+
+function applyLanguage(lang) {
+  T = TRANSLATIONS[lang] || TRANSLATIONS['zh-TW'];
+  // Update LOADING_MSGS in-place for next animation run
+  LOADING_MSGS.splice(0, LOADING_MSGS.length,
+    T.step1, T.step2, T.step3, T.step4, T.step5, T.step6, T.step7);
+
+  // Re-render labels if data is already loaded
+  if (broadcastData) render(broadcastData);
+}
+
 // ── Chart ──────────────────────────────────────────────────────────────────
+// ── Local TTS (Web Speech API) ─────────────────────────────────────────────
+function initLocalTTS(text) {
+  if (!('speechSynthesis' in window)) return;
+
+  const synth = window.speechSynthesis;
+
+  function speak() {
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const lang = document.querySelector('input[name="lang"]:checked')?.value || 'zh-TW';
+    utter.lang = lang;
+    utter.rate = 0.95;
+
+    const voices = synth.getVoices();
+    const matchVoice = voices.find(v => v.lang === lang) ||
+      voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+    if (matchVoice) utter.voice = matchVoice;
+
+    synth.speak(utter);
+  }
+
+  if (synth.getVoices().length > 0) {
+    speak();
+  } else {
+    synth.addEventListener('voiceschanged', speak, { once: true });
+  }
+}
+
+// getLang() is defined above near initLangToggle — this duplicate is removed.

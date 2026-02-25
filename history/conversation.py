@@ -146,7 +146,7 @@ def save_day(
 
     # Write back
     if RUN_MODE == "LOCAL":
-        _save_history_map_local(history_map)
+        _save_history_local(history_map)
     else:
         # history_map contains everything
         if blob:

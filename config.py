@@ -95,8 +95,13 @@ if RUN_MODE == "LOCAL" and os.path.exists(_LOCAL_KEY_PATH):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = _LOCAL_KEY_PATH
 
 # ── Cloud TTS ─────────────────────────────────────────────────────────────────
-TTS_LANGUAGE_CODE = "en-US"
-TTS_VOICE_NAME = os.environ.get("TTS_VOICE_NAME", "en-US-Neural2-D")
+# Per-language TTS voice defaults (overridable via env)
+TTS_VOICE_EN = os.environ.get("TTS_VOICE_NAME", "en-US-Neural2-D")
+TTS_VOICE_ZH = os.environ.get("TTS_VOICE_ZH", "zh-TW-Wavenet-B")
+
+# Legacy aliases — used where language selection isn't yet implemented
+TTS_LANGUAGE_CODE = "zh-TW"
+TTS_VOICE_NAME = TTS_VOICE_ZH
 TTS_SPEAKING_RATE = 0.95
 
 # Default to Google if credentials exist, otherwise Edge

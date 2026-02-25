@@ -13,6 +13,10 @@ from concurrent.futures import ThreadPoolExecutor
 from narration.llm_prompt_builder import build_prompt
 from narration.fallback_narrator import build_narration
 from narration.llm_summarizer import summarize_for_lifestyle, summarize_aqi_forecast
+from backend.cache import NarrationCache, make_cache_key, _classify_time
+
+# lang-aware cache — separate namespaces for EN and ZH results
+_narration_cache = NarrationCache(ttl_seconds=1800)
 
 # LLM clients — imported at module level so tests can patch them cleanly.
 # We wrap in try/except so the module can still be imported even if a key is missing.
@@ -60,6 +64,7 @@ def generate_narration_with_fallback(
     processed: dict,
     history: list[dict],
     date_str: str,
+    lang: str = 'en',
 ) -> tuple[str, str]:
     """Generate narration text via the given LLM provider, falling back to template.
 
@@ -73,23 +78,48 @@ def generate_narration_with_fallback(
         (narration_text, source_label)
         source_label is "gemini", "claude", or "template".
     """
-    provider_upper = provider.upper()
+    # ── Cache check ────────────────────────────────────────────────────
+    current = processed.get("current", {})
+    city = "shulin"
+    wx_text = current.get("beaufort_desc", current.get("weather_text", ""))
+    hour = datetime.now().hour
+    cache_key = make_cache_key(lang, city, wx_text, _classify_time(hour))
+
+    cached = _narration_cache.get(cache_key)
+    if cached:
+        logger.info("Narration cache HIT: %s", cache_key)
+        return cached
+
+    provider_upper = provider.upper().strip()
+    logger.info("Narration requested via provider: %s", provider_upper)
     try:
-        messages = build_prompt(processed, history, date_str)
+        messages = build_prompt(processed, history, date_str, lang=lang)
         if provider_upper == "GEMINI":
             if generate_gemini is None:
+                logger.error("Gemini client is None (likely import failure or missing key)")
                 raise RuntimeError("Gemini client not available")
+            logger.info("Calling Gemini client...")
             text = generate_gemini(messages)
-            return text, "gemini"
+            logger.info("Gemini narration successful.")
+            result = text, "gemini"
         elif provider_upper == "CLAUDE":
             if generate_claude is None:
+                logger.error("Claude client is None (likely import failure or missing key)")
                 raise RuntimeError("Claude client not available")
+            logger.info("Calling Claude client...")
             text = generate_claude(messages)
-            return text, "claude"
+            logger.info("Claude narration successful.")
+            result = text, "claude"
         else:
+            logger.error("Unsupported provider selected: %s", provider_upper)
             raise ValueError(f"Unknown provider: {provider}")
-    except Exception as exc:
-        logger.warning("Narration failed (%s), falling back to template: %s", provider, exc)
+        
+        # ── Cache store ────────────────────────────────────────────────────
+        _narration_cache.set(cache_key, result)
+        return result
+
+    except Exception:
+        logger.exception("Narration failed (%s), falling back to template:", provider_upper)
         text = build_narration(processed, date_str=date_str)
         return text, "template"
 
@@ -98,12 +128,14 @@ def generate_narration_with_fallback(
 def run_parallel_summarization(
     paragraphs: dict,
     aqi_forecast_raw: str,
+    lang: str = 'en',
 ) -> tuple[dict, str | None]:
     """Run lifestyle summarization and (optionally) AQI summary concurrently.
 
     Args:
         paragraphs:       Parsed narration paragraphs dict from parse_narration_response()
         aqi_forecast_raw: Raw AQI forecast content string; if empty, AQI summary is skipped.
+        lang:             Language code ('en' or 'zh-TW') — forwarded to both summarizers.
 
     Returns:
         (lifestyle_summaries, aqi_summary_en)
@@ -112,10 +144,10 @@ def run_parallel_summarization(
     aqi_summary_en: str | None = None
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        future_lifestyle = executor.submit(summarize_for_lifestyle, paragraphs)
+        future_lifestyle = executor.submit(summarize_for_lifestyle, paragraphs, lang)
         future_aqi = None
         if aqi_forecast_raw:
-            future_aqi = executor.submit(summarize_aqi_forecast, aqi_forecast_raw)
+            future_aqi = executor.submit(summarize_aqi_forecast, aqi_forecast_raw, lang)
 
         summaries = future_lifestyle.result()
         if future_aqi:

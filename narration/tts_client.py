@@ -23,6 +23,8 @@ from config import (
     GCS_AUDIO_FILENAME,
     TTS_LANGUAGE_CODE,
     TTS_VOICE_NAME,
+    TTS_VOICE_EN,
+    TTS_VOICE_ZH,
     TTS_SPEAKING_RATE,
     RUN_MODE,
     LOCAL_DATA_DIR,
@@ -37,6 +39,7 @@ logger = logging.getLogger(__name__)
 def synthesize_and_upload(
     narration_text: str,
     date_str: str | None = None,
+    lang: str = 'zh-TW',
 ) -> dict[str, str]:
     """
     Synthesize the full narration and a short kids clip, upload both to GCS.
@@ -44,6 +47,7 @@ def synthesize_and_upload(
     Args:
         narration_text: Full broadcast narration from Gemini.
         date_str:       ISO date string (YYYY-MM-DD). Defaults to today.
+        lang:           Language code ('en' or 'zh-TW'). Selects voice accordingly.
 
     Returns:
         Dict with 'full_audio_url' (GCS public URL).
@@ -54,8 +58,16 @@ def synthesize_and_upload(
     # Strip ---METADATA--- and anything after it — not meant to be spoken
     narration_text = narration_text.split("---METADATA---")[0].strip()
 
+    # Select voice based on language
+    if lang == 'zh-TW':
+        voice_name = TTS_VOICE_ZH
+        lang_code = 'zh-TW'
+    else:
+        voice_name = TTS_VOICE_EN
+        lang_code = 'en-US'
+
     if config.TTS_PROVIDER == "EDGE":
-        return _generate_edge_audio(narration_text, date_str)
+        return _generate_edge_audio(narration_text, date_str, lang=lang)
 
     try:
         if RUN_MODE == "LOCAL" and config.GEMINI_API_KEY:
@@ -68,7 +80,7 @@ def synthesize_and_upload(
     except Exception as exc:
         if RUN_MODE == "LOCAL":
             logger.warning("Google TTS credentials missing/invalid (%s). Falling back to Edge TTS.", exc)
-            return _generate_edge_audio(narration_text, date_str)
+            return _generate_edge_audio(narration_text, date_str, lang=lang)
         raise exc
 
     if RUN_MODE == "CLOUD":
@@ -81,7 +93,8 @@ def synthesize_and_upload(
     full_audio = _synthesize(
         client=tts_client,
         text=narration_text,
-        voice_name=TTS_VOICE_NAME,
+        voice_name=voice_name,
+        lang_code=lang_code,
         speaking_rate=TTS_SPEAKING_RATE,
     )
     full_blob_name = f"{prefix}/{GCS_AUDIO_FILENAME}"
@@ -101,6 +114,7 @@ def _synthesize(
     text: str,
     voice_name: str,
     speaking_rate: float,
+    lang_code: str = 'zh-TW',
 ) -> bytes:
     """
     Synthesize speech and return raw MP3 bytes.
@@ -110,7 +124,7 @@ def _synthesize(
     MAX_CHARS = 4000
     
     if len(text) <= MAX_CHARS:
-        return _synthesize_chunk(client, text, voice_name, speaking_rate)
+        return _synthesize_chunk(client, text, voice_name, speaking_rate, lang_code)
 
     logger.info("Text length (%d) exceeds limit. Splitting into chunks...", len(text))
     
@@ -167,7 +181,7 @@ def _synthesize(
     audio_contents: list[bytes] = []
     for i, chunk in enumerate(chunks):
         logger.info("Synthesizing chunk %d/%d (%d chars)...", i+1, len(chunks), len(chunk))
-        audio_contents.append(_synthesize_chunk(client, chunk, voice_name, speaking_rate))
+        audio_contents.append(_synthesize_chunk(client, chunk, voice_name, speaking_rate, lang_code))
     
     return b"".join(audio_contents)
 
@@ -177,12 +191,13 @@ def _synthesize_chunk(
     text: str,
     voice_name: str,
     speaking_rate: float,
+    lang_code: str,
 ) -> bytes:
     """Internal helper to synthesize a single chunk of text."""
     synthesis_input = texttospeech.SynthesisInput(text=text)
 
     voice = texttospeech.VoiceSelectionParams(
-        language_code=TTS_LANGUAGE_CODE,
+        language_code=lang_code,
         name=voice_name,
     )
 
@@ -235,11 +250,11 @@ def _save_local_audio(audio_bytes: bytes, blob_name: str) -> str:
 
 # ── Edge TTS Fallback ────────────────────────────────────────────────────────
 
-def _generate_edge_audio(narration_text: str, date_str: str) -> dict[str, str]:
+def _generate_edge_audio(narration_text: str, date_str: str, lang: str = 'zh-TW') -> dict[str, str]:
     """
-    Generate full and kids audio using Edge TTS (free, no credentials).
+    Generate full audio using Edge TTS (free, no credentials).
     """
-    logger.info("Generating Edge TTS audio...")
+    logger.info("Generating Edge TTS audio (lang=%s)...", lang)
     prefix = f"{GCS_BROADCAST_PREFIX}/{date_str}"
     
     # 1. Full Broadcast
@@ -247,7 +262,11 @@ def _generate_edge_audio(narration_text: str, date_str: str) -> dict[str, str]:
     # or "en-US-AndrewNeural" for a friendly male voice akin to the "Dad" persona?
     # Let's stick to a clean female voice as default, or use Andrew for variety.
     # The user asked for "options", we'll default to Ava.
-    full_voice = "en-US-AvaNeural"
+    # Select voice based on language
+    if lang == 'zh-TW':
+        full_voice = "zh-TW-HsiaoChenNeural"
+    else:
+        full_voice = "en-US-AvaNeural"
     full_audio = _synthesize_edge(narration_text, full_voice, rate="+0%")
     
     full_blob_name = f"{prefix}/{GCS_AUDIO_FILENAME}"

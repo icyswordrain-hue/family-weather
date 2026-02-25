@@ -157,7 +157,10 @@ def _slice_overview(
 
 def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None) -> dict:
     """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
-    summaries = summaries or {}
+    if not isinstance(summaries, dict):
+        summaries = {}
+    if not isinstance(climate, dict):
+        climate = {"mode": "Off"}
     
     # 1. Wardrobe & Rain Gear
     at = current.get("AT")
@@ -265,7 +268,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
 
 def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
     """Narration View: Full text and metadata."""
-    
+
     # Determined source/model from metadata (saved in main.py)
     source = metadata.get("narration_source", "template").title() # "Gemini", "Claude", "Template"
     model = metadata.get("narration_model", "Unknown")
@@ -274,14 +277,19 @@ def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
     if source == "Template" and "gemini" in metadata.get("llm_model", "").lower():
         source = "Gemini"
 
+    # Paragraph section titles — use language-neutral keys.
+    # The frontend TRANSLATIONS object maps these to the display language.
+    # For the narration view the section titles are rendered from the paragraph
+    # keys, so we embed a `key` field alongside `text` to allow the frontend
+    # to translate if desired, while `title` stays in a neutral readable form.
     return {
         "paragraphs": [
-            {"title": "Current & Outlook",    "text": paragraphs.get("p1_conditions", "")},
-            {"title": "Garden & Commute",     "text": paragraphs.get("p2_garden_commute", "")},
-            {"title": "Outdoor with Dad",     "text": paragraphs.get("p3_outdoor", "")},
-            {"title": "Meals & Climate",      "text": paragraphs.get("p4_meal_climate", "")},
-            {"title": "Forecast",             "text": paragraphs.get("p5_forecast", "")},
-            {"title": "Yesterday's Accuracy", "text": paragraphs.get("p6_accuracy", "")},
+            {"key": "p1", "title": "Current & Outlook",    "text": paragraphs.get("p1_conditions", "")},
+            {"key": "p2", "title": "Garden & Commute",     "text": paragraphs.get("p2_garden_commute", "")},
+            {"key": "p3", "title": "Outdoor with Dad",     "text": paragraphs.get("p3_outdoor", "")},
+            {"key": "p4", "title": "Meals & Climate",      "text": paragraphs.get("p4_meal_climate", "")},
+            {"key": "p5", "title": "Forecast",             "text": paragraphs.get("p5_forecast", "")},
+            {"key": "p6", "title": "Yesterday's Accuracy", "text": paragraphs.get("p6_accuracy", "")},
         ],
         "meta": {
             "model": model,

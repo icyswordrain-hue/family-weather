@@ -562,9 +562,9 @@ def _detect_driving_hazards(slot: dict | None, current: dict | None = None) -> l
 
 # ── Local stubs (small utility functions not worth their own module) ───────────
 
-def _climate_control(segmented: dict, aqi: dict) -> list[str]:
+def _climate_control(segmented: dict, aqi: dict) -> dict:
     """Placeholder — climate control recommendations. Extend as needed."""
-    return []
+    return {"mode": "Off", "recommendations": []}
 
 def _pop_category(pop: float | None) -> int:
     """Return 0–5 category index for PoP6h."""

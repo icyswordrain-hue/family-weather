@@ -11,7 +11,10 @@ from datetime import datetime, timezone, timedelta
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    stream=sys.stdout,
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("server.log", mode="w", encoding="utf-8")
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -142,6 +145,8 @@ def refresh():
     body = request.get_json(silent=True) or {}
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
     provider = body.get("provider") # Optional: "GEMINI" or "CLAUDE"
+    lang = body.get("lang", "en")
+    logger.info("DEBUG: Received refresh request. Body: %s, Provider: %s, Lang: %s", body, provider, lang)
 
     if RUN_MODE == "CLOUD":
         # Proxy to Modal
@@ -151,7 +156,7 @@ def refresh():
             
         try:
             # Proxy the streaming response from Modal
-            resp = requests.post(modal_url, json={"date": date_str, "provider": provider}, stream=True)
+            resp = requests.post(modal_url, json={"date": date_str, "provider": provider, "lang": lang}, stream=True)
             return Response(
                 stream_with_context(resp.iter_lines()),
                 content_type=resp.headers.get('content-type', 'application/x-ndjson')
@@ -162,7 +167,7 @@ def refresh():
 
     def generate():
         try:
-            for step in _pipeline_steps(date_str, provider_override=provider):
+            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang):
                 yield json.dumps(step) + "\n"
         except Exception as exc:
             logger.error("Pipeline error: %s", exc, exc_info=True)
@@ -173,7 +178,7 @@ def refresh():
 
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
-def _pipeline_steps(date_str: str, provider_override: str | None = None):
+def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "en"):
     """
     Generator that yields log messages and finally the result dict.
     Yields: {"type": "log", "message": str} OR {"type": "result", "payload": dict}
@@ -229,7 +234,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
     logger.info("Building narration via %s...", narration_provider)
 
     narration_text, narration_source = generate_narration_with_fallback(
-        narration_provider, processed, history, date_str
+        narration_provider, processed, history, date_str, lang=lang
     )
     yield {"type": "log", "message": "Narration generated."}
 
@@ -257,9 +262,9 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None):
     aqi_forecast_raw = aqi.get("forecast", {}).get("content", "")
 
     with ThreadPoolExecutor(max_workers=2) as _tts_exec:
-        future_tts = _tts_exec.submit(_synth, narration_text, date_str=date_str)
+        future_tts = _tts_exec.submit(_synth, narration_text, date_str=date_str, lang=lang)
         yield {"type": "log", "message": "Collecting Summarization..."}
-        summaries, aqi_summary_en = run_parallel_summarization(paragraphs, aqi_forecast_raw)
+        summaries, aqi_summary_en = run_parallel_summarization(paragraphs, aqi_forecast_raw, lang=lang)
         yield {"type": "log", "message": "Collecting TTS audio..."}
         audio_urls = future_tts.result()
 
