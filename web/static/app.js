@@ -507,16 +507,12 @@ function renderOverviewView(data) {
     body.className = 'aqi-fc-body';
     const header = document.createElement('div');
     header.className = 'aqi-fc-header';
-    const title = document.createElement('span');
-    title.className = 'aqi-fc-title';
-    title.textContent = T.aqi_title;
     const date = document.createElement('span');
     date.className = 'aqi-fc-date';
-    date.textContent = (aqi.forecast_date ? ` (${aqi.forecast_date})` : '') + (aqi.aqi ? ` · AQI ${aqi.aqi}` : '');
-    header.appendChild(title);
+    date.textContent = (aqi.forecast_date ? `${aqi.forecast_date}` : '') + (aqi.aqi ? ` · AQI ${aqi.aqi}` : '');
     header.appendChild(date);
     const status = document.createElement('div');
-    status.className = 'aqi-fc-status';
+    status.className = `aqi-fc-status lvl-${aqiToLevel(aqi.aqi)}`;
     status.textContent = translateAQIText(aqi.status);
     body.appendChild(header);
     body.appendChild(status);
@@ -529,6 +525,16 @@ function renderOverviewView(data) {
     aqiFcEl.appendChild(icon);
     aqiFcEl.appendChild(body);
   }
+}
+
+function aqiToLevel(val) {
+  const n = parseInt(val);
+  if (isNaN(n)) return 1;
+  if (n <= 50)  return 1;
+  if (n <= 100) return 2;
+  if (n <= 150) return 3;
+  if (n <= 200) return 4;
+  return 5;
 }
 
 function translateAQIText(status) {
@@ -1091,6 +1097,7 @@ function applyLanguage(lang) {
   setText('view-heading-dashboard', T.h1_dashboard);
   setText('section-heading-24h', T.h2_24h);
   setText('section-heading-7day', T.h2_7day);
+  setText('section-heading-aqi', T.aqi_title);
 
   // Re-render data labels if data is already loaded
   if (broadcastData) render(broadcastData);

@@ -731,7 +731,6 @@ input:focus-visible {
 
 /* ── AQI Forecast block (#10) ────────────────────────────────────────────── */
 .aqi-forecast-block {
-  margin-top: 1.5rem;
   padding: 1rem 1.2rem;
   background: var(--surface);
   border-radius: var(--radius);
@@ -973,6 +972,51 @@ html.dark .ls-badge.hvac-fan {
 html.dark .ls-badge.mood-badge {
   background: rgba(77, 124, 254, 0.15);
   color: #7da4ff;
+}
+
+/* Alert card in Lifestyle view */
+.ls-alert-card {
+  border-left: 4px solid var(--blue);
+}
+.ls-alert-card.ls-alert-critical {
+  border-left-color: var(--coral);
+  background: linear-gradient(to right, var(--warn-lt), var(--surface));
+}
+.ls-alert-card.ls-alert-warning {
+  border-left-color: #f39c12;
+  background: linear-gradient(to right, #fffbf0, var(--surface));
+}
+.ls-alert-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.ls-alert-type-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.ls-alert-msg {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+  flex: 1;
+}
+.ls-badge.ls-alert-badge-critical {
+  background: var(--warn-lt);
+  color: var(--coral);
+}
+.ls-badge.ls-alert-badge-warning {
+  background: #fff8e1;
+  color: #e67e22;
+}
+html.dark .ls-alert-card.ls-alert-warning {
+  background: linear-gradient(to right, rgba(243, 156, 18, 0.08), var(--surface));
+}
+html.dark .ls-badge.ls-alert-badge-warning {
+  background: rgba(243, 156, 18, 0.15);
+  color: #f5b942;
 }
 
 /* Outdoor Index Grade Pills */
