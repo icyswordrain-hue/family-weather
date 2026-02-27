@@ -108,9 +108,7 @@ def process(
     forecasts_7day = forecasts_7day or {}
     primary_7day_slots = forecasts_7day.get("三峽區") or forecasts_7day.get("板橋區") or []
     for slot in primary_7day_slots:
-        feels_like = _calculate_apparent_temp(slot.get("AT"), slot.get("RH"), slot.get("WS"))
-        if feels_like is not None:
-            slot["AT"] = feels_like
+        # AT is already apparent temperature from the CWA API (MaxAT/MinAT) — do not recalculate
         slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
         slot["precip_text"], slot["precip_level"] = _val_to_scale(slot.get("PoP12h"), PRECIP_SCALE_5)
         slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
