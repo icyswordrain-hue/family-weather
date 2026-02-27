@@ -400,12 +400,13 @@ function renderOverviewView(data) {
     (data.transitions || []).forEach(t => { if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t; });
 
     (data.timeline || []).forEach((seg, idx) => {
-      const slotName = seg.display_name || 'Forecast';
+      const origSlotName = seg.display_name || 'Forecast';
+      const slotName = origSlotName;
       const card = document.createElement('div');
       card.className = 'time-card';
       const header = document.createElement('div');
       header.className = 'tc-header';
-      header.textContent = slotName;
+      header.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
       const icon = document.createElement('div');
       icon.className = 'tc-icon';
       icon.textContent = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️';
@@ -445,32 +446,33 @@ function renderOverviewView(data) {
       const nextSeg = data.timeline[idx + 1];
       const transition = nextSeg ? transitionMap[slotName] : null;
       if (transition && transition.is_transition) {
+        const locTrans = (txt) => (T.transitions && T.transitions[txt]) ? T.transitions[txt] : txt;
         const parts = [];
         (transition.breaches || []).forEach(b => {
           if (b.metric === 'CloudCover') {
             let label = b.to;
             if (label === 'Sunny/Clear') label = 'Sunny';
             if (label === 'Mixed Clouds') label = 'Cloudy';
-            parts.push(label);
+            parts.push(locTrans(label));
           } else if (b.metric === 'AT') {
             parts.push(`${b.delta > 0 ? '+' : ''}${Math.round(b.delta)}°`);
           } else if (b.metric === 'PoP6h') {
             const intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"];
             const fIdx = intensity.indexOf(b.from), tIdx = intensity.indexOf(b.to);
-            if (tIdx > fIdx) parts.push(tIdx >= 3 ? 'Rain expected' : 'More rain');
-            else if (tIdx < fIdx) parts.push('Less rain');
+            if (tIdx > fIdx) parts.push(locTrans(tIdx >= 3 ? 'Rain expected' : 'More rain'));
+            else if (tIdx < fIdx) parts.push(locTrans('Less rain'));
           } else if (b.metric === 'RH') {
-            parts.push(b.delta > 0 ? 'Humid' : 'Dry air');
+            parts.push(locTrans(b.delta > 0 ? 'Humid' : 'Dry air'));
           } else if (b.metric === 'WS') {
             const bf = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze"];
             const fIdx = bf.indexOf(b.from), tIdx = bf.indexOf(b.to);
-            if (tIdx > fIdx) parts.push('Windier');
-            else if (tIdx < fIdx) parts.push('Calmer');
+            if (tIdx > fIdx) parts.push(locTrans('Windier'));
+            else if (tIdx < fIdx) parts.push(locTrans('Calmer'));
           }
         });
         const t = document.createElement('div');
         t.className = 'tc-transition';
-        t.textContent = `→ ${parts.length ? parts.join(' · ') : 'change'}`;
+        t.textContent = `→ ${parts.length ? parts.join(' · ') : locTrans('change')}`;
         col.appendChild(t);
       }
       timelineGrid.appendChild(col);
