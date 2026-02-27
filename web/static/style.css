@@ -47,7 +47,7 @@
   --sidebar-w: 240px;
   --rp-w: 180px;
 
-  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
   --transition: 180ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -783,23 +783,22 @@ input:focus-visible {
   line-height: 1.55;
 }
 
-/* ── Timeline transition badges (#11) ────────────────────────────────────── */
-.time-card {
-  position: relative;
+/* ── Timeline transition cards (#11) ─────────────────────────────────────── */
+.tc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .tc-transition {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.6rem;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 0.72rem;
+  background: rgba(255, 200, 0, 0.1);
+  border: 1px solid rgba(255, 200, 0, 0.35);
+  border-radius: var(--radius);
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(255, 200, 0, 0.15);
   color: #b8860b;
-  border: 1px solid rgba(255, 200, 0, 0.3);
+  text-align: center;
 }
 
 html.dark .tc-transition {
@@ -978,14 +977,17 @@ html.dark .ls-badge.mood-badge {
 .ls-alert-card {
   border-left: 4px solid var(--blue);
 }
+
 .ls-alert-card.ls-alert-critical {
   border-left-color: var(--coral);
   background: linear-gradient(to right, var(--warn-lt), var(--surface));
 }
+
 .ls-alert-card.ls-alert-warning {
   border-left-color: #f39c12;
   background: linear-gradient(to right, #fffbf0, var(--surface));
 }
+
 .ls-alert-item {
   display: flex;
   align-items: baseline;
@@ -993,27 +995,33 @@ html.dark .ls-badge.mood-badge {
   flex-wrap: wrap;
   margin-top: 0.5rem;
 }
+
 .ls-alert-type-icon {
   font-size: 0.85rem;
   flex-shrink: 0;
 }
+
 .ls-alert-msg {
   font-size: 0.85rem;
   line-height: 1.45;
   color: var(--text);
   flex: 1;
 }
+
 .ls-badge.ls-alert-badge-critical {
   background: var(--warn-lt);
   color: var(--coral);
 }
+
 .ls-badge.ls-alert-badge-warning {
   background: #fff8e1;
   color: #e67e22;
 }
+
 html.dark .ls-alert-card.ls-alert-warning {
   background: linear-gradient(to right, rgba(243, 156, 18, 0.08), var(--surface));
 }
+
 html.dark .ls-badge.ls-alert-badge-warning {
   background: rgba(243, 156, 18, 0.15);
   color: #f5b942;
