@@ -44,7 +44,7 @@ def build_slices(broadcast: dict) -> dict:
 
     return {
         "current": _slice_current(current_data, aqi_realtime),
-        "overview": _slice_overview(forecast_segs, cardiac, menieres, paragraphs, commute, heads_ups, aqi_forecast, transitions, outdoor_index, forecast_7day),
+        "overview": _slice_overview(forecast_segs, cardiac, menieres, commute, heads_ups, aqi_forecast, transitions, outdoor_index, forecast_7day),
         "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index),
         "narration": _slice_narration(paragraphs, meta),
     }
@@ -105,7 +105,6 @@ def _slice_overview(
     segments: dict,
     cardiac: dict | None,
     menieres: dict | None,
-    paragraphs: dict,
     commute: dict | None = None,
     heads_ups: list | None = None,
     aqi_forecast: dict | None = None,
@@ -148,7 +147,6 @@ def _slice_overview(
         "alerts": {
             "cardiac": cardiac,
             "menieres": menieres,
-            "heads_up": paragraphs.get("heads_up") or paragraphs.get("p1_summary"),
             "heads_ups": heads_ups,
             "commute_hazards": commute_hazards,
         },
@@ -262,7 +260,8 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "activity_scores": outdoor_index.get("activity_scores", {}),
             "parkinsons_safe": outdoor_index.get("parkinsons_safe", True),
             "best_window": outdoor_index.get("best_window"),
-        }
+        },
+        "alert": paragraphs.get("heads_up") or paragraphs.get("p1_summary") or None,
     }
 
 

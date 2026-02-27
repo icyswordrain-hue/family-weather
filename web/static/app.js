@@ -361,8 +361,7 @@ function renderOverviewView(data) {
   // Update Nav Alert Dot (UX #3)
   const hasAlerts = data.alerts && (
     (data.alerts.cardiac && data.alerts.cardiac.triggered) ||
-    (data.alerts.menieres && data.alerts.menieres.triggered) ||
-    data.alerts.heads_up
+    (data.alerts.menieres && data.alerts.menieres.triggered)
   );
 
   const dashboardNav = document.querySelector('.nav-item[data-view="dashboard"]');
@@ -388,9 +387,6 @@ function renderOverviewView(data) {
       }
       if (data.alerts.menieres && data.alerts.menieres.triggered) {
         items.push({ type: 'health', icon: '🦻', title: T.menieres_title, text: data.alerts.menieres.reason, guidance: T.menieres_guidance });
-      }
-      if (data.alerts.heads_up) {
-        items.push({ type: 'narrative', icon: '📢', title: T.heads_up_title, text: data.alerts.heads_up });
       }
 
       if (items.length > 0) {
@@ -690,6 +686,11 @@ function renderLifestyleView(data) {
     const extras = [];
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
     add('🌡️', T.hvac, data.hvac.text, extras);
+  }
+
+  // 8. Heads Up alert (from narration, if present)
+  if (data.alert) {
+    add('📢', T.heads_up_title, data.alert);
   }
 }
 
