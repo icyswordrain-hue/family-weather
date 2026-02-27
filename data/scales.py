@@ -37,13 +37,6 @@ UV_SCALE = [
     (float("inf"), "Extreme", 5),
 ]
 
-HUM_SCALE_5 = [
-    (20,  "Dry", 1),
-    (40,  "Comfortable", 2),
-    (60,  "Normal", 3),
-    (80,  "Humid", 4),
-    (float("inf"), "Soggy", 5),
-]
 
 PRES_SCALE_5 = [
     (1000, "Low", 5),
@@ -71,6 +64,26 @@ PRECIP_SCALE_5 = [
 ]
 
 # ── Lookups ───────────────────────────────────────────────────────────────────
+
+def _hum_to_scale(val: float | None) -> tuple[str, int]:
+    """Map relative humidity (%) to (label, level) on a comfort-centred scale.
+    Level 1 is ideal (41–60%); severity increases in both dry and humid directions.
+    """
+    if val is None:
+        return "Unknown", 0
+    if val <= 30:
+        return "Very Dry", 3
+    if val <= 40:
+        return "Dry", 2
+    if val <= 60:
+        return "Comfortable", 1
+    if val <= 70:
+        return "Muggy", 2
+    if val <= 80:
+        return "Humid", 3
+    if val <= 90:
+        return "Very Humid", 4
+    return "Oppressive", 5
 
 def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
     """Helper to map a numeric value to a (text, level) tuple based on a scale."""

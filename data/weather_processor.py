@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 from data.location_loader import OUTDOOR_LOCATIONS
 from data.scales import (
-    BEAUFORT_SCALE_5, UV_SCALE, HUM_SCALE_5, PRES_SCALE_5, VIS_SCALE_5, PRECIP_SCALE_5,
-    _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
+    BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5, PRECIP_SCALE_5,
+    _hum_to_scale, _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
     wx_to_cloud_cover, degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
 )
 from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_heads_ups
@@ -258,7 +258,7 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     
     # Humidity
     hum_val = current.get("RH")
-    hum_txt, hum_lvl = _val_to_scale(hum_val, HUM_SCALE_5)
+    hum_txt, hum_lvl = _hum_to_scale(hum_val)
     result["hum_text"] = hum_txt
     result["hum_level"] = hum_lvl
     
