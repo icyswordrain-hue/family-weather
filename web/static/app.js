@@ -243,8 +243,28 @@ const TRANSLATIONS = {
       'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
       'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知'
     },
+    slots: {
+      'Morning': '早上',
+      'Afternoon': '下午',
+      'Evening': '傍晚',
+      'Overnight': '深夜',
+      'Forecast': '預報'
+    },
+    transitions: {
+      'Sunny': '晴朗',
+      'Cloudy': '多雲',
+      'Rain expected': '預期降雨',
+      'More rain': '降雨增加',
+      'Less rain': '降雨減少',
+      'Humid': '變潮濕',
+      'Dry air': '變乾燥',
+      'Windier': '風力增強',
+      'Calmer': '風力減弱',
+      'change': '變化'
+    }
   },
 };
+
 
 // Active translation map — updated by applyLanguage()
 let T = TRANSLATIONS['zh-TW'];
