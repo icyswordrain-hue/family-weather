@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from narration.llm_prompt_builder import build_prompt
 from narration.fallback_narrator import build_narration
-from narration.llm_summarizer import summarize_for_lifestyle, summarize_aqi_forecast
+from narration.llm_summarizer import summarize_for_lifestyle
 from backend.cache import NarrationCache, make_cache_key, _classify_time
 
 # lang-aware cache — separate namespaces for EN and ZH results
@@ -130,27 +130,18 @@ def run_parallel_summarization(
     aqi_forecast_raw: str,
     lang: str = 'en',
 ) -> tuple[dict, str | None]:
-    """Run lifestyle summarization and (optionally) AQI summary concurrently.
-
+    """Run lifestyle summarization.
+    
     Args:
         paragraphs:       Parsed narration paragraphs dict from parse_narration_response()
-        aqi_forecast_raw: Raw AQI forecast content string; if empty, AQI summary is skipped.
-        lang:             Language code ('en' or 'zh-TW') — forwarded to both summarizers.
+        aqi_forecast_raw: Unused, kept for backwards compatibility.
+        lang:             Language code ('en' or 'zh-TW') — forwarded to summarizer.
 
     Returns:
-        (lifestyle_summaries, aqi_summary_en)
-        aqi_summary_en is None if aqi_forecast_raw was falsy.
+        (lifestyle_summaries, None)
     """
-    aqi_summary_en: str | None = None
-
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         future_lifestyle = executor.submit(summarize_for_lifestyle, paragraphs, lang)
-        future_aqi = None
-        if aqi_forecast_raw:
-            future_aqi = executor.submit(summarize_aqi_forecast, aqi_forecast_raw, lang)
-
         summaries = future_lifestyle.result()
-        if future_aqi:
-            aqi_summary_en = future_aqi.result()
 
-    return summaries, aqi_summary_en
+    return summaries, None

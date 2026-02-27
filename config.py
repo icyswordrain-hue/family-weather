@@ -28,10 +28,17 @@ GCP_REGION = os.environ.get("GCP_REGION", "asia-east1")
 
 # ── CWA Data ────────────────────────────────────────────────────────────────────
 CWA_BASE_URL = "https://opendata.cwa.gov.tw/api/v1/rest/datastore"
+# AI AGENT NOTE: For a list of all verified station IDs, see docs/reference/stations.txt
+# If you need to know exactly what elements the 7-day API returns, see docs/reference/cwa_7day_elements.json
 CWA_STATION_ID = "466881"  # Banqiao (Manual) - Full synoptic station (Vis, Cloud, WxText) + Auto sensors
 CWA_CURRENT_DATASET = "O-A0003-001" # Manual stations
-CWA_FORECAST_DATASET = "F-D0047-071" # New Taipei City Township Forecast (36h)
-CWA_FORECAST_7DAY_DATASET = "F-D0047-069" # New Taipei City Township Forecast (7-day)
+
+# AI AGENT NOTE: Correct Dataset IDs for New Taipei City (F-D0047 Series)
+# Per docs/reference/API_QUIRKS.md:
+# - F-D0047-069: 36-hour forecast (hourly point-in-time slots). Feeds the 24h segment view.
+# - F-D0047-071: 7-day forecast (12-hour period slots). Feeds the weekly timeline.
+CWA_FORECAST_DATASET = "F-D0047-069" # New Taipei City Township Forecast (36h segments)
+CWA_FORECAST_7DAY_DATASET = "F-D0047-071" # New Taipei City Township Forecast (7-day)
 # Visibility data
 
 # Location names for Sanxia and Banqiao townships
@@ -39,6 +46,10 @@ CWA_FORECAST_LOCATIONS = ["三峽區", "板橋區"]
 
 # ── MOENV Endpoints ───────────────────────────────────────────────────────────
 MOENV_BASE_URL = "https://data.moenv.gov.tw/api/v2"
+
+# AI AGENT NOTE: MOENV AQI Forecast Structure vs Realtime Structure
+# Real-time datasets (aqx_p_432) use a list of objects per station.
+# Forecast datasets (AQF_P_01) provide area-wide narratives (e.g., "北部") rather than per-station.
 MOENV_AQI_DATASET = "aqx_p_432"   # Real-time AQI
 MOENV_FORECAST_DATASET = "AQF_P_01"  # 3-Day Regional Forecast
 MOENV_FORECAST_AREA = "北部"   # Northern Air Quality Zone (API uses short name)
@@ -48,7 +59,16 @@ MOENV_STATION_NAME = "土城"
 # ── Location Reference ────────────────────────────────────────────────────────
 LOCATION_LAT = 24.9955
 LOCATION_LON = 121.4279
-TIMEZONE = "Asia/Taipei"
+# AI AGENT NOTE: Timezone — This value is the single source of truth for the
+# UTC+8 assumption used throughout the codebase.  CWA API timestamps carry
+# "+08:00"; they are stripped to naive wall-clock datetimes and compared against
+# naive datetime.now() in weather_processor._segment_forecast.  Both sides of
+# that comparison are only equal when the server process itself runs in
+# Asia/Taipei.  If you ever change this value, audit every .replace(tzinfo=None)
+# call and every datetime.now() call in data/ and update API_QUIRKS.md accordingly.
+# For new code that needs the current Taipei time, use the explicit-offset pattern
+# from fetch_moenv.fetch_forecast_aqi: datetime.now(timezone(timedelta(hours=8)))
+TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 
 # ── Google Gemini ─────────────────────────────────────────────────────────
 GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL", "gemini-1.5-pro-latest")

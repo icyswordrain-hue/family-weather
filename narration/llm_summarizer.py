@@ -110,66 +110,8 @@ OUTPUT FORMAT:
             logger.debug(f"Raw problematic JSON: {clean_json}")
             return {}
 
-        logger.info("Lifestyle summarization successful via Haiku.")
         return summaries
     except Exception as e:
         logger.error(f"Summarization failed: {e}")
         # Return empty or fallbacks? For now, empty is safer than broken JSON
         return {}
-
-def summarize_aqi_forecast(content: str, lang: str = 'en') -> str:
-    """
-    Summarize the MOENV AQI forecast content (Chinese) into concise English or Chinese.
-    Exactly 2–3 sentences.
-    """
-    if not content:
-        return ""
-
-    if lang == 'zh-TW':
-        prompt = f"""你是一位專精台灣空氣品質的環境專家。
-請將以下北台灣空氣品質預報摘要成繁體中文，簡潔口語，2–3 句話。
-
-上下文內容：
-{content}
-
-規則：
-1. 準確翻譯，但重點放在高層次的影響。
-2. 提供正好 2–3 句簡短有力的句子。
-3. 主要污染物可用中文或英文（例如「細懸浮微粒（PM2.5）」或「臭氧」均可）。
-4. 如果數據為空或過於籠統，提供安全的備案摘要。
-
-輸出：繁體中文摘要（純文字，2–3 句）。
-"""
-    else:
-        prompt = f"""You are an environmental expert specializing in Taiwan's air quality.
-Summarize the following Chinese air quality forecast for Northern Taiwan into a concise English update.
-
-CONTEXT:
-{content}
-
-RULES:
-1. Translate accurately but focus on high-level impact.
-2. Provide EXACTLY 2–3 short, punchy sentences.
-3. Mention the primary pollutant (e.g., PM2.5, Ozone) in English.
-4. DO NOT include any Chinese characters or specific terminology titles like "細懸浮微粒" or "臭氧" in the output.
-5. If the data is empty or generic, provide a safe fallback summary.
-
-OUTPUT: Concise English summary (text only).
-"""
-
-    messages = [
-        {"role": "user", "parts": [{"text": prompt}]}
-    ]
-
-    try:
-        raw_output = generate_narration(messages, model_override=CLAUDE_FALLBACK_MODEL)
-        # Strip potential markdown fences
-        clean_text = raw_output.strip()
-        if clean_text.startswith("```"):
-            clean_text = clean_text.split("\n", 1)[1].rsplit("\n", 1)[0].strip()
-        
-        logger.info("AQI summarization successful via Haiku.")
-        return clean_text
-    except Exception as e:
-        logger.error(f"AQI summarization failed: {e}")
-        return ""

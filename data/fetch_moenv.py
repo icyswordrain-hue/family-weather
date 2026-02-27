@@ -8,6 +8,13 @@ import json
 import logging
 import requests
 import urllib3
+
+# AI AGENT NOTE: Read inline comments labeled "AI AGENT NOTE" 
+# throughout this file before modifying fetching or parsing logic.
+# The MOENV API has dataset structural variations, SSL issues, and types.
+# CRITICAL: See docs/reference/API_QUIRKS.md for known issues.
+# NEVER write a loop to keep retrying if fields are missing - check the API response structure instead.
+
 from config import (
     MOENV_API_KEY,
     MOENV_BASE_URL,
@@ -43,6 +50,9 @@ def fetch_realtime_aqi() -> dict:
         resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
         resp.raise_for_status()
     except requests.exceptions.SSLError:
+        # AI AGENT NOTE: MOENV API SSL & Timeouts
+        # MOENV can experience timeouts and SSL configuration anomalies.
+        # Always specify a timeout and handle SSLError by falling back to verify=False.
         logger.warning("MOENV realtime SSL verification failed, retrying with verify=False")
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
@@ -50,11 +60,13 @@ def fetch_realtime_aqi() -> dict:
     body = json.loads(resp.content)  # Use raw bytes → UTF-8 (bypasses requests encoding guessing)
 
     try:
-        # MOENV v2 API returns a list directly, or a dict with "records"
+        # AI AGENT NOTE: MOENV JSON Structural Variations
+        # MOENV v2 API sometimes returns a direct top-level list `[{...}]` 
+        # instead of the expected `{"records": [{...}]}`. Handle both variations.
         if isinstance(body, list):
-            records = body
+             records = body
         else:
-            records = body.get("records", [])
+             records = body.get("records", [])
         if not records:
             raise ValueError(f"No AQI data returned for station '{MOENV_STATION_NAME}'")
 
@@ -82,6 +94,10 @@ def fetch_forecast_aqi() -> dict:
     Uses numeric AQI index when available.
     """
     from datetime import datetime, timezone, timedelta
+    # AI AGENT NOTE: Timezone — explicitly construct UTC+8 offset rather than
+    # relying on the server's local TZ (unlike weather_processor which uses naive
+    # datetime.now() and requires the server to run in Asia/Taipei).  This is the
+    # preferred pattern for any new code that needs the current Taipei date/time.
     _TAIPEI_TZ = timezone(timedelta(hours=8))
     today_str = datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
 
@@ -97,12 +113,20 @@ def fetch_forecast_aqi() -> dict:
             resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
             resp.raise_for_status()
         except requests.exceptions.SSLError:
+            # AI AGENT NOTE: MOENV API SSL & Timeouts
+            # MOENV can experience timeouts and SSL configuration anomalies.
+            # Always specify a timeout and handle SSLError by falling back to verify=False.
             logger.warning("MOENV forecast SSL verification failed, retrying with verify=False")
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
             resp.raise_for_status()
         body = json.loads(resp.content.decode("utf-8", errors="ignore"))
 
+        body = json.loads(resp.content.decode("utf-8", errors="ignore"))
+
+        # AI AGENT NOTE: MOENV JSON Structural Variations
+        # MOENV v2 API sometimes returns a direct top-level list `[{...}]` 
+        # instead of the expected `{"records": [{...}]}`. Handle both variations.
         if isinstance(body, list):
             records = body
         else:
@@ -121,6 +145,8 @@ def fetch_forecast_aqi() -> dict:
             return {"area": MOENV_FORECAST_AREA, "aqi": None, "status": None, "forecast_date": None}
 
         # Sort by date and prefer today's forecast
+        # Sort-only helper — MOENV forecastdate strings have no TZ offset so no
+        # stripping or conversion is needed; naive datetime is fine for ordering.
         def _parse_dt(x):
             try:
                 # Expecting YYYY-MM-DD HH:MM:SS or similar
@@ -132,7 +158,10 @@ def fetch_forecast_aqi() -> dict:
         today_records = [r for r in area_records if r.get("forecastdate", "").startswith(today_str)]
         rec = today_records[0] if today_records else area_records[0]
 
-        # Prefer numeric AQI index over text range
+        # AI AGENT NOTE: MOENV AQI Value Discrepancies
+        # The Forecast API often returns a string range (e.g., "51-100") instead of a single integer. 
+        # The parsing logic must attempt _safe_int() but allow for string fallbacks.
+        # Prefer numeric AQI index over text range if available.
         aqi_val = _safe_int(rec.get("aqi"))
         aqi_range = rec.get("aqi")  # May be a range like "51-100"
 

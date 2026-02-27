@@ -36,6 +36,31 @@ from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
 from data.outdoor_scoring import _compute_outdoor_index, _classify_outdoor_mood, _extract_recent_locations
 
+AQI_STATUS_MAP = {
+    "良好": {"en": "Expected to be Good", "zh_TW": "預測為「良好」"},
+    "普通": {"en": "Expected to be Moderate", "zh_TW": "預測為「普通」"},
+    "橘色提醒": {"en": "Expected to be Unhealthy for Sensitive Groups", "zh_TW": "預測為「橘色提醒」"},
+    "紅害": {"en": "Expected to be Unhealthy", "zh_TW": "預測為「紅害」"},
+    "紫爆": {"en": "Expected to be Very Unhealthy", "zh_TW": "預測為「紫爆」"},
+}
+
+def extract_aqi_summary(content: str, lang: str = "zh_TW") -> str:
+    import re
+    if not content:
+        return "No forecast data available." if lang == "en" else "暫無預測資料。"
+    
+    # Try to find the status for Northern region (北部)
+    match = re.search(r'北部[^「]*「([^」]+)」', content)
+    if match:
+        status_zh = match.group(1)
+        if status_zh in AQI_STATUS_MAP:
+            if lang == "en":
+                return f"Tomorrow's air quality is {AQI_STATUS_MAP[status_zh]['en']}."
+            else:
+                return f"明日北部空氣品質{AQI_STATUS_MAP[status_zh]['zh_TW']}等級。"
+                
+    # Fallback to a truncated version of the raw content if regex fails
+    return content[:100] + "..." if len(content) > 100 else content
 
 # ── Time segment boundaries (local hour, 24h) ────────────────────────────────
 SEGMENTS = {
@@ -202,6 +227,9 @@ def process(
     ]
     location_rec["top_locations"] = (filtered_locations if filtered_locations
                                      else location_rec.get("all_locations", []))
+
+    aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")
+    aqi_forecast["summary_zh"] = extract_aqi_summary(aqi_forecast.get("content", ""), "zh_TW")
 
     return {
         "current": current_processed,

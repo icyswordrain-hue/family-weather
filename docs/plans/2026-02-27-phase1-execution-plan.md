@@ -1143,3 +1143,78 @@ Click Lifestyle → Dashboard: content slides left. Click Dashboard → Lifestyl
 git add web/static/style.css web/static/app.js
 git commit -m "feat(ux): directional slide transition on view switching"
 ```
+
+---
+
+## Task 18 — Fix 7-Day Forecast Dataset ID
+
+**Files:**
+- Modify: `config.py`
+- Modify: `docs/API_QUIRKS.md`
+- Modify: `data/fetch_cwa.py`
+
+**Step 1: Update config.py**
+
+Find:
+```python
+CWA_FORECAST_7DAY_DATASET = "F-D0047-069" # New Taipei City Township Forecast (7-day)
+```
+
+Replace with:
+```python
+CWA_FORECAST_7DAY_DATASET = "F-D0047-075"  # the correct 7-day one for New Taipei
+```
+
+**Step 2: Update fetch_cwa.py fallback**
+
+Find:
+```python
+CWA_FORECAST_7DAY_DATASET = getattr(config, "CWA_FORECAST_7DAY_DATASET", "F-D0047-069")
+```
+
+Replace with:
+```python
+CWA_FORECAST_7DAY_DATASET = getattr(config, "CWA_FORECAST_7DAY_DATASET", "F-D0047-075")
+```
+
+**Step 3: Update API_QUIRKS.md**
+
+Update the documentation to clarify that `069` is for 72-hour hourly forecasts, `073` is weekly string descriptions, and `075` is the correct 7-day timeline forecast.
+
+**Step 4: Verify**
+
+Run the backend and check the payload for `/api/broadcast`. The `weekly_timeline` array in the `overview` slice should now contain 14-15 items (7 days of Day/Night slots) instead of just 5-8.
+
+**Step 5: Commit**
+```bash
+git add config.py data/fetch_cwa.py docs/API_QUIRKS.md
+git commit -m "fix: correct 7-day forecast dataset ID from 069 to 075"
+```
+
+---
+
+## Task 19 — Investigate and Fix Missing 7-Day Forecast Data
+
+**Goal:** Identify why `forecast_7day` is missing from the processed API payload, which causes the frontend to display an empty 7-day forecast.
+
+**Files:**
+- Modify: `data/weather_processor.py`
+- Modify: `data/fetch_cwa.py`
+
+**Step 1: Audit `data/weather_processor.py`**
+Inspect the `process()` function to verify how `forecasts_7day` is handled. Ensure that the 7-day forecast data is correctly mapped and appended to `processed["forecast_7day"]` so that it reaches `web/routes.py`.
+
+**Step 2: Audit `data/fetch_cwa.py`**
+Inspect `fetch_all_forecasts_7day()` to ensure that the API fetch is successfully returning data and that the structure matches the expectations of `weather_processor.py`.
+
+**Step 3: Implement Fix**
+Correct any mismatches, key errors, or omission logic in the data processing flow. 
+
+**Step 4: Verify**
+Restart the backend server. Trigger a `/api/broadcast` fetch or force a refresh and verify that `processed.get("forecast_7day")` is a populated list and the UI renders the 7-day weekly grid cards.
+
+**Step 5: Commit**
+```bash
+git add data/weather_processor.py data/fetch_cwa.py
+git commit -m "fix: resolve missing 7-day forecast data in API payload"
+```

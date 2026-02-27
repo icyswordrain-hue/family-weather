@@ -163,7 +163,7 @@ def _compute_outdoor_index(current: dict, segmented: dict, aqi_val: int | None, 
     for activity, overrides in OUTDOOR_WEIGHTS_BY_ACTIVITY.items():
         weights = {**OUTDOOR_WEIGHTS_GENERAL, **overrides}
         # Use Afternoon cond as proxy for activity scoring
-        afternoon = segmented.get("Afternoon") or next(iter(segmented.values()), {})
+        afternoon = segmented.get("Afternoon") or next((v for v in segmented.values() if v is not None), {})
         cond = {
             "at": afternoon.get("AT"), "rh": afternoon.get("RH"), "ws": afternoon.get("WS"),
             "pop": afternoon.get("PoP6h"), "aqi": aqi_val, "uvi": uvi,

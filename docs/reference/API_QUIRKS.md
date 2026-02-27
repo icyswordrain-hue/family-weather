@@ -79,9 +79,11 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
 1. **SSL & Timeouts**
    - Similar to CWA, MOENV can experience timeouts and SSL configuration anomalies. Always specify a timeout (e.g. `timeout=20`), and handle `requests.exceptions.SSLError` by falling back to `verify=False`.
 
-2. **AQI Forecast Structure vs Realtime Structure**
-   - Real-time datasets (`aqx_p_432`) use a list of objects per station.
-   - Forecast datasets (`AQF_P_01`) provide area-wide narratives, e.g., for the `北部` (Northern) area, rather than per-station. Always match by the exact area string (`MOENV_FORECAST_AREA`).
+2. **Mapping Mismatch: Station vs. Region**
+   Unlike the CWA API which consistently uses Township strings (e.g., `三峽區`) for both 24h and 7-day datasets, the MOENV API has a structural split:
+   - **Real-time API (`aqx_p_432`)**: Uses specific physical hardware stations. You must filter by `sitename` (e.g., `土城` for Tucheng).
+   - **Forecast API (`AQF_P_01`)**: Uses broad regional zones instead of specific stations or townships. You must filter by `area` (e.g., `北部` for the entire Northern Air Quality Zone). 
+   - *Note:* Do not attempt to query the forecast API using a station name like `土城`; it will return empty results.
 
 3. **AQI Value Discrepancies**
    - The Realtime API returns an integer `aqi` value.

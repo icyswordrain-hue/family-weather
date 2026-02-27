@@ -516,10 +516,12 @@ function renderOverviewView(data) {
     status.textContent = translateAQIText(aqi.status);
     body.appendChild(header);
     body.appendChild(status);
-    if (aqi.summary_en || aqi.content) {
+    if (aqi.summary_en || aqi.summary_zh || aqi.content) {
       const content = document.createElement('div');
       content.className = 'aqi-fc-content';
-      content.textContent = aqi.summary_en || aqi.content;
+      const lang = localStorage.getItem('lang') || 'zh-TW';
+      const aqiSummary = lang === 'en' ? aqi.summary_en : aqi.summary_zh;
+      content.textContent = aqiSummary || aqi.content || 'N/A';
       body.appendChild(content);
     }
     aqiFcEl.appendChild(icon);
@@ -530,7 +532,7 @@ function renderOverviewView(data) {
 function aqiToLevel(val) {
   const n = parseInt(val);
   if (isNaN(n)) return 1;
-  if (n <= 50)  return 1;
+  if (n <= 50) return 1;
   if (n <= 100) return 2;
   if (n <= 150) return 3;
   if (n <= 200) return 4;
