@@ -106,6 +106,11 @@ function localiseLocation(name) {
   return name;
 }
 
+function localiseMetric(text) {
+  if (!text) return '';
+  return (T.metrics && T.metrics[text]) ? T.metrics[text] : text;
+}
+
 const ICONS = {
   'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
   'partly-cloudy': '⛅', 'Mixed Clouds': '⛅', '2': '⛅', '3': '⛅',
@@ -229,6 +234,15 @@ const TRANSLATIONS = {
     log_title: '系統記錄',
     log_step_prefix: '步驟：',
     log_runtime_error: '執行錯誤：',
+    metrics: {
+      'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
+      'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風', 'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風', 'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風', 'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
+      'Good': '良好', 'Moderate': '普通', 'Unhealthy for Sensitive Groups': '對敏感族群不健康', 'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
+      'Low': '低', 'High': '高', 'Very High': '極高', 'Extreme': '極端',
+      'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
+      'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
+      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知'
+    },
   },
 };
 
@@ -323,12 +337,12 @@ function renderCurrentView(data) {
   setText('rp-location', localiseLocation(data.location || '—'));
 
   // Gauge Cards (Restructured)
-  renderGauge('gauge-ground', data.ground_state, T.ground, '', `lvl-${data.ground_level}`);
-  renderGauge('gauge-wind', data.wind.text, T.wind, `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
-  renderGauge('gauge-hum', data.hum.text, T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`);
-  renderGauge('gauge-aqi', data.aqi.text, T.air_quality, `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
-  renderGauge('gauge-uv', data.uv.text, T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
-  renderGauge('gauge-pres', data.pres.text, T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
+  renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
+  renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`);
+  renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
+  renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
+  renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
 }
 
 function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
@@ -394,15 +408,19 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow(T.rain, seg.precip_text || '—', seg.precip_level || 1);
-      addRow(T.wind, seg.wind_text || '—', seg.wind_level || 1);
+      addRow(T.rain, localiseMetric(seg.precip_text) || '—', seg.precip_level || 1);
       if (seg.outdoor_grade) {
-        addRow(T.outdoor, `${seg.outdoor_grade} · ${seg.outdoor_score}`, `grade-${seg.outdoor_grade}`);
+        const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
+        addRow(T.outdoor, seg.outdoor_grade, gradeToLvl[seg.outdoor_grade] || 0);
       }
       card.appendChild(header);
       card.appendChild(icon);
       card.appendChild(temp);
       card.appendChild(details);
+
+      const col = document.createElement('div');
+      col.className = 'tc-col';
+      col.appendChild(card);
 
       const nextSeg = data.timeline[idx + 1];
       const transition = nextSeg ? transitionMap[slotName] : null;
@@ -433,9 +451,9 @@ function renderOverviewView(data) {
         const t = document.createElement('div');
         t.className = 'tc-transition';
         t.textContent = `→ ${parts.length ? parts.join(' · ') : 'change'}`;
-        card.appendChild(t);
+        col.appendChild(t);
       }
-      timelineGrid.appendChild(card);
+      timelineGrid.appendChild(col);
     });
   }
 
@@ -484,7 +502,7 @@ function renderOverviewView(data) {
 
       const rain = document.createElement('div');
       rain.className = `wk-rain lvl-${item.precip_level || 1}`;
-      rain.textContent = item.precip_text || '—';
+      rain.textContent = localiseMetric(item.precip_text) || '—';
 
       card.appendChild(label);
       card.appendChild(icon);
