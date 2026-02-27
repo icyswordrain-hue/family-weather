@@ -55,6 +55,15 @@ def _calculate_apparent_temp(ta: float | None, rh: float | None, ws: float | Non
     return round(ta + 0.33 * e - 0.7 * (ws or 0) - 4.0, 1)
 
 def _parse_dt(dt_str: str) -> datetime:
+    # AI AGENT NOTE: Timezone Stripping — read before editing.
+    # CWA timestamps are always offset-aware: "2026-02-27T18:00:00+08:00" (UTC+8 / Asia/Taipei).
+    # fromisoformat() returns an aware datetime.  Callers that compare against naive datetimes
+    # (e.g. datetime.now()) MUST strip the tzinfo with .replace(tzinfo=None).  This is safe
+    # ONLY because the wall-clock hour in the +08:00 timestamp matches Taipei local time, and
+    # this server/script MUST be configured to run in Asia/Taipei (UTC+8).  If the server were
+    # moved to another timezone the comparisons would silently produce wrong segment assignments.
+    # Preferred alternative for new code: datetime.now(timezone(timedelta(hours=8)))
+    # as used in fetch_moenv.fetch_forecast_aqi — that pattern is TZ-agnostic.
     return datetime.fromisoformat(dt_str)
 
 # ── Public Entry Point ────────────────────────────────────────────────────────
@@ -99,6 +108,9 @@ def process(
     forecasts_7day = forecasts_7day or {}
     primary_7day_slots = forecasts_7day.get("三峽區") or forecasts_7day.get("板橋區") or []
     for slot in primary_7day_slots:
+        feels_like = _calculate_apparent_temp(slot.get("AT"), slot.get("RH"), slot.get("WS"))
+        if feels_like is not None:
+            slot["AT"] = feels_like
         slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
         slot["precip_text"], slot["precip_level"] = _val_to_scale(slot.get("PoP12h"), PRECIP_SCALE_5)
         slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
@@ -294,6 +306,16 @@ def _segment_forecast(
     """
     Assign each forecast slot to a named time segment.
     Handles 6h slots and 12h slots (e.g. 18-06) that cover multiple segments.
+
+    TIMEZONE CONTRACT:
+      - CWA slot timestamps carry +08:00 (Asia/Taipei).  They are stripped to
+        naive datetimes via .replace(tzinfo=None) so their wall-clock hours can
+        be compared directly against the naive `now_dt`.
+      - `now` defaults to datetime.now() (naive local time).  This is correct
+        only when the process runs in Asia/Taipei (UTC+8).  Pass an explicit
+        aware or naive Taipei datetime in tests or when running in another TZ.
+      - Do NOT convert to UTC before comparing — the segment boundaries (6, 12,
+        18, 0) are defined in Taipei local hours.
     """
     if not slots:
         return {s: None for s in SEGMENT_ORDER}
@@ -301,6 +323,8 @@ def _segment_forecast(
     # Sort slots by start time
     slots = sorted(slots, key=lambda x: x["start_time"])
     found: dict[str, Optional[dict]] = {s: None for s in SEGMENT_ORDER}
+    # AI AGENT NOTE: datetime.now() is naive local time.  Must be Taipei (UTC+8)
+    # to match the wall-clock hours embedded in the stripped CWA timestamps (see _parse_dt).
     now_dt = now or datetime.now()
 
     # 1. Determine starting segment based on current time
@@ -343,19 +367,29 @@ def _segment_forecast(
         # Search for a slot that covers this day/hour window
         for slot in slots:
             try:
+                # Strip +08:00 so wall-clock hours are comparable to naive now_dt.
+                # Safe only when server TZ == Asia/Taipei — see _parse_dt docstring.
                 s_dt = _parse_dt(slot["start_time"]).replace(tzinfo=None)
                 e_dt = _parse_dt(slot["end_time"]).replace(tzinfo=None)
-                
+
                 # Normalize target start/end for comparison
                 t_start = day + timedelta(hours=lo)
                 t_end = day + timedelta(hours=hi)
-                
-                # Midpoint check
-                t_mid = t_start + (t_end - t_start) / 2
-                
-                if s_dt <= t_mid < e_dt:
-                    found[seg_name] = dict(slot)
-                    break
+
+                # F-D0047-069 returns hourly point-in-time slots where end_time == start_time.
+                # In that case the midpoint interval check (s_dt <= t_mid < e_dt) always fails
+                # because the interval is zero-width.  Fall back to a window check instead:
+                # accept any slot whose timestamp falls within [t_start, t_end).
+                if s_dt == e_dt:
+                    if t_start <= s_dt < t_end:
+                        found[seg_name] = dict(slot)
+                        break
+                else:
+                    # Period-based slot: use midpoint-overlap check
+                    t_mid = t_start + (t_end - t_start) / 2
+                    if s_dt <= t_mid < e_dt:
+                        found[seg_name] = dict(slot)
+                        break
             except Exception:
                 continue
 

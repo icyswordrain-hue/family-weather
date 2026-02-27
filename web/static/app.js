@@ -521,11 +521,15 @@ function renderOverviewView(data) {
       } catch { return false; }
     };
 
-    // Guarantee row order: all day cards → all night cards
     const dayItems = data.weekly_timeline.filter(i => !isNightSlot(i));
     const nightItems = data.weekly_timeline.filter(i => isNightSlot(i));
 
-    [...dayItems, ...nightItems].forEach(item => {
+    // Top row matches whatever period the first slot belongs to
+    const firstIsNight = data.weekly_timeline.length > 0 && isNightSlot(data.weekly_timeline[0]);
+    const topItems = firstIsNight ? nightItems : dayItems;
+    const bottomItems = firstIsNight ? dayItems : nightItems;
+
+    [...topItems, ...bottomItems].forEach(item => {
       let dt;
       try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
       const isNight = isNightSlot(item);
@@ -548,8 +552,8 @@ function renderOverviewView(data) {
       temp.textContent = `${Math.round(item.AT ?? 0)}°`;
 
       const rain = document.createElement('div');
-      rain.className = `wk-rain lvl-${item.PoP12h >= 60 ? '4' : item.PoP12h >= 30 ? '3' : '1'}`;
-      rain.textContent = `${item.PoP12h ?? '--'}%`;
+      rain.className = `wk-rain lvl-${item.precip_level || 1}`;
+      rain.textContent = item.precip_text || '—';
 
       card.appendChild(label);
       card.appendChild(icon);
@@ -688,9 +692,41 @@ function renderLifestyleView(data) {
     add('🌡️', T.hvac, data.hvac.text, extras);
   }
 
-  // 8. Heads Up alert (from narration, if present)
-  if (data.alert) {
-    add('📢', T.heads_up_title, data.alert);
+  // 8. Heads Up alert card (structured per-item with level styling)
+  if (data.alert && data.alert.length > 0) {
+    const hasCritical = data.alert.some(a => a.level === 'CRITICAL');
+    const card = document.createElement('div');
+    card.className = 'ls-card ls-alert-card ' + (hasCritical ? 'ls-alert-critical' : 'ls-alert-warning');
+    const ic = document.createElement('div');
+    ic.className = 'ls-icon';
+    ic.textContent = hasCritical ? '🚨' : '⚠️';
+    const content = document.createElement('div');
+    content.className = 'ls-content';
+    const ttl = document.createElement('div');
+    ttl.className = 'ls-title';
+    ttl.textContent = T.heads_up_title;
+    content.appendChild(ttl);
+    const TYPE_ICONS = { Health: '❤️', Commute: '🚗', Air: '🌫️', General: '📌' };
+    data.alert.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'ls-alert-item';
+      const ico = document.createElement('span');
+      ico.className = 'ls-alert-type-icon';
+      ico.textContent = TYPE_ICONS[item.type] || '📌';
+      const msg = document.createElement('span');
+      msg.className = 'ls-alert-msg';
+      msg.textContent = item.msg;
+      const badge = document.createElement('span');
+      badge.className = 'ls-badge ls-alert-badge-' + (item.level || 'WARNING').toLowerCase();
+      badge.textContent = item.level || 'WARNING';
+      row.appendChild(ico);
+      row.appendChild(msg);
+      row.appendChild(badge);
+      content.appendChild(row);
+    });
+    card.appendChild(ic);
+    card.appendChild(content);
+    grid.appendChild(card);
   }
 }
 

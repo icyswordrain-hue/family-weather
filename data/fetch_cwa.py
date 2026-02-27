@@ -2,14 +2,33 @@
 fetch_cwa.py — CWA Open Data API client.
 
 Fetches:
-  - Current station observations from Banqiao station (C0AJ80)
-  - Township 36-hour forecasts for Sanxia and Banqiao (F-D0047-071)
+  - Current station observations from Banqiao station (466881 / O-A0003-001)
+  - Township 36-hour forecasts for Sanxia and Banqiao (F-D0047-069)
+  - Township 7-day forecasts for Sanxia and Banqiao (F-D0047-071)
+
+TIMEZONE NOTE:
+  All timestamps returned by the CWA API are in Asia/Taipei (UTC+8) and carry
+  an explicit +08:00 offset, e.g. "2026-02-27T18:00:00+08:00".  This file
+  intentionally uses datetime.strptime with [:19] slicing to obtain naive Taipei
+  wall-clock datetimes for bucket arithmetic in fetch_forecast_7day().  Do NOT
+  convert to UTC before aggregating — the 6-hour boundary that separates Day/Night
+  buckets is defined in Taipei local time (midnight–06:00 = Night of previous day).
 """
 
 import json
 import logging
 import requests
 from datetime import datetime, timedelta
+
+# AI AGENT NOTE: Read inline comments labeled "AI AGENT NOTE" 
+# throughout this file before modifying fetching or parsing logic.
+# The CWA API has significant quirks regarding SSL, casing, and encoding.
+# CRITICAL: See docs/reference/API_QUIRKS.md for known issues.
+# CRITICAL: See docs/reference/stations.txt before guessing Station IDs.
+# CRITICAL: See docs/reference/cwa_7day_elements.json for exact dataset element names.
+# NEVER write a while loop that retries API calls because a specific field is "missing" (like AT or PoP12h). 
+# Missing fields mean your dataset ID or Chinese ElementName match is wrong, NOT a temporary network issue.
+
 from config import (
     CWA_API_KEY,
     CWA_BASE_URL,
@@ -48,6 +67,9 @@ def fetch_current_conditions() -> dict:
             resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
             resp.raise_for_status()
         except requests.exceptions.SSLError:
+            # AI AGENT NOTE: CWA API SSL Certificate Issues
+            # The API often has SSL certificate issues (specifically Missing Subject Key Identifier).
+            # Workaround: Always handle SSLError by falling back to verify=False.
             logger.warning("CWA SSL verification failed, retrying with verify=False")
             resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
             resp.raise_for_status()
@@ -152,16 +174,27 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
         resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
         resp.raise_for_status()
     except requests.exceptions.SSLError:
+            # AI AGENT NOTE: CWA API SSL Certificate Issues
+            # The API often has SSL certificate issues (specifically Missing Subject Key Identifier).
+            # Workaround: Always handle SSLError by falling back to verify=False.
         logger.warning("CWA forecast SSL verification failed, retrying with verify=False")
         resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
         resp.raise_for_status()
     
     # Robust decoding
+    # AI AGENT NOTE: Character Encoding on Windows
+    # When printing CWA API responses to the Windows console using print(r.content.decode('utf-8')),
+    # it can produce Mojibake due to the terminal's default codepage not supporting the characters.
+    # This is just a console printing issue; json.loads parses the text correctly in the app.
     raw_text = resp.content.decode("utf-8", errors="ignore")
     body = json.loads(raw_text)
 
     try:
         # Handle casing differences (Locations vs locations)
+        # AI AGENT NOTE: Capitalization & Structure Inconsistencies
+        # The JSON response structure randomly uses different casing for its keys. 
+        # It may return Locations or locations, Location or location, WeatherElement or weatherElement.
+        # Workaround: Always use resilient .get() fallbacks.
         records = body.get("records", {})
         locs_wrapper = records.get("Locations", []) or records.get("locations", [])
         if not locs_wrapper:
@@ -196,8 +229,8 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
             el_name = element.get("ElementName") or element.get("elementName")
             
             for tv in time_list:
-                start = tv.get("StartTime") or tv.get("startTime")
-                end = tv.get("EndTime") or tv.get("endTime")
+                start = tv.get("StartTime") or tv.get("startTime") or tv.get("DataTime") or tv.get("dataTime")
+                end = tv.get("EndTime") or tv.get("endTime") or start
                 if not start: continue
                 
                 slot = time_slots.setdefault(start, {"start_time": start, "end_time": end})
@@ -294,6 +327,9 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
         resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
         resp.raise_for_status()
     except requests.exceptions.SSLError:
+        # AI AGENT NOTE: CWA API SSL Certificate Issues
+        # The API often has SSL certificate issues (specifically Missing Subject Key Identifier).
+        # Workaround: Always handle SSLError by falling back to verify=False.
         logger.warning("CWA 7-day forecast SSL verification failed, retrying with verify=False")
         resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
         resp.raise_for_status()
@@ -337,9 +373,12 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
                 v = values[0] if values else {}
                 
                 # Use ElementName as primary driver if keys are generic
-                if "ApparentTemperature" in v or el_name == "體感溫度" or "MaximumApparentTemperature" in v or el_name == "最高體感溫度":
-                     val = v.get("ApparentTemperature") or v.get("MaximumApparentTemperature") or v.get("value")
-                     slot["AT"] = _safe_float(val)
+                if "MaxApparentTemperature" in v or el_name == "最高體感溫度":
+                     slot["MaxAT"] = _safe_float(v.get("MaxApparentTemperature") or v.get("value"))
+                elif "MinApparentTemperature" in v or el_name == "最低體感溫度":
+                     slot["MinAT"] = _safe_float(v.get("MinApparentTemperature") or v.get("value"))
+                elif "ApparentTemperature" in v or el_name == "體感溫度":
+                     slot["AT"] = _safe_float(v.get("ApparentTemperature") or v.get("value"))
                 elif "RelativeHumidity" in v or el_name == "相對濕度" or el_name == "平均相對濕度":
                      val = v.get("RelativeHumidity") or v.get("value")
                      slot["RH"] = _safe_float(val)
@@ -366,21 +405,30 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
         for slot in sorted(time_slots.values(), key=lambda s: s["start_time"]):
             st_str = slot["start_time"]
             try:
+                # Slice [:19] strips the +08:00 offset, giving a naive Taipei wall-clock
+                # datetime.  This is intentional — see module-level TIMEZONE NOTE.
                 dt = datetime.strptime(st_str[:19].replace("T", " "), "%Y-%m-%d %H:%M:%S")
             except ValueError:
                 continue
-                
+
+            # Shift back 6 hours so that 00:00–05:59 "belongs" to the previous
+            # calendar Day's Night bucket rather than the next Day bucket.
+            # Example: 2026-02-28T03:00 → adj 2026-02-27T21:00 → Night of Feb 27.
             adj_dt = dt - timedelta(hours=6)
             is_night = adj_dt.hour >= 12
             logical_date = adj_dt.strftime("%Y-%m-%d")
             bucket_key = f"{logical_date}_{'Night' if is_night else 'Day'}"
             
             if bucket_key not in aggregated:
+                # Canonical start times for each bucket, with explicit +08:00 so
+                # the frontend can parse them correctly regardless of browser locale.
                 canonical_hr = "18:00:00" if is_night else "06:00:00"
                 bucket_start = f"{logical_date}T{canonical_hr}+08:00"
                 aggregated[bucket_key] = {
                     "start_time": bucket_start,
                     "AT_list": [],
+                    "MaxAT_list": [],
+                    "MinAT_list": [],
                     "RH_list": [],
                     "WS_list": [],
                     "PoP12h_list": [],
@@ -388,6 +436,8 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
                 }
             
             b = aggregated[bucket_key]
+            if slot.get("MaxAT") is not None: b["MaxAT_list"].append(slot["MaxAT"])
+            if slot.get("MinAT") is not None: b["MinAT_list"].append(slot["MinAT"])
             if slot.get("AT") is not None: b["AT_list"].append(slot["AT"])
             if slot.get("RH") is not None: b["RH_list"].append(slot["RH"])
             if slot.get("WS") is not None: b["WS_list"].append(slot["WS"])
@@ -402,7 +452,10 @@ def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
             def _max(lst):
                 return max(lst) if lst else None
                 
-            final_slot["AT"] = _avg(b["AT_list"])
+            if b_key.endswith("_Night"):
+                final_slot["AT"] = _avg(b["MinAT_list"]) or _avg(b["AT_list"])
+            else:
+                final_slot["AT"] = _avg(b["MaxAT_list"]) or _avg(b["AT_list"])
             final_slot["RH"] = _avg(b["RH_list"])
             final_slot["WS"] = _avg(b["WS_list"])
             final_slot["PoP12h"] = _max(b["PoP12h_list"])

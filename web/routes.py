@@ -139,7 +139,7 @@ def _slice_overview(
 
     return {
         "timeline": timeline_list,
-        "weekly_timeline": forecast_7day,
+        "weekly_timeline": forecast_7day[:14],
         "aqi_forecast": {
             **aqi_forecast,
         },
@@ -228,6 +228,13 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")
 
+    # Alert card: prefer structured heads_ups list; fall back to LLM paragraph wrapped in same shape
+    _alert = processed.get("heads_ups") or []
+    if not _alert:
+        _fallback = paragraphs.get("heads_up") or paragraphs.get("p1_summary")
+        if _fallback:
+            _alert = [{"level": "WARNING", "type": "General", "msg": _fallback}]
+
     return {
         "wardrobe": {
             "text": wardrobe_text,
@@ -261,7 +268,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "parkinsons_safe": outdoor_index.get("parkinsons_safe", True),
             "best_window": outdoor_index.get("best_window"),
         },
-        "alert": paragraphs.get("heads_up") or paragraphs.get("p1_summary") or None,
+        "alert": _alert,
     }
 
 
