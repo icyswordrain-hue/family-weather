@@ -515,42 +515,50 @@ function renderOverviewView(data) {
   // 7-Day Timeline
   const weeklyTimelineEl = document.getElementById('ov-weekly-timeline');
   if (weeklyTimelineEl && data.weekly_timeline) {
+    weeklyTimelineEl.className = 'weekly-grid';   // swap class
     weeklyTimelineEl.innerHTML = '';
-    data.weekly_timeline.forEach(item => {
+
+    const isNightSlot = item => {
+      try {
+        const h = new Date(item.start_time.replace('+08:00', '')).getHours();
+        return h >= 18 || h < 6;
+      } catch { return false; }
+    };
+
+    // Guarantee row order: all day cards → all night cards
+    const dayItems = data.weekly_timeline.filter(i => !isNightSlot(i));
+    const nightItems = data.weekly_timeline.filter(i => isNightSlot(i));
+
+    [...dayItems, ...nightItems].forEach(item => {
       let dt;
       try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
-      const hours = dt.getHours();
-      const isNight = (hours >= 18 || hours < 6);
-      const displayTime = `${T.days[dt.getDay()]} ${isNight ? T.night : T.day}`;
+      const isNight = isNightSlot(item);
+      const dayLabel = T.days[dt.getDay()];
+      const periodLabel = isNight ? T.night : T.day;
 
       const card = document.createElement('div');
-      card.className = 'time-card';
-      const header = document.createElement('div');
-      header.className = 'tc-header';
-      header.textContent = displayTime;
+      card.className = `wk-card ${isNight ? 'wk-night' : 'wk-day'}`;
+
+      const label = document.createElement('div');
+      label.className = 'wk-label';
+      label.textContent = `${dayLabel} ${periodLabel}`;
+
       const icon = document.createElement('div');
-      icon.className = 'tc-icon';
+      icon.className = 'wk-icon';
       icon.textContent = ICONS[item.cloud_cover] || ICONS[item.Wx] || '☁️';
+
       const temp = document.createElement('div');
-      temp.className = 'tc-temp' + (item.AT >= 30 ? ' text-hot' : item.AT <= 15 ? ' text-cold' : '');
+      temp.className = 'wk-temp';
       temp.textContent = `${Math.round(item.AT ?? 0)}°`;
-      const details = document.createElement('div');
-      details.className = 'tc-details';
-      const row = document.createElement('div');
-      row.className = 'tc-row';
-      const l = document.createElement('span');
-      l.className = 'tc-label';
-      l.textContent = T.rain;
-      const v = document.createElement('span');
-      v.className = 'tc-val lvl-' + (item.PoP12h >= 40 ? '3' : '1');
-      v.textContent = (item.PoP12h ?? '--') + '%';
-      row.appendChild(l);
-      row.appendChild(v);
-      details.appendChild(row);
-      card.appendChild(header);
+
+      const rain = document.createElement('div');
+      rain.className = `wk-rain lvl-${item.PoP12h >= 60 ? '4' : item.PoP12h >= 30 ? '3' : '1'}`;
+      rain.textContent = `${item.PoP12h ?? '--'}%`;
+
+      card.appendChild(label);
       card.appendChild(icon);
       card.appendChild(temp);
-      card.appendChild(details);
+      card.appendChild(rain);
       weeklyTimelineEl.appendChild(card);
     });
   }

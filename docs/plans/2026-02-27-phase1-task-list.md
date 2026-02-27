@@ -116,17 +116,18 @@
 - [x] Dark mode follows OS (no manual toggle present)
 - [x] No `#view-narration` or `#theme-toggle` elements in DOM
 - [x] `prefers-reduced-motion` verified (style.css:1932)
-- [ ] Tag: `git tag phase1-complete && git push origin HEAD --tags`
+- [x] Tag: `git tag phase1-complete && git push origin HEAD --tags`
 
 ---
 
-## Task 12 — Live Data Freshness Indicator *(UX #2)*
-- [ ] Add a `<span class="freshness-dot" id="freshness-dot">` next to `#rp-last-updated` in sidebar HTML
-- [ ] Add CSS: `.freshness-dot` as a `6px` inline-block circle; three modifier classes `.fresh` (green), `.stale` (amber), `.old` (red)
-- [ ] Add `updateFreshnessDot(fetchedAt)` to `app.js` — computes age in minutes, applies correct class
-- [ ] Call `updateFreshnessDot()` from `render()` whenever new data arrives
-- [ ] Verify: dot is green <30 min, amber 30–90 min, red >90 min
-- [ ] Commit: `feat(ux): add freshness dot to last-updated timestamp`
+## Task 12 — 7-Day Forecast Two-Row Grid *(no-scroll desktop view)*
+- [x] Replace `.timeline-scroll` (horizontal scroll strip) for `#ov-weekly-timeline` with a 2-row × 7-col CSS grid
+- [x] Author new `.weekly-grid` CSS: `display:grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(2, auto); gap: 6px`
+- [x] Author compact `.wk-card` variant — max-height ~110px, reduced font sizes, minimal padding (≤ 12px × 8px)
+- [x] `.wk-card` shows: day+period label, emoji icon, temp, rain% — drop `.tc-details` sub-rows to keep footprint tiny
+- [x] Ensure 14 cards (7 days × day+night) fit in the grid without horizontal or vertical scroll on a 1280px+ viewport
+- [x] Dark-mode compatible via existing CSS vars
+- [x] Commit: `feat(ux): 7-day forecast two-row compact grid — no desktop scroll`
 
 ## Task 13 — Semantic Color Consistency *(UX #3)*
 - [x] Audit `style.css` — confirm `lvl-1` through `lvl-5` CSS vars/classes exist and are consistently defined

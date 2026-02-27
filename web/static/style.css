@@ -2062,3 +2062,91 @@ html.dark .player-sheet-body {
   gap: 8px;
   border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
+
+/* ── 7-Day two-row grid ─────────────────────── */
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.wk-card {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 8px 6px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 0;
+}
+
+.wk-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.wk-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.wk-temp {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.wk-rain {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ── Day/Night card colors ───────────────────
+   Light mode: day = white surface, night = dark (sidebar bg)
+   Dark mode:  day = dark surface,  night = light (inverted)
+   ─────────────────────────────────────────── */
+.wk-card.wk-day {
+  background: var(--surface);
+  color: var(--text);
+  border-top: 3px solid var(--blue);
+}
+
+.wk-card.wk-night {
+  background: var(--sidebar-bg);
+  /* dark in light mode */
+  color: var(--sidebar-text);
+  border-top: 3px solid var(--sidebar-active, #4a5f9a);
+}
+
+.wk-card.wk-night .wk-temp {
+  color: #fff;
+}
+
+/* Flip night card in dark mode so it reads lighter */
+html.dark .wk-card.wk-night {
+  background: rgba(255, 255, 255, 0.07);
+  /* lighter than dark surface */
+  color: var(--text);
+  border-top-color: #7da4ff;
+}
+
+html.dark .wk-card.wk-night .wk-temp {
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .weekly-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: none;
+  }
+}
