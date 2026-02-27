@@ -30,7 +30,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     div.className = 'log-entry error';
     const span = document.createElement('span');
     span.className = 'log-msg';
-    span.textContent = `Runtime Error: ${msg}`;
+    span.textContent = `${(window._T_runtime_error || 'Runtime Error: ')}${msg}`;
     div.appendChild(span);
     logList.appendChild(div);
   }
@@ -49,6 +49,63 @@ let tempChart = null;
 let loadingInterval = null;
 let LOADING_MSGS = []; // Populated by applyLanguage
 
+// ── Weather text localisation map (CWA API → English) ──────────────────────
+const WEATHER_TEXT_EN = {
+  '晴': 'Sunny',
+  '晴時多雲': 'Partly Cloudy',
+  '多雲時晴': 'Mostly Sunny',
+  '多雲': 'Cloudy',
+  '陰': 'Overcast',
+  '陰時多雲': 'Mostly Cloudy',
+  '多雲時陰': 'Mostly Cloudy',
+  '短暫雨': 'Brief Rain',
+  '短暫陣雨': 'Brief Showers',
+  '陣雨': 'Showers',
+  '雨': 'Rain',
+  '大雨': 'Heavy Rain',
+  '豪雨': 'Torrential Rain',
+  '短暫雷陣雨': 'Brief Thunderstorms',
+  '雷陣雨': 'Thunderstorms',
+  '有霧': 'Foggy',
+  '霧': 'Fog',
+  '有靄': 'Hazy',
+};
+
+function localiseWeatherText(text) {
+  if (getLang() === 'en') return WEATHER_TEXT_EN[text] || text;
+  return text;
+}
+
+const LOCATION_EN = {
+  '板橋': 'Banqiao',
+  '新北': 'New Taipei',
+  '三重': 'Sanchong',
+  '中和': 'Zhonghe',
+  '永和': 'Yonghe',
+  '新莊': 'Xinzhuang',
+  '土城': 'Tucheng',
+  '蘆洲': 'Luzhou',
+  '樹林': 'Shulin',
+  '鶯歌': 'Yingge',
+  '三峽': 'Sanxia',
+  '淡水': 'Tamsui',
+  '汐止': 'Xizhi',
+  '瑞芳': 'Ruifang',
+  '深坑': 'Shenkeng',
+  '石碇': 'Shiding',
+  '坪林': 'Pinglin',
+  '烏來': 'Wulai',
+  '八里': 'Bali',
+  '林口': 'Linkou',
+  '五股': 'Wugu',
+  '泰山': 'Taishan',
+};
+
+function localiseLocation(name) {
+  if (getLang() === 'en') return LOCATION_EN[name] || name;
+  return name;
+}
+
 const ICONS = {
   'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
   'partly-cloudy': '⛅', 'Mixed Clouds': '⛅', '2': '⛅', '3': '⛅',
@@ -62,7 +119,7 @@ const TRANSLATIONS = {
   en: {
     loading: 'Fetching forecast…',
     error_prefix: 'Error: ',
-    last_updated: 'Last updated: ',
+    last_updated: 'updated: ',
     ground: 'Ground',
     wind: 'Wind',
     humidity: 'Humidity',
@@ -99,11 +156,27 @@ const TRANSLATIONS = {
     step5: 'Generating Narration…',
     step6: 'Synthesizing Audio…',
     step7: 'Finalizing…',
+    // Static panel labels
+    nav_section: 'Views',
+    nav_lifestyle: 'Lifestyle',
+    nav_dashboard: 'Dashboard',
+    h1_lifestyle: 'Lifestyle Guide',
+    h1_dashboard: 'Weather Dashboard',
+    h2_24h: '24-Hour Forecast',
+    h2_7day: '7-Day Forecast',
+    lang_label: 'Language',
+    provider_label: 'Provider',
+    system_controls: 'System Controls',
+    refresh_btn: 'Refresh',
+    log_requesting: 'Requesting narration via: ',
+    log_title: 'System Log',
+    log_step_prefix: 'Step: ',
+    log_runtime_error: 'Runtime Error: ',
   },
   'zh-TW': {
     loading: '正在獲取天氣…',
     error_prefix: '錯誤：',
-    last_updated: '最後更新：',
+    last_updated: '更新：',
     ground: '地面狀況',
     wind: '風速',
     humidity: '濕度',
@@ -140,6 +213,22 @@ const TRANSLATIONS = {
     step5: '生成廣播稿…',
     step6: '合成語音…',
     step7: '最終處理中…',
+    // Static panel labels
+    nav_section: '功能',
+    nav_lifestyle: '生活建議',
+    nav_dashboard: '天氣總覽',
+    h1_lifestyle: '生活指南',
+    h1_dashboard: '天氣儀表板',
+    h2_24h: '24 小時預報',
+    h2_7day: '七日預報',
+    lang_label: 'Language',
+    provider_label: 'Provider',
+    system_controls: '系統控制',
+    refresh_btn: '重新整理',
+    log_requesting: '請求廣播（提供者）：',
+    log_title: '系統記錄',
+    log_step_prefix: '步驟：',
+    log_runtime_error: '執行錯誤：',
   },
 };
 
@@ -154,11 +243,13 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   // Language must be applied first so T.boot is correct
-  initLangToggle();
+  initSidebarControls();
+  initSystemTheme();
   addLog(T.boot);
 
   initSidebarNav();
-  initMobileDrawer();
+  initPlayerBar();
+  initPlayerSheet();
   initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
@@ -169,6 +260,9 @@ window.addEventListener('DOMContentLoaded', () => {
 // ── API fetch ──────────────────────────────────────────────────────────────
 async function fetchBroadcast() {
   showLoading();
+  const btn = document.getElementById('refresh-btn');
+  if (btn) btn.classList.add('loading');
+
   try {
     const res = await fetch('/api/broadcast');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -180,6 +274,8 @@ async function fetchBroadcast() {
   } catch (err) {
     addLog(`${T.error_prefix}${err.message || 'Unknown error'}`);
     showError(err.message || 'Unknown error');
+  } finally {
+    if (btn) btn.classList.remove('loading');
   }
 }
 
@@ -191,20 +287,30 @@ function render(data) {
   renderCurrentView(slices.current);
   renderOverviewView(slices.overview);
   renderLifestyleView(slices.lifestyle);
-  renderNarrationView(slices.narration, data.audio_urls);
+
+  // Wire player bar when audio is available
+  if (data.audio_urls && data.audio_urls.full_audio_url) {
+    const narrationSlice = data.slices && data.slices.narration;
+    const title = narrationSlice
+      ? (narrationSlice.paragraphs || []).find(p => p.key === 'p1')?.title || 'Morning Briefing'
+      : 'Morning Briefing';
+    const text = narrationSlice
+      ? (narrationSlice.paragraphs || []).map(p => p.text).filter(Boolean).join('\n\n')
+      : (data.narration_text || '');
+    if (window._playerBarSetAudio) {
+      window._playerBarSetAudio(data.audio_urls.full_audio_url, title, text);
+    }
+  }
 
   // Footer / Meta
   const ts = data.generated_at || '';
   if (ts) {
-    let dateStr = ts;
-    try {
-      dateStr = new Date(ts).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-    } catch (e) {
-      console.warn("Timezone zh-TW/Taipei not supported, falling back to default.", e);
-      dateStr = new Date(ts).toLocaleString();
-    }
-    const msg = `${T.last_updated}${dateStr}`;
-    setText('rp-last-updated', msg);
+    const d = new Date(ts);
+    const m = d.getMonth() + 1;  // no leading zero
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
   }
 }
 
@@ -212,9 +318,9 @@ function render(data) {
 function renderCurrentView(data) {
   if (!data) return;
   setText('cur-temp', Math.round(data.temp) + '°');
-  setText('cur-weather-text', data.weather_text || '—');
+  setText('cur-weather-text', localiseWeatherText(data.weather_text || '—'));
   setText('cur-icon', ICONS[data.weather_code] || ICONS[data.weather_text] || '🌤️');
-  setText('rp-location', data.location || '—');
+  setText('rp-location', localiseLocation(data.location || '—'));
 
   // Gauge Cards (Restructured)
   renderGauge('gauge-ground', data.ground_state, T.ground, '', `lvl-${data.ground_level}`);
@@ -251,6 +357,25 @@ function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
 // ── View 2: Overview ───────────────────────────────────────────────────────
 function renderOverviewView(data) {
   if (!data) return;
+
+  // Update Nav Alert Dot (UX #3)
+  const hasAlerts = data.alerts && (
+    (data.alerts.cardiac && data.alerts.cardiac.triggered) ||
+    (data.alerts.menieres && data.alerts.menieres.triggered) ||
+    data.alerts.heads_up
+  );
+
+  const dashboardNav = document.querySelector('.nav-item[data-view="dashboard"]');
+  if (dashboardNav) {
+    let dot = dashboardNav.querySelector('.nav-alert-dot');
+    if (hasAlerts && !dot) {
+      dot = document.createElement('span');
+      dot.className = 'nav-alert-dot';
+      dashboardNav.appendChild(dot);
+    } else if (!hasAlerts && dot) {
+      dot.remove();
+    }
+  }
 
   // Alerts (Unified Grouping)
   const alertContainer = document.getElementById('ov-alerts');
@@ -560,52 +685,122 @@ function renderLifestyleView(data) {
   }
 }
 
-// ── View 4: Narration ──────────────────────────────────────────────────────
-function renderNarrationView(data, audioUrls) {
-  if (!data) return;
+// ── System Theme ───────────────────────────────────────────────────────────
+function initSystemTheme() {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const apply = (dark) => document.documentElement.classList.toggle('dark', dark);
+  apply(mq.matches);
+  mq.addEventListener('change', (e) => apply(e.matches));
+}
 
-  // Text Script
-  const container = document.getElementById('narration-text');
-  container.innerHTML = '';
-  (data.paragraphs || []).forEach(p => {
-    if (!p.text) return;
-    const block = document.createElement('div');
-    block.className = 'narration-block';
-    const pEl = document.createElement('p');
-    pEl.textContent = p.text;
-    pEl.style.whiteSpace = 'pre-line';
-    block.appendChild(pEl);
-    container.appendChild(block);
+// ── Player Bar ─────────────────────────────────────────────────────────────
+function initPlayerBar() {
+  const bar = document.getElementById('player-bar');
+  const audio = document.getElementById('player-audio');
+  const playBtn = document.getElementById('player-play-btn');
+  const icon = document.getElementById('player-play-icon');
+  const title = document.getElementById('player-title');
+  const progress = document.getElementById('player-progress-bar');
+  const duration = document.getElementById('player-duration');
+
+  if (!bar || !audio) return;
+
+  bar.classList.add('loading');
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+
+  function setPlaying(playing) {
+    icon.setAttribute('points', playing
+      ? '4,3 8,3 8,17 4,17 M12,3 16,3 16,17 12,17'  // pause bars
+      : '5,3 17,10 5,17'                              // play triangle
+    );
+  }
+
+  audio.addEventListener('play', () => setPlaying(true));
+  audio.addEventListener('pause', () => setPlaying(false));
+  audio.addEventListener('ended', () => setPlaying(false));
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+    duration.textContent = formatTime(audio.currentTime);
   });
 
-  // Source Badge
-  const badge = document.getElementById('narration-meta');
-  if (badge && data.meta) {
-    badge.textContent = `${data.meta.source}(${data.meta.model})`;
-    let badgeClass = 'source-template';
-    const s = data.meta.source.toLowerCase();
-    if (s.includes('gemini')) badgeClass = 'source-gemini';
-    if (s.includes('claude')) badgeClass = 'source-claude';
-    badge.className = 'narration-badge ' + badgeClass;
+  audio.addEventListener('loadedmetadata', () => {
+    duration.textContent = formatTime(audio.duration);
+  });
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) audio.play();
+    else audio.pause();
+  });
+
+  window._playerBarSetAudio = function (audioUrl, narrationTitle, narrationText) {
+    bar.classList.remove('loading');
+    audio.src = audioUrl;
+    if (title) title.textContent = narrationTitle || 'Morning Briefing';
+    const body = document.getElementById('player-sheet-body');
+    if (body) body.textContent = narrationText || '';
+  };
+}
+
+// ── Player Sheet ───────────────────────────────────────────────────────────
+function initPlayerSheet() {
+  const sheet = document.getElementById('player-sheet');
+  const backdrop = document.getElementById('player-sheet-backdrop');
+  const toggle = document.getElementById('player-sheet-toggle');
+  const close = document.getElementById('player-sheet-close');
+
+  if (!sheet || !toggle) return;
+
+  function openSheet() {
+    sheet.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    toggle.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
   }
 
-  // Audio Player
-  const player = document.getElementById('audio-player-native');
-  if (player && audioUrls && audioUrls.full_audio_url) {
-    player.src = audioUrls.full_audio_url;
+  function closeSheet() {
+    sheet.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    toggle.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
   }
 
-  // Local TTS Button
-  const ttsBtn = document.getElementById('local-tts-btn');
-  if (ttsBtn) {
-    const fullText = (data.paragraphs || []).map(p => p.text).join('\n');
-    if (fullText) {
-      ttsBtn.style.display = 'block';
-      ttsBtn.onclick = () => initLocalTTS(fullText);
-    } else {
-      ttsBtn.style.display = 'none';
-    }
-  }
+  toggle.addEventListener('click', () => {
+    sheet.classList.contains('open') ? closeSheet() : openSheet();
+  });
+  if (close) close.addEventListener('click', closeSheet);
+  if (backdrop) backdrop.addEventListener('click', closeSheet);
+}
+
+// ── Sidebar Controls ───────────────────────────────────────────────────────
+function initSidebarControls() {
+  // Restore saved language on boot
+  const savedLang = localStorage.getItem('lang') || 'zh-TW';
+  const radio = document.querySelector(`input[name="language"][value="${savedLang}"]`);
+  if (radio) radio.checked = true;
+  applyLanguage(savedLang);
+
+  // Language toggles
+  document.querySelectorAll('input[name="language"]').forEach(input => {
+    input.addEventListener('change', () => {
+      const lang = input.value;
+      localStorage.setItem('lang', lang);
+      applyLanguage(lang);
+    });
+  });
+
+  // Provider toggles
+  document.querySelectorAll('input[name="provider"]').forEach(input => {
+    input.addEventListener('change', triggerRefresh);
+  });
 }
 
 // ── Sidebar & Navigation ───────────────────────────────────────────────────
@@ -619,6 +814,11 @@ function initSidebarNav() {
 }
 
 function switchView(viewName) {
+  const views = ['lifestyle', 'dashboard'];
+  const oldIdx = views.indexOf(currentView);
+  const newIdx = views.indexOf(viewName);
+  const direction = newIdx > oldIdx ? 'slide-in-right' : 'slide-in-left';
+
   currentView = viewName;
 
   // Update Nav
@@ -627,31 +827,15 @@ function switchView(viewName) {
   });
 
   document.querySelectorAll('.view-container').forEach(v => {
-    v.classList.toggle('active', v.id === `view-${viewName}`);
+    v.classList.remove('slide-in-right', 'slide-in-left');
+    if (v.id === `view-${viewName}`) {
+      v.classList.add('active', direction);
+    } else {
+      v.classList.remove('active');
+    }
   });
-
-  // Mobile drawer: close on switch
-  closeMobileDrawer();
 }
 
-// ── Mobile Drawer ──────────────────────────────────────────────────────────
-function initMobileDrawer() {
-  const toggle = document.getElementById('drawer-toggle');
-  const backdrop = document.getElementById('drawer-backdrop');
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      document.body.classList.toggle('drawer-open');
-    });
-  }
-  if (backdrop) {
-    backdrop.addEventListener('click', closeMobileDrawer);
-  }
-  // Also close on swipe down? (Maybe later)
-}
-
-function closeMobileDrawer() {
-  document.body.classList.remove('drawer-open');
-}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function setText(id, val) {
@@ -669,28 +853,32 @@ function updateClock() {
   if (el) {
     try {
       el.textContent = now.toLocaleTimeString('en-US', {
-        hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei'
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Taipei'
       });
     } catch (e) {
-      el.textContent = now.toLocaleTimeString('en-US', {
-        hour: '2-digit', minute: '2-digit', hour12: false
-      });
+      el.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     }
   }
 
-  // Analog Hands
+  // Analog Hands (Force Taipei Time for Analog too)
+  let tNow = now;
+  try {
+    const taipeiStr = now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' });
+    tNow = new Date(taipeiStr);
+  } catch (e) { }
+
   const hourHand = document.getElementById('clock-hour');
   const minuteHand = document.getElementById('clock-minute');
   const secondHand = document.getElementById('clock-second');
 
   if (hourHand && minuteHand && secondHand) {
-    const seconds = now.getSeconds();
-    const minutes = now.getMinutes();
-    const hours = now.getHours();
+    const seconds = tNow.getSeconds();
+    const minutes = tNow.getMinutes();
+    const hours = tNow.getHours();
 
     const secondDeg = ((seconds / 60) * 360);
     const minuteDeg = ((minutes / 60) * 360) + ((seconds / 60) * 6);
-    const hourDeg = ((hours / 12) * 360) + ((minutes / 60) * 30);
+    const hourDeg = ((hours % 12 + minutes / 60) * 30);
 
     secondHand.style.transform = `rotate(${secondDeg}deg)`;
     minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
@@ -698,10 +886,19 @@ function updateClock() {
   }
 }
 
-function showLoading() {
-  document.getElementById('loading-screen').classList.remove('hidden');
+function showLoading(isRefresh = false) {
   document.getElementById('error-screen').classList.add('hidden');
-  document.getElementById('main-content').classList.add('hidden');
+
+  if (isRefresh) {
+    document.getElementById('main-content').style.opacity = '0.5';
+    document.getElementById('main-content').style.pointerEvents = 'none';
+    const optLoad = document.getElementById('optimistic-loading');
+    if (optLoad) optLoad.classList.remove('hidden');
+  } else {
+    document.getElementById('loading-screen').classList.remove('hidden');
+    document.getElementById('main-content').classList.add('hidden');
+  }
+
   const txt = document.getElementById('loading-text');
   if (txt) txt.textContent = T.loading;
   startLoadingAnimation();
@@ -711,7 +908,14 @@ function showContent() {
   stopLoadingAnimation();
   document.getElementById('loading-screen').classList.add('hidden');
   document.getElementById('error-screen').classList.add('hidden');
-  document.getElementById('main-content').classList.remove('hidden');
+
+  const main = document.getElementById('main-content');
+  main.classList.remove('hidden');
+  main.style.opacity = '1';
+  main.style.pointerEvents = 'auto';
+
+  const optLoad = document.getElementById('optimistic-loading');
+  if (optLoad) optLoad.classList.add('hidden');
 }
 
 function showError(msg) {
@@ -736,7 +940,7 @@ async function triggerRefresh() {
     btn.classList.add('spinning');
   }
 
-  showLoading();
+  showLoading(true);
   startLoadingAnimation(); // Start fake messages until connection established
   addLog(T.boot);
 
@@ -745,7 +949,7 @@ async function triggerRefresh() {
   const provider = providerInput ? providerInput.value : 'CLAUDE';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
-  addLog(`Requesting narration via: ${provider}`);
+  addLog(`${T.log_requesting}${provider}`);
 
   try {
     const res = await fetch('/api/refresh', {
@@ -834,13 +1038,13 @@ function startLoadingAnimation() {
   if (!txt) return;
   let i = 0;
   txt.textContent = LOADING_MSGS[0];
-  addLog(`Step: ${LOADING_MSGS[0]}`);
+  addLog(`${T.log_step_prefix}${LOADING_MSGS[0]}`);
 
   if (loadingInterval) clearInterval(loadingInterval);
   loadingInterval = setInterval(() => {
     i = (i + 1) % LOADING_MSGS.length;
     txt.textContent = LOADING_MSGS[i];
-    addLog(`Step: ${LOADING_MSGS[i]}`);
+    addLog(`${T.log_step_prefix}${LOADING_MSGS[i]}`);
   }, 1200);
 }
 
@@ -883,32 +1087,36 @@ function addLog(msg) {
   list.scrollTop = list.scrollHeight;
 }
 
-// ── Language Toggle ────────────────────────────────────────────────────────
-function initLangToggle() {
-  const saved = localStorage.getItem('lang') || 'zh-TW';
-  const radio = document.querySelector(`input[name="lang"][value="${saved}"]`);
-  if (radio) radio.checked = true;
-  applyLanguage(saved);
-
-  document.querySelectorAll('input[name="lang"]').forEach(r => {
-    r.addEventListener('change', () => {
-      localStorage.setItem('lang', r.value);
-      applyLanguage(r.value);
-    });
-  });
-}
-
 function getLang() {
   return localStorage.getItem('lang') || 'zh-TW';
 }
 
+// No-op consolidated into initSidebarControls
+function initLangToggle() { }
+
+
 function applyLanguage(lang) {
   T = TRANSLATIONS[lang] || TRANSLATIONS['zh-TW'];
+
   // Update LOADING_MSGS in-place for next animation run
   LOADING_MSGS.splice(0, LOADING_MSGS.length,
     T.step1, T.step2, T.step3, T.step4, T.step5, T.step6, T.step7);
 
-  // Re-render labels if data is already loaded
+  // Swap all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (T[key] !== undefined) el.textContent = T[key];
+  });
+
+  window._T_runtime_error = T.log_runtime_error;
+
+  // Swap view headings (hardcoded in HTML, no data-i18n — update by element ID)
+  setText('view-heading-lifestyle', T.h1_lifestyle);
+  setText('view-heading-dashboard', T.h1_dashboard);
+  setText('section-heading-24h', T.h2_24h);
+  setText('section-heading-7day', T.h2_7day);
+
+  // Re-render data labels if data is already loaded
   if (broadcastData) render(broadcastData);
 }
 

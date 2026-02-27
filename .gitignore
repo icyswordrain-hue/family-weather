@@ -10,9 +10,25 @@ ENV/
 .idea/
 .DS_Store
 broadcast.json
-audio/*.mp3
 debug_*.py
 stations.txt
 stations_*.txt
 verify_*.py
+
+# ── Generated / runtime files ─────────────────────────────────────────────────
+# Audio output
+*.mp3
+
+# Broadcast history & local data store
+local_data/
+history/*.json
+
+# Server log
+server.log
+
+# Regenerated meal/location database
+regen.json
+
+# pytest
+.pytest_cache/
 

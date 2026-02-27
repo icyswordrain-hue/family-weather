@@ -12,10 +12,11 @@
   <link rel="icon" href="/static/icon-192.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icon-192.svg" />
   <title>家庭天氣儀表板</title>
-  <link rel="stylesheet" href="/static/style.css?v=15" />
+  <link rel="stylesheet" href="/static/style.css?v=16" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@500;700&display=swap"
     rel="stylesheet">
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -41,30 +42,57 @@
             <div class="marker m-6"></div>
             <div class="marker m-9"></div>
           </div>
-          <div class="digital-time-sub" id="rp-time">—:—</div>
         </div>
         <div class="rp-location" id="rp-location">—</div>
       </div>
 
       <nav class="sidebar-nav">
-        <p class="nav-section-label">功能</p>
+        <p class="nav-section-label" data-i18n="nav_section">功能</p>
         <button class="nav-item active" data-view="lifestyle">
           <span class="nav-icon">🚲</span>
-          <span>生活建議</span>
-        </button>
-        <button class="nav-item" data-view="narration">
-          <span class="nav-icon">📝</span>
-          <span>廣播稿</span>
+          <span data-i18n="nav_lifestyle">生活建議</span>
         </button>
         <button class="nav-item" data-view="dashboard">
           <span class="nav-icon">📊</span>
-          <span>天氣總覽</span>
+          <span data-i18n="nav_dashboard">天氣總覽</span>
         </button>
       </nav>
 
-      <!-- Context bubble removed -->
+      <!-- Sidebar Controls -->
+      <div class="sidebar-controls" id="sidebar-controls">
+        <div class="sidebar-control-group">
+          <span class="sidebar-control-label" data-i18n="lang_label">Language</span>
+          <div class="seg-ctrl" role="group" aria-label="Language">
+            <label class="seg-option">
+              <input type="radio" name="language" value="en" aria-label="English"> <span>EN</span>
+            </label>
+            <label class="seg-option">
+              <input type="radio" name="language" value="zh-TW" checked aria-label="中文"> <span>中文</span>
+            </label>
+          </div>
+        </div>
+        <div class="sidebar-control-group">
+          <span class="sidebar-control-label" data-i18n="provider_label">Provider</span>
+          <div class="seg-ctrl" role="group" aria-label="Provider">
+            <label class="seg-option">
+              <input type="radio" name="provider" value="CLAUDE" checked aria-label="Claude"> <span>Claude</span>
+            </label>
+            <label class="seg-option">
+              <input type="radio" name="provider" value="GEMINI" aria-label="Gemini"> <span>Gemini</span>
+            </label>
+          </div>
+        </div>
+      </div>
 
-      <!-- System controls moved to Right Panel -->
+      <!-- Status + Refresh -->
+      <div class="sidebar-status" id="sidebar-status">
+        <div id="rp-last-updated" class="rp-last-updated"></div>
+        <button class="rp-btn" id="refresh-btn" title="Fetch latest data" aria-label="Refresh Weather">
+          <span class="refresh-icon" aria-hidden="true">🔄</span>
+          <span data-i18n="refresh_btn">重新整理</span>
+        </button>
+      </div>
+
     </aside>
 
     <!-- ── Main Content ────────────────────────────────────────────────────── -->
@@ -82,38 +110,27 @@
         <button onclick="window.app.fetchBroadcast()" class="retry-btn">重試</button>
       </div>
 
+      <!-- ── Loading Overlay (Optimistic) ──────────────────────────────── -->
+      <div id="optimistic-loading" class="optimistic-loading hidden">
+        <span class="spinner-small"></span>
+        <span data-i18n="loading">正在獲取天氣…</span>
+      </div>
+
       <!-- ── Content (shown after load) ────────────────────────────────── -->
       <div class="main-content hidden" id="main-content">
 
         <!-- VIEW 1: Lifestyle (Default) -->
         <div id="view-lifestyle" class="view-container active">
           <header class="view-header">
-            <h1>生活指南</h1>
+            <h1 id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</h1>
           </header>
           <div class="lifestyle-grid" id="lifestyle-grid"></div>
         </div>
 
-        <!-- VIEW 2: Narration -->
-        <div id="view-narration" class="view-container">
-          <header class="view-header">
-            <h1>每日天氣廣播</h1>
-            <span id="narration-meta"></span>
-          </header>
-
-          <div class="audio-controls">
-            <audio id="audio-player-native" controls class="native-audio"></audio>
-            <button id="local-tts-btn" class="rp-btn" style="display:none; margin-top: 10px; width: 100%;">
-              <span>🔊 本機語音播放</span>
-            </button>
-          </div>
-
-          <div class="narration-text" id="narration-text"></div>
-        </div>
-
-        <!-- VIEW 3: Dashboard (Overview) -->
+        <!-- VIEW 2: Dashboard (Overview) -->
         <div id="view-dashboard" class="view-container">
           <header class="view-header">
-            <h1>天氣儀表板</h1>
+            <h1 id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</h1>
           </header>
           <div class="current-conditions-wrapper">
             <div class="current-top-row">
@@ -139,80 +156,66 @@
           <hr class="view-divider">
 
           <div class="dashboard-overview-section">
-            <h2 class="section-title">24 小時預報</h2>
+            <h2 class="section-title" id="section-heading-24h">24 小時預報</h2>
             <div class="timeline-grid" id="ov-timeline"></div>
           </div>
 
           <div class="dashboard-overview-section">
-            <h2 class="section-title">七日預報</h2>
+            <h2 class="section-title" id="section-heading-7day">七日預報</h2>
             <div class="timeline-scroll" id="ov-weekly-timeline"></div>
 
             <div id="ov-alerts" class="alerts-container"></div>
             <div id="ov-aqi-forecast"></div>
           </div>
         </div>
+      </div> <!-- End main-content -->
 
+      <!-- Player Bar -->
+      <div class="player-bar" id="player-bar">
+        <button class="player-play-btn" id="player-play-btn" aria-label="Play/Pause">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <polygon id="player-play-icon" points="5,3 17,10 5,17" />
+          </svg>
+        </button>
+        <span class="player-label" id="player-label">
+          <span class="player-cloud-icon" id="player-cloud-icon">☁</span>
+          <span id="player-title">Fetching briefing…</span>
+        </span>
+        <div class="player-progress-wrap">
+          <div class="player-progress-bar" id="player-progress-bar"></div>
+        </div>
+        <span class="player-duration" id="player-duration">--:--</span>
+        <button class="player-sheet-toggle" id="player-sheet-toggle" aria-label="Show transcript">⌄</button>
+        <audio id="player-audio" preload="none"></audio>
       </div>
+
+      <!-- Player Sheet (half-sheet overlay for narration text) -->
+      <div class="player-sheet" id="player-sheet" aria-hidden="true">
+        <div class="player-sheet-header">
+          <span class="player-sheet-title">Narration</span>
+          <button class="player-sheet-close" id="player-sheet-close" aria-label="Close">✕</button>
+        </div>
+        <div class="player-sheet-body" id="player-sheet-body">
+          <!-- narration text rendered here by JS -->
+        </div>
+      </div>
+      <div class="player-sheet-backdrop" id="player-sheet-backdrop"></div>
 
     </main>
 
-    <!-- ── Right Panel (Dynamic Context) ────────────────────────────────── -->
+    <!-- ── Right Panel ────────────────────────────────────────────────────── -->
     <aside class="right-panel">
-      <div class="rp-top">
-        <div class="rp-controls-section">
-          <div id="rp-last-updated" class="rp-last-updated"></div>
-          <p class="rp-label">系統控制</p>
-
-          <div class="provider-toggle-group">
-            <label class="provider-option">
-              <input type="radio" name="provider" value="CLAUDE" checked>
-              <span class="prov-label">Claude Sonnet</span>
-            </label>
-            <label class="provider-option">
-              <input type="radio" name="provider" value="GEMINI">
-              <span class="prov-label">Gemini Pro</span>
-            </label>
-          </div>
-
-          <!-- Language toggle -->
-          <div class="provider-toggle-group">
-            <label class="provider-option">
-              <input type="radio" name="lang" value="en">
-              <span class="prov-label">EN</span>
-            </label>
-            <label class="provider-option">
-              <input type="radio" name="lang" value="zh-TW" checked>
-              <span class="prov-label">中文</span>
-            </label>
-          </div>
-
-          <div class="rp-actions">
-            <button class="rp-btn" id="refresh-btn" title="Fetch latest data" aria-label="獲取最新天氣資料">
-              <span>🔄 重新整理</span>
-            </button>
-            <button class="rp-btn" id="theme-toggle" title="Toggle dark mode" aria-label="切換深色/淺色模式">
-              <span id="theme-icon">🌙</span> <span id="theme-text">深色模式</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- System Log -->
       <div class="rp-log-container">
         <div class="rp-log-header">
-          <span>系統記錄</span>
+          <span data-i18n="log_title">系統記錄</span>
           <span class="log-clear-btn" onclick="document.getElementById('rp-log-list').innerHTML=''"
             title="Clear Log">🗑️</span>
         </div>
         <div class="rp-log-list" id="rp-log-list"></div>
       </div>
     </aside>
-
-    <!-- ── Mobile Drawer Toggle ────────────────────────────────────────── -->
-    <button id="drawer-toggle" class="drawer-toggle-btn" aria-label="Open Info">
-      ℹ️
-    </button>
-    <div id="drawer-backdrop" class="drawer-backdrop"></div>
 
   </div><!-- /app-shell -->
 
@@ -222,28 +225,6 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/static/service-worker.js').catch(() => { });
     }
-
-    // Dark Mode Toggle
-    (function () {
-      const btn = document.getElementById('theme-toggle');
-      const icon = document.getElementById('theme-icon');
-      const label = document.getElementById('theme-text');
-      const saved = localStorage.getItem('darkMode');
-      if (saved === 'true') document.documentElement.classList.add('dark');
-
-      function update() {
-        const isDark = document.documentElement.classList.contains('dark');
-        icon.textContent = isDark ? '☀️' : '🌙';
-        label.textContent = isDark ? '淺色模式' : '深色模式';
-      }
-      update();
-
-      btn.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-        update();
-      });
-    })();
   </script>
 </body>
 
