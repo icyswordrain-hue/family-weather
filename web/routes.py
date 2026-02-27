@@ -37,15 +37,14 @@ def build_slices(broadcast: dict) -> dict:
     aqi_realtime = processed.get("aqi_realtime", {})
     aqi_forecast = processed.get("aqi_forecast", {})
     transitions = processed.get("transitions", [])
-    heads_ups = processed.get("heads_ups", [])
 
     meta = broadcast.get("metadata", {})
     outdoor_index = processed.get("outdoor_index", {})
 
     return {
         "current": _slice_current(current_data, aqi_realtime),
-        "overview": _slice_overview(forecast_segs, cardiac, menieres, commute, heads_ups, aqi_forecast, transitions, outdoor_index, forecast_7day),
-        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index),
+        "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
+        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, cardiac=cardiac, menieres=menieres),
         "narration": _slice_narration(paragraphs, meta),
     }
 
@@ -103,18 +102,12 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None) -> dict:
 
 def _slice_overview(
     segments: dict,
-    cardiac: dict | None,
-    menieres: dict | None,
-    commute: dict | None = None,
-    heads_ups: list | None = None,
     aqi_forecast: dict | None = None,
     transitions: list | None = None,
     outdoor_index: dict | None = None,
     forecast_7day: list | None = None,
 ) -> dict:
-    """Overview View: Timeline, Alerts, AQI Forecast, Transitions."""
-    commute = commute or {}
-    heads_ups = heads_ups or []
+    """Overview View: Timeline, AQI Forecast, Transitions."""
     aqi_forecast = aqi_forecast or {}
     transitions = transitions or []
     outdoor_index = outdoor_index or {}
@@ -132,11 +125,6 @@ def _slice_overview(
 
     timeline_list.sort(key=lambda x: x["start_time"])
 
-    commute_hazards = (
-        commute.get("morning", {}).get("hazards", []) +
-        commute.get("evening", {}).get("hazards", [])
-    )
-
     return {
         "timeline": timeline_list,
         "weekly_timeline": forecast_7day[:14],
@@ -144,16 +132,10 @@ def _slice_overview(
             **aqi_forecast,
         },
         "transitions": transitions,
-        "alerts": {
-            "cardiac": cardiac,
-            "menieres": menieres,
-            "heads_ups": heads_ups,
-            "commute_hazards": commute_hazards,
-        },
     }
 
 
-def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None) -> dict:
+def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, cardiac: dict | None = None, menieres: dict | None = None) -> dict:
     """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
     if not isinstance(summaries, dict):
         summaries = {}
@@ -228,8 +210,16 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")
 
-    # Alert card: prefer structured heads_ups list; fall back to LLM paragraph wrapped in same shape
-    _alert = processed.get("heads_ups") or []
+    # Alert card: cardiac + menieres first, then structured heads_ups, then LLM fallback
+    _alert = []
+    if cardiac and cardiac.get("triggered"):
+        reasons = cardiac.get("reasons") or []
+        _alert.append({"level": "CRITICAL", "type": "Health", "msg": reasons[0] if reasons else "Cardiac risk"})
+    if menieres and menieres.get("triggered"):
+        reasons = menieres.get("reasons") or []
+        lvl = "CRITICAL" if menieres.get("severity") == "high" else "WARNING"
+        _alert.append({"level": lvl, "type": "Health", "msg": reasons[0] if reasons else "Ménière's risk"})
+    _alert += processed.get("heads_ups") or []
     if not _alert:
         _fallback = paragraphs.get("heads_up") or paragraphs.get("p1_summary")
         if _fallback:
