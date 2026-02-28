@@ -1450,82 +1450,6 @@ html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675
   margin-bottom: 1.5rem;
 }
 
-/* ── FAB (mobile only) ──────────────────────────────────────────────────── */
-.fab-btn {
-  display: none;
-  position: fixed;
-  bottom: 68px;
-  right: 16px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--blue);
-  color: #fff;
-  font-size: 1.2rem;
-  border: none;
-  box-shadow: var(--shadow-md);
-  z-index: 160;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-}
-
-.fab-sheet {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-radius: 16px 16px 0 0;
-  padding: 20px 20px 72px;
-  z-index: 170;
-  transform: translateY(100%);
-  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* FAB Sheet specific overrides for light surface background */
-.fab-sheet .sidebar-control-label {
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.fab-sheet .seg-ctrl {
-  background: var(--border);
-}
-
-.fab-sheet .seg-option span {
-  color: var(--muted);
-}
-
-.fab-sheet .seg-option input[type="radio"]:not(:checked)+span:hover {
-  color: var(--text);
-}
-
-.fab-sheet.open {
-  transform: translateY(0);
-}
-
-.fab-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 169;
-}
-
-.fab-backdrop.open {
-  display: block;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fab-sheet {
-    transition: none;
-  }
-}
 
 @media (max-width: 767px) {
 
@@ -1545,7 +1469,6 @@ html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675
 
   /* Show mobile-only elements */
   .compact-header,
-  .fab-btn,
   .section-header-card {
     display: flex;
   }
@@ -1558,15 +1481,35 @@ html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675
   /* Main panel: full width, clear bottom for player bar */
   .main-panel {
     padding: 20px 16px;
-    padding-bottom: 98px;
+    padding-bottom: 62px;
     height: auto;
     overflow-y: visible;
   }
 
-  /* Player bar + sheet: full width */
+  /* Player bar + sheet: full width, slim on mobile */
   .player-bar {
     left: 0;
     right: 0;
+    height: 42px;
+    gap: 10px;
+    padding: 0 14px;
+    cursor: pointer;
+  }
+
+  .player-play-btn {
+    padding: 6px;
+  }
+
+  /* Speed btn + sheet toggle hidden in slim bar — controls live in sheet */
+  .player-speed-btn,
+  .player-sheet-toggle {
+    display: none;
+  }
+
+  .player-duration {
+    min-width: auto;
+    font-size: 0.95rem;
+    text-align: right;
   }
 
   .player-sheet {
@@ -2081,9 +2024,11 @@ html.dark .player-speed-btn:hover {
   border: none;
   color: var(--muted, #7a8ca0);
   cursor: pointer;
-  font-size: 1.6rem;
-  padding: 4px 6px;
+  padding: 6px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 200ms;
 }
 
@@ -2153,11 +2098,10 @@ html.dark .player-sheet::after {
 .player-sheet-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border, #e8ecf3);
-  font-weight: 600;
-  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 html.dark .player-sheet-header {
@@ -2174,12 +2118,12 @@ html.dark .player-sheet-header {
 }
 
 .player-sheet-body {
-  padding: 16px;
+  padding: 0;
   font-size: 0.88rem;
   line-height: 1.65;
   color: var(--text, #1e2a3a);
   overflow-y: auto;
-  height: calc(100% - 45px);
+  flex: 1;
 }
 
 html.dark .player-sheet-body {
@@ -2219,6 +2163,182 @@ html.dark .ps-para-body {
 
 html.dark .ps-meta {
   border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Player Sheet Tabs ───────────────────────── */
+.player-sheet-tabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.ps-tab {
+  background: none;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted, #7a8ca0);
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.ps-tab.active {
+  background: var(--blue-lt, #eef2ff);
+  color: var(--blue, #4d7cfe);
+}
+
+.ps-tab:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text, #1e2a3a);
+}
+
+html.dark .ps-tab.active {
+  background: rgba(77, 124, 254, 0.18);
+  color: #7da4ff;
+}
+
+html.dark .ps-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e0e6ed;
+}
+
+.ps-tab-panel {
+  padding: 14px 16px;
+}
+
+/* ── Sheet Controls (progress + speed in narration tab) ── */
+.ps-controls {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border, #e8ecf3);
+}
+
+html.dark .ps-controls {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.ps-progress-wrap {
+  height: 6px;
+  background: var(--border, #e8ecf3);
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 10px;
+  /* Larger tap area without visual change */
+  padding: 10px 0;
+  margin-top: -10px;
+  box-sizing: content-box;
+}
+
+html.dark .ps-progress-wrap {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ps-progress-bar {
+  height: 6px;
+  width: 0%;
+  background: var(--blue, #4d7cfe);
+  border-radius: 3px;
+  transition: width 0.25s linear;
+  pointer-events: none;
+}
+
+.ps-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ps-duration {
+  font-size: 0.9rem;
+  color: var(--muted, #7a8ca0);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.ps-speed-group {
+  display: flex;
+  gap: 6px;
+}
+
+.ps-speed-pill {
+  background: var(--border, #e8ecf3);
+  border: none;
+  color: var(--muted, #7a8ca0);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.ps-speed-pill.active {
+  background: var(--blue-lt, #eef2ff);
+  color: var(--blue, #4d7cfe);
+}
+
+.ps-speed-pill:hover:not(.active) {
+  background: var(--blue, #4d7cfe);
+  color: #ffffff;
+}
+
+html.dark .ps-speed-pill {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted, #7a8ca0);
+}
+
+html.dark .ps-speed-pill.active {
+  background: rgba(77, 124, 254, 0.25);
+  color: #7da4ff;
+}
+
+html.dark .ps-speed-pill:hover:not(.active) {
+  background: rgba(77, 124, 254, 0.35);
+  color: #aec4ff;
+}
+
+/* Settings tab layout — light surface overrides for dark-sidebar components */
+.ps-tab-panel .sidebar-control-group {
+  margin-bottom: 20px;
+}
+
+.ps-tab-panel .sidebar-control-label {
+  color: var(--muted, #7a8ca0);
+  opacity: 1;
+}
+
+.ps-tab-panel .seg-ctrl {
+  background: var(--border, #e8ecf3);
+}
+
+.ps-tab-panel .seg-option span {
+  color: var(--muted, #7a8ca0);
+}
+
+.ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover {
+  color: var(--text, #1e2a3a);
+}
+
+html.dark .ps-tab-panel .seg-ctrl {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .ps-tab-panel .seg-option span {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ps-tab-panel .rp-btn {
+  width: 100%;
+  margin-top: 4px;
 }
 
 .player-sheet-handle {

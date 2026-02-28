@@ -198,7 +198,11 @@
         </div>
         <span class="player-duration" id="player-duration">--:-- / --:--</span>
         <button class="player-speed-btn" id="player-speed-btn" aria-label="Playback speed">1.2×</button>
-        <button class="player-sheet-toggle" id="player-sheet-toggle" aria-label="Show transcript">⌄</button>
+        <button class="player-sheet-toggle" id="player-sheet-toggle" aria-label="Show transcript">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4,7 10,13 16,7"/>
+          </svg>
+        </button>
         <audio id="player-audio" preload="none"></audio>
       </div>
 
@@ -206,49 +210,66 @@
       <div class="player-sheet" id="player-sheet" aria-hidden="true">
         <div class="player-sheet-handle" aria-hidden="true"></div>
         <div class="player-sheet-header">
-          <span class="player-sheet-title">Narration</span>
+          <div class="player-sheet-tabs">
+            <button class="ps-tab active" data-tab="narration" data-i18n="tab_narration">Narration</button>
+            <button class="ps-tab" data-tab="settings" data-i18n="tab_settings">Settings</button>
+          </div>
           <button class="player-sheet-close" id="player-sheet-close" aria-label="Close">✕</button>
         </div>
         <div class="player-sheet-body" id="player-sheet-body">
-          <!-- narration text rendered here by JS -->
+          <!-- Narration tab -->
+          <div class="ps-tab-panel" id="ps-panel-narration">
+            <div class="ps-controls">
+              <div class="ps-progress-wrap" id="ps-progress-wrap">
+                <div class="ps-progress-bar" id="ps-progress-bar"></div>
+              </div>
+              <div class="ps-controls-row">
+                <span class="ps-duration" id="ps-duration">0:00 / --:--</span>
+                <div class="ps-speed-group">
+                  <button class="ps-speed-pill" data-speed="1.0">1.0×</button>
+                  <button class="ps-speed-pill" data-speed="1.2">1.2×</button>
+                  <button class="ps-speed-pill" data-speed="1.5">1.5×</button>
+                </div>
+              </div>
+            </div>
+            <div id="ps-narration-content">
+              <!-- narration paragraphs rendered here by JS -->
+            </div>
+          </div>
+          <!-- Settings tab -->
+          <div class="ps-tab-panel" id="ps-panel-settings" hidden>
+            <div class="sidebar-control-group">
+              <span class="sidebar-control-label" data-i18n="lang_label">Language</span>
+              <div class="seg-ctrl" role="group">
+                <label class="seg-option">
+                  <input type="radio" name="language-sheet" value="en">
+                  <span>EN</span>
+                </label>
+                <label class="seg-option">
+                  <input type="radio" name="language-sheet" value="zh-TW" checked>
+                  <span>中文</span>
+                </label>
+              </div>
+            </div>
+            <div class="sidebar-control-group">
+              <span class="sidebar-control-label" data-i18n="provider_label">Provider</span>
+              <div class="seg-ctrl" role="group">
+                <label class="seg-option">
+                  <input type="radio" name="provider-sheet" value="CLAUDE" checked>
+                  <span>Claude</span>
+                </label>
+                <label class="seg-option">
+                  <input type="radio" name="provider-sheet" value="GEMINI">
+                  <span>Gemini</span>
+                </label>
+              </div>
+            </div>
+            <button class="rp-btn" id="sheet-refresh-btn" data-i18n="refresh_btn">重新整理</button>
+          </div>
         </div>
       </div>
       <div class="player-sheet-backdrop" id="player-sheet-backdrop"></div>
 
-      <!-- FAB (mobile controls) -->
-      <button class="fab-btn" id="fab-btn" aria-label="Settings">⚙️</button>
-      <div class="fab-sheet" id="fab-sheet" aria-hidden="true">
-        <div class="fab-sheet-inner">
-          <div class="sidebar-control-group">
-            <span class="sidebar-control-label" data-i18n="lang_label">Language</span>
-            <div class="seg-ctrl fab-seg" role="group">
-              <label class="seg-option">
-                <input type="radio" name="language-fab" value="en">
-                <span>EN</span>
-              </label>
-              <label class="seg-option">
-                <input type="radio" name="language-fab" value="zh-TW" checked>
-                <span>中文</span>
-              </label>
-            </div>
-          </div>
-          <div class="sidebar-control-group">
-            <span class="sidebar-control-label" data-i18n="provider_label">Provider</span>
-            <div class="seg-ctrl fab-seg" role="group">
-              <label class="seg-option">
-                <input type="radio" name="provider-fab" value="CLAUDE" checked>
-                <span>Claude</span>
-              </label>
-              <label class="seg-option">
-                <input type="radio" name="provider-fab" value="GEMINI">
-                <span>Gemini</span>
-              </label>
-            </div>
-          </div>
-          <button class="rp-btn" id="fab-refresh-btn" data-i18n="refresh_btn">重新整理</button>
-        </div>
-      </div>
-      <div class="fab-backdrop" id="fab-backdrop"></div>
 
     </main>
 

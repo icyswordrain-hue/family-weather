@@ -177,6 +177,8 @@ const TRANSLATIONS = {
     provider_label: 'Provider',
     system_controls: 'System Controls',
     refresh_btn: 'Refresh',
+    tab_narration: 'Narration',
+    tab_settings: 'Settings',
     log_requesting: 'Requesting narration via: ',
     log_title: 'System Log',
     log_step_prefix: 'Step: ',
@@ -235,6 +237,8 @@ const TRANSLATIONS = {
     provider_label: 'Provider',
     system_controls: '系統控制',
     refresh_btn: '重新整理',
+    tab_narration: '解說',
+    tab_settings: '設定',
     log_requesting: '請求廣播（提供者）：',
     log_title: '系統記錄',
     log_step_prefix: '步驟：',
@@ -321,7 +325,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initNav();
   initPlayerBar();
   initPlayerSheet();
-  initFAB();
+  initSheetSettings();
   initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
@@ -921,17 +925,7 @@ function renderLifestyleView(data) {
     }
     add('🚗', T.commute, data.commute.text, extras);
   }
-  // 5. Air Quality (tomorrow's forecast)
-  if (data.air_quality && data.air_quality.text) {
-    const extras = [];
-    if (data.air_quality.aqi != null) {
-      const lvl = aqiToLevel(data.air_quality.aqi);
-      const statusText = data.air_quality.status || String(data.air_quality.aqi);
-      extras.push(mkBadge(`lvl-${lvl}`, statusText));
-    }
-    add('💨', T.air_quality, data.air_quality.text, extras);
-  }
-  // 6. Garden Health
+  // 5. Garden Health
   if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
@@ -952,6 +946,16 @@ function renderLifestyleView(data) {
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
     add('🌡️', T.hvac, data.hvac.text, extras);
   }
+  // 9. Air Quality (tomorrow's forecast) — moved to end
+  if (data.air_quality && data.air_quality.text) {
+    const extras = [];
+    if (data.air_quality.aqi != null) {
+      const lvl = aqiToLevel(data.air_quality.aqi);
+      const statusText = data.air_quality.status || String(data.air_quality.aqi);
+      extras.push(mkBadge(`lvl-${lvl}`, statusText));
+    }
+    add('💨', T.air_quality, data.air_quality.text, extras);
+  }
 }
 
 // ── System Theme ───────────────────────────────────────────────────────────
@@ -970,7 +974,7 @@ function initPlayerBar() {
   const icon = document.getElementById('player-play-icon');
   const progress = document.getElementById('player-progress-bar');
   const duration = document.getElementById('player-duration');
-  const speedBtn = document.getElementById('player-speed-btn');
+  const speedBtn = document.getElementById('player-speed-btn');  // desktop only
 
   if (!bar || !audio) return;
 
@@ -984,18 +988,30 @@ function initPlayerBar() {
   function applySpeed(s) {
     speed = s;
     audio.playbackRate = s;
+    // Update desktop speed button text
     if (speedBtn) speedBtn.textContent = `${s}×`;
+    // Update sheet speed pills
+    document.querySelectorAll('.ps-speed-pill').forEach(pill => {
+      pill.classList.toggle('active', parseFloat(pill.dataset.speed) === s);
+    });
     localStorage.setItem('playerSpeed', String(s));
   }
 
   applySpeed(speed);
 
+  // Desktop speed button — cycles through speeds
   if (speedBtn) {
-    speedBtn.addEventListener('click', () => {
+    speedBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const next = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
       applySpeed(next);
     });
   }
+
+  // Sheet speed pills
+  document.querySelectorAll('.ps-speed-pill').forEach(pill => {
+    pill.addEventListener('click', () => applySpeed(parseFloat(pill.dataset.speed)));
+  });
 
   // ── Playback helpers ───────────────────────────────────────────────────
   function formatTime(s) {
@@ -1017,18 +1033,48 @@ function initPlayerBar() {
 
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
-    progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+    const pct = `${(audio.currentTime / audio.duration) * 100}%`;
+    progress.style.width = pct;
     duration.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    // Sync sheet controls
+    const sheetBar = document.getElementById('ps-progress-bar');
+    if (sheetBar) sheetBar.style.width = pct;
+    const sheetDur = document.getElementById('ps-duration');
+    if (sheetDur) sheetDur.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
   });
 
   audio.addEventListener('loadedmetadata', () => {
     audio.playbackRate = speed;  // browsers reset playbackRate on src change
     duration.textContent = `0:00 / ${formatTime(audio.duration)}`;
+    const sheetDur = document.getElementById('ps-duration');
+    if (sheetDur) sheetDur.textContent = `0:00 / ${formatTime(audio.duration)}`;
   });
 
-  playBtn.addEventListener('click', () => {
+  playBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (audio.paused) audio.play();
     else audio.pause();
+  });
+
+  // Sheet progress bar: click to seek
+  const sheetProgressWrap = document.getElementById('ps-progress-wrap');
+  if (sheetProgressWrap) {
+    sheetProgressWrap.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = sheetProgressWrap.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      audio.currentTime = ratio * audio.duration;
+    });
+  }
+
+  // Mobile: tap anywhere on bar (not play button) opens sheet
+  bar.addEventListener('click', () => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      const sheet = document.getElementById('player-sheet');
+      if (sheet && !sheet.classList.contains('open')) {
+        document.getElementById('player-sheet-toggle')?.click();
+      }
+    }
   });
 
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
@@ -1036,10 +1082,10 @@ function initPlayerBar() {
     audio.src = audioUrl;
     audio.playbackRate = speed;  // set early; loadedmetadata will confirm
 
-    const body = document.getElementById('player-sheet-body');
-    if (!body) return;
+    const content = document.getElementById('ps-narration-content');
+    if (!content) return;
 
-    if (!paragraphs || !paragraphs.length) { body.textContent = ''; return; }
+    if (!paragraphs || !paragraphs.length) { content.textContent = ''; return; }
 
     const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
     let html = '';
@@ -1050,7 +1096,7 @@ function initPlayerBar() {
     if (meta && meta.source) {
       html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
     }
-    body.innerHTML = html;
+    content.innerHTML = html;
   };
 }
 
@@ -1079,11 +1125,27 @@ function initPlayerSheet() {
     document.body.style.overflow = '';
   }
 
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
     sheet.classList.contains('open') ? closeSheet() : openSheet();
   });
   if (close) close.addEventListener('click', closeSheet);
   if (backdrop) backdrop.addEventListener('click', closeSheet);
+
+  // ── Tab switching ──────────────────────────────────────────────────────
+  document.querySelectorAll('.ps-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.ps-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.ps-tab-panel').forEach(panel => {
+        if (panel.id === `ps-panel-${target}`) {
+          panel.removeAttribute('hidden');
+        } else {
+          panel.setAttribute('hidden', '');
+        }
+      });
+    });
+  });
 }
 
 // ── Sidebar Controls ───────────────────────────────────────────────────────
@@ -1109,64 +1171,39 @@ function initSidebarControls() {
   });
 }
 
-// ── FAB (mobile controls sheet) ────────────────────────────────────────────
-function initFAB() {
-  const btn = document.getElementById('fab-btn');
-  const sheet = document.getElementById('fab-sheet');
-  const backdrop = document.getElementById('fab-backdrop');
-
-  if (!btn || !sheet) return;
-
-  function openFAB() {
-    sheet.classList.add('open');
-    if (backdrop) backdrop.classList.add('open');
-    sheet.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeFAB() {
-    sheet.classList.remove('open');
-    if (backdrop) backdrop.classList.remove('open');
-    sheet.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
-  btn.addEventListener('click', () => {
-    sheet.classList.contains('open') ? closeFAB() : openFAB();
-  });
-  if (backdrop) backdrop.addEventListener('click', closeFAB);
-
-  // FAB language radios → mirror sidebar radios
-  document.querySelectorAll('input[name="language-fab"]').forEach(fab => {
-    fab.addEventListener('change', () => {
-      const sidebar = document.querySelector(`input[name="language"][value="${fab.value}"]`);
+// ── Sheet Settings Controls ─────────────────────────────────────────────────
+function initSheetSettings() {
+  // Sheet language radios → mirror sidebar radios
+  document.querySelectorAll('input[name="language-sheet"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const sidebar = document.querySelector(`input[name="language"][value="${radio.value}"]`);
       if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
     });
   });
 
-  // FAB provider radios → mirror sidebar radios
-  document.querySelectorAll('input[name="provider-fab"]').forEach(fab => {
-    fab.addEventListener('change', () => {
-      const sidebar = document.querySelector(`input[name="provider"][value="${fab.value}"]`);
+  // Sheet provider radios → mirror sidebar radios
+  document.querySelectorAll('input[name="provider-sheet"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const sidebar = document.querySelector(`input[name="provider"][value="${radio.value}"]`);
       if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
     });
   });
 
-  // FAB refresh → delegate to sidebar refresh button
-  const fabRefresh = document.getElementById('fab-refresh-btn');
-  if (fabRefresh) {
-    fabRefresh.addEventListener('click', () => {
-      closeFAB();
+  // Sheet refresh → delegate to sidebar refresh button
+  const sheetRefresh = document.getElementById('sheet-refresh-btn');
+  if (sheetRefresh) {
+    sheetRefresh.addEventListener('click', () => {
+      document.getElementById('player-sheet-close')?.click();
       document.getElementById('refresh-btn')?.click();
     });
   }
 
-  // Sync FAB radios to current sidebar state on init
+  // Sync sheet radios to current sidebar state on init
   ['language', 'provider'].forEach(name => {
     const checked = document.querySelector(`input[name="${name}"]:checked`);
     if (checked) {
-      const fab = document.querySelector(`input[name="${name}-fab"][value="${checked.value}"]`);
-      if (fab) fab.checked = true;
+      const sheetRadio = document.querySelector(`input[name="${name}-sheet"][value="${checked.value}"]`);
+      if (sheetRadio) sheetRadio.checked = true;
     }
   });
 }
