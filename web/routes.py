@@ -222,6 +222,13 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")
 
+    # Air quality forecast card
+    aqi_forecast = processed.get("aqi_forecast", {})
+    air_quality_text = summaries.get("air_quality", "")
+    if not air_quality_text:
+        lang_key = "summary_zh" if is_zh else "summary_en"
+        air_quality_text = aqi_forecast.get(lang_key) or aqi_forecast.get("content", "")
+
     # Alert card: sourced from LLM ---CARDS--- alert field
     alert_summary = summaries.get("alert", {})
     if isinstance(alert_summary, dict):
@@ -242,6 +249,11 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         "commute": {
             "text": commute_text,
             "hazards": commute.get("morning", {}).get("hazards", []) + commute.get("evening", {}).get("hazards", [])
+        },
+        "air_quality": {
+            "text": air_quality_text or ("空氣品質資料暫不可用。" if is_zh else "Air quality data unavailable."),
+            "aqi": aqi_forecast.get("aqi"),
+            "status": aqi_forecast.get("status", ""),
         },
         "hvac": {
             "text": hvac_text,

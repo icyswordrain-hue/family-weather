@@ -609,8 +609,8 @@ function renderOverviewView(data) {
 
       const dates = [...dateMap.values()].sort((a, b) => a.dt - b.dt);
       const sparkLabels = dates.map(d => T.days[d.dt.getDay()]);
-      const sparkDay    = dates.map(d => d.day   ? Math.round(d.day.AT)   : null);
-      const sparkNight  = dates.map(d => d.night ? Math.round(d.night.AT) : null);
+      const sparkDay = dates.map(d => d.day ? Math.round(d.day.AT) : null);
+      const sparkNight = dates.map(d => d.night ? Math.round(d.night.AT) : null);
       const allVals = [...sparkDay, ...sparkNight].filter(v => v != null);
 
       // Snap axis to 5° grid; guarantee at least 3 gridlines (10° window)
@@ -627,11 +627,11 @@ function renderOverviewView(data) {
       // Setting layout.padding.left = layout.padding.right = halfCard ensures
       // that Chart.js places dot i of 7 exactly over card i's centre column.
       const gridWidth = weeklyTimelineEl.offsetWidth || sparkCanvas.parentElement.offsetWidth || 700;
-      const halfCard  = Math.max(16, Math.round((gridWidth - 24) / 14));
+      const halfCard = Math.max(16, Math.round((gridWidth - 24) / 14));
 
       // Read theme tokens at render time
       const cs = getComputedStyle(document.documentElement);
-      const mutedColor   = cs.getPropertyValue('--muted').trim()   || '#8fa3c0';
+      const mutedColor = cs.getPropertyValue('--muted').trim() || '#8fa3c0';
       const surfaceColor = cs.getPropertyValue('--surface').trim() || '#ffffff';
 
       if (tempChart) { tempChart.destroy(); tempChart = null; }
@@ -716,7 +716,7 @@ function renderOverviewView(data) {
           responsive: true,
           maintainAspectRatio: false,
           animation: { duration: 400 },
-          layout: { padding: { left: halfCard, right: halfCard } },
+          layout: { padding: { left: halfCard + 16, right: halfCard + 16 } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -734,39 +734,6 @@ function renderOverviewView(data) {
     }
   }
 
-  // AQI Forecast
-  const aqiFcEl = document.getElementById('ov-aqi-forecast');
-  if (aqiFcEl && data.aqi_forecast && (data.aqi_forecast.status || data.aqi_forecast.content)) {
-    const aqi = data.aqi_forecast;
-    aqiFcEl.className = 'aqi-forecast-block';
-    aqiFcEl.innerHTML = '';
-    const icon = document.createElement('div');
-    icon.className = 'aqi-fc-icon';
-    icon.textContent = '🌫️';
-    const body = document.createElement('div');
-    body.className = 'aqi-fc-body';
-    const header = document.createElement('div');
-    header.className = 'aqi-fc-header';
-    const date = document.createElement('span');
-    date.className = 'aqi-fc-date';
-    date.textContent = (aqi.forecast_date ? `${aqi.forecast_date}` : '') + (aqi.aqi ? ` · AQI ${aqi.aqi}` : '');
-    header.appendChild(date);
-    const status = document.createElement('div');
-    status.className = `aqi-fc-status lvl-${aqiToLevel(aqi.aqi)}`;
-    status.textContent = translateAQIText(aqi.status);
-    body.appendChild(header);
-    body.appendChild(status);
-    if (aqi.summary_en || aqi.summary_zh || aqi.content) {
-      const content = document.createElement('div');
-      content.className = 'aqi-fc-content';
-      const lang = localStorage.getItem('lang') || 'zh-TW';
-      const aqiSummary = lang === 'en' ? aqi.summary_en : aqi.summary_zh;
-      content.textContent = aqiSummary || aqi.content || 'N/A';
-      body.appendChild(content);
-    }
-    aqiFcEl.appendChild(icon);
-    aqiFcEl.appendChild(body);
-  }
 }
 
 function aqiToLevel(val) {
@@ -889,7 +856,17 @@ function renderLifestyleView(data) {
     }
     add('🚗', T.commute, data.commute.text, extras);
   }
-  // 5. Garden Health
+  // 5. Air Quality (tomorrow's forecast)
+  if (data.air_quality && data.air_quality.text) {
+    const extras = [];
+    if (data.air_quality.aqi != null) {
+      const lvl = aqiToLevel(data.air_quality.aqi);
+      const statusText = data.air_quality.status || String(data.air_quality.aqi);
+      extras.push(mkBadge(`lvl-${lvl}`, statusText));
+    }
+    add('💨', T.air_quality, data.air_quality.text, extras);
+  }
+  // 6. Garden Health
   if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
@@ -1032,8 +1009,8 @@ function initSidebarControls() {
 
 // ── FAB (mobile controls sheet) ────────────────────────────────────────────
 function initFAB() {
-  const btn      = document.getElementById('fab-btn');
-  const sheet    = document.getElementById('fab-sheet');
+  const btn = document.getElementById('fab-btn');
+  const sheet = document.getElementById('fab-sheet');
   const backdrop = document.getElementById('fab-backdrop');
 
   if (!btn || !sheet) return;
@@ -1110,7 +1087,7 @@ function initMobileNav() {
   // scroll order is: 1. conditions  2. lifestyle cards  3. timelines / forecast
   const conditions = document.querySelector('.current-conditions-wrapper');
   const dashHeader = document.querySelector('#view-dashboard .section-header-card');
-  const lifestyle  = document.getElementById('view-lifestyle');
+  const lifestyle = document.getElementById('view-lifestyle');
   if (conditions && lifestyle) {
     if (dashHeader) lifestyle.parentNode.insertBefore(dashHeader, lifestyle);
     lifestyle.parentNode.insertBefore(conditions, lifestyle);

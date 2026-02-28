@@ -136,6 +136,7 @@ Then output a single valid JSON object (no code fences, no trailing commas) with
   "hvac": "Exactly 1 sentence. Air conditioning, heating, or ventilation recommendation.",
   "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
   "outdoor": "Exactly 2 sentences. Outdoor activity for Dad — Parkinson's safety considerations and best time window.",
+  "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant and note that sensitive groups should take care. If Unhealthy or above: recommend limiting outdoor exposure and keeping windows closed.",
   "alert": {
     "text": "1–2 sentences. Summarise today's notable heads-ups, health risks, or weather concerns from P1. If nothing significant to flag, write a single short sentence like 'All clear today.' Do not list absent alert types (e.g. no cardiac risk, no weather alerts).",
     "level": "INFO or WARNING or CRITICAL"
@@ -250,6 +251,7 @@ P6 之後，輸出這個完全一致的分隔線：---METADATA---
   "hvac": "精確 1 句話。空調、暖氣或通風建議。",
   "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
   "outdoor": "精確 2 句話。爸爸的戶外活動建議——帕金森氏症安全考量及最佳時間窗口。",
+  "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意。若不健康或以上：建議減少戶外活動並關閉窗戶。",
   "alert": {
     "text": "1–2 句話。摘要 P1 中今天值得注意的提示、健康風險或天氣狀況。若無特別需要提醒的事項，請寫一句簡短的話，如「今天一切正常。」不要列舉不存在的風險類別。",
     "level": "INFO 或 WARNING 或 CRITICAL"

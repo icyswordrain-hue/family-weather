@@ -5739,22 +5739,22 @@
     }
   },
   "2026-02-28": {
-    "generated_at": "2026-02-28T11:37:47.198018+08:00",
+    "generated_at": "2026-02-28T18:01:32.109210+08:00",
     "raw_data": {
       "current": {
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-02-28T11:20:00+08:00",
-        "AT": 22.5,
-        "RH": 70.0,
-        "WDSD": 3.6,
-        "WDIR": 70.0,
-        "RAIN": 0.0,
+        "obs_time": "2026-02-28T17:50:00+08:00",
+        "AT": 19.5,
+        "RH": 88.0,
+        "WDSD": 3.5,
+        "WDIR": 60.0,
+        "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1011.4,
-        "UVI": 4.0
+        "PRES": 1009.7,
+        "UVI": 0.0
       },
       "forecasts": {
         "三峽區": [
@@ -6885,11 +6885,11 @@
       "aqi": {
         "realtime": {
           "station_name": "土城",
-          "aqi": 33,
+          "aqi": 34,
           "status": "良好",
-          "pm25": 5.0,
-          "pm10": 14.0,
-          "publish_time": "2026/02/28 11:00:00"
+          "pm25": 2.0,
+          "pm10": 23.0,
+          "publish_time": "2026/02/28 17:00:00"
         },
         "forecast": {
           "area": "北部",
@@ -6904,28 +6904,28 @@
       "current": {
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-02-28T11:20:00+08:00",
-        "AT": 22.3,
-        "RH": 70.0,
-        "WDSD": 3.6,
-        "WDIR": 70.0,
-        "RAIN": 0.0,
+        "obs_time": "2026-02-28T17:50:00+08:00",
+        "AT": 19.6,
+        "RH": 88.0,
+        "WDSD": 3.5,
+        "WDIR": 60.0,
+        "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1011.4,
-        "UVI": 4.0,
+        "PRES": 1009.7,
+        "UVI": 0.0,
         "Wx_text": "陰",
-        "uv_text": "Moderate",
-        "uv_level": 2,
-        "hum_text": "Muggy",
-        "hum_level": 2,
+        "uv_text": "Low",
+        "uv_level": 1,
+        "hum_text": "Very Humid",
+        "hum_level": 4,
         "pres_text": "Normal",
         "pres_level": 3,
         "wind_text": "Gentle breeze",
         "wind_level": 2,
         "wind_dir_text": "ENE",
-        "aqi": 33,
+        "aqi": 34,
         "aqi_status": "Good",
         "aqi_level": 1,
         "vis_text": "Unknown",
@@ -6934,23 +6934,39 @@
         "ground_level": 1
       },
       "forecast_segments": {
-        "Morning": null,
-        "Afternoon": {
-          "start_time": "2026-02-28T12:00:00+08:00",
-          "end_time": "2026-02-28T12:00:00+08:00",
-          "AT": 24.2,
-          "RH": 79.0,
-          "WS": 3.0,
+        "Morning": {
+          "start_time": "2026-03-01T06:00:00+08:00",
+          "end_time": "2026-03-01T06:00:00+08:00",
+          "AT": 23.6,
+          "RH": 89.0,
+          "WS": 1.0,
           "WD": null,
-          "PoP6h": 30.0,
+          "PoP6h": 40.0,
           "Wx": 8,
-          "wind_text": "Breezy",
-          "wind_level": 2,
+          "wind_text": "Calm",
+          "wind_level": 1,
           "wind_dir_text": "Unknown",
           "precip_text": "Unlikely",
           "precip_level": 2,
           "cloud_cover": "Overcast",
-          "beaufort_desc": "Breezy"
+          "beaufort_desc": "Calm"
+        },
+        "Afternoon": {
+          "start_time": "2026-03-01T12:00:00+08:00",
+          "end_time": "2026-03-01T12:00:00+08:00",
+          "AT": 37.8,
+          "RH": 78.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 10.0,
+          "Wx": 4,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds",
+          "beaufort_desc": "Calm"
         },
         "Evening": {
           "start_time": "2026-02-28T18:00:00+08:00",
@@ -7159,13 +7175,32 @@
       ],
       "transitions": [
         {
-          "from_segment": "Afternoon",
-          "to_segment": "Evening",
+          "from_segment": "Morning",
+          "to_segment": "Afternoon",
           "breaches": [
+            {
+              "metric": "AT",
+              "from": 23.6,
+              "to": 37.8,
+              "delta": 14.199999999999996
+            },
             {
               "metric": "CloudCover",
               "from": "Overcast",
               "to": "Mixed Clouds"
+            }
+          ],
+          "is_transition": true
+        },
+        {
+          "from_segment": "Afternoon",
+          "to_segment": "Evening",
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 37.8,
+              "to": 24.8,
+              "delta": -12.999999999999996
             }
           ],
           "is_transition": true
@@ -7212,8 +7247,8 @@
       },
       "meal_mood": {
         "mood": "Cool & Damp",
-        "avg_at": 24.5,
-        "avg_rh": 78.5,
+        "avg_at": 28.7,
+        "avg_rh": 81.7,
         "is_rainy": false,
         "all_suggestions": [
           "牛肉麵 (niú ròu miàn)",
@@ -7224,7 +7259,7 @@
           "四神湯 (sì shén tāng)"
         ],
         "top_suggestions": [
-          "火鍋 (huǒ guō)"
+          "四神湯 (sì shén tāng)"
         ]
       },
       "recent_meals": [],
@@ -7354,18 +7389,20 @@
         "type": "Cardiac"
       },
       "menieres_alert": {
-        "triggered": false,
-        "severity": "none",
-        "reasons": [],
+        "triggered": true,
+        "severity": "moderate",
+        "reasons": [
+          "High humidity discomfort"
+        ],
         "type": "Menieres"
       },
       "aqi_realtime": {
         "station_name": "土城",
-        "aqi": 33,
+        "aqi": 34,
         "status": "良好",
-        "pm25": 5.0,
-        "pm10": 14.0,
-        "publish_time": "2026/02/28 11:00:00"
+        "pm25": 2.0,
+        "pm10": 23.0,
+        "publish_time": "2026/02/28 17:00:00"
       },
       "aqi_forecast": {
         "area": "北部",
@@ -7377,19 +7414,31 @@
         "summary_zh": "明日北部空氣品質預測為「普通」等級。"
       },
       "outdoor_index": {
-        "overall_score": 100,
+        "overall_score": 80,
         "overall_grade": "A",
         "overall_label": "Excellent",
         "segments": {
-          "Afternoon": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent",
+          "Morning": {
+            "score": 70,
+            "grade": "B",
+            "label": "Good",
             "blockers": [],
-            "cautions": []
+            "cautions": [
+              "humid"
+            ]
+          },
+          "Afternoon": {
+            "score": 40,
+            "grade": "D",
+            "label": "Poor",
+            "blockers": [],
+            "cautions": [
+              "extreme_heat",
+              "heat_humidity"
+            ]
           },
           "Evening": {
-            "score": 100,
+            "score": 80,
             "grade": "A",
             "label": "Excellent",
             "blockers": [],
@@ -7398,63 +7447,63 @@
         },
         "activities": {
           "strolling": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 40,
+            "grade": "D",
+            "label": "Poor"
           },
           "cycling": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 40,
+            "grade": "D",
+            "label": "Poor"
           },
           "hiking": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 35,
+            "grade": "D",
+            "label": "Poor"
           },
           "picnic": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 40,
+            "grade": "D",
+            "label": "Poor"
           },
           "swimming": {
-            "score": 100,
+            "score": 80,
             "grade": "A",
             "label": "Excellent"
           },
           "sports": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 25,
+            "grade": "F",
+            "label": "Avoid"
           },
           "photography": {
-            "score": 100,
-            "grade": "A",
-            "label": "Excellent"
+            "score": 65,
+            "grade": "B",
+            "label": "Good"
           }
         }
       }
     },
-    "narration_text": "今天沒有特別需要警示的事項，一切平穩順利。\n\n現在是上午十一點多，體感溫度大約二十二度，濕度七成，感覺舒適、不悶熱。東北偏東方向吹來一陣輕柔的微風，天空陰著，地面乾燥，空氣品質良好，AQI 三十三，是近幾天最清爽的一天。今天不需要擔心心臟或梅尼爾氏症的健康風險，整體狀況非常穩定。\n\n現在來說說接下來二十四小時。今天真的是一個難得平穩的好日子。目前陰天、舒適，下午體感溫度會升到約二十四度，稍微悶一些，但仍然舒服，降雨機率低。傍晚六點前後，雲層會逐漸散開，出現混合雲，天色會變得好看一些，氣溫維持在二十四到二十五度左右，幾乎不可能下雨。進入深夜之後，濕度會升高到八成七左右，氣溫降回二十二度，風依然輕柔，睡前記得確認窗戶開合適當，不要讓濕冷的夜風直吹。總之——今天整天都很好，盡情享受，晚上睡前多蓋一點。\n\n最後來看預報準確度。今天早上的廣播預測體感溫度二十二度、陰天、東風微風，和現在實際觀測的二十二點三度、陰天、東北偏東微風幾乎完全吻合。濕度預測七十九，實際七十，稍微偏乾一點，但差距不大。整體來說，今天的預報表現相當準確。",
+    "narration_text": "今天沒有特別需要警戒的天氣警示，整體來說是平靜的一天。現在傍晚快六點，體感溫度約十九點六度，濕度相當高，感覺有些悶濕。來自東北偏東方向吹來的微風，算是輕柔。天空全陰，地面是乾的。空氣品質良好，AQI 三十四，可以放心呼吸。\n\n需要提醒的是，今天濕度偏高，屬於梅尼爾氏症需要注意的狀況。這種悶濕的感覺有時候會讓內耳比較敏感，建議今晚放慢步調，多喝水，避免突然轉動頭部，隨身帶著藥備用。\n\n現在來說說明天的整體走勢。老實說，明天是個溫差很大的日子，早晚舒適，中午悶熱得很誇張。早上六點左右，體感溫度約二十三點六度，全陰、無風，濕度偏高，感覺有點悶，但還算舒服。接著到了中午，天氣會戲劇性地升溫，體感溫度跳到接近三十八度，雲層也會散開，變成混合雲，這段時間待在戶外會相當不舒服。進入傍晚之後，氣溫會快速下滑回到約二十四點八度，微風吹起，感覺清爽許多。入夜後維持在約二十二度，同樣是微風混合雲，整夜穩定。總之——享受早晨，中午前務必進室內，傍晚涼快了再出門也不遲。\n\n最後來對照一下昨天的預報準確度。昨天的廣播預測今天是平穩舒適的一天，大方向是對的。預報提到今天全天陰天、輕微微風、不太可能下雨，這些都與實際觀測吻合。今天實際體感溫度約二十度，濕度偏高在八十八，比預報預期的稍微濕一點，但整體預報表現相當接近，算是準確。",
     "paragraphs": {
-      "p1_conditions": "今天沒有特別需要警示的事項，一切平穩順利。",
-      "p2_garden_commute": "現在是上午十一點多，體感溫度大約二十二度，濕度七成，感覺舒適、不悶熱。東北偏東方向吹來一陣輕柔的微風，天空陰著，地面乾燥，空氣品質良好，AQI 三十三，是近幾天最清爽的一天。今天不需要擔心心臟或梅尼爾氏症的健康風險，整體狀況非常穩定。",
-      "p5_forecast": "現在來說說接下來二十四小時。今天真的是一個難得平穩的好日子。目前陰天、舒適，下午體感溫度會升到約二十四度，稍微悶一些，但仍然舒服，降雨機率低。傍晚六點前後，雲層會逐漸散開，出現混合雲，天色會變得好看一些，氣溫維持在二十四到二十五度左右，幾乎不可能下雨。進入深夜之後，濕度會升高到八成七左右，氣溫降回二十二度，風依然輕柔，睡前記得確認窗戶開合適當，不要讓濕冷的夜風直吹。總之——今天整天都很好，盡情享受，晚上睡前多蓋一點。",
-      "p6_accuracy": "最後來看預報準確度。今天早上的廣播預測體感溫度二十二度、陰天、東風微風，和現在實際觀測的二十二點三度、陰天、東北偏東微風幾乎完全吻合。濕度預測七十九，實際七十，稍微偏乾一點，但差距不大。整體來說，今天的預報表現相當準確。"
+      "p1_conditions": "今天沒有特別需要警戒的天氣警示，整體來說是平靜的一天。現在傍晚快六點，體感溫度約十九點六度，濕度相當高，感覺有些悶濕。來自東北偏東方向吹來的微風，算是輕柔。天空全陰，地面是乾的。空氣品質良好，AQI 三十四，可以放心呼吸。",
+      "p2_garden_commute": "需要提醒的是，今天濕度偏高，屬於梅尼爾氏症需要注意的狀況。這種悶濕的感覺有時候會讓內耳比較敏感，建議今晚放慢步調，多喝水，避免突然轉動頭部，隨身帶著藥備用。",
+      "p5_forecast": "現在來說說明天的整體走勢。老實說，明天是個溫差很大的日子，早晚舒適，中午悶熱得很誇張。早上六點左右，體感溫度約二十三點六度，全陰、無風，濕度偏高，感覺有點悶，但還算舒服。接著到了中午，天氣會戲劇性地升溫，體感溫度跳到接近三十八度，雲層也會散開，變成混合雲，這段時間待在戶外會相當不舒服。進入傍晚之後，氣溫會快速下滑回到約二十四點八度，微風吹起，感覺清爽許多。入夜後維持在約二十二度，同樣是微風混合雲，整夜穩定。總之——享受早晨，中午前務必進室內，傍晚涼快了再出門也不遲。",
+      "p6_accuracy": "最後來對照一下昨天的預報準確度。昨天的廣播預測今天是平穩舒適的一天，大方向是對的。預報提到今天全天陰天、輕微微風、不太可能下雨，這些都與實際觀測吻合。今天實際體感溫度約二十度，濕度偏高在八十八，比預報預期的稍微濕一點，但整體預報表現相當接近，算是準確。"
     },
     "metadata": {
-      "wardrobe": "薄長袖或輕薄外套即可，不需要帶傘",
+      "wardrobe": "薄外套或長袖上衣，傍晚約二十度濕度高，穿一層就夠。",
       "rain_gear": false,
-      "commute_am": "早上從三峽往樹林涼爽順暢，微風低雨機率，輕鬆好開",
-      "commute_pm": "傍晚回三峽天氣穩定，雲層稍散，體感約二十四到二十五度",
-      "meal": "火鍋 (huǒ guō)",
-      "outdoor": "大漢溪自行車道鶯歌段，平坦有遮蔭，下午整段時間都極佳",
-      "garden": "觀察肥效、修剪枯枝",
+      "commute_am": "明早三峽到樹林約二十二度、混合雲、微風，路況順暢。",
+      "commute_pm": "傍晚樹林回三峽約二十八度偏熱，降雨機率低，正常行駛即可。",
+      "meal": "四神湯 (sì shén tāng)",
+      "outdoor": "明天早上九點到十一點，帶爸爸去板橋四三五藝文特區，平整鋪面、長椅多，午前務必回室內。",
+      "garden": "補水後確認土壤濕度",
       "climate": null,
       "cardiac_alert": false,
-      "menieres_alert": false,
-      "forecast_oneliner": "今天整天都很好，盡情享受，晚上睡前多蓋一點",
-      "accuracy_grade": "spot on",
+      "menieres_alert": true,
+      "forecast_oneliner": "享受早晨，中午前務必進室內，傍晚涼快了再出門也不遲。",
+      "accuracy_grade": "close",
       "narration_source": "claude",
       "narration_model": "claude-sonnet-4-6"
     },

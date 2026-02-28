@@ -569,6 +569,42 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
             outdoor_s2 = "Stick to flat, familiar routes if heading out, and take it easy."
     outdoor_text = f"{verdict} {outdoor_s2}"
 
+    # ── Air Quality Forecast (1 sentence) ────────────────────────────────────
+    aqi_forecast = processed.get("aqi_forecast", {})
+    aqi_fc_val = aqi_forecast.get("aqi")
+    aqi_fc_status = aqi_forecast.get("status", "")
+    try:
+        aqi_fc_int = int(str(aqi_fc_val).split("-")[0]) if aqi_fc_val is not None else None
+    except (ValueError, TypeError):
+        aqi_fc_int = None
+
+    if is_zh:
+        lang_summary = aqi_forecast.get("summary_zh") or aqi_forecast.get("summary_en")
+        if lang_summary:
+            air_quality = lang_summary
+        elif aqi_fc_int is not None and aqi_fc_int <= 50:
+            air_quality = "明天空氣清新，無需特別防護。"
+        elif aqi_fc_int is not None and aqi_fc_int <= 100:
+            pollutant = f"（{aqi_fc_status}）" if aqi_fc_status else ""
+            air_quality = f"明天空氣品質普通{pollutant}，敏感族群外出請多留意。"
+        elif aqi_fc_int is not None:
+            air_quality = "明天空氣品質不佳，建議減少戶外活動並關閉窗戶。"
+        else:
+            air_quality = "明天空氣品質資料暫不可用，請注意最新公告。"
+    else:
+        lang_summary = aqi_forecast.get("summary_en") or aqi_forecast.get("summary_zh")
+        if lang_summary:
+            air_quality = lang_summary
+        elif aqi_fc_int is not None and aqi_fc_int <= 50:
+            air_quality = "Tomorrow's air looks clean — no precautions needed."
+        elif aqi_fc_int is not None and aqi_fc_int <= 100:
+            pollutant = f" ({aqi_fc_status})" if aqi_fc_status else ""
+            air_quality = f"Tomorrow's air quality is moderate{pollutant} — sensitive groups should take care outdoors."
+        elif aqi_fc_int is not None:
+            air_quality = "Air quality tomorrow will be poor — limit outdoor exposure and keep windows closed."
+        else:
+            air_quality = "Tomorrow's air quality data is unavailable — check local advisories."
+
     # ── Alert ─────────────────────────────────────────────────────────────────
     cardiac_triggered = bool(cardiac and isinstance(cardiac, dict) and cardiac.get("triggered"))
     menieres_high = bool(menieres and isinstance(menieres, dict) and menieres.get("severity") == "high")
@@ -593,5 +629,6 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
         "hvac": hvac_text,
         "garden": garden_text,
         "outdoor": outdoor_text,
+        "air_quality": air_quality,
         "alert": {"text": alert_text, "level": alert_level},
     }
