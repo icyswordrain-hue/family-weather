@@ -1602,10 +1602,25 @@ html.dark .ls-badge.ls-alert-badge-warning {
     grid-template-columns: 1fr;
   }
 
-  /* 24h timeline: 2 per row (overrides ≤640px single-column rule) */
+  /* 24h timeline: 4 per row, compact cards */
   .timeline-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
   }
+  .time-card {
+    padding: 0.75rem 0.4rem;
+    min-height: 0;
+  }
+  .tc-header {
+    font-size: 0.62rem;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tc-icon   { font-size: 1.4rem; margin: 0.2rem 0; }
+  .tc-temp   { font-size: 1rem; margin-bottom: 0; }
+  .tc-details { display: none; }
 }
 
 @media (max-width: 1024px) {
