@@ -620,6 +620,14 @@ function renderOverviewView(data) {
       let axisMax = Math.ceil(dataMax / 5) * 5;
       if (axisMax === axisMin) axisMax = axisMin + 10;
       if (axisMax - axisMin < 10) axisMin = axisMax - 10;
+      const gridVals = [];
+      for (let v = axisMin; v <= axisMax; v += 5) gridVals.push(v);
+
+      // halfCard = (gridWidth - 6 * gap) / 14
+      // Setting layout.padding.left = layout.padding.right = halfCard ensures
+      // that Chart.js places dot i of 7 exactly over card i's centre column.
+      const gridWidth = weeklyTimelineEl.offsetWidth || sparkCanvas.parentElement.offsetWidth || 700;
+      const halfCard  = Math.max(16, Math.round((gridWidth - 24) / 14));
 
       // Read theme tokens at render time
       const cs = getComputedStyle(document.documentElement);
@@ -658,7 +666,8 @@ function renderOverviewView(data) {
         },
         plugins: [
           {
-            id: 'chartAreaBg',
+            id: 'sparklineExtras',
+            // Fill plot area with surface colour (behind data lines)
             beforeDraw(chart) {
               const { ctx, chartArea } = chart;
               if (!chartArea) return;
@@ -667,12 +676,44 @@ function renderOverviewView(data) {
               ctx.fillRect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
               ctx.restore();
             },
+            // Draw gridlines behind data lines
+            beforeDatasetsDraw(chart) {
+              const { ctx, chartArea, scales } = chart;
+              if (!chartArea) return;
+              ctx.save();
+              ctx.strokeStyle = 'rgba(127, 140, 160, 0.25)';
+              ctx.lineWidth = 1;
+              gridVals.forEach(val => {
+                const y = scales.y.getPixelForValue(val);
+                ctx.beginPath();
+                ctx.moveTo(chartArea.left, y);
+                ctx.lineTo(chartArea.right, y);
+                ctx.stroke();
+              });
+              ctx.restore();
+            },
+            // Draw axis labels in the left-padding zone (after everything else)
+            afterDraw(chart) {
+              const { ctx, chartArea, scales } = chart;
+              if (!chartArea) return;
+              ctx.save();
+              ctx.font = `10px 'Fira Code', monospace`;
+              ctx.fillStyle = mutedColor;
+              ctx.textAlign = 'right';
+              ctx.textBaseline = 'middle';
+              gridVals.forEach(val => {
+                const y = scales.y.getPixelForValue(val);
+                ctx.fillText(`${val}°`, chartArea.left - 4, y);
+              });
+              ctx.restore();
+            },
           },
         ],
         options: {
           responsive: true,
           maintainAspectRatio: false,
           animation: { duration: 400 },
+          layout: { padding: { left: halfCard, right: halfCard } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -683,18 +724,7 @@ function renderOverviewView(data) {
           },
           scales: {
             x: { display: false },
-            y: {
-              min: axisMin,
-              max: axisMax,
-              ticks: {
-                stepSize: 5,
-                callback: val => `${val}°`,
-                color: mutedColor,
-                font: { size: 10, family: "'Fira Code', monospace" },
-              },
-              grid: { color: 'rgba(127, 140, 160, 0.2)' },
-              border: { display: false },
-            },
+            y: { display: false, min: axisMin, max: axisMax },
           },
         },
       });
