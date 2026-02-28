@@ -133,3 +133,24 @@ Key decisions:
 - `web/templates/dashboard.html` — no changes.
 - JS rendering logic for both forecast grids — untouched (`.tc-details` was never built conditionally; CSS drives visibility).
 - Desktop and tablet layouts — unaffected (changes are scoped to `max-width: 767px`).
+
+---
+
+## Follow-up fix — apparent temperature double-calculation
+
+> **Commit:** `652bbae`
+
+After the grid-density work exposed the `.tc-temp` values more prominently, the Afternoon card
+showed 38° while the other three segments sat in the low-to-mid 20s. Root cause:
+
+The CWA 36-hour forecast API (`F-D0047-069`) returns `ApparentTemperature` (體感溫度) — already
+a pre-computed feels-like value. `fetch_cwa.py` stored this directly as `slot["AT"]`. The segment
+enrichment step in `weather_processor.py` then passed `AT` as the actual air temperature (`ta`)
+into the BOM formula, double-counting the humidity and wind adjustment.
+
+The 7-day code already had a guard (`# AT is already apparent temperature — do not recalculate`),
+but the 36-hour path had no equivalent.
+
+**Fix:** `fetch_cwa.py` now stores the `Temperature` element separately as `slot["T"]`. Segment
+enrichment and `_commute_window` use `T` as the BOM formula input, falling back to `AT` only when
+`T` is absent. `_average_slots` was updated to include `T` in its numeric averaging keys.

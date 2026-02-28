@@ -166,3 +166,62 @@ any history data carrying the old `hum_text` values.
 - `_hum_to_scale()` in `data/scales.py`: retained, not deleted.
 - `OUTDOOR_RH_VERY_HIGH` / `OUTDOOR_RH_HIGH` in `config.py`: retained (no longer used by
   outdoor scoring but may be referenced elsewhere).
+
+---
+
+## Follow-up: Two-Component Dew Point Penalty (`data/outdoor_scoring.py`)
+
+**Commit:** `d0b3ec7`
+
+The first pass (above) replaced the RH-based rules with dew_gap thresholds but kept the
+same three rule slots (`heat_humidity`, `rh_very_high`, `rh_high`). This follow-up
+replaces all three with a two-component system that separates **absolute muginess** from
+**clamminess**, handling each as an independent penalty axis.
+
+### Rationale
+
+The dew_gap-only system could not represent absolute mugginess — a wide gap (say 8°C)
+with a high absolute dew point (say 27°C) is still oppressive even though sweat evaporates
+reasonably. Conversely, a narrow gap on a cool day (dp 16°C, gap 1.5°C) is clammy but not
+muggy. The original `heat_humidity` combined rule (AT > 28 AND gap < 10) conflated both.
+
+### New weight keys
+
+| Key | Trigger | General penalty | Notes |
+|---|---|---|---|
+| `dp_oppressive` | dew_point ≥ 24°C | −20 | Sweat barely evaporates |
+| `dp_muggy` | 21 ≤ dew_point < 24°C | −10 | Clearly unpleasant |
+| `dp_sticky` | 18 ≤ dew_point < 21°C | −5 | Noticeable stickiness |
+| `dew_gap_clammy` | dew_gap < 2°C | −15 | Near saturation |
+| `dew_gap_humid` | 2 ≤ dew_gap < 5°C | −8 | Clammy |
+
+Removed: `heat_humidity` (−10), `rh_very_high` (−20), `rh_high` (−10).
+
+Both components can fire simultaneously. Maximum combined humidity penalty on a Taiwan
+July afternoon (dp 30.8°C, gap 2.2°C): −20 + −15 = **−35**.
+
+### dew_point_c now passed to score function
+
+`seg["dew_point"]` was already computed in `weather_processor.py` but not forwarded to
+`_score_conditions()`. Both `cond` dicts in `_compute_outdoor_index()` now include:
+
+```python
+"dew_point": seg.get("dew_point"),   # absolute dew point level (°C)
+```
+
+### Activity override changes
+
+- **swimming**: all five dp/dew_gap keys set to 0 — humidity is irrelevant in the water.
+- **sports**: `heat_humidity` replaced with `dp_oppressive (−20)`, `dp_muggy (−10)`,
+  `dew_gap_clammy (−20)` — exertion amplifies both muggy and clammy conditions.
+- **photography**: `heat_humidity (−5)` replaced with `dp_oppressive (−5)` — only
+  extreme humidity affects a stationary photographer.
+
+### Numerical examples (spec verification)
+
+| Scenario | dp (°C) | gap (°C) | Expected penalty | Components firing |
+|---|---|---|---|---|
+| Winter comfort | 10.2 | 7.8 | 0 | none |
+| Clammy spring (today) | 17.8 | 2.2 | −8 | dew_gap_humid only (dp just below 18) |
+| Hot muggy summer | 27.5 | 7.5 | −20 | dp_oppressive only |
+| Taiwan July misery | 30.8 | 2.2 | −35 | dp_oppressive + dew_gap_clammy |
