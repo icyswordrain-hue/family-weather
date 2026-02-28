@@ -382,11 +382,10 @@ function render(data) {
     const title = narrationSlice
       ? (narrationSlice.paragraphs || []).find(p => p.key === 'p1')?.title || 'Morning Briefing'
       : 'Morning Briefing';
-    const text = narrationSlice
-      ? (narrationSlice.paragraphs || []).map(p => p.text).filter(Boolean).join('\n\n')
-      : (data.narration_text || '');
+    const paragraphs = narrationSlice ? (narrationSlice.paragraphs || []) : [];
+    const meta = narrationSlice ? (narrationSlice.meta || {}) : {};
     if (window._playerBarSetAudio) {
-      window._playerBarSetAudio(data.audio_urls.full_audio_url, title, text);
+      window._playerBarSetAudio(data.audio_urls.full_audio_url, title, paragraphs, meta);
     }
   }
 
@@ -1012,12 +1011,26 @@ function initPlayerBar() {
     else audio.pause();
   });
 
-  window._playerBarSetAudio = function (audioUrl, narrationTitle, narrationText) {
+  window._playerBarSetAudio = function (audioUrl, narrationTitle, paragraphs, meta) {
     bar.classList.remove('loading');
     audio.src = audioUrl;
     if (title) title.textContent = narrationTitle || 'Morning Briefing';
+
     const body = document.getElementById('player-sheet-body');
-    if (body) body.textContent = narrationText || '';
+    if (!body) return;
+
+    if (!paragraphs || !paragraphs.length) { body.textContent = ''; return; }
+
+    const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
+    let html = '';
+    paragraphs.forEach(p => {
+      if (!p.text) return;
+      html += `<div class="ps-para"><h3 class="ps-para-title">${p.title}</h3><p class="ps-para-body">${p.text}</p></div>`;
+    });
+    if (meta && meta.source) {
+      html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
+    }
+    body.innerHTML = html;
   };
 }
 
