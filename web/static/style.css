@@ -1136,6 +1136,10 @@ html.dark .ls-badge.ls-alert-badge-warning {
   /* Anthropic distinct color (often reddish/orange) */
 }
 
+html.dark .source-gemini  { background: rgba(77, 124, 254, 0.18); color: #7da4ff; }
+html.dark .source-template { background: rgba(107, 114, 128, 0.18); color: #cbd5e1; }
+html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675; }
+
 .native-audio {
   width: 100%;
   margin-bottom: 2rem;
@@ -1576,9 +1580,13 @@ html.dark .ls-badge.ls-alert-badge-warning {
     width: 36px;
     height: 4px;
     border-radius: 2px;
-    background: var(--border, #e8ecf3);
+    background: rgba(0, 0, 0, 0.15);
     margin: 8px auto 4px;
     flex-shrink: 0;
+  }
+
+  html.dark .player-sheet-handle {
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .player-sheet-backdrop {
