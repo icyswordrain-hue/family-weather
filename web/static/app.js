@@ -593,6 +593,77 @@ function renderOverviewView(data) {
       }
       weeklyTimelineEl.appendChild(card);
     });
+
+    // 7-Day temperature sparkline (day = amber, night = blue)
+    const sparkCanvas = document.getElementById('ov-weekly-sparkline');
+    if (sparkCanvas) {
+      // Group items by calendar date to get aligned day/night pairs
+      const dateMap = new Map();
+      data.weekly_timeline.forEach(item => {
+        const dt = new Date(item.start_time.replace('+08:00', ''));
+        const key = `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+        if (!dateMap.has(key)) dateMap.set(key, { dt, day: null, night: null });
+        if (isNightSlot(item)) dateMap.get(key).night = item;
+        else dateMap.get(key).day = item;
+      });
+
+      const dates = [...dateMap.values()].sort((a, b) => a.dt - b.dt);
+      const sparkLabels = dates.map(d => T.days[d.dt.getDay()]);
+      const sparkDay    = dates.map(d => d.day   ? Math.round(d.day.AT)   : null);
+      const sparkNight  = dates.map(d => d.night ? Math.round(d.night.AT) : null);
+      const allVals = [...sparkDay, ...sparkNight].filter(v => v != null);
+      const yMin = allVals.length ? Math.min(...allVals) - 1 : 0;
+      const yMax = allVals.length ? Math.max(...allVals) + 1 : 30;
+
+      if (tempChart) { tempChart.destroy(); tempChart = null; }
+      tempChart = new Chart(sparkCanvas, {
+        type: 'line',
+        data: {
+          labels: sparkLabels,
+          datasets: [
+            {
+              label: 'Day',
+              data: sparkDay,
+              borderColor: '#f0932b',
+              tension: 0.35,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2,
+              spanGaps: true,
+              fill: false,
+            },
+            {
+              label: 'Night',
+              data: sparkNight,
+              borderColor: '#7da4ff',
+              tension: 0.35,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2,
+              spanGaps: true,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 400 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}°` },
+            },
+          },
+          scales: {
+            x: { display: false },
+            y: { display: false, min: yMin, max: yMax },
+          },
+        },
+      });
+    }
   }
 
   // AQI Forecast

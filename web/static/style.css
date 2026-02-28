@@ -2243,6 +2243,14 @@ html.dark .player-sheet-body {
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(2, auto);
   gap: 4px;
+  margin-bottom: 0;
+}
+
+/* ── 7-Day Temperature Sparkline ─────────── */
+.weekly-sparkline-wrap {
+  position: relative;
+  height: 60px;
+  margin-top: 4px;
   margin-bottom: 1.5rem;
 }
 
@@ -2336,4 +2344,5 @@ html.dark .wk-card.wk-night .wk-temp {
   .wk-temp   { font-size: 0.9rem; }
   .wk-rain   { display: none; }
   .wk-period { display: none; }
+  .weekly-sparkline-wrap { height: 48px; }
 }
