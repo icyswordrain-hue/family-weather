@@ -464,3 +464,18 @@ After initial implementation, the compact header clock and station name were too
 | `padding` | `10px 16px` | `12px 16px` |
 
 `#mobile-clock` and `.mobile-location` inherit `font-size` from `.compact-header`; no additional rules needed. The station name source remains `data.location` (CWA current conditions station name via `/api/broadcast`).
+
+---
+
+## Amendment — 2026-02-28: Mobile Light Mode Visibility Fix
+
+**Commit:** `style(mobile): fix light mode visibility for --muted, header and wk-night cards`
+
+Investigation showed that `--muted` text in light mode failed WCAG contrast, and elements using `var(--sidebar-text)` like the mobile header and forecast night cards were too dim against their dark backgrounds.
+
+**`web/static/style.css` Changes:**
+- Updated `--muted` from `#7a8ca0` to `#64748b` for better readability.
+- Forced `.compact-header` color to `#ffffff` (previously `var(--sidebar-text)`).
+- Forced `.wk-card.wk-night` color to `#ffffff` (previously `var(--sidebar-text)`).
+- Added `.fab-sheet` overrides to ensure dashboard settings labels are visible against the light mobile sheet background.
+- Bumped `dashboard.html` cache buster to `v=19`.
