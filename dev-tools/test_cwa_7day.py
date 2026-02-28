@@ -11,4 +11,4 @@ resp = requests.get(url, params=params, verify=False)
 data = resp.json()
 elements = data['records']['Locations'][0]['Location'][0]['WeatherElement']
 for el in elements:
-    print(el['ElementName'], "-", el['Description'])
+    print(el['ElementName'], "-", el.get('Description', ''))

@@ -1,5 +1,5 @@
 # import pytest (removed due to missing dependency)
-from data.weather_processor import _compute_outdoor_index, OUTDOOR_WEIGHTS_BY_ACTIVITY
+from data.outdoor_scoring import _compute_outdoor_index, OUTDOOR_WEIGHTS_BY_ACTIVITY
 
 def test_activity_overrides_influence():
     # Mock data for a warm, dry day
@@ -22,10 +22,10 @@ def test_activity_overrides_influence():
     result = _compute_outdoor_index(current, segmented, aqi_val, menieres, cardiac)
     
     # Verify that swimming has a different score due to overrides
-    assert "swimming" in result["activity_scores"]
-    assert "cycling" in result["activity_scores"]
+    assert "swimming" in result["activities"]
+    assert "cycling" in result["activities"]
     
-    print(f"PASS: Outdoor activity scores computed correctly: {result['activity_scores']}")
+    print(f"PASS: Outdoor activity scores computed correctly: {result['activities']}")
 
 if __name__ == "__main__":
     test_activity_overrides_influence()
