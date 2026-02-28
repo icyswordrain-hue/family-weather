@@ -612,8 +612,19 @@ function renderOverviewView(data) {
       const sparkDay    = dates.map(d => d.day   ? Math.round(d.day.AT)   : null);
       const sparkNight  = dates.map(d => d.night ? Math.round(d.night.AT) : null);
       const allVals = [...sparkDay, ...sparkNight].filter(v => v != null);
-      const yMin = allVals.length ? Math.min(...allVals) - 1 : 0;
-      const yMax = allVals.length ? Math.max(...allVals) + 1 : 30;
+
+      // Snap axis to 5° grid; guarantee at least 3 gridlines (10° window)
+      const dataMin = allVals.length ? Math.min(...allVals) : 15;
+      const dataMax = allVals.length ? Math.max(...allVals) : 30;
+      let axisMin = Math.floor(dataMin / 5) * 5;
+      let axisMax = Math.ceil(dataMax / 5) * 5;
+      if (axisMax === axisMin) axisMax = axisMin + 10;
+      if (axisMax - axisMin < 10) axisMin = axisMax - 10;
+
+      // Read theme tokens at render time
+      const cs = getComputedStyle(document.documentElement);
+      const mutedColor   = cs.getPropertyValue('--muted').trim()   || '#8fa3c0';
+      const surfaceColor = cs.getPropertyValue('--surface').trim() || '#ffffff';
 
       if (tempChart) { tempChart.destroy(); tempChart = null; }
       tempChart = new Chart(sparkCanvas, {
@@ -645,6 +656,19 @@ function renderOverviewView(data) {
             },
           ],
         },
+        plugins: [
+          {
+            id: 'chartAreaBg',
+            beforeDraw(chart) {
+              const { ctx, chartArea } = chart;
+              if (!chartArea) return;
+              ctx.save();
+              ctx.fillStyle = surfaceColor;
+              ctx.fillRect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+              ctx.restore();
+            },
+          },
+        ],
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -659,7 +683,18 @@ function renderOverviewView(data) {
           },
           scales: {
             x: { display: false },
-            y: { display: false, min: yMin, max: yMax },
+            y: {
+              min: axisMin,
+              max: axisMax,
+              ticks: {
+                stepSize: 5,
+                callback: val => `${val}°`,
+                color: mutedColor,
+                font: { size: 10, family: "'Fira Code', monospace" },
+              },
+              grid: { color: 'rgba(127, 140, 160, 0.2)' },
+              border: { display: false },
+            },
           },
         },
       });

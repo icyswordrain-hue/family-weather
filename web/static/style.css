@@ -2249,9 +2249,11 @@ html.dark .player-sheet-body {
 /* ── 7-Day Temperature Sparkline ─────────── */
 .weekly-sparkline-wrap {
   position: relative;
-  height: 60px;
+  height: 120px;
   margin-top: 4px;
   margin-bottom: 1.5rem;
+  background: var(--blue-lt);
+  border-radius: 10px;
 }
 
 .wk-card {
@@ -2344,5 +2346,5 @@ html.dark .wk-card.wk-night .wk-temp {
   .wk-temp   { font-size: 0.9rem; }
   .wk-rain   { display: none; }
   .wk-period { display: none; }
-  .weekly-sparkline-wrap { height: 48px; }
+  .weekly-sparkline-wrap { height: 96px; }
 }
