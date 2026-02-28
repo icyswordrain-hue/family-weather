@@ -93,13 +93,13 @@ def generate_narration_with_fallback(
     provider_upper = provider.upper().strip()
     logger.info("Narration requested via provider: %s", provider_upper)
     try:
-        messages = build_prompt(processed, history, date_str, lang=lang)
+        messages = build_prompt(processed, history, date_str)
         if provider_upper == "GEMINI":
             if generate_gemini is None:
                 logger.error("Gemini client is None (likely import failure or missing key)")
                 raise RuntimeError("Gemini client not available")
             logger.info("Calling Gemini client...")
-            text = generate_gemini(messages)
+            text = generate_gemini(messages, lang=lang)
             logger.info("Gemini narration successful.")
             result = text, "gemini"
         elif provider_upper == "CLAUDE":
@@ -107,7 +107,7 @@ def generate_narration_with_fallback(
                 logger.error("Claude client is None (likely import failure or missing key)")
                 raise RuntimeError("Claude client not available")
             logger.info("Calling Claude client...")
-            text = generate_claude(messages)
+            text = generate_claude(messages, lang=lang)
             logger.info("Claude narration successful.")
             result = text, "claude"
         else:

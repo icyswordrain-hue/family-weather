@@ -26,13 +26,13 @@ def _get_client() -> anthropic.Anthropic:
     return _client
 
 
-def _load_system_prompt() -> str:
+def _load_system_prompt(lang: str = 'en') -> str:
     """Import the system prompt from prompt_builder."""
     from narration.llm_prompt_builder import build_system_prompt
-    return build_system_prompt()
+    return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None) -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en') -> str:
     """
     Send the prepared message list to Claude and return the narration text.
 
@@ -47,7 +47,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None) 
         RuntimeError if the API call fails.
     """
     client = _get_client()
-    system_prompt = _load_system_prompt()
+    system_prompt = _load_system_prompt(lang)
 
     # Convert Gemini-style messages (role='model'/'user', parts=[{text}])
     # to Claude-style messages (role='assistant'/'user', content=str)

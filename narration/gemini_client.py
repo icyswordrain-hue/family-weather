@@ -21,17 +21,17 @@ from config import (
 
 logger = logging.getLogger(__name__)
 
-def _load_system_prompt() -> str:
+def _load_system_prompt(lang: str = 'en') -> str:
     """Import the system prompt from prompt_builder to avoid duplication."""
     from narration.llm_prompt_builder import build_system_prompt
-    return build_system_prompt()
+    return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None) -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en') -> str:
     """
     Send the prepared message list to Gemini and return the narration text.
     """
-    system_prompt = _load_system_prompt()
+    system_prompt = _load_system_prompt(lang)
     gemini_contents = []
     for msg in messages:
         role = msg.get("role", "user")

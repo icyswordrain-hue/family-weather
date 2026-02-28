@@ -250,7 +250,6 @@ def build_prompt(
     processed_data: dict,
     history: list[dict],
     today_date: str | None = None,
-    lang: str = 'en',
 ) -> list[dict]:
     """
     Build the message list for Claude/Gemini narration.
