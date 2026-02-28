@@ -482,7 +482,7 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow(T.rain, localiseMetric(seg.precip_text) || '—', seg.precip_level || 1);
+      addRow(T.rain, seg.PoP6h != null ? Math.round(seg.PoP6h) + '%' : localiseMetric(seg.precip_text) || '—', seg.precip_level || 1);
       if (seg.outdoor_grade) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         addRow(T.outdoor, seg.outdoor_grade, gradeToLvl[seg.outdoor_grade] || 0);
@@ -582,14 +582,15 @@ function renderOverviewView(data) {
       temp.className = 'wk-temp';
       temp.textContent = `${Math.round(item.AT ?? 0)}°`;
 
-      const rain = document.createElement('div');
-      rain.className = `wk-rain lvl-${item.precip_level || 1}`;
-      rain.textContent = localiseMetric(item.precip_text) || '—';
-
       card.appendChild(label);
       card.appendChild(icon);
       card.appendChild(temp);
-      card.appendChild(rain);
+      if (item.PoP12h != null) {
+        const rain = document.createElement('div');
+        rain.className = `wk-rain lvl-${item.precip_level || 1}`;
+        rain.textContent = Math.round(item.PoP12h) + '%';
+        card.appendChild(rain);
+      }
       weeklyTimelineEl.appendChild(card);
     });
   }
