@@ -118,7 +118,7 @@ def generate_narration_with_fallback(
 
     except Exception:
         logger.exception("Narration failed (%s), falling back to template:", provider_upper)
-        text = build_narration(processed, date_str=date_str)
+        text = build_narration(processed, date_str=date_str, history=history, lang=lang)
         return text, "template"
 
 
