@@ -1,5 +1,5 @@
 // Service Worker — Family Weather Dashboard
-const CACHE_NAME = 'weather-v7';
+const CACHE_NAME = 'weather-v8';
 const SHELL_ASSETS = [
     '/',
     '/static/style.css',
