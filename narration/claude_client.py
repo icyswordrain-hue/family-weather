@@ -32,7 +32,7 @@ def _load_system_prompt(lang: str = 'en') -> str:
     return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en') -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None) -> str:
     """
     Send the prepared message list to Claude and return the narration text.
 
@@ -47,7 +47,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         RuntimeError if the API call fails.
     """
     client = _get_client()
-    system_prompt = _load_system_prompt(lang)
+    system_prompt = system_prompt_override if system_prompt_override is not None else _load_system_prompt(lang)
 
     # Convert Gemini-style messages (role='model'/'user', parts=[{text}])
     # to Claude-style messages (role='assistant'/'user', content=str)

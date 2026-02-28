@@ -90,8 +90,8 @@ OUTPUT FORMAT:
     ]
 
     try:
-        # Use Haiku for speed and cost
-        raw_output = generate_narration(messages, model_override=CLAUDE_FALLBACK_MODEL)
+        # Use Haiku for speed and cost. Override system prompt to avoid the broadcast formatting constraints.
+        raw_output = generate_narration(messages, model_override=CLAUDE_FALLBACK_MODEL, lang=lang, system_prompt_override="")
         
         # Strip potential markdown fences
         clean_json = raw_output.strip()

@@ -27,11 +27,11 @@ def _load_system_prompt(lang: str = 'en') -> str:
     return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en') -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None) -> str:
     """
     Send the prepared message list to Gemini and return the narration text.
     """
-    system_prompt = _load_system_prompt(lang)
+    system_prompt = system_prompt_override if system_prompt_override is not None else _load_system_prompt(lang)
     gemini_contents = []
     for msg in messages:
         role = msg.get("role", "user")
