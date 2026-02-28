@@ -28,11 +28,12 @@ Inserted between the duration `<span>` and the sheet-toggle `<button>`:
 
 ### `web/static/style.css` — speed button styled
 
-Added `.player-speed-btn` before `.player-sheet-toggle`. Matches the existing muted-button aesthetic:
+Added `.player-speed-btn` before `.player-sheet-toggle`. Blue pill badge treatment:
 
-- `font-size: 1.0rem; font-weight: 600; font-variant-numeric: tabular-nums`
-- `color: var(--muted)` default; hover darkens text and adds subtle background tint
-- Full dark-mode `html.dark .player-speed-btn:hover` override
+- `background: var(--blue-lt)` / `color: var(--blue)` — immediately readable as a tappable control
+- `border-radius: 20px; padding: 3px 8px; font-size: 0.85rem; font-weight: 700`
+- Hover: fills to solid `var(--blue)` with white text
+- Dark mode: `rgba(77, 124, 254, 0.18)` translucent blue pill with `#7da4ff` label
 
 ## Behaviour
 
@@ -50,4 +51,43 @@ Added `.player-speed-btn` before `.player-sheet-toggle`. Matches the existing mu
 |---|---|
 | `web/templates/dashboard.html` | Speed button element in player bar |
 | `web/static/app.js` | `initPlayerBar()` — speed state, `applySpeed()`, button listener, `loadedmetadata` hook, `_playerBarSetAudio` hook |
-| `web/static/style.css` | `.player-speed-btn` and hover/dark-mode rules |
+| `web/static/style.css` | `.player-speed-btn` pill badge + hover/dark-mode rules |
+
+---
+
+## Follow-up — 2026-02-28: Button Visibility Fix
+
+**Commit:** `fix(player): make speed button visible as blue pill badge`
+
+Initial styling used `color: var(--muted); background: none` — identical to the static duration text beside it. The button was present in the DOM but visually indistinguishable from a label.
+
+**Root cause:** No visual affordance (no background, no border, same muted gray as `--:-- / --:--`) made the button invisible as an interactive element on both desktop and mobile.
+
+**Fix (`web/static/style.css` only):**
+
+```css
+/* Before — ghost button, invisible as control */
+.player-speed-btn {
+  background: none;
+  color: var(--muted, #7a8ca0);
+  font-size: 1.0rem;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* After — blue pill badge */
+.player-speed-btn {
+  background: var(--blue-lt, #eef2ff);
+  color: var(--blue, #4d7cfe);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 3px 8px;
+}
+html.dark .player-speed-btn {
+  background: rgba(77, 124, 254, 0.18);
+  color: #7da4ff;
+}
+```
+
+Pattern matches the existing dark-mode badge style used by `.source-gemini` / `.source-claude` pills in the narration sheet.
