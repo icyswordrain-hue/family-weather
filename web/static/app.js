@@ -139,6 +139,7 @@ const TRANSLATIONS = {
     outdoor: 'Outdoor',
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     night: 'Night', day: 'Day',
+    cloudCover: { Sunny: 'Sunny', Fair: 'Fair', 'Mixed Clouds': 'Cloudy', Overcast: 'Overcast', Rain: 'Rain', Unknown: '—' },
     cardiac_title: 'Cardiac Alert',
     cardiac_guidance: 'Keep warm and avoid sudden cold exposure.',
     menieres_title: "Ménière's Alert",
@@ -196,6 +197,7 @@ const TRANSLATIONS = {
     outdoor: '戶外',
     days: ['日', '一', '二', '三', '四', '五', '六'],
     night: '晚', day: '早',
+    cloudCover: { Sunny: '晴', Fair: '晴多雲', 'Mixed Clouds': '多雲', Overcast: '陰', Rain: '雨', Unknown: '—' },
     cardiac_title: '心臟警示',
     cardiac_guidance: '請保持溫暖，避免突然暴露於冷空氣中。',
     menieres_title: '梅尼爾氏症警示',
@@ -570,6 +572,24 @@ function renderOverviewView(data) {
     const topItems = dayItems;
     const bottomItems = nightItems;
 
+    // Column header row — day name shown once above both card rows
+    const headerEl = document.getElementById('ov-weekly-header');
+    if (headerEl) {
+      headerEl.innerHTML = '';
+      topItems.forEach(item => {
+        const hdr = document.createElement('div');
+        hdr.className = 'wk-col-header';
+        if (item) {
+          let dt;
+          try { dt = new Date(item.start_time.replace('+08:00', '')); } catch { dt = new Date(); }
+          hdr.textContent = T.days[dt.getDay()];
+        } else {
+          hdr.textContent = '—';
+        }
+        headerEl.appendChild(hdr);
+      });
+    }
+
     [...topItems, ...bottomItems].forEach(item => {
       const card = document.createElement('div');
 
@@ -610,12 +630,17 @@ function renderOverviewView(data) {
       icon.className = 'wk-icon';
       icon.textContent = ICONS[item.cloud_cover] || ICONS[item.Wx] || '☁️';
 
+      const cond = document.createElement('div');
+      cond.className = 'wk-cond';
+      cond.textContent = (T.cloudCover && T.cloudCover[item.cloud_cover]) || item.cloud_cover || '—';
+
       const temp = document.createElement('div');
       temp.className = 'wk-temp';
       temp.textContent = `${Math.round(item.AT ?? 0)}°`;
 
       card.appendChild(label);
       card.appendChild(icon);
+      card.appendChild(cond);
       card.appendChild(temp);
       if (item.PoP12h != null) {
         const rain = document.createElement('div');

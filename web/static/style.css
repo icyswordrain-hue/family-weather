@@ -2246,6 +2246,36 @@ html.dark .player-sheet-body {
   margin-bottom: 0;
 }
 
+/* ── 7-Day column header row ─────────────── */
+.wk-header-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.wk-col-header {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 2px 0;
+}
+/* Day name inside cards hidden — header row is active on desktop */
+.wk-day-name { display: none; }
+
+/* Condition text */
+.wk-cond {
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 /* ── 7-Day Temperature Sparkline ─────────── */
 .weekly-sparkline-wrap {
   position: relative;
@@ -2347,6 +2377,8 @@ html.dark .wk-card.wk-night .wk-temp {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: none;
   }
+  .wk-header-row { display: none; }
+  .wk-day-name   { display: inline; }
 }
 
 @media (max-width: 767px) {
@@ -2355,10 +2387,14 @@ html.dark .wk-card.wk-night .wk-temp {
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
   }
+  .wk-header-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 2px; }
+  .wk-col-header { font-size: 0.6rem; }
+  .wk-day-name   { display: none; }
   .wk-card   { padding: 4px 3px; gap: 1px; }
   .wk-icon   { font-size: 1.2rem; }
   .wk-temp   { font-size: 0.9rem; }
   .wk-rain   { display: none; }
+  .wk-cond   { display: none; }
   .wk-period { display: none; }
   .weekly-sparkline-wrap { height: 96px; }
 }
