@@ -704,9 +704,9 @@ function renderOverviewView(data) {
                 const y = scales.y.getPixelForValue(val);
                 const label = `${val}°`;
                 ctx.textAlign = 'right';
-                ctx.fillText(label, chartArea.left - 8, y);
+                ctx.fillText(label, chartArea.left - 22, y);
                 ctx.textAlign = 'left';
-                ctx.fillText(label, chartArea.right + 8, y);
+                ctx.fillText(label, chartArea.right + 22, y);
               });
               ctx.restore();
             },
@@ -716,7 +716,7 @@ function renderOverviewView(data) {
           responsive: true,
           maintainAspectRatio: false,
           animation: { duration: 400 },
-          layout: { padding: { left: halfCard + 16, right: halfCard + 16 } },
+          layout: { padding: { left: halfCard + 28, right: halfCard + 28 } },
           plugins: {
             legend: { display: false },
             tooltip: {
