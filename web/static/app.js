@@ -630,56 +630,15 @@ function renderLifestyleView(data) {
     return d;
   };
 
-  // 1. Wardrobe
-  if (data.wardrobe) {
-    const extras = [];
-    if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
-    add('🧥', T.wardrobe, data.wardrobe.text, extras);
-  }
-  // 2. Rain Gear
-  if (data.rain_gear) add('☂️', T.rain_gear, data.rain_gear.text);
-  // 3. Commute
-  if (data.commute) {
-    const extras = [];
-    if (data.commute.hazards && data.commute.hazards.length > 0) {
-      const ul = document.createElement('ul');
-      ul.className = 'ls-hazards';
-      data.commute.hazards.forEach(h => {
-        const li = document.createElement('li');
-        li.textContent = h;
-        ul.appendChild(li);
-      });
-      extras.push(ul);
-    }
-    add('🚗', T.commute, data.commute.text, extras);
-  }
-  // 4. Garden Health
-  if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
-  // 5. Outdoor Activities
-  if (data.outdoor && data.outdoor.text) {
-    const extras = [];
-    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, `Grade ${data.outdoor.grade} · ${data.outdoor.label || ''}`));
-    if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
-    add('🌳', T.outdoor_act, data.outdoor.text, extras);
-  }
-  // 6. Meals
-  if (data.meals && data.meals.text) {
-    const extras = [];
-    if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
-    add('🍱', T.meals, data.meals.text, extras);
-  }
-  // 7. HVAC Advice
-  if (data.hvac) {
-    const extras = [];
-    if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
-    add('🌡️', T.hvac, data.hvac.text, extras);
-  }
-
-  // 8. Heads Up alert card (structured per-item with level styling)
+  // 1. Heads Up alert card (top position; only rendered when alerts exist)
   if (data.alert && data.alert.length > 0) {
     const hasCritical = data.alert.some(a => a.level === 'CRITICAL');
+    const hasWarning = data.alert.some(a => a.level === 'WARNING');
     const card = document.createElement('div');
-    card.className = 'ls-card ls-alert-card ' + (hasCritical ? 'ls-alert-critical' : 'ls-alert-warning');
+    let alertClass = 'ls-card ls-alert-card';
+    if (hasCritical) alertClass += ' ls-alert-critical';
+    else if (hasWarning) alertClass += ' ls-alert-warning';
+    card.className = alertClass;
     const ic = document.createElement('div');
     ic.className = 'ls-icon';
     ic.textContent = hasCritical ? '🚨' : '⚠️';
@@ -710,6 +669,50 @@ function renderLifestyleView(data) {
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);
+  }
+  // 2. Rain Gear
+  if (data.rain_gear) add('☂️', T.rain_gear, data.rain_gear.text);
+  // 3. Wardrobe
+  if (data.wardrobe) {
+    const extras = [];
+    if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
+    add('🧥', T.wardrobe, data.wardrobe.text, extras);
+  }
+  // 4. Commute
+  if (data.commute) {
+    const extras = [];
+    if (data.commute.hazards && data.commute.hazards.length > 0) {
+      const ul = document.createElement('ul');
+      ul.className = 'ls-hazards';
+      data.commute.hazards.forEach(h => {
+        const li = document.createElement('li');
+        li.textContent = h;
+        ul.appendChild(li);
+      });
+      extras.push(ul);
+    }
+    add('🚗', T.commute, data.commute.text, extras);
+  }
+  // 5. Garden Health
+  if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
+  // 6. Outdoor Activities
+  if (data.outdoor && data.outdoor.text) {
+    const extras = [];
+    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, `Grade ${data.outdoor.grade} · ${data.outdoor.label || ''}`));
+    if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
+    add('🌳', T.outdoor_act, data.outdoor.text, extras);
+  }
+  // 7. Meals
+  if (data.meals && data.meals.text) {
+    const extras = [];
+    if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
+    add('🍱', T.meals, data.meals.text, extras);
+  }
+  // 8. HVAC Advice
+  if (data.hvac) {
+    const extras = [];
+    if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
+    add('🌡️', T.hvac, data.hvac.text, extras);
   }
 }
 
