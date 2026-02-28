@@ -360,8 +360,6 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
             wardrobe = "天氣偏涼，建議穿上外套並採用分層穿搭。"
         else:
             wardrobe = "天氣寒冷，請做好保暖，多添幾件衣物。"
-        if rain_recent:
-            wardrobe = wardrobe.rstrip("。") + "，記得攜帶雨具。"
     else:
         if at is None:
             wardrobe = "Check conditions before heading out and dress accordingly."
@@ -375,8 +373,6 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
             wardrobe = "A proper jacket and layering recommended for the cooler conditions."
         else:
             wardrobe = "Bundle up — it's cold outside, layer up well."
-        if rain_recent:
-            wardrobe = wardrobe.rstrip(".") + ", and pack rain gear."
 
     # ── Rain Gear (1 sentence) ────────────────────────────────────────────────
     any_rain_likely = any(
@@ -597,7 +593,7 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
         alert_text = " ".join(heads_ups[:2])
         alert_level = "WARNING"
     else:
-        alert_text = ""
+        alert_text = "今天一切正常。" if is_zh else "All clear today."
         alert_level = "INFO"
 
     return {

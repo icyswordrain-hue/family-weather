@@ -1,5 +1,4 @@
 """tests/test_fallback_narrator.py — Unit tests for the fallback narrator CARDS output."""
-import json
 from narration.fallback_narrator import build_narration
 from narration.llm_prompt_builder import parse_narration_response
 
@@ -71,12 +70,12 @@ def test_history_garden_continuity():
 
 
 def test_no_alert_when_no_heads_ups():
-    """With no heads_ups and no cardiac/menieres, alert text should be empty and level INFO."""
+    """With no heads_ups and no cardiac/menieres, alert text should be a brief all-clear message and level INFO."""
     text = build_narration(MINIMAL_PROCESSED, date_str="2026-02-28")
     parsed = parse_narration_response(text)
     alert = parsed["cards"]["alert"]
     assert alert["level"] == "INFO"
-    assert alert["text"] == ""
+    assert alert["text"] == "All clear today."
 
 
 def test_zh_cards_use_chinese():

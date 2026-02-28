@@ -148,7 +148,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     
     wardrobe_text = summaries.get("wardrobe")
     if not wardrobe_text:
-        wardrobe_text = _wardrobe_tip(at, rain_recent, lang=lang)
+        wardrobe_text = _wardrobe_tip(at, lang=lang)
         
     rain_gear_text = summaries.get("rain_gear")
     if not rain_gear_text:
@@ -302,13 +302,11 @@ def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def _wardrobe_tip(at: float | None, rain: bool, lang: str = "en") -> str:
+def _wardrobe_tip(at: float | None, lang: str = "en") -> str:
     """Generate simple wardrobe advice."""
     is_zh = lang == "zh-TW"
     parts = []
-    if rain:
-        parts.append("需要雨具 ☔" if is_zh else "Rain gear needed ☔")
-    
+
     if at is None:
         return "請查看預報。" if is_zh else "Check forecast."
         

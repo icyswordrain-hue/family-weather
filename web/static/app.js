@@ -697,7 +697,7 @@ function renderLifestyleView(data) {
     card.className = alertClass;
     const ic = document.createElement('div');
     ic.className = 'ls-icon';
-    ic.textContent = hasCritical ? '🚨' : '⚠️';
+    ic.textContent = hasCritical ? '🚨' : (hasWarning ? '⚠️' : '✅');
     const content = document.createElement('div');
     content.className = 'ls-content';
     const ttl = document.createElement('div');
