@@ -314,7 +314,7 @@ def fetch_all_forecasts() -> dict[str, list[dict]]:
 
 def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
     """
-    Fetch 7-day township forecast (F-D0047-075) for the given location name.
+    Fetch 7-day township forecast (F-D0047-071) for the given location name.
     """
     url = f"{CWA_BASE_URL}/{CWA_FORECAST_7DAY_DATASET}"
     params = {

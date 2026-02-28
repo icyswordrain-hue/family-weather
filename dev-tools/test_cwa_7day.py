@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.environ.get("CWA_API_KEY")
 
-url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-075"
+url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-071"
 params = {"Authorization": api_key, "format": "JSON", "locationName": "板橋區"}
 resp = requests.get(url, params=params, verify=False)
 data = resp.json()
