@@ -1505,7 +1505,8 @@ html.dark .ls-badge.ls-alert-badge-warning {
 
   /* Hide desktop-only elements */
   .sidebar,
-  .right-panel {
+  .right-panel,
+  .view-header {
     display: none !important;
   }
 
