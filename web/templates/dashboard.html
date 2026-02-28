@@ -27,6 +27,12 @@
   <!-- ── App Shell ─────────────────────────────────────────────────────────── -->
   <div class="app-shell">
 
+    <!-- Mobile Compact Header (hidden on desktop) -->
+    <header class="compact-header" id="mobile-header">
+      <span id="mobile-clock">--:--</span>
+      <span class="mobile-location" id="mobile-location">—</span>
+    </header>
+
     <!-- ── Left Sidebar ──────────────────────────────────────────────────── -->
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -124,6 +130,10 @@
           <header class="view-header">
             <h1 id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</h1>
           </header>
+          <div class="section-header-card">
+            <span>🚲</span>
+            <span data-i18n="nav_lifestyle">生活建議</span>
+          </div>
           <div class="lifestyle-grid" id="lifestyle-grid"></div>
         </div>
 
@@ -132,6 +142,10 @@
           <header class="view-header">
             <h1 id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</h1>
           </header>
+          <div class="section-header-card">
+            <span>📊</span>
+            <span data-i18n="nav_dashboard">天氣總覽</span>
+          </div>
           <div class="current-conditions-wrapper">
             <div class="current-top-row">
               <div class="gauge-card" id="gauge-ground"></div>
@@ -202,6 +216,41 @@
         </div>
       </div>
       <div class="player-sheet-backdrop" id="player-sheet-backdrop"></div>
+
+      <!-- FAB (mobile controls) -->
+      <button class="fab-btn" id="fab-btn" aria-label="Settings">⚙️</button>
+      <div class="fab-sheet" id="fab-sheet" aria-hidden="true">
+        <div class="fab-sheet-inner">
+          <div class="sidebar-control-group">
+            <span class="sidebar-control-label" data-i18n="lang_label">Language</span>
+            <div class="seg-ctrl fab-seg" role="group">
+              <label class="seg-option">
+                <input type="radio" name="language-fab" value="en">
+                <span>EN</span>
+              </label>
+              <label class="seg-option">
+                <input type="radio" name="language-fab" value="zh-TW" checked>
+                <span>中文</span>
+              </label>
+            </div>
+          </div>
+          <div class="sidebar-control-group">
+            <span class="sidebar-control-label" data-i18n="provider_label">Provider</span>
+            <div class="seg-ctrl fab-seg" role="group">
+              <label class="seg-option">
+                <input type="radio" name="provider-fab" value="CLAUDE" checked>
+                <span>Claude</span>
+              </label>
+              <label class="seg-option">
+                <input type="radio" name="provider-fab" value="GEMINI">
+                <span>Gemini</span>
+              </label>
+            </div>
+          </div>
+          <button class="rp-btn" id="fab-refresh-btn" data-i18n="refresh_btn">重新整理</button>
+        </div>
+      </div>
+      <div class="fab-backdrop" id="fab-backdrop"></div>
 
     </main>
 
