@@ -479,3 +479,49 @@ Investigation showed that `--muted` text in light mode failed WCAG contrast, and
 - Forced `.wk-card.wk-night` color to `#ffffff` (previously `var(--sidebar-text)`).
 - Added `.fab-sheet` overrides to ensure dashboard settings labels are visible against the light mobile sheet background.
 - Bumped `dashboard.html` cache buster to `v=19`.
+
+---
+
+## Amendment — 2026-02-28: Player Bar — 1.5× Size, Remove Label, Current/Total Duration
+
+**Commit:** `feat(player): 1.5x bar size, remove label text, show current/total duration`
+
+Three UX improvements to the fixed player bar:
+
+### 1 · 1.5× size
+
+All dimensions scaled up proportionally:
+
+| Element | Property | Before | After |
+|---|---|---|---|
+| `.player-bar` | `height` | 52 px | 78 px |
+| `.player-bar` | `gap` | 10 px | 15 px |
+| `.player-bar` | `padding` | `0 14px` | `0 20px` |
+| `.player-play-btn` | `padding` | 6 px | 9 px |
+| Play SVG | `width`/`height` | 20 × 20 | 30 × 30 |
+| `.player-progress-wrap` | `height` | 4 px | 6 px |
+| `.player-progress-bar` | `border-radius` | 2 px | 3 px |
+| `.player-sheet-toggle` | `font-size` | 1.1 rem | 1.6 rem |
+
+Downstream offsets updated:
+- `.player-sheet` `bottom` and initial `transform` offset: 52 px → 78 px
+- `.main-panel` `padding-bottom`: 80 px → 100 px (desktop); 68 px → 98 px (mobile)
+- FAB bottom offset unchanged (was already 68 px / tied to old bar height — see Task 3 CSS; may need revisit if FAB overlaps bar)
+
+### 2 · Remove label text
+
+`.player-label` (cloud icon ☁ + narration title span) removed from HTML entirely. The `const title` ref and `title.textContent` assignment were removed from `_playerBarSetAudio` in `app.js`. The `narrationTitle` parameter was dropped from the function signature and the call site in `render()`.
+
+Loading state pulse moved from `.player-bar.loading .player-cloud-icon` → `.player-bar.loading .player-duration`, so the duration display `--:-- / --:--` pulses while audio is fetching. The `prefers-reduced-motion` override was updated to match.
+
+Dead CSS rules removed: `.player-label { … }`, `.player-cloud-icon { display: inline-block; }`.
+
+### 3 · Current / total duration format
+
+| Event | Before | After |
+|---|---|---|
+| `timeupdate` | `M:SS` (current only) | `M:SS / M:SS` (current / total) |
+| `loadedmetadata` | `M:SS` (total only) | `0:00 / M:SS` |
+| Initial HTML | `--:--` | `--:-- / --:--` |
+
+`.player-duration` CSS: `font-size` 0.75 rem → 1.1 rem; `min-width` 36 px → 90 px; `font-variant-numeric: tabular-nums` added.

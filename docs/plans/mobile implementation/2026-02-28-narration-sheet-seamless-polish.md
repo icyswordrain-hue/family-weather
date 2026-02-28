@@ -50,3 +50,40 @@ The narration (player) sheet had several rough edges that broke the seamless fee
 | `web/static/app.js` | `render()` call site (~line 386); `_playerBarSetAudio` setter (~line 1015) |
 | `web/static/style.css` | Backdrop constraint; `.ps-para*` CSS; handle pill in `@media (max-width: 767px)`; scroll fade `::after` |
 | `web/templates/dashboard.html` | `.player-sheet-handle` div added before `.player-sheet-header` |
+
+---
+
+## Follow-up — 2026-02-28: Dark/Light Mode Contrast Fixes
+
+**Commits:** `fix(narration): handle pill and source badge dark/light contrast`
+
+Post-implementation audit found two visual gaps:
+
+### 1 · Handle pill invisible in both modes
+
+`.player-sheet-handle` used `background: var(--border)`:
+- Light mode: `#e8ecf3` on `#ffffff` → 1.5:1 contrast (invisible)
+- Dark mode: `#2a3a5e` on `#1a2235` → similarly invisible
+
+Fixed inside `@media (max-width: 767px)`:
+
+```css
+.player-sheet-handle { background: rgba(0, 0, 0, 0.15); }       /* light */
+html.dark .player-sheet-handle { background: rgba(255, 255, 255, 0.2); } /* dark */
+```
+
+Both values are intentionally subtle but contrast rises to ≥3:1 in each mode.
+
+### 2 · Source badges missing dark-mode overrides
+
+`.source-gemini`, `.source-template`, `.source-claude` had light pastel backgrounds (`#eef2ff`, `#f3f4f6`, `#fff0f0`) with no `html.dark` variants — they appeared as bright blotches in dark mode.
+
+Added near the existing `.source-*` rules:
+
+```css
+html.dark .source-gemini  { background: rgba(77, 124, 254, 0.18); color: #7da4ff; }
+html.dark .source-template { background: rgba(107, 114, 128, 0.18); color: #cbd5e1; }
+html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675; }
+```
+
+Muted translucent backgrounds with lightened text — consistent with the dark surface palette.
