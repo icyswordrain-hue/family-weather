@@ -153,11 +153,13 @@ def process(
     logger.debug("Step 4 - Enriching segments")
     for seg_name, seg in segmented.items():
         if seg:
-            # Compute proper feels-like AT from raw AT + RH + WS
-            raw_at = seg.get("AT")
+            # Use actual air temperature (T) as BOM formula input.
+            # AT from the 36-hour API is CWA's pre-computed apparent temperature —
+            # applying the formula to it would double-count humidity/wind.
+            ta = seg.get("T") if seg.get("T") is not None else seg.get("AT")
             rh = seg.get("RH")
             ws = seg.get("WS")
-            feels_like = _calculate_apparent_temp(raw_at, rh, ws)
+            feels_like = _calculate_apparent_temp(ta, rh, ws)
             if feels_like is not None:
                 seg["AT"] = feels_like
             
@@ -435,7 +437,7 @@ def _segment_forecast(
 def _average_slots(slots: list[dict]) -> dict:
     """Average numeric fields across multiple time slots."""
     result = {"start_time": slots[0]["start_time"], "end_time": slots[-1]["end_time"]}
-    numeric_keys = ["AT", "RH", "WS", "WD", "PoP6h"]
+    numeric_keys = ["AT", "T", "RH", "WS", "WD", "PoP6h"]
     for key in numeric_keys:
         values = [float(s[key]) for s in slots if s.get(key) is not None]
         # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
@@ -576,8 +578,9 @@ def _commute_window(slots: list[dict], start_h: float, end_h: float,
         return {}
 
     avg = _average_slots(relevant)
-    # Compute proper feels-like AT
-    feels_like = _calculate_apparent_temp(avg.get("AT"), avg.get("RH"), avg.get("WS"))
+    # Use actual air temperature (T) as BOM formula input; fall back to AT only if T absent.
+    ta = avg.get("T") if avg.get("T") is not None else avg.get("AT")
+    feels_like = _calculate_apparent_temp(ta, avg.get("RH"), avg.get("WS"))
     if feels_like is not None:
         avg["AT"] = feels_like
     avg["beaufort_desc"] = wind_ms_to_beaufort(avg.get("WS"))

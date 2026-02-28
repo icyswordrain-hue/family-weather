@@ -250,12 +250,11 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
                     slot["AT"] = _safe_float(v.get("ApparentTemperature"))
                     
                 elif "Temperature" in v:
-                    # Use T as backup for AT
                     t_val = _safe_float(v.get("Temperature"))
                     if t_val is not None:
-                         # Store as AT if AT is missing
-                         if slot.get("AT") is None:
-                             slot["AT"] = t_val
+                        slot["T"] = t_val          # actual air temperature
+                        if slot.get("AT") is None:
+                            slot["AT"] = t_val     # fallback if AT absent
                              
                 elif "RelativeHumidity" in v:
                     slot["RH"] = _safe_float(v.get("RelativeHumidity"))
@@ -287,7 +286,7 @@ def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
                     slot["AT"] = slot["MinAT"]
             
             # Ensure required keys exist (default None)
-            for k in ("AT", "RH", "WS", "WD", "PoP6h", "Wx"):
+            for k in ("AT", "T", "RH", "WS", "WD", "PoP6h", "Wx"):
                 slot.setdefault(k, None)
             
             results.append(slot)
