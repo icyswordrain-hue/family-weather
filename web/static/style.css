@@ -1619,8 +1619,11 @@ html.dark .ls-badge.ls-alert-badge-warning {
     text-overflow: ellipsis;
   }
   .tc-icon   { font-size: 1.4rem; margin: 0.2rem 0; }
-  .tc-temp   { font-size: 1rem; margin-bottom: 0; }
-  .tc-details { display: none; }
+  .tc-temp   { font-size: 1rem; margin-bottom: 0.3rem; }
+  .tc-details { padding-top: 0.4rem; gap: 0.25rem; }
+  .tc-row    { flex-direction: column; gap: 0.05rem; }
+  .tc-label  { font-size: 0.55rem; }
+  .tc-val    { font-size: 0.75rem; }
 }
 
 @media (max-width: 1024px) {
