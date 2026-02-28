@@ -49,6 +49,9 @@ let tempChart = null;
 let loadingInterval = null;
 let LOADING_MSGS = []; // Populated by applyLanguage
 
+const CACHE_KEY = 'weather_broadcast_cache';
+const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 // ── Weather text localisation map (CWA API → English) ──────────────────────
 const WEATHER_TEXT_EN = {
   '晴': 'Sunny',
@@ -269,6 +272,37 @@ const TRANSLATIONS = {
 // Active translation map — updated by applyLanguage()
 let T = TRANSLATIONS['zh-TW'];
 
+// ── Cache helpers ───────────────────────────────────────────────────────────
+function saveBroadcastCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: new Date().toISOString(), data }));
+  } catch (e) { /* private browsing — fail silently */ }
+}
+
+function loadCachedBroadcast() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!cached?.data || !cached?.ts) return null;
+    if (Date.now() - new Date(cached.ts).getTime() > CACHE_MAX_AGE_MS) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return cached; // { ts, data }
+  } catch (e) { return null; }
+}
+
+function showStaleIndicator() {
+  const el = document.getElementById('optimistic-loading');
+  if (el) el.classList.remove('hidden');
+}
+
+function hideStaleIndicator() {
+  const el = document.getElementById('optimistic-loading');
+  if (el) el.classList.add('hidden');
+}
+
 // ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   window.app = {
@@ -289,30 +323,42 @@ window.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  fetchBroadcast();
+  const cached = loadCachedBroadcast();
+  if (cached) {
+    broadcastData = cached.data;
+    render(broadcastData);
+    showContent();
+    showStaleIndicator();
+    fetchBroadcast(true);
+  } else {
+    fetchBroadcast(false);
+  }
 });
 
 // ── API fetch ──────────────────────────────────────────────────────────────
-async function fetchBroadcast() {
-  showLoading();
+async function fetchBroadcast(silent = false) {
+  if (!silent) showLoading();
   const btn = document.getElementById('refresh-btn');
   if (btn) btn.classList.add('loading');
 
   try {
     const url = new URL('/api/broadcast', window.location.origin);
-    if (typeof getLang === 'function') {
-      url.searchParams.set('lang', getLang());
-    }
+    if (typeof getLang === 'function') url.searchParams.set('lang', getLang());
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
     addLog(T.data_ok);
     render(broadcastData);
-    showContent();
+    saveBroadcastCache(broadcastData);
+    showContent(); // also hides #optimistic-loading
   } catch (err) {
     addLog(`${T.error_prefix}${err.message || 'Unknown error'}`);
-    showError(err.message || 'Unknown error');
+    if (!silent) {
+      showError(err.message || 'Unknown error');
+    } else {
+      hideStaleIndicator();
+    }
   } finally {
     if (btn) btn.classList.remove('loading');
   }
@@ -1134,6 +1180,7 @@ async function triggerRefresh() {
             addLog(T.render);
             broadcastData = msg.payload;
             render(broadcastData);
+            saveBroadcastCache(broadcastData);
             showContent();
             return; // Exit successfully
           } else if (msg.type === 'error') {
