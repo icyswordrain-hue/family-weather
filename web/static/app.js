@@ -970,11 +970,34 @@ function initPlayerBar() {
   const icon = document.getElementById('player-play-icon');
   const progress = document.getElementById('player-progress-bar');
   const duration = document.getElementById('player-duration');
+  const speedBtn = document.getElementById('player-speed-btn');
 
   if (!bar || !audio) return;
 
   bar.classList.add('loading');
 
+  // ── Speed control ──────────────────────────────────────────────────────
+  const SPEEDS = [1.0, 1.2, 1.5];
+  let speed = parseFloat(localStorage.getItem('playerSpeed') || '1.2');
+  if (!SPEEDS.includes(speed)) speed = 1.2;
+
+  function applySpeed(s) {
+    speed = s;
+    audio.playbackRate = s;
+    if (speedBtn) speedBtn.textContent = `${s}×`;
+    localStorage.setItem('playerSpeed', String(s));
+  }
+
+  applySpeed(speed);
+
+  if (speedBtn) {
+    speedBtn.addEventListener('click', () => {
+      const next = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+      applySpeed(next);
+    });
+  }
+
+  // ── Playback helpers ───────────────────────────────────────────────────
   function formatTime(s) {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60).toString().padStart(2, '0');
@@ -999,6 +1022,7 @@ function initPlayerBar() {
   });
 
   audio.addEventListener('loadedmetadata', () => {
+    audio.playbackRate = speed;  // browsers reset playbackRate on src change
     duration.textContent = `0:00 / ${formatTime(audio.duration)}`;
   });
 
@@ -1010,6 +1034,7 @@ function initPlayerBar() {
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
     bar.classList.remove('loading');
     audio.src = audioUrl;
+    audio.playbackRate = speed;  // set early; loadedmetadata will confirm
 
     const body = document.getElementById('player-sheet-body');
     if (!body) return;
