@@ -379,13 +379,10 @@ function render(data) {
   // Wire player bar when audio is available
   if (data.audio_urls && data.audio_urls.full_audio_url) {
     const narrationSlice = data.slices && data.slices.narration;
-    const title = narrationSlice
-      ? (narrationSlice.paragraphs || []).find(p => p.key === 'p1')?.title || 'Morning Briefing'
-      : 'Morning Briefing';
     const paragraphs = narrationSlice ? (narrationSlice.paragraphs || []) : [];
     const meta = narrationSlice ? (narrationSlice.meta || {}) : {};
     if (window._playerBarSetAudio) {
-      window._playerBarSetAudio(data.audio_urls.full_audio_url, title, paragraphs, meta);
+      window._playerBarSetAudio(data.audio_urls.full_audio_url, paragraphs, meta);
     }
   }
 
@@ -971,7 +968,6 @@ function initPlayerBar() {
   const audio = document.getElementById('player-audio');
   const playBtn = document.getElementById('player-play-btn');
   const icon = document.getElementById('player-play-icon');
-  const title = document.getElementById('player-title');
   const progress = document.getElementById('player-progress-bar');
   const duration = document.getElementById('player-duration');
 
@@ -999,11 +995,11 @@ function initPlayerBar() {
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
     progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-    duration.textContent = formatTime(audio.currentTime);
+    duration.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
   });
 
   audio.addEventListener('loadedmetadata', () => {
-    duration.textContent = formatTime(audio.duration);
+    duration.textContent = `0:00 / ${formatTime(audio.duration)}`;
   });
 
   playBtn.addEventListener('click', () => {
@@ -1011,10 +1007,9 @@ function initPlayerBar() {
     else audio.pause();
   });
 
-  window._playerBarSetAudio = function (audioUrl, narrationTitle, paragraphs, meta) {
+  window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
     bar.classList.remove('loading');
     audio.src = audioUrl;
-    if (title) title.textContent = narrationTitle || 'Morning Briefing';
 
     const body = document.getElementById('player-sheet-body');
     if (!body) return;

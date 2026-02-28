@@ -189,18 +189,14 @@
       <!-- Player Bar -->
       <div class="player-bar" id="player-bar">
         <button class="player-play-btn" id="player-play-btn" aria-label="Play/Pause">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <svg width="30" height="30" viewBox="0 0 20 20" fill="currentColor">
             <polygon id="player-play-icon" points="5,3 17,10 5,17" />
           </svg>
         </button>
-        <span class="player-label" id="player-label">
-          <span class="player-cloud-icon" id="player-cloud-icon">☁</span>
-          <span id="player-title">Fetching briefing…</span>
-        </span>
         <div class="player-progress-wrap">
           <div class="player-progress-bar" id="player-progress-bar"></div>
         </div>
-        <span class="player-duration" id="player-duration">--:--</span>
+        <span class="player-duration" id="player-duration">--:-- / --:--</span>
         <button class="player-sheet-toggle" id="player-sheet-toggle" aria-label="Show transcript">⌄</button>
         <audio id="player-audio" preload="none"></audio>
       </div>
