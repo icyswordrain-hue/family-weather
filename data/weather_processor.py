@@ -29,9 +29,9 @@ logger = logging.getLogger(__name__)
 from data.location_loader import OUTDOOR_LOCATIONS
 from data.scales import (
     BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5, PRECIP_SCALE_5,
-    _hum_to_scale, _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
+    _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
     wx_to_cloud_cover, degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
-    wx_to_pop,
+    wx_to_pop, dew_gap_to_hum,
 )
 from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_heads_ups
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
@@ -79,6 +79,39 @@ def _calculate_apparent_temp(ta: float | None, rh: float | None, ws: float | Non
         return ta
     e = (rh / 100) * 6.105 * (2.71828 ** (17.27 * ta / (237.7 + ta)))
     return round(ta + 0.33 * e - 0.7 * (ws or 0) - 4.0, 1)
+
+def _calculate_dew_point(temp_c: float | None, rh: float | None) -> float | None:
+    """Magnus formula dew point approximation. Accurate to ±0.35°C."""
+    import math
+    if temp_c is None or rh is None or rh <= 0:
+        return None
+    a, b = 17.27, 237.7
+    gamma = (a * temp_c / (b + temp_c)) + math.log(rh / 100)
+    return round((b * gamma) / (a - gamma), 1)
+
+def _calculate_dew_gap(temp_c: float | None, dew_point_c: float | None) -> float | None:
+    """Degrees between air temperature and dew point. Smaller = clammier."""
+    if temp_c is None or dew_point_c is None:
+        return None
+    return round(temp_c - dew_point_c, 1)
+
+def _saturation_label(dew_gap_c: float) -> str:
+    """Snake-case comfort label from dew gap, for LLM context and internal logic."""
+    if dew_gap_c < 2:  return "near_saturated"
+    if dew_gap_c < 5:  return "clammy"
+    if dew_gap_c < 10: return "humid"
+    if dew_gap_c < 15: return "comfortable"
+    return "dry"
+
+def _calculate_apparent_temp_from_dew(
+    temp_c: float | None, dew_point_c: float | None, wind_ms: float | None
+) -> float | None:
+    """BOM AT using dew point as humidity input. Preferred over RH path when dew point is available."""
+    import math
+    if temp_c is None or dew_point_c is None:
+        return None
+    e = 6.105 * math.exp((17.27 * dew_point_c) / (237.7 + dew_point_c))
+    return round(temp_c + (0.33 * e) - (0.70 * (wind_ms or 0)) - 4.00, 1)
 
 def _parse_dt(dt_str: str) -> datetime:
     # AI AGENT NOTE: Timezone Stripping — read before editing.
@@ -159,19 +192,28 @@ def process(
             ta = seg.get("T") if seg.get("T") is not None else seg.get("AT")
             rh = seg.get("RH")
             ws = seg.get("WS")
-            feels_like = _calculate_apparent_temp(ta, rh, ws)
+            dew_point = _calculate_dew_point(ta, rh)
+            dew_gap   = _calculate_dew_gap(ta, dew_point)
+            feels_like = (
+                _calculate_apparent_temp_from_dew(ta, dew_point, ws)
+                or _calculate_apparent_temp(ta, rh, ws)
+            )
             if feels_like is not None:
                 seg["AT"] = feels_like
-            
+            seg["dew_point"]        = dew_point
+            seg["dew_gap"]          = dew_gap
+            seg["saturation_label"] = _saturation_label(dew_gap) if dew_gap is not None else None
+            seg["hum_text"], seg["hum_level"] = dew_gap_to_hum(dew_gap)
+
             # 5-Level Metrics
             seg["wind_text"], seg["wind_level"] = _val_to_scale(ws, BEAUFORT_SCALE_5)
             seg["wind_dir_text"] = degrees_to_cardinal(seg.get("WD"))
-            
+
             seg["precip_text"], seg["precip_level"] = _val_to_scale(seg.get("PoP6h"), PRECIP_SCALE_5)
             seg["cloud_cover"] = wx_to_cloud_cover(seg.get("Wx"))
-            
+
             # Add placeholders for text segments if needed
-            seg["beaufort_desc"] = seg["wind_text"] 
+            seg["beaufort_desc"] = seg["wind_text"]
 
     # ── 5. Low Deviation Detection ────────────────────────────────────────────
     logger.debug("Step 5 - Transitions")
@@ -274,9 +316,17 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     ta = current.get("AT")
     rh = current.get("RH")
     ws = current.get("WDSD")
-    calculated_at = _calculate_apparent_temp(ta, rh, ws)
+    dew_point = _calculate_dew_point(ta, rh)
+    dew_gap   = _calculate_dew_gap(ta, dew_point)
+    calculated_at = (
+        _calculate_apparent_temp_from_dew(ta, dew_point, ws)
+        or _calculate_apparent_temp(ta, rh, ws)
+    )
     if calculated_at is not None:
         result["AT"] = calculated_at
+    result["dew_point"]       = dew_point
+    result["dew_gap"]         = dew_gap
+    result["saturation_label"] = _saturation_label(dew_gap) if dew_gap is not None else None
 
     # 2. Main Conditions & Icons
     wx_code = current.get("Wx")
@@ -290,9 +340,8 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     result["uv_text"] = uv_txt
     result["uv_level"] = uv_lvl
     
-    # Humidity
-    hum_val = current.get("RH")
-    hum_txt, hum_lvl = _hum_to_scale(hum_val)
+    # Humidity — dew-gap-based label is more stable than RH threshold
+    hum_txt, hum_lvl = dew_gap_to_hum(dew_gap)
     result["hum_text"] = hum_txt
     result["hum_level"] = hum_lvl
     

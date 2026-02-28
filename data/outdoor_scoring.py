@@ -99,9 +99,9 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
         ("at", c.get("at"), lambda v: v is not None and cfg.OUTDOOR_TEMP_HOT < v <= cfg.OUTDOOR_TEMP_EXTREME_HOT, "at_hot", "caution", "hot"),
         ("at", c.get("at"), lambda v: v is not None and v < cfg.OUTDOOR_TEMP_EXTREME_COLD, "at_extreme_cold", "caution", "extreme_cold"),
         ("at", c.get("at"), lambda v: v is not None and cfg.OUTDOOR_TEMP_EXTREME_COLD <= v < cfg.OUTDOOR_TEMP_COLD, "at_cold", "caution", "cold"),
-        ("heat_humidity", (c.get("at"), c.get("rh")), lambda v: v[0] is not None and v[0] > 28 and v[1] is not None and v[1] > 75, "heat_humidity", "caution", "heat_humidity"),
-        ("rh", c.get("rh"), lambda v: v is not None and v > cfg.OUTDOOR_RH_VERY_HIGH, "rh_very_high", "caution", "very_humid"),
-        ("rh", c.get("rh"), lambda v: v is not None and cfg.OUTDOOR_RH_HIGH < v <= cfg.OUTDOOR_RH_VERY_HIGH, "rh_high", "caution", "humid"),
+        ("heat_humidity", (c.get("at"), c.get("dew_gap")), lambda v: v[0] is not None and v[0] > 28 and v[1] is not None and v[1] < 10, "heat_humidity", "caution", "heat_humidity"),
+        ("dew_gap", c.get("dew_gap"), lambda v: v is not None and v < 2, "rh_very_high", "caution", "very_humid"),
+        ("dew_gap", c.get("dew_gap"), lambda v: v is not None and 2 <= v < 5, "rh_high", "caution", "humid"),
         ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) >= 7, "wind_strong", "blocker", "strong_wind"),
         ("ws", c.get("ws"), lambda v: v is not None and 5 <= _beaufort_index(v) < 7, "wind_moderate", "caution", "moderate_wind"),
         ("aqi", c.get("aqi"), lambda v: v is not None and v > cfg.OUTDOOR_AQI_UNHEALTHY, "aqi_unhealthy", "blocker", "poor_air"),
@@ -143,6 +143,7 @@ def _compute_outdoor_index(current: dict, segmented: dict, aqi_val: int | None, 
         
         cond = {
             "at": seg.get("AT"), "rh": seg.get("RH"), "ws": seg.get("WS"),
+            "dew_gap": seg.get("dew_gap"),
             "pop": seg.get("PoP6h"), "aqi": aqi_val, "uvi": uvi,
             "rain": rain, "ground_wet": ground_wet, "vis": vis,
             "solar_load": _compute_solar_load(uvi, seg.get("WxText") or seg.get("cloud_cover")),
@@ -166,6 +167,7 @@ def _compute_outdoor_index(current: dict, segmented: dict, aqi_val: int | None, 
         afternoon = segmented.get("Afternoon") or next((v for v in segmented.values() if v is not None), {})
         cond = {
             "at": afternoon.get("AT"), "rh": afternoon.get("RH"), "ws": afternoon.get("WS"),
+            "dew_gap": afternoon.get("dew_gap"),
             "pop": afternoon.get("PoP6h"), "aqi": aqi_val, "uvi": uvi,
             "rain": rain, "ground_wet": ground_wet, "vis": vis,
             "solar_load": _compute_solar_load(uvi, afternoon.get("WxText")),

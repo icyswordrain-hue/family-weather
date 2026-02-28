@@ -68,6 +68,7 @@ PRECIP_SCALE_5 = [
 def _hum_to_scale(val: float | None) -> tuple[str, int]:
     """Map relative humidity (%) to (label, level) on a comfort-centred scale.
     Level 1 is ideal (41–60%); severity increases in both dry and humid directions.
+    Retained for backward-compat; prefer dew_gap_to_hum() for new code.
     """
     if val is None:
         return "Unknown", 0
@@ -84,6 +85,19 @@ def _hum_to_scale(val: float | None) -> tuple[str, int]:
     if val <= 90:
         return "Very Humid", 4
     return "Oppressive", 5
+
+def dew_gap_to_hum(dew_gap_c: float | None) -> tuple[str, int]:
+    """Map dew gap (°C) to (label, level).
+    Dew gap = air_temp - dew_point.  Smaller gap = air closer to saturation = clammier.
+    Level 1 = comfortable, 5 = worst.
+    """
+    if dew_gap_c is None:
+        return "Unknown", 0
+    if dew_gap_c < 2:  return "Near Saturated", 5
+    if dew_gap_c < 5:  return "Clammy",          4
+    if dew_gap_c < 10: return "Humid",            3
+    if dew_gap_c < 15: return "Comfortable",      1
+    return               "Dry",                   2
 
 def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
     """Helper to map a numeric value to a (text, level) tuple based on a scale."""

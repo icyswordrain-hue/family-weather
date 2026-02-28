@@ -238,6 +238,7 @@ const TRANSLATIONS = {
     log_step_prefix: '步驟：',
     log_runtime_error: '執行錯誤：',
     metrics: {
+      'Near Saturated': '接近飽和', 'Clammy': '悶濕',
       'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
       'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風', 'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風', 'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風', 'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
       'Good': '良好', 'Moderate': '普通', 'Unhealthy for Sensitive Groups': '對敏感族群不健康', 'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
