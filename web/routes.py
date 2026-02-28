@@ -13,12 +13,13 @@ from __future__ import annotations
 from typing import cast, Optional
 
 
-def build_slices(broadcast: dict) -> dict:
+def build_slices(broadcast: dict, lang: str = "en") -> dict:
     """
     Build per-view data slices from a broadcast record.
 
     Args:
         broadcast: Dict with at minimum 'paragraphs', 'metadata', 'processed_data'.
+        lang: Language parameter, defaults to 'en'.
 
     Returns:
         Dict with keys 'current', 'overview', 'lifestyle', 'narration', 'context'.
@@ -44,7 +45,7 @@ def build_slices(broadcast: dict) -> dict:
     return {
         "current": _slice_current(current_data, aqi_realtime),
         "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
-        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, cardiac=cardiac, menieres=menieres),
+        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, cardiac=cardiac, menieres=menieres, lang=lang),
         "narration": _slice_narration(paragraphs, meta),
     }
 
@@ -135,24 +136,26 @@ def _slice_overview(
     }
 
 
-def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, cardiac: dict | None = None, menieres: dict | None = None) -> dict:
+def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, cardiac: dict | None = None, menieres: dict | None = None, lang: str = "en") -> dict:
     """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
     if not isinstance(summaries, dict):
         summaries = {}
     if not isinstance(climate, dict):
         climate = {"mode": "Off"}
     
+    is_zh = lang == "zh-TW"
+
     # 1. Wardrobe & Rain Gear
     at = current.get("AT")
     rain_recent = (current.get("RAIN") or 0) > 0
     
     wardrobe_text = summaries.get("wardrobe")
     if not wardrobe_text:
-        wardrobe_text = _wardrobe_tip(at, rain_recent)
+        wardrobe_text = _wardrobe_tip(at, rain_recent, lang=lang)
         
     rain_gear_text = summaries.get("rain_gear")
     if not rain_gear_text:
-        rain_gear_text = "No precipitation gear expected." if not rain_recent else "Carry an umbrella."
+        rain_gear_text = ("不需準備雨具。" if not rain_recent else "請記得攜帶雨具。") if is_zh else ("No precipitation gear expected." if not rain_recent else "Carry an umbrella.")
 
     # 2. Commute (v6: p2_garden_commute contains garden + commute)
     commute_text = summaries.get("commute") or paragraphs.get("p2_garden_commute")
@@ -160,11 +163,11 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         am = commute.get("morning", {}).get("hazards", [])
         pm = commute.get("evening", {}).get("hazards", [])
         if am:
-            commute_text = f"Morning alert: {am[0]}."
+            commute_text = (f"早上注意：{am[0]}。") if is_zh else (f"Morning alert: {am[0]}.")
         elif pm:
-            commute_text = f"Evening alert: {pm[0]}."
+            commute_text = (f"傍晚注意：{pm[0]}。") if is_zh else (f"Evening alert: {pm[0]}.")
         else:
-            commute_text = "Traffic conditions look normal."
+            commute_text = "交通狀況良好。" if is_zh else "Traffic conditions look normal."
 
     # 3. HVAC (v6: p4_meal_climate contains meals + climate control)
     hvac_text = summaries.get("hvac") or paragraphs.get("p4_meal_climate")
@@ -172,11 +175,20 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         hvac_mode = climate.get("mode", "Off")
         rh = current.get("RH", 0)
         aqi = current.get("aqi", 0)
-        hvac_parts = [f"System: {hvac_mode}."]
-        if int(rh or 0) > 70:
-            hvac_parts.append("Dehumidifier recommended.")
-        elif int(aqi or 0) > 100:
-            hvac_parts.append("Air purifier recommended.")
+        
+        if is_zh:
+            hvac_mode_zh = {"Off": "關閉", "fan": "電風扇", "cooling": "冷氣", "heating": "暖氣", "dehumidify": "除濕"}.get(hvac_mode, hvac_mode)
+            hvac_parts = [f"設備：{hvac_mode_zh}。"]
+            if int(rh or 0) > 70:
+                hvac_parts.append("建議開啟除濕機。")
+            elif int(aqi or 0) > 100:
+                hvac_parts.append("建議開啟空氣清淨機。")
+        else:
+            hvac_parts = [f"System: {hvac_mode}."]
+            if int(rh or 0) > 70:
+                hvac_parts.append("Dehumidifier recommended.")
+            elif int(aqi or 0) > 100:
+                hvac_parts.append("Air purifier recommended.")
         hvac_text = " ".join(hvac_parts)
 
     # 4. Meals (v6: p4_meal_climate)
@@ -185,9 +197,12 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         meal_mood_data = processed.get("meal_mood", {})
         meal_suggestions = meal_mood_data.get("top_suggestions", []) or meal_mood_data.get("all_suggestions", [])
         if meal_suggestions:
-            meals_text = f"Suggested: {', '.join(meal_suggestions[:2])}."
+            if is_zh:
+                meals_text = f"推薦餐點：{', '.join(meal_suggestions[:2])}。"
+            else:
+                meals_text = f"Suggested: {', '.join(meal_suggestions[:2])}."
         else:
-            meals_text = "No specific suggestions."
+            meals_text = "無特別推薦。" if is_zh else "No specific suggestions."
 
     # 5. Garden (v6: first sentence of p2_garden_commute) & Outdoor (v6: p3_outdoor)
     garden_text = summaries.get("garden")
@@ -196,14 +211,14 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     if not garden_text:
         p2 = paragraphs.get("p2_garden_commute", "")
         if p2:
-            parts = p2.split(". ", 1)
-            garden_text = parts[0] + "."
+            parts = p2.split("。" if is_zh else ". ", 1)
+            garden_text = parts[0] + ("。" if is_zh else ".")
         else:
-            garden_text = "Check soil moisture."
+            garden_text = "記得檢查土壤濕度。" if is_zh else "Check soil moisture."
 
     # Outdoor text only
     if not outdoor_text:
-        outdoor_text = "Good day for a walk."
+        outdoor_text = "是個適合散步的好日子。" if is_zh else "Good day for a walk."
 
     outdoor_index = outdoor_index or {}
 
@@ -296,22 +311,23 @@ def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def _wardrobe_tip(at: float | None, rain: bool) -> str:
+def _wardrobe_tip(at: float | None, rain: bool, lang: str = "en") -> str:
     """Generate simple wardrobe advice."""
+    is_zh = lang == "zh-TW"
     parts = []
     if rain:
-        parts.append("Rain gear needed ☔")
+        parts.append("需要雨具 ☔" if is_zh else "Rain gear needed ☔")
     
     if at is None:
-        return "Check forecast."
+        return "請查看預報。" if is_zh else "Check forecast."
         
     if at < 15:
-        parts.append("Heavy coat & layers 🧥")
+        parts.append("建議穿著厚外套及保暖衣物 🧥" if is_zh else "Heavy coat & layers 🧥")
     elif at < 20:
-        parts.append("Light jacket or sweater 🧥")
+        parts.append("建議穿著輕薄外套或毛衣 🧥" if is_zh else "Light jacket or sweater 🧥")
     elif at < 26:
-        parts.append("Comfortable / T-shirt 👕")
+        parts.append("舒適/短袖 👕" if is_zh else "Comfortable / T-shirt 👕")
     else:
-        parts.append("Light clothing & sunscreen 🌞")
+        parts.append("輕薄衣物及防曬 🌞" if is_zh else "Light clothing & sunscreen 🌞")
         
-    return " + ".join(parts)
+    return " · ".join(parts) if is_zh else " + ".join(parts)

@@ -106,6 +106,7 @@ def get_broadcast():
       date (optional): YYYY-MM-DD — defaults to today (Taipei time)
     """
     date_str = request.args.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+    lang = request.args.get("lang") or "en"
 
     if RUN_MODE == "CLOUD":
         # Proxy to Modal
@@ -114,7 +115,7 @@ def get_broadcast():
             return jsonify({"error": "MODAL_BROADCAST_URL not configured"}), 500
         
         try:
-            resp = requests.get(modal_url, params={"date": date_str})
+            resp = requests.get(modal_url, params={"date": date_str, "lang": lang})
             return (resp.text, resp.status_code, resp.headers.items())
         except Exception as e:
             logger.error("Failed to proxy broadcast to Modal: %s", e)
@@ -131,7 +132,7 @@ def get_broadcast():
         return jsonify(result)
 
     # Attach slices for the dashboard
-    slices = build_slices(cached)
+    slices = build_slices(cached, lang=lang)
     return jsonify({**cached, "slices": slices})
 
 

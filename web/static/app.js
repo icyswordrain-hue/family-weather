@@ -298,7 +298,11 @@ async function fetchBroadcast() {
   if (btn) btn.classList.add('loading');
 
   try {
-    const res = await fetch('/api/broadcast');
+    const url = new URL('/api/broadcast', window.location.origin);
+    if (typeof getLang === 'function') {
+      url.searchParams.set('lang', getLang());
+    }
+    const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
