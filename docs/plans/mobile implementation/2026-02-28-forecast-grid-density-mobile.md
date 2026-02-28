@@ -154,3 +154,103 @@ but the 36-hour path had no equivalent.
 **Fix:** `fetch_cwa.py` now stores the `Temperature` element separately as `slot["T"]`. Segment
 enrichment and `_commute_window` use `T` as the BOM formula input, falling back to `AT` only when
 `T` is absent. `_average_slots` was updated to include `T` in its numeric averaging keys.
+
+---
+
+## Amendment — 2026-02-28: day-name column headers + condition text
+
+**Commit:** `c6aa60d`
+
+### Problem
+
+With the 7-per-row compact layout the day name ("Mon" / "一") was redundant: it appeared inside **both** the day card and the night card for the same column — twice per column, 14 times across the grid. Additionally the `cloud_cover` field ("Sunny", "Mixed Clouds", etc.) was available in the slot data but only used internally for icon lookup and never shown to the user.
+
+### Changes
+
+**`web/templates/dashboard.html`**
+
+New header container injected directly before `#ov-weekly-timeline`:
+
+```html
+<div class="wk-header-row" id="ov-weekly-header"></div>
+```
+
+**`web/static/app.js`**
+
+1. `cloudCover` map added to both `TRANSLATIONS.en` and `TRANSLATIONS['zh-TW']`:
+
+   ```js
+   // en
+   cloudCover: { Sunny: 'Sunny', Fair: 'Fair', 'Mixed Clouds': 'Cloudy', Overcast: 'Overcast', Rain: 'Rain', Unknown: '—' },
+   // zh-TW
+   cloudCover: { Sunny: '晴', Fair: '晴多雲', 'Mixed Clouds': '多雲', Overcast: '陰', Rain: '雨', Unknown: '—' },
+   ```
+
+2. Header row populated from `topItems` before the card loop:
+
+   ```js
+   const headerEl = document.getElementById('ov-weekly-header');
+   if (headerEl) {
+     headerEl.innerHTML = '';
+     topItems.forEach(item => {
+       const hdr = document.createElement('div');
+       hdr.className = 'wk-col-header';
+       if (item) {
+         let dt;
+         try { dt = new Date(item.start_time.replace('+08:00', '')); } catch { dt = new Date(); }
+         hdr.textContent = T.days[dt.getDay()];
+       } else { hdr.textContent = '—'; }
+       headerEl.appendChild(hdr);
+     });
+   }
+   ```
+
+3. `.wk-cond` div added to each card after the icon:
+
+   ```js
+   const cond = document.createElement('div');
+   cond.className = 'wk-cond';
+   cond.textContent = (T.cloudCover && T.cloudCover[item.cloud_cover]) || item.cloud_cover || '—';
+   card.appendChild(icon);
+   card.appendChild(cond);   // ← new
+   card.appendChild(temp);
+   ```
+
+   The `.wk-day-name` span remains in the DOM; CSS controls its visibility.
+
+**`web/static/style.css`**
+
+New base rules (outside media queries — apply at desktop ≥901 px):
+
+```css
+.wk-header-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 2px; }
+.wk-col-header { text-align: center; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+                 letter-spacing: 0.04em; color: var(--muted); padding: 2px 0; }
+.wk-day-name   { display: none; }   /* header row active — hide day name inside cards */
+.wk-cond       { font-size: 0.6rem; color: var(--muted); text-align: center;
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+```
+
+Updated `@media (max-width: 900px)` — tablet 4-column reflow hides header row and restores day names in cards:
+
+```css
+.wk-header-row { display: none; }
+.wk-day-name   { display: inline; }
+```
+
+Updated `@media (max-width: 767px)` — mobile re-shows header row; condition text hidden (cards too narrow):
+
+```css
+.wk-header-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 2px; }
+.wk-col-header { font-size: 0.6rem; }
+.wk-day-name   { display: none; }
+.wk-cond       { display: none; }
+```
+
+### Responsive summary
+
+| Viewport | Header row | Day name in card | Condition text |
+|---|---|---|---|
+| ≥ 901 px (desktop) | shown | hidden | shown |
+| 768–900 px (tablet) | hidden | restored | shown |
+| ≤ 767 px (mobile) | shown | hidden | hidden |
