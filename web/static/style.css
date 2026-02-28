@@ -1453,6 +1453,12 @@ html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675
 
 @media (max-width: 767px) {
 
+  /* Reset layout variables so all var(--sidebar-w) / var(--rp-w) usages are safe on mobile */
+  :root {
+    --sidebar-w: 0px;
+    --rp-w: 0px;
+  }
+
   /* Shell: single column, full natural height, scrollable */
   .app-shell {
     display: block;
@@ -1516,6 +1522,7 @@ html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675
     left: 0;
     right: 0;
     height: 78vh;
+    bottom: 42px;
   }
 
   .player-sheet-handle {
