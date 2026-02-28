@@ -1496,9 +1496,11 @@ html.dark .ls-badge.ls-alert-badge-warning {
 }
 
 @media (max-width: 767px) {
-  /* Shell: single column */
+  /* Shell: single column, full natural height, scrollable */
   .app-shell {
     display: block;
+    height: auto;
+    overflow: visible;
   }
 
   /* Hide desktop-only elements */
