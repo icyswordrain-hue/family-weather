@@ -1418,10 +1418,10 @@ html.dark .ls-badge.ls-alert-badge-warning {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 12px 16px;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
-  font-size: 0.9rem;
+  font-size: 1.35rem;
   font-weight: 500;
   position: sticky;
   top: 0;
