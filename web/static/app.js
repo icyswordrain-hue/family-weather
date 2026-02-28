@@ -692,18 +692,21 @@ function renderOverviewView(data) {
               });
               ctx.restore();
             },
-            // Draw axis labels in the left-padding zone (after everything else)
+            // Draw axis labels in both padding zones (after everything else)
             afterDraw(chart) {
               const { ctx, chartArea, scales } = chart;
               if (!chartArea) return;
               ctx.save();
               ctx.font = `10px 'Fira Code', monospace`;
               ctx.fillStyle = mutedColor;
-              ctx.textAlign = 'right';
               ctx.textBaseline = 'middle';
               gridVals.forEach(val => {
                 const y = scales.y.getPixelForValue(val);
-                ctx.fillText(`${val}°`, chartArea.left - 4, y);
+                const label = `${val}°`;
+                ctx.textAlign = 'right';
+                ctx.fillText(label, chartArea.left - 8, y);
+                ctx.textAlign = 'left';
+                ctx.fillText(label, chartArea.right + 8, y);
               });
               ctx.restore();
             },
