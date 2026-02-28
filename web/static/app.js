@@ -157,7 +157,7 @@ const TRANSLATIONS = {
     step1: 'Connecting to CWA Banqiao Station…',
     step2: 'Retrieving Township Forecasts…',
     step3: 'Checking MOENV Air Quality…',
-    step4: 'Processing V5 Logic…',
+    step4: 'Processing Logic…',
     step5: 'Generating Narration…',
     step6: 'Synthesizing Audio…',
     step7: 'Finalizing…',
@@ -214,7 +214,7 @@ const TRANSLATIONS = {
     step1: '連線至 CWA 板橋站…',
     step2: '取得鄉鎮預報…',
     step3: '查詢 MOENV 空氣品質…',
-    step4: '處理 V5 邏輯…',
+    step4: '處理天氣邏輯…',
     step5: '生成廣播稿…',
     step6: '合成語音…',
     step7: '最終處理中…',
@@ -281,7 +281,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initSystemTheme();
   addLog(T.boot);
 
-  initSidebarNav();
+  initNav();
   initPlayerBar();
   initPlayerSheet();
   initRefreshButton();
@@ -359,6 +359,8 @@ function renderCurrentView(data) {
   setText('cur-weather-text', localiseWeatherText(data.weather_text || '—'));
   setText('cur-icon', ICONS[data.weather_code] || ICONS[data.weather_text] || '🌤️');
   setText('rp-location', localiseLocation(data.location || '—'));
+  const mobileLoc = document.getElementById('mobile-location');
+  if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '—');
 
   // Gauge Cards (Restructured)
   renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
@@ -834,6 +836,21 @@ function initSidebarControls() {
   });
 }
 
+// ── Navigation (desktop + mobile dispatch) ─────────────────────────────────
+function initNav() {
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  if (isMobile) {
+    initMobileNav();
+  } else {
+    initSidebarNav();
+  }
+}
+
+function initMobileNav() {
+  // Mobile: all views visible via CSS (display: block).
+  // No tab switching needed. Scroll is handled by the browser.
+}
+
 // ── Sidebar & Navigation ───────────────────────────────────────────────────
 function initSidebarNav() {
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -897,6 +914,19 @@ function updateClock() {
     const taipeiStr = now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' });
     tNow = new Date(taipeiStr);
   } catch (e) { }
+
+  // Mobile digital clock
+  const mobileClockEl = document.getElementById('mobile-clock');
+  if (mobileClockEl) {
+    try {
+      mobileClockEl.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei'
+      });
+    } catch (e) {
+      mobileClockEl.textContent =
+        `${tNow.getHours().toString().padStart(2, '0')}:${tNow.getMinutes().toString().padStart(2, '0')}`;
+    }
+  }
 
   const hourHand = document.getElementById('clock-hour');
   const minuteHand = document.getElementById('clock-minute');
