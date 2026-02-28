@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 import random
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional, cast
 
@@ -684,9 +685,149 @@ def _detect_driving_hazards(slot: dict | None, current: dict | None = None) -> l
 
 # ── Local stubs (small utility functions not worth their own module) ───────────
 
+@dataclass
+class HvacDewPointAdvice:
+    dehumidifier: str | None            # "strongly_recommended" | "recommended" | "consider" | None
+    ac_mode: str | None                 # "cool" | "dry" | None
+    windows: str | None                 # "open" | "close" | None
+    reasons: list[str] = field(default_factory=list)
+
+
+def _hvac_dew_point_advice(
+    outdoor_temp_c: float,
+    outdoor_dew_point_c: float,
+    outdoor_dew_gap_c: float,
+    indoor_temp_c: float | None = None,
+    indoor_rh_pct: float | None = None,
+) -> HvacDewPointAdvice:
+    """Dew point-aware HVAC sub-recommendations (dehumidifier, AC mode, windows)."""
+    advice = HvacDewPointAdvice(dehumidifier=None, ac_mode=None, windows=None)
+
+    # 1. Dehumidifier — triggered by outdoor dew point, not raw RH
+    if outdoor_dew_point_c >= 24:
+        advice.dehumidifier = "strongly_recommended"
+        advice.reasons.append(
+            f"outdoor dew point {outdoor_dew_point_c}°C — oppressive moisture load, "
+            "dehumidifier strongly recommended"
+        )
+    elif outdoor_dew_point_c >= 21:
+        advice.dehumidifier = "recommended"
+        advice.reasons.append(
+            f"outdoor dew point {outdoor_dew_point_c}°C — muggy, dehumidifier recommended"
+        )
+    elif outdoor_dew_point_c >= 18:
+        advice.dehumidifier = "consider"
+        advice.reasons.append(
+            f"outdoor dew point {outdoor_dew_point_c}°C — sticky, consider dehumidifier"
+        )
+
+    if indoor_temp_c is not None and indoor_rh_pct is not None:
+        indoor_dew = _calculate_dew_point(indoor_temp_c, indoor_rh_pct)
+        if indoor_dew is not None and indoor_dew >= 21 and advice.dehumidifier is None:
+            advice.dehumidifier = "recommended"
+            advice.reasons.append(
+                f"indoor dew point {indoor_dew}°C — muggy inside, run dehumidifier"
+            )
+
+    # 2. AC mode: cool vs dry
+    if outdoor_temp_c >= 26:
+        if outdoor_dew_gap_c < 6 and outdoor_dew_point_c >= 18:
+            advice.ac_mode = "dry"
+            advice.reasons.append(
+                f"dew gap only {outdoor_dew_gap_c}°C — air nearly saturated, "
+                "AC dry mode addresses moisture better than cool mode"
+            )
+        else:
+            advice.ac_mode = "cool"
+            advice.reasons.append(
+                f"temp {outdoor_temp_c}°C with manageable humidity — AC cool mode appropriate"
+            )
+
+    # 3. Window advice
+    if indoor_temp_c is not None and indoor_rh_pct is not None:
+        indoor_dew = _calculate_dew_point(indoor_temp_c, indoor_rh_pct)
+        if indoor_dew is not None:
+            delta = outdoor_dew_point_c - indoor_dew
+            if delta <= -3:
+                advice.windows = "open"
+                advice.reasons.append(
+                    f"outdoor dew point {outdoor_dew_point_c}°C is {abs(delta):.1f}°C lower "
+                    f"than indoors ({indoor_dew}°C) — opening windows will help dry the house"
+                )
+            elif delta >= 3:
+                advice.windows = "close"
+                advice.reasons.append(
+                    f"outdoor dew point {outdoor_dew_point_c}°C is {delta:.1f}°C higher "
+                    f"than indoors ({indoor_dew}°C) — keep windows closed to avoid importing moisture"
+                )
+    else:
+        if outdoor_dew_point_c >= 22:
+            advice.windows = "close"
+            advice.reasons.append(
+                f"outdoor dew point {outdoor_dew_point_c}°C — keep windows closed "
+                "to limit moisture infiltration"
+            )
+        elif outdoor_dew_point_c <= 12 and outdoor_temp_c >= 18:
+            advice.windows = "open"
+            advice.reasons.append(
+                f"outdoor dew point {outdoor_dew_point_c}°C — dry outside, "
+                "open windows to ventilate naturally"
+            )
+
+    return advice
+
+
 def _climate_control(segmented: dict, aqi: dict) -> dict:
-    """Placeholder — climate control recommendations. Extend as needed."""
-    return {"mode": "Off", "recommendations": []}
+    """
+    Dew point-aware climate control recommendations.
+
+    Uses the Afternoon segment (hottest/most humid part of the day) as the
+    representative sample for daily HVAC planning. Falls back to the first
+    available segment if Afternoon is missing.
+    """
+    seg: dict | None = None
+    for name in ("Afternoon", "Morning", "Evening", "Overnight"):
+        if segmented.get(name):
+            seg = segmented[name]
+            break
+
+    _empty = {"mode": "Off", "dehumidifier": None, "ac_mode": None, "windows": None,
+               "dew_reasons": [], "recommendations": []}
+
+    if seg is None:
+        return _empty
+
+    temp = seg.get("T") if seg.get("T") is not None else seg.get("AT")
+    dew_point = seg.get("dew_point")
+    dew_gap = seg.get("dew_gap")
+
+    if temp is None or dew_point is None or dew_gap is None:
+        return _empty
+
+    advice = _hvac_dew_point_advice(
+        outdoor_temp_c=temp,
+        outdoor_dew_point_c=dew_point,
+        outdoor_dew_gap_c=dew_gap,
+    )
+
+    # Primary mode drives P4 inclusion and the front-end badge
+    if temp >= 26:
+        mode = "cooling"
+    elif dew_point >= 21:
+        mode = "dehumidify"
+    elif advice.windows == "open":
+        mode = "fan"        # mild ventilation — P4 climate section skipped per prompt gate
+    else:
+        mode = "Off"
+
+    return {
+        "mode": mode,
+        "dehumidifier": advice.dehumidifier,
+        "ac_mode": advice.ac_mode,
+        "windows": advice.windows,
+        "dew_reasons": advice.reasons,
+        "recommendations": [],
+    }
 
 def _pop_category(pop: float | None) -> int:
     """Return 0–5 category index for PoP6h."""

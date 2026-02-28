@@ -170,21 +170,40 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     hvac_text = summaries.get("hvac") or paragraphs.get("p4_meal_climate")
     if not hvac_text:
         hvac_mode = climate.get("mode", "Off")
-        rh = current.get("RH", 0)
-        aqi = current.get("aqi", 0)
-        
+        dehumidifier = climate.get("dehumidifier")
+        ac_mode = climate.get("ac_mode")
+        windows = climate.get("windows")
+        aqi_val = current.get("aqi", 0)
+
         if is_zh:
-            hvac_mode_zh = {"Off": "關閉", "fan": "電風扇", "cooling": "冷氣", "heating": "暖氣", "dehumidify": "除濕"}.get(hvac_mode, hvac_mode)
-            hvac_parts = [f"設備：{hvac_mode_zh}。"]
-            if int(rh or 0) > 70:
+            ac_suffix = "（乾燥模式）" if ac_mode == "dry" else ""
+            mode_zh = {"Off": "關閉", "fan": "電風扇", "cooling": f"冷氣{ac_suffix}",
+                       "heating": "暖氣", "dehumidify": "除濕機"}.get(hvac_mode, hvac_mode)
+            hvac_parts = [f"建議：{mode_zh}。"]
+            if dehumidifier in ("strongly_recommended", "recommended"):
                 hvac_parts.append("建議開啟除濕機。")
-            elif int(aqi or 0) > 100:
+            elif dehumidifier == "consider":
+                hvac_parts.append("視情況考慮開除濕機。")
+            if windows == "open":
+                hvac_parts.append("適合開窗通風。")
+            elif windows == "close":
+                hvac_parts.append("建議關閉窗戶。")
+            elif not dehumidifier and not windows and int(aqi_val or 0) > 100:
                 hvac_parts.append("建議開啟空氣清淨機。")
         else:
-            hvac_parts = [f"System: {hvac_mode}."]
-            if int(rh or 0) > 70:
+            ac_suffix = " (dry mode)" if ac_mode == "dry" else ""
+            mode_en = {"Off": "off", "fan": "fan only", "cooling": f"AC{ac_suffix}",
+                       "heating": "heating", "dehumidify": "dehumidifier"}.get(hvac_mode, hvac_mode)
+            hvac_parts = [f"System: {mode_en}."]
+            if dehumidifier in ("strongly_recommended", "recommended"):
                 hvac_parts.append("Dehumidifier recommended.")
-            elif int(aqi or 0) > 100:
+            elif dehumidifier == "consider":
+                hvac_parts.append("Consider the dehumidifier.")
+            if windows == "open":
+                hvac_parts.append("Open windows to ventilate.")
+            elif windows == "close":
+                hvac_parts.append("Keep windows closed.")
+            elif not dehumidifier and not windows and int(aqi_val or 0) > 100:
                 hvac_parts.append("Air purifier recommended.")
         hvac_text = " ".join(hvac_parts)
 

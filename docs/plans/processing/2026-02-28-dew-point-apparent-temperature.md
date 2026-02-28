@@ -225,3 +225,80 @@ July afternoon (dp 30.8°C, gap 2.2°C): −20 + −15 = **−35**.
 | Clammy spring (today) | 17.8 | 2.2 | −8 | dew_gap_humid only (dp just below 18) |
 | Hot muggy summer | 27.5 | 7.5 | −20 | dp_oppressive only |
 | Taiwan July misery | 30.8 | 2.2 | −35 | dp_oppressive + dew_gap_clammy |
+
+---
+
+## HVAC Dew Point Integration (`data/weather_processor.py`, `narration/llm_prompt_builder.py`, `web/routes.py`)
+
+**Commit:** (this session)
+
+Dew point signals now drive HVAC recommendations end-to-end. The `_climate_control()`
+stub was replaced with a full implementation backed by `_hvac_dew_point_advice()`, and
+the old RH > 70% dehumidifier fallback in `routes.py` was removed.
+
+### New functions (`data/weather_processor.py`)
+
+`HvacDewPointAdvice` dataclass holds three independent advisory fields plus a debug
+reasons list:
+
+```python
+@dataclass
+class HvacDewPointAdvice:
+    dehumidifier: str | None   # "strongly_recommended" | "recommended" | "consider" | None
+    ac_mode: str | None        # "cool" | "dry" | None
+    windows: str | None        # "open" | "close" | None
+    reasons: list[str] = field(default_factory=list)
+```
+
+`_hvac_dew_point_advice()` produces the advice from outdoor conditions (no indoor sensor):
+
+| Component | Trigger | Value |
+|---|---|---|
+| `dehumidifier` | dew_point ≥ 24°C | `strongly_recommended` |
+| `dehumidifier` | 21 ≤ dew_point < 24°C | `recommended` |
+| `dehumidifier` | 18 ≤ dew_point < 21°C | `consider` |
+| `ac_mode` | temp ≥ 26°C AND dew_gap < 6°C AND dew_point ≥ 18°C | `dry` |
+| `ac_mode` | temp ≥ 26°C (otherwise) | `cool` |
+| `windows` | dew_point ≥ 22°C (no sensor) | `close` |
+| `windows` | dew_point ≤ 12°C AND temp ≥ 18°C (no sensor) | `open` |
+
+`_climate_control()` uses the **Afternoon** segment as the daily representative (fallback
+to Morning → Evening → Overnight). It derives a primary `mode` for the front-end badge
+and P4 gate:
+
+| Condition | mode |
+|---|---|
+| temp ≥ 26°C | `"cooling"` |
+| dew_point ≥ 21°C (and not hot) | `"dehumidify"` |
+| windows == "open" (mild day) | `"fan"` (P4 climate section skipped by prompt gate) |
+| otherwise | `"Off"` |
+
+The full return dict: `mode`, `dehumidifier`, `ac_mode`, `windows`, `dew_reasons`,
+`recommendations`.
+
+### LLM prompt updates (`narration/llm_prompt_builder.py`)
+
+Added ~45-word addendum to the P4 climate instruction in both EN and ZH system prompts:
+the LLM is instructed to say "dry mode" specifically when `ac_mode == "dry"`, to name
+the dehumidifier as an explicit action when `dehumidifier` is `"recommended"` or
+`"strongly_recommended"`, and to weave in window guidance when `windows` is set.
+
+### Fallback update (`web/routes.py`)
+
+The `rh > 70%` → "Dehumidifier recommended" fallback (fired when no LLM narration exists)
+was replaced. The new fallback reads `climate.get("dehumidifier")`, `ac_mode`, and
+`windows` from the processed data and builds structured text for both EN and ZH:
+
+- `ac_mode == "dry"` → "冷氣（乾燥模式）" / "AC (dry mode)"
+- `dehumidifier == "strongly_recommended"/"recommended"` → explicit dehumidifier line
+- `dehumidifier == "consider"` → softer suggestion
+- `windows == "open"/"close"` → open/close window line
+- AQI > 100 fallback only fires if neither dehumidifier nor windows advice is present
+
+### What was not changed
+
+- `app.js` and `style.css`: no front-end badge changes (Option A). The existing
+  `hvac-cooling` / `hvac-dehumidify` badges remain the display mechanism.
+- The P4 gate condition (`mode NOT "fan" OR "none"`) is unchanged.
+- No indoor sensor support wired in — `indoor_temp_c` and `indoor_rh_pct` both passed
+  as `None`; the function degrades gracefully to outdoor-only thresholds.
