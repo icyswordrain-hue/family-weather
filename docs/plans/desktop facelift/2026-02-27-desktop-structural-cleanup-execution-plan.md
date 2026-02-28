@@ -1,4 +1,4 @@
-# Phase 1 — Desktop Structural Cleanup: Execution Plan
+# Desktop Structural Cleanup: Execution Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
@@ -26,7 +26,7 @@ The existing app has:
 - `applyLanguage()` exists in `app.js` and reads `input[name="language"]:checked`
 - `--rp-w` CSS variable controls right-panel width (currently `280px`)
 
-The task list file `docs/plans/2026-02-27-phase1-task-list.md` is the cross-off companion to this plan.
+The task list file `docs/plans/2026-02-27-desktop-cleanup-task-list.md` is the cross-off companion to this plan.
 
 ---
 
@@ -64,7 +64,7 @@ Open `http://localhost:5000` in browser. Console should show no `Cannot find ele
 **Step 5: Commit**
 ```bash
 git add web/templates/dashboard.html
-git commit -m "feat(phase1): remove narration view and nav button"
+git commit -m "feat(desktop-cleanup): remove narration view and nav button"
 ```
 
 ---
@@ -99,7 +99,7 @@ Reload the page. Right panel should be visibly narrower and show only the system
 **Step 4: Commit**
 ```bash
 git add web/static/style.css web/templates/dashboard.html
-git commit -m "feat(phase1): shrink right panel to 180px, strip rp-controls-section"
+git commit -m "feat(desktop-cleanup): shrink right panel to 180px, strip rp-controls-section"
 ```
 
 ---
@@ -151,7 +151,7 @@ Append to `style.css`:
 **Step 4: Commit**
 ```bash
 git add web/templates/dashboard.html web/static/style.css
-git commit -m "feat(phase1): move last-updated and refresh btn to sidebar"
+git commit -m "feat(desktop-cleanup): move last-updated and refresh btn to sidebar"
 ```
 
 ---
@@ -205,7 +205,7 @@ Open page in browser. Player bar should appear at the bottom of the main panel (
 **Step 3: Commit**
 ```bash
 git add web/templates/dashboard.html
-git commit -m "feat(phase1): add player bar and player sheet HTML"
+git commit -m "feat(desktop-cleanup): add player bar and player sheet HTML"
 ```
 
 ---
@@ -372,7 +372,7 @@ Reload. Player bar appears pinned to the bottom of the main column. Sheet remain
 **Step 3: Commit**
 ```bash
 git add web/static/style.css
-git commit -m "feat(phase1): style player bar, player sheet, and pulse animation"
+git commit -m "feat(desktop-cleanup): style player bar, player sheet, and pulse animation"
 ```
 
 ---
@@ -423,7 +423,7 @@ Toggles appear at the bottom of sidebar. Switching language applies language (vi
 **Step 3: Commit**
 ```bash
 git add web/templates/dashboard.html
-git commit -m "feat(phase1): add lang + provider toggles to sidebar"
+git commit -m "feat(desktop-cleanup): add lang + provider toggles to sidebar"
 ```
 
 ---
@@ -478,7 +478,7 @@ Controls sit at the bottom of the sidebar, visually separated from nav items.
 **Step 3: Commit**
 ```bash
 git add web/static/style.css
-git commit -m "feat(phase1): style sidebar controls section"
+git commit -m "feat(desktop-cleanup): style sidebar controls section"
 ```
 
 ---
@@ -526,7 +526,7 @@ On a system set to dark mode, page loads dark. Change OS to light → page goes 
 **Step 6: Commit**
 ```bash
 git add web/templates/dashboard.html web/static/app.js
-git commit -m "feat(phase1): replace manual theme toggle with prefers-color-scheme"
+git commit -m "feat(desktop-cleanup): replace manual theme toggle with prefers-color-scheme"
 ```
 
 ---
@@ -627,7 +627,7 @@ With the dev server running, wait for data to load. Player bar should populate w
 **Step 5: Commit**
 ```bash
 git add web/static/app.js
-git commit -m "feat(phase1): implement initPlayerBar() and wire audio to render()"
+git commit -m "feat(desktop-cleanup): implement initPlayerBar() and wire audio to render()"
 ```
 
 ---
@@ -683,7 +683,7 @@ Click `⌄` button → sheet slides up from player bar. Body scroll locks. Click
 **Step 4: Commit**
 ```bash
 git add web/static/app.js
-git commit -m "feat(phase1): implement initPlayerSheet() with scroll lock"
+git commit -m "feat(desktop-cleanup): implement initPlayerSheet() with scroll lock"
 ```
 
 ---
@@ -730,14 +730,14 @@ Language toggle in sidebar switches app language. Provider toggle in sidebar wor
 **Step 5: Commit**
 ```bash
 git add web/static/app.js
-git commit -m "feat(phase1): implement initSidebarControls, remove dead init calls"
+git commit -m "feat(desktop-cleanup): implement initSidebarControls, remove dead init calls"
 ```
 
 ---
 
 ## Task 11 — Final integration smoke test
 
-**Goal:** Confirm Phase 1 is complete and stable before branching into Phase 2.
+**Goal:** Confirm Desktop Cleanup is complete and stable before branching into Mobile Responsive Layout.
 
 **Step 1: Start the server**
 ```powershell
@@ -759,7 +759,7 @@ python app.py
 
 **Step 3: Commit final tag**
 ```bash
-git tag phase1-complete
+git tag desktop-cleanup-complete
 git push origin HEAD --tags
 ```
 
@@ -767,7 +767,7 @@ git push origin HEAD --tags
 
 ## Pre-Delivery Checklist (ui-ux-pro-max)
 
-Before marking Phase 1 done, verify:
+Before marking Desktop Cleanup done, verify:
 
 - [ ] No emojis used as icons — SVG for play/pause; cloud icon (`☁`) is decorative text, acceptable
 - [ ] All interactive elements have focus states visible for keyboard navigation

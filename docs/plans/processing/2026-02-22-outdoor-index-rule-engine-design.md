@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Refactor the outdoor suitability index to use a Declarative Rule Engine and introduce an independent 'Solar Load' metric to approximate radiant heat (UTCI).
+**Goal:** Refactor the outdoor suitability index to use a Declarative Rule Engine and introduce an independent 'Solar Load' metric to approximate radiant heat (UTCI/PET).
 
 **Architecture:** 
 1. Move hardcoded thresholds to `config.py`.
-2. Rewrite `_score_conditions` to iterate over a list of declarative rule tuples instead of `if/else` ladders.
+2. Rewrite `_score_conditions` to iterate over a list of declarative rule tuples (metric, value, condition_lambda, penalty, type, label) instead of `if/else` ladders.
 3. Compute a 0-100 `solar_load` metric based on UV Index and Cloud Cover (Wx), and add it as a new rule parameter.
 
 **Tech Stack:** Python, Pytest
@@ -108,7 +108,7 @@ git commit -m "feat: implement solar load calculation heuristic"
 ### Task 3: Refactor Scoring to Rule Engine
 
 **Files:**
-- Modify: `data/processor.py: _score_conditions`
+- Modify: `data/processor.py` (`_score_conditions` function)
 - Test: `data/test_outdoor_mod.py` (Existing, must remain passing to ensure behavioral parity).
 
 **Step 1: Write the failing test**
@@ -121,7 +121,7 @@ Rewrite `_score_conditions` in `data/processor.py`.
 - Add the new solar rule: `("solar", c.get("solar_load"), lambda v: v is not None and v > 80, "solar_extreme", "caution", "harsh_sunlight")`
 
 **Step 3: Run test to verify it passes**
-Run: `python data/test_outdoor_mod.py`
+Run: `python data/test_outdoor_mod.py`  (or pytest if configured)
 Expected: PASS
 
 **Step 4: Commit**
@@ -135,10 +135,10 @@ git commit -m "refactor: convert outdoor scoring to declarative rule engine"
 ### Task 4: Base Score Memoization & Pipeline Integration
 
 **Files:**
-- Modify: `data/processor.py: _compute_outdoor_index`
+- Modify: `data/processor.py` (`_compute_outdoor_index` function)
 
 **Step 1: Write minimal implementation**
-Update `_compute_outdoor_index`:
+Update `_compute_outdoor_index` in `data/processor.py`:
 1. Calculate `solar_load` per segment using the new helper. Include it in the `conds` dict.
 2. Only run `_score_conditions(conds, OUTDOOR_WEIGHTS_GENERAL)` ONCE per segment. Store the result in `segment_scores_base`.
 3. When iterating `OUTDOOR_WEIGHTS_BY_ACTIVITY`, retrieve the memoized `best_conds` instead of rebuilding the dictionary.

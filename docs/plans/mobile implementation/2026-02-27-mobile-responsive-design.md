@@ -7,10 +7,10 @@
 
 ## Summary
 
-Overhaul the 3-column desktop-only weather dashboard across three phases:
-- **Phase 1**: Desktop structural cleanup — simplified panels, narration removal, controls reorganised
-- **Phase 2**: Mobile-first responsive layout — single-column continuous scroll, player bar, FAB
-- **Phase 3**: New features and deep refactors — short narration, tablet breakpoint, nav strategy pattern
+Overhaul the 3-column desktop-only weather dashboard:
+- **Desktop structural cleanup**: simplified panels, narration removal, controls reorganised
+- **Mobile-first responsive layout**: single-column continuous scroll, player bar, FAB
+- **Future features**: New features and deep refactors — short narration, tablet breakpoint, nav strategy pattern
 
 Narration dissolves from a dedicated view into a persistent sticky player bar with expandable half-sheet on both desktop and mobile.
 
@@ -32,14 +32,14 @@ Narration dissolves from a dedicated view into a persistent sticky player bar wi
 | Desktop right panel | Shrunk to ~180px. Contents: refresh + system log only |
 | Section separator | Section header card (styled card separating Lifestyle / Dashboard on mobile) |
 | Bar dark mode | Follow existing `html.dark` CSS variables |
-| Tablet | Deferred to Phase 3 |
-| Short narration | Deferred to Phase 3 |
+| Tablet | Deferred |
+| Short narration | Deferred |
 
 ---
 
 ## Target Architecture
 
-### Desktop (Phase 1 result)
+### Desktop
 
 ```
 ┌──────────┬──────────────────────────┬──────────┐
@@ -54,7 +54,7 @@ Narration dissolves from a dedicated view into a persistent sticky player bar wi
        🔊 Player bar (fixed bottom of main panel)
 ```
 
-### Mobile (Phase 2 result)
+### Mobile
 
 ```
 ┌──────────────────────────────────┐
@@ -81,7 +81,7 @@ Narration dissolves from a dedicated view into a persistent sticky player bar wi
 
 ---
 
-## Phase 2 — Mobile Responsive Layout
+## Mobile Responsive Layout
 
 ### Goal
 Single-column continuous scroll on mobile. No bottom tab bar. FAB for controls. Compact header with digital clock.
