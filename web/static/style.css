@@ -1483,6 +1483,24 @@ html.dark .ls-badge.ls-alert-badge-warning {
   gap: 16px;
 }
 
+/* FAB Sheet specific overrides for light surface background */
+.fab-sheet .sidebar-control-label {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.fab-sheet .seg-ctrl {
+  background: var(--border);
+}
+
+.fab-sheet .seg-option span {
+  color: var(--muted);
+}
+
+.fab-sheet .seg-option input[type="radio"]:not(:checked)+span:hover {
+  color: var(--text);
+}
+
 .fab-sheet.open {
   transform: translateY(0);
 }
