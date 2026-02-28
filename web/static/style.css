@@ -1552,14 +1552,14 @@ html.dark .ls-badge.ls-alert-badge-warning {
     padding: 0.5rem 0.35rem;
   }
   .current-top-row .gauge-label {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     letter-spacing: 0.02em;
   }
   .current-top-row .gauge-value {
-    font-size: 0.85rem;
+    font-size: 1rem;
   }
   .current-top-row .gauge-sub {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
   }
   .current-hero {
     padding: 0.6rem 0.4rem;
@@ -1568,13 +1568,13 @@ html.dark .ls-badge.ls-alert-badge-warning {
     gap: 0.4rem;
   }
   #cur-icon {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
   #cur-temp {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
   }
   #cur-weather-text {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
   }
 
   /* Gauges: 4 per row, compact sizing to prevent overflow */
@@ -1587,14 +1587,14 @@ html.dark .ls-badge.ls-alert-badge-warning {
     min-height: 80px;
   }
   .gauges-grid .gauge-label {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     letter-spacing: 0.02em;
   }
   .gauges-grid .gauge-value {
-    font-size: 0.85rem;
+    font-size: 1rem;
   }
   .gauges-grid .gauge-sub {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 
   /* Lifestyle: 1 column */
