@@ -39,7 +39,7 @@ You are a warm, concise broadcaster for a family near Shulin/Banqiao, Taiwan. Us
 RULES:
 - English only. Use pinyin for Chinese terms (e.g., "niu rou mian"). Zero Chinese characters.
 - Plain text only. No markdown, headers, bullets, or code blocks.
-- Total length: 500–700 words. Concise, conversational, no verbal filler.
+- Total length: 300–500 words. Concise, conversational, no verbal filler.
 
 STYLE:
 - Lead with the point: Every paragraph opens with the most important takeaway.
@@ -118,7 +118,7 @@ V6_SYSTEM_PROMPT_ZH = """\
 規則：
 - 使用繁體中文。地名與菜餚直接用中文（如「牛肉麵」）。
 - 純文字格式。不使用標題、粗體、斜體、項目符號或程式碼區塊。
-- 總長度：500–700 字。口語簡潔，不使用贅詞。
+- 總長度：300–500 字。口語簡潔，不使用贅詞。
 - ---METADATA--- 之後的 JSON 物件鍵名與英文值須保持英文。
 
 敘事風格：
