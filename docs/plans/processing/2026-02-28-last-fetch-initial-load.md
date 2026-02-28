@@ -162,3 +162,21 @@ showContent();
 4. **Expired cache:** manually set `ts` to >24h ago in DevTools → treated as first load
 5. **Refresh button:** still triggers full streaming pipeline overlay
 6. **Language switch:** re-render uses correct translations
+
+---
+
+## Implementation Status — 2026-02-28 (commit `65a25bc`)
+
+All 5 edits implemented. Code analysis confirms the pipeline is correct for **both desktop and mobile**.
+
+**Single JS bundle, no separate mobile path.** There is no mobile JS file, no mobile service worker branch, and no user-agent branching. Mobile vs desktop differences are CSS-only plus a DOM reorder by `initMobileNav()` (lines 958–971), which runs before the cache check and only calls `insertBefore()` — it does not touch fetch or render logic.
+
+**Boot sequence race condition: none.** `initMobileNav()` completes before `loadCachedBroadcast()` at line 326, so the DOM is fully reordered when `render()` is called with cached data.
+
+**`render()` has no mobile-specific branches.** Slice rendering is identical on both viewports; the only mobile-aware line sets `#mobile-location` text if that element exists.
+
+**Server-side history always consulted.** `/api/broadcast` calls `get_today_broadcast()` → reads `local_data/history.json` (or GCS). If today's broadcast exists, it returns immediately (pipeline is not re-run). This is independent of the localStorage layer.
+
+**`saveBroadcastCache` called in both write paths:** `fetchBroadcast()` success path and `triggerRefresh()` result path.
+
+**Known edge case (acceptable).** `slices` stored in the localStorage cache are language-specific. If the user switches language between sessions, the instant render briefly shows old-language slices until the background refresh returns fresh slices for the current language. Negligible UX impact.

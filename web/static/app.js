@@ -565,7 +565,14 @@ function renderOverviewView(data) {
 
       const label = document.createElement('div');
       label.className = 'wk-label';
-      label.textContent = `${dayLabel} ${periodLabel}`;
+      const daySpan = document.createElement('span');
+      daySpan.className = 'wk-day-name';
+      daySpan.textContent = dayLabel;
+      const periodSpan = document.createElement('span');
+      periodSpan.className = 'wk-period';
+      periodSpan.textContent = ` ${periodLabel}`;
+      label.appendChild(daySpan);
+      label.appendChild(periodSpan);
 
       const icon = document.createElement('div');
       icon.className = 'wk-icon';

@@ -2306,3 +2306,16 @@ html.dark .wk-card.wk-night .wk-temp {
     grid-template-rows: none;
   }
 }
+
+@media (max-width: 767px) {
+  /* 7-per-row compact weekly view */
+  .weekly-grid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .wk-card   { padding: 4px 3px; gap: 1px; }
+  .wk-icon   { font-size: 1.2rem; }
+  .wk-temp   { font-size: 0.9rem; }
+  .wk-rain   { display: none; }
+  .wk-period { display: none; }
+}
