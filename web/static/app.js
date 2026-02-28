@@ -549,19 +549,42 @@ function renderOverviewView(data) {
     const dayItems = data.weekly_timeline.filter(i => !isNightSlot(i));
     const nightItems = data.weekly_timeline.filter(i => isNightSlot(i));
 
-    // Top row matches whatever period the first slot belongs to
+    // Force day on top, night on bottom.
+    // If the first forecast item is a night slot, it means today's daytime is in the past.
+    // We insert a placeholder so the grid aligns correctly.
     const firstIsNight = data.weekly_timeline.length > 0 && isNightSlot(data.weekly_timeline[0]);
-    const topItems = firstIsNight ? nightItems : dayItems;
-    const bottomItems = firstIsNight ? dayItems : nightItems;
+    if (firstIsNight) {
+      dayItems.unshift(null); // Placeholder for today's daytime
+    }
+
+    // The API returns exactly 14 slots. If we padded the day row, we'll have 7 days and 7 nights (14 slots total, perfect grid).
+    // If we didn't pad, we have exactly 7 days and 7 nights anyway.
+    const topItems = dayItems;
+    const bottomItems = nightItems;
 
     [...topItems, ...bottomItems].forEach(item => {
+      const card = document.createElement('div');
+
+      // If item is null (placeholder for past daytime)
+      if (!item) {
+        card.className = 'wk-card wk-day wk-placeholder';
+        const label = document.createElement('div');
+        label.className = 'wk-label';
+        const span = document.createElement('span');
+        span.className = 'wk-day-name';
+        span.textContent = '—';
+        label.appendChild(span);
+        card.appendChild(label);
+        weeklyTimelineEl.appendChild(card);
+        return;
+      }
+
       let dt;
       try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
       const isNight = isNightSlot(item);
       const dayLabel = T.days[dt.getDay()];
       const periodLabel = isNight ? T.night : T.day;
 
-      const card = document.createElement('div');
       card.className = `wk-card ${isNight ? 'wk-night' : 'wk-day'}`;
 
       const label = document.createElement('div');
@@ -601,6 +624,8 @@ function renderOverviewView(data) {
       // Group items by calendar date to get aligned day/night pairs
       const dateMap = new Map();
       data.weekly_timeline.forEach(item => {
+        // Skip null placeholders from mutation if any leaked in
+        if (!item) return;
         const dt = new Date(item.start_time.replace('+08:00', ''));
         const key = `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
         if (!dateMap.has(key)) dateMap.set(key, { dt, day: null, night: null });
@@ -609,6 +634,11 @@ function renderOverviewView(data) {
       });
 
       const dates = [...dateMap.values()].sort((a, b) => a.dt - b.dt);
+
+      // We align the sparkLabels to the EXACT columns visually rendered. 
+      // If the first item was a night slot (meaning we added a null placeholder in the UI for today's Day),
+      // the first date in the `dates` array represents Today, but its `day` value will be null.
+      // Chart.js `spanGaps: true` will draw a line across the missing Today daytime dot.
       const sparkLabels = dates.map(d => T.days[d.dt.getDay()]);
       const sparkDay = dates.map(d => d.day ? Math.round(d.day.AT) : null);
       const sparkNight = dates.map(d => d.night ? Math.round(d.night.AT) : null);
