@@ -1540,9 +1540,24 @@ html.dark .ls-badge.ls-alert-badge-warning {
     right: 0;
   }
 
-  /* Gauges: 4 per row */
+  /* Gauges: 4 per row, compact sizing to prevent overflow */
   .gauges-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+  }
+  .gauges-grid .gauge-card {
+    padding: 0.5rem 0.35rem;
+    min-height: 80px;
+  }
+  .gauges-grid .gauge-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+  .gauges-grid .gauge-value {
+    font-size: 0.85rem;
+  }
+  .gauges-grid .gauge-sub {
+    font-size: 0.6rem;
   }
 
   /* Lifestyle: 1 column */
