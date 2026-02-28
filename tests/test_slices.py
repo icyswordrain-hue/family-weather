@@ -3,7 +3,6 @@ from web.routes import build_slices
 
 MINIMAL_BROADCAST = {
     "paragraphs": {
-        "heads_up": "Watch for afternoon storms.",
         "p1_conditions": "Sunny morning.",
         "p2_garden_commute": "Garden is fine.",
         "p3_outdoor": "Great for walking.",
@@ -32,19 +31,35 @@ MINIMAL_BROADCAST = {
     "summaries": {},
 }
 
-def test_overview_has_no_heads_up_from_paragraphs():
-    """Dashboard overview slice must NOT contain heads_up sourced from LLM paragraphs."""
-    slices = build_slices(MINIMAL_BROADCAST)
-    assert "heads_up" not in slices["overview"]["alerts"]
 
-def test_lifestyle_has_heads_up_card():
-    """Lifestyle slice must expose heads_up text from LLM paragraphs as alert card."""
+def test_overview_slice_has_no_heads_up_key():
+    """Overview slice must not expose a heads_up key (alert lives in lifestyle only)."""
     slices = build_slices(MINIMAL_BROADCAST)
-    assert slices["lifestyle"]["alert"] == "Watch for afternoon storms."
+    assert "heads_up" not in slices["overview"]
 
-def test_lifestyle_alert_is_none_when_no_paragraphs():
-    """Lifestyle alert field is None when paragraphs are absent."""
+
+def test_lifestyle_alert_empty_when_no_summaries():
+    """Lifestyle alert is an empty list when summaries contains no alert."""
+    slices = build_slices(MINIMAL_BROADCAST)
+    assert slices["lifestyle"]["alert"] == []
+
+
+def test_lifestyle_alert_populated_from_summaries():
+    """Lifestyle alert is sourced from summaries['alert'] dict."""
     broadcast = dict(MINIMAL_BROADCAST)
-    broadcast["paragraphs"] = {}
+    broadcast["summaries"] = {
+        "alert": {"text": "Watch for afternoon storms.", "level": "WARNING"}
+    }
     slices = build_slices(broadcast)
-    assert slices["lifestyle"]["alert"] is None
+    alert_list = slices["lifestyle"]["alert"]
+    assert len(alert_list) == 1
+    assert alert_list[0]["level"] == "WARNING"
+    assert alert_list[0]["msg"] == "Watch for afternoon storms."
+
+
+def test_lifestyle_alert_empty_when_alert_text_blank():
+    """Lifestyle alert is empty list when alert text is an empty string."""
+    broadcast = dict(MINIMAL_BROADCAST)
+    broadcast["summaries"] = {"alert": {"text": "", "level": "INFO"}}
+    slices = build_slices(broadcast)
+    assert slices["lifestyle"]["alert"] == []

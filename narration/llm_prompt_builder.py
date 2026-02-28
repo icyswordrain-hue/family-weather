@@ -122,6 +122,28 @@ Then output a single valid JSON object (no code fences, no trailing commas) with
   "forecast_oneliner": "the bottom-line takeaway from P5",
   "accuracy_grade": "spot on / close / off / first broadcast"
 }
+
+---CARDS---
+
+After the ---METADATA--- JSON, output this exact separator on its own line: ---CARDS---
+Then output a single valid JSON object (no code fences, no trailing commas) with exactly these keys:
+
+{
+  "wardrobe": "Exactly 2 sentences. What to wear given apparent temperature and rain.",
+  "rain_gear": "Exactly 2 sentences. Whether to carry umbrella, raincoat, or boots.",
+  "commute": "Exactly 2 sentences. Morning and evening commute road conditions.",
+  "meals": "Exactly 2 sentences. Meal suggestion matching the weather mood.",
+  "hvac": "Exactly 2 sentences. Air conditioning, heating, or ventilation recommendation.",
+  "garden": "Exactly 4 sentences. Garden tasks and soil or plant care advice.",
+  "outdoor": "Exactly 4 sentences. Outdoor activity for Dad — Parkinson's safety considerations and best time window.",
+  "alert": {
+    "text": "1–2 sentences. Summarise today's notable heads-ups, health risks, or weather concerns from P1. Use empty string if nothing significant to flag.",
+    "level": "INFO or WARNING or CRITICAL"
+  }
+}
+
+All card values must be written in the same language as the narration paragraphs above.
+Level guide: CRITICAL = cardiac or Ménière's health risk mentioned in P1; WARNING = significant weather or safety heads-up; INFO = mild note or clear uneventful day.
 """
 
 V6_SYSTEM_PROMPT_EN = V6_SYSTEM_PROMPT  # alias — English prompt is unchanged
@@ -214,6 +236,28 @@ P6 之後，輸出這個完全一致的分隔線：---METADATA---
   "forecast_oneliner": "P5 的總結一句話",
   "accuracy_grade": "spot on / close / off / first broadcast"
 }
+
+---CARDS---
+
+輸出 ---METADATA--- JSON 之後，在單獨一行輸出這個完全一致的分隔線：---CARDS---
+然後輸出一個有效的 JSON 物件（無程式碼區塊標記，無結尾逗號），包含以下鍵名：
+
+{
+  "wardrobe": "精確 2 句話。根據體感溫度和降雨說明穿著建議。",
+  "rain_gear": "精確 2 句話。是否需要攜帶雨傘、雨衣或雨靴。",
+  "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。",
+  "meals": "精確 2 句話。符合天氣心情的餐食建議。",
+  "hvac": "精確 2 句話。空調、暖氣或通風建議。",
+  "garden": "精確 4 句話。花園工作和土壤或植物護理建議。",
+  "outdoor": "精確 4 句話。爸爸的戶外活動建議——帕金森氏症安全考量及最佳時間窗口。",
+  "alert": {
+    "text": "1–2 句話。摘要 P1 中今天值得注意的提示、健康風險或天氣狀況。若無特別需要提醒的事項則使用空字串。",
+    "level": "INFO 或 WARNING 或 CRITICAL"
+  }
+}
+
+所有卡片值必須使用與上方廣播段落相同的語言（繁體中文）撰寫。
+等級說明：CRITICAL = P1 提及的心臟或梅尼爾氏症健康風險；WARNING = 重要天氣或安全提示；INFO = 輕微注意事項或平靜無事的一天。
 """
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -223,7 +267,7 @@ P6 之後，輸出這個完全一致的分隔線：---METADATA---
 REGEN_INSTRUCTION = """
 
 SPECIAL TASK — Database Refresh (runs every 14 days):
-After the ---METADATA--- JSON, add a second separator ---REGEN--- on its own line, then output a single JSON object with two keys:
+After the ---CARDS--- JSON, add a separator ---REGEN--- on its own line, then output a single JSON object with two keys:
 
 {
   "meals": {
@@ -312,6 +356,7 @@ def parse_narration_response(raw_response: str) -> dict:
         "full_text": "",
         "paragraphs": {},
         "metadata": {},
+        "cards": {},
         "regen": None,
     }
 
@@ -324,20 +369,37 @@ def parse_narration_response(raw_response: str) -> dict:
     paragraphs = [p.strip() for p in narration_text.split("\n\n") if p.strip()]
     _assign_paragraphs(paragraphs, result)
 
-    # ── Parse metadata + optional regen ───────────────────────────────────
+    # ── Parse metadata + optional cards + optional regen ─────────────────
     if len(parts) > 1:
         remainder = parts[1].strip()
-        regen_parts = remainder.split("---REGEN---", 1)
-        metadata_text = regen_parts[0].strip()
+
+        # Split off ---CARDS--- first (if present)
+        cards_parts = remainder.split("---CARDS---", 1)
+        metadata_text = cards_parts[0].strip()
+        cards_and_regen = cards_parts[1].strip() if len(cards_parts) > 1 else ""
+
+        # Then split cards from ---REGEN---
+        regen_parts = cards_and_regen.split("---REGEN---", 1)
+        cards_text = regen_parts[0].strip()
+        regen_text = regen_parts[1].strip() if len(regen_parts) > 1 else ""
 
         try:
             result["metadata"] = json.loads(metadata_text)
         except json.JSONDecodeError:
             logger.warning("Failed to parse ---METADATA--- JSON: %s", metadata_text[:200])
 
-        if len(regen_parts) > 1:
+        if cards_text:
             try:
-                result["regen"] = json.loads(regen_parts[1].strip())
+                raw = cards_text.strip("` \n")
+                if raw.startswith("json"):
+                    raw = raw[4:].strip()
+                result["cards"] = json.loads(raw)
+            except json.JSONDecodeError:
+                logger.warning("Failed to parse ---CARDS--- JSON: %s", cards_text[:200])
+
+        if regen_text:
+            try:
+                result["regen"] = json.loads(regen_text)
             except json.JSONDecodeError:
                 logger.warning("Failed to parse ---REGEN--- JSON")
 

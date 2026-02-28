@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
 
 from narration.llm_prompt_builder import build_prompt
 from narration.fallback_narrator import build_narration
-from narration.llm_summarizer import summarize_for_lifestyle
 from backend.cache import NarrationCache, make_cache_key, _classify_time
 
 # lang-aware cache — separate namespaces for EN and ZH results
@@ -124,24 +122,3 @@ def generate_narration_with_fallback(
         return text, "template"
 
 
-
-def run_parallel_summarization(
-    paragraphs: dict,
-    aqi_forecast_raw: str,
-    lang: str = 'en',
-) -> tuple[dict, str | None]:
-    """Run lifestyle summarization.
-    
-    Args:
-        paragraphs:       Parsed narration paragraphs dict from parse_narration_response()
-        aqi_forecast_raw: Unused, kept for backwards compatibility.
-        lang:             Language code ('en' or 'zh-TW') — forwarded to summarizer.
-
-    Returns:
-        (lifestyle_summaries, None)
-    """
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        future_lifestyle = executor.submit(summarize_for_lifestyle, paragraphs, lang)
-        summaries = future_lifestyle.result()
-
-    return summaries, None

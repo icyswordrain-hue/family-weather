@@ -3,11 +3,10 @@
 TDD: these tests were written before the implementation.
 All external calls (build_prompt, generate_gemini, generate_claude, build_narration) are mocked.
 """
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from backend.pipeline import (
     check_regen_cycle,
     generate_narration_with_fallback,
-    run_parallel_summarization,
 )
 
 import pytest
@@ -91,24 +90,6 @@ def test_narration_fallback_text_not_empty(mock_template, mock_gemini, mock_prom
     text, source = generate_narration_with_fallback("GEMINI", {}, [], "2026-02-22")
     assert len(text) > 0
     assert source == "template"
-
-# ── run_parallel_summarization ────────────────────────────────────────────────
-
-@patch("backend.pipeline.summarize_for_lifestyle")
-@patch("backend.pipeline.summarize_aqi_forecast")
-def test_parallel_summ_with_aqi(mock_aqi, mock_lifestyle):
-    mock_lifestyle.return_value = {"section1": "summary1"}
-    mock_aqi.return_value = "AQI looks fine."
-    summaries, aqi_en = run_parallel_summarization({"p1": "text"}, "raw aqi content")
-    assert summaries == {"section1": "summary1"}
-    assert aqi_en == "AQI looks fine."
-
-@patch("backend.pipeline.summarize_for_lifestyle")
-def test_parallel_summ_no_aqi(mock_lifestyle):
-    mock_lifestyle.return_value = {"section1": "summary1"}
-    summaries, aqi_en = run_parallel_summarization({"p1": "text"}, "")
-    assert summaries == {"section1": "summary1"}
-    assert aqi_en is None
 
 # ── build_system_prompt i18n ──────────────────────────────────────────────────
 

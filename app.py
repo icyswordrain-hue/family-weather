@@ -36,7 +36,6 @@ from web.routes import build_slices
 from backend.pipeline import (
     check_regen_cycle,
     generate_narration_with_fallback,
-    run_parallel_summarization,
 )
 
 # ── Flask app ─────────────────────────────────────────────────────────────────
@@ -260,20 +259,14 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     from concurrent.futures import ThreadPoolExecutor
     from narration.tts_client import synthesize_and_upload as _synth
 
-    aqi_forecast_raw = aqi.get("forecast", {}).get("content", "")
+    summaries = parsed.get("cards", {})
+    if not summaries:
+        logger.warning("---CARDS--- block missing from narration; lifestyle cards will use fallbacks")
 
     with ThreadPoolExecutor(max_workers=2) as _tts_exec:
         future_tts = _tts_exec.submit(_synth, narration_text, date_str=date_str, lang=lang)
-        yield {"type": "log", "message": "Collecting Summarization..."}
-        summaries, aqi_summary_en = run_parallel_summarization(paragraphs, aqi_forecast_raw, lang=lang)
         yield {"type": "log", "message": "Collecting TTS audio..."}
         audio_urls = future_tts.result()
-
-    if aqi_summary_en:
-        yield {"type": "log", "message": "AQI summary collected."}
-        aqi["forecast"]["summary_en"] = aqi_summary_en
-        if "aqi_forecast" in processed:
-            processed["aqi_forecast"]["summary_en"] = aqi_summary_en
 
     yield {"type": "log", "message": "Parallel processing complete."}
 

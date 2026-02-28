@@ -10,7 +10,6 @@ Views:
 """
 
 from __future__ import annotations
-from typing import cast, Optional
 
 
 def build_slices(broadcast: dict, lang: str = "en") -> dict:
@@ -32,8 +31,6 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
     forecast_segs = processed.get("forecast_segments", {})
     forecast_7day = processed.get("forecast_7day", [])
     climate = processed.get("climate_control", {})
-    cardiac = processed.get("cardiac_alert")
-    menieres = processed.get("menieres_alert")
     commute = processed.get("commute", {})
     aqi_realtime = processed.get("aqi_realtime", {})
     aqi_forecast = processed.get("aqi_forecast", {})
@@ -45,7 +42,7 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
     return {
         "current": _slice_current(current_data, aqi_realtime),
         "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
-        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, cardiac=cardiac, menieres=menieres, lang=lang),
+        "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, lang=lang),
         "narration": _slice_narration(paragraphs, meta),
     }
 
@@ -136,7 +133,7 @@ def _slice_overview(
     }
 
 
-def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, cardiac: dict | None = None, menieres: dict | None = None, lang: str = "en") -> dict:
+def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, lang: str = "en") -> dict:
     """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
     if not isinstance(summaries, dict):
         summaries = {}
@@ -225,20 +222,14 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")
 
-    # Alert card: cardiac + menieres first, then structured heads_ups, then LLM fallback
-    _alert = []
-    if cardiac and cardiac.get("triggered"):
-        reasons = cardiac.get("reasons") or []
-        _alert.append({"level": "CRITICAL", "type": "Health", "msg": reasons[0] if reasons else "Cardiac risk"})
-    if menieres and menieres.get("triggered"):
-        reasons = menieres.get("reasons") or []
-        lvl = "CRITICAL" if menieres.get("severity") == "high" else "WARNING"
-        _alert.append({"level": lvl, "type": "Health", "msg": reasons[0] if reasons else "Ménière's risk"})
-    _alert += processed.get("heads_ups") or []
-    if not _alert:
-        _fallback = paragraphs.get("heads_up") or paragraphs.get("p1_summary")
-        if _fallback:
-            _alert = [{"level": "WARNING", "type": "General", "msg": _fallback}]
+    # Alert card: sourced from LLM ---CARDS--- alert field
+    alert_summary = summaries.get("alert", {})
+    if isinstance(alert_summary, dict):
+        alert_text = alert_summary.get("text", "")
+        alert_level = alert_summary.get("level", "INFO")
+        _alert = [{"level": alert_level, "type": "General", "msg": alert_text}] if alert_text else []
+    else:
+        _alert = []
 
     return {
         "wardrobe": {
