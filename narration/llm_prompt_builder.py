@@ -132,8 +132,8 @@ Then output a single valid JSON object (no code fences, no trailing commas) with
   "wardrobe": "Exactly 1 sentence. What to wear based on apparent temperature only. Do not mention rain or rain gear — that is covered by the rain_gear card.",
   "rain_gear": "Exactly 1 sentence. Whether to carry umbrella, raincoat, or boots.",
   "commute": "Exactly 2 sentences. Morning and evening commute road conditions.",
-  "meals": "Exactly 2 sentences. Meal suggestion matching the weather mood.",
-  "hvac": "Exactly 2 sentences. Air conditioning, heating, or ventilation recommendation.",
+  "meals": "Exactly 1 sentence. Meal suggestion matching the weather mood.",
+  "hvac": "Exactly 1 sentence. Air conditioning, heating, or ventilation recommendation.",
   "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
   "outdoor": "Exactly 2 sentences. Outdoor activity for Dad — Parkinson's safety considerations and best time window.",
   "alert": {
@@ -246,8 +246,8 @@ P6 之後，輸出這個完全一致的分隔線：---METADATA---
   "wardrobe": "精確 1 句話。根據體感溫度說明穿著建議。不要提及雨具或降雨，那屬於 rain_gear 卡片。",
   "rain_gear": "精確 1 句話。是否需要攜帶雨傘、雨衣或雨靴。",
   "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。",
-  "meals": "精確 2 句話。符合天氣心情的餐食建議。",
-  "hvac": "精確 2 句話。空調、暖氣或通風建議。",
+  "meals": "精確 1 句話。符合天氣心情的餐食建議。",
+  "hvac": "精確 1 句話。空調、暖氣或通風建議。",
   "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
   "outdoor": "精確 2 句話。爸爸的戶外活動建議——帕金森氏症安全考量及最佳時間窗口。",
   "alert": {

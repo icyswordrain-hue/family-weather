@@ -434,9 +434,9 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
     if suggestions:
         dish = suggestions[0]
         if is_zh:
-            meals = f"今天的天氣氛圍{mood}，推薦來一碗{dish}。這道料理很適合這種天氣，暖胃又對味。"
+            meals = f"今天的天氣氛圍{mood}，推薦來一碗{dish}。"
         else:
-            meals = f"The {mood.lower()} weather calls for {dish} today. It's exactly the kind of meal that fits the mood."
+            meals = f"The {mood.lower()} weather calls for {dish} today."
     else:
         meals = "今天沒有特別推薦的餐點。" if is_zh else "No specific meal recommendation for today."
 
@@ -451,32 +451,21 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
             "heating": "暖氣", "dehumidify": "除濕機", "heating_optional": "暖氣（選用）",
         }.get(mode, mode)
         if mode in ("cooling", "heating", "dehumidify"):
-            hvac_s1 = f"建議開啟{mode_zh}。"
-            hvac_s2 = (
-                f"設定 {set_temp}，預計使用約 {est_hours} 小時。" if set_temp and est_hours
-                else (notes[0] if notes else "請依個人舒適度調整。")
-            )
+            detail = f"設定 {set_temp}，約 {est_hours} 小時。" if set_temp and est_hours else (notes[0] if notes else "")
+            hvac_text = f"建議開啟{mode_zh}{'，' + detail.rstrip('。') if detail else ''}。"
         elif mode == "heating_optional":
-            hvac_s1 = "今天可以考慮短暫使用暖氣或電暖器。"
-            hvac_s2 = f"大約 {est_hours} 小時即可，其餘時間多穿一件即可。" if est_hours else "依需求斟酌使用即可。"
+            hvac_text = f"今天可以短暫使用暖氣{f'，約 {est_hours} 小時即可' if est_hours else ''}。"
         else:
-            hvac_s1 = "今天天氣舒適，不需要開冷暖氣。"
-            hvac_s2 = "可以開窗通風，享受自然空氣。"
+            hvac_text = "今天天氣舒適，開窗通風即可。"
     else:
         if mode in ("cooling", "heating", "dehumidify"):
             mode_en = {"cooling": "AC cooling", "heating": "heating", "dehumidify": "the dehumidifier"}.get(mode, mode)
-            hvac_s1 = f"Run {mode_en} today for comfort."
-            hvac_s2 = (
-                f"Set to {set_temp}, roughly {est_hours} hours should do it." if set_temp and est_hours
-                else (notes[0] if notes else "Adjust to personal comfort.")
-            )
+            detail = f"set to {set_temp}, roughly {est_hours} hours" if set_temp and est_hours else (notes[0] if notes else "")
+            hvac_text = f"Run {mode_en} today{f' — {detail}' if detail else ''}."
         elif mode == "heating_optional":
-            hvac_s1 = "A brief burst of heat in the morning or evening wouldn't hurt."
-            hvac_s2 = f"About {est_hours} hours should be plenty — otherwise just layer up." if est_hours else "Otherwise layering up indoors is fine."
+            hvac_text = f"A brief burst of heat wouldn't hurt{f' — about {est_hours} hours should do' if est_hours else ''}."
         else:
-            hvac_s1 = "Comfortable today — no AC or heating required."
-            hvac_s2 = "Open the windows and let some fresh air in."
-    hvac_text = f"{hvac_s1} {hvac_s2}"
+            hvac_text = "Comfortable today — open the windows and let some fresh air in."
 
     # ── Garden (2 sentences) ──────────────────────────────────────────────────
     yesterday_garden = None
