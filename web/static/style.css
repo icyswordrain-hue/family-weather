@@ -2048,27 +2048,32 @@ html.dark .player-progress-wrap {
 }
 
 .player-speed-btn {
-  background: none;
+  background: var(--blue-lt, #eef2ff);
   border: none;
-  color: var(--muted, #7a8ca0);
-  font-size: 1.0rem;
-  font-weight: 600;
+  color: var(--blue, #4d7cfe);
+  font-size: 0.85rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: 20px;
   flex-shrink: 0;
-  transition: color 150ms, background 150ms;
+  transition: background 150ms, color 150ms;
 }
 
 .player-speed-btn:hover {
-  color: var(--text, #1a2235);
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--blue, #4d7cfe);
+  color: #ffffff;
+}
+
+html.dark .player-speed-btn {
+  background: rgba(77, 124, 254, 0.18);
+  color: #7da4ff;
 }
 
 html.dark .player-speed-btn:hover {
-  color: #e8edf3;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(77, 124, 254, 0.35);
+  color: #aec4ff;
 }
 
 .player-sheet-toggle {
