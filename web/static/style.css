@@ -1540,9 +1540,9 @@ html.dark .ls-badge.ls-alert-badge-warning {
     right: 0;
   }
 
-  /* Gauges: 2×2 grid */
+  /* Gauges: 4 per row */
   .gauges-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   /* Lifestyle: 1 column */
