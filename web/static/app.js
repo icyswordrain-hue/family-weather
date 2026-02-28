@@ -549,19 +549,23 @@ function renderOverviewView(data) {
     let dayItems = data.weekly_timeline.filter(i => !isNightSlot(i));
     let nightItems = data.weekly_timeline.filter(i => isNightSlot(i));
 
-    // Force day on top, night on bottom.
-    // APPROACH A: If the first forecast item is a night slot ("Tonight"), drop it.
-    // The top row will start with "Tomorrow Day".
+    // Always start from "Tomorrow Day" — skip any current-day slots so the grid
+    // is a consistent "next 7 days" view regardless of time or broadcast time.
     const firstIsNight = data.weekly_timeline.length > 0 && isNightSlot(data.weekly_timeline[0]);
     if (firstIsNight) {
-      nightItems.shift(); // Drop "Tonight"
+      // Normal case: broadcast generated at night. First slot is "Tonight".
+      // Drop it so the top row begins with Tomorrow Day.
+      nightItems.shift();
+    } else if (dayItems.length > 0) {
+      // Edge case: broadcast generated during daytime. First slot is "Today Day".
+      // Drop both Today Day and Tonight so the grid still starts from Tomorrow.
+      dayItems.shift();   // Remove Today Day
+      nightItems.shift(); // Remove Tonight (first night item)
     }
 
-    // Now balance them so they both have the same length.
-    // DayItems should dictate the column count (typically 7).
-    while (nightItems.length < dayItems.length) {
-      nightItems.push(null); // Add missing placeholder to the end of the night row
-    }
+    // Pad whichever array is shorter so both rows have equal column count.
+    while (nightItems.length < dayItems.length) nightItems.push(null);
+    while (dayItems.length < nightItems.length) dayItems.push(null);
 
     const topItems = dayItems;
     const bottomItems = nightItems;

@@ -125,7 +125,7 @@ def _slice_overview(
 
     return {
         "timeline": timeline_list,
-        "weekly_timeline": forecast_7day[:14],
+        "weekly_timeline": forecast_7day[:16],
         "aqi_forecast": {
             **aqi_forecast,
         },
