@@ -451,14 +451,14 @@ input:focus-visible {
 }
 
 .view-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
 
 .view-header h1 {
-  font-size: 2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
 }
@@ -1438,11 +1438,11 @@ html.dark .ls-badge.ls-alert-badge-warning {
   align-items: center;
   gap: 8px;
   padding: 28px 0 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: var(--text);
   border-bottom: 2px solid var(--border);
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
 /* ── FAB (mobile only) ──────────────────────────────────────────────────── */
