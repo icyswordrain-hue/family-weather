@@ -2220,16 +2220,12 @@ html.dark .ps-controls {
 }
 
 .ps-progress-wrap {
-  height: 6px;
+  height: 8px;
   background: var(--border, #e8ecf3);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
-  margin-bottom: 10px;
-  /* Larger tap area without visual change */
-  padding: 10px 0;
-  margin-top: -10px;
-  box-sizing: content-box;
+  margin: 4px 0 12px;
 }
 
 html.dark .ps-progress-wrap {
@@ -2237,10 +2233,10 @@ html.dark .ps-progress-wrap {
 }
 
 .ps-progress-bar {
-  height: 6px;
+  height: 100%;
   width: 0%;
   background: var(--blue, #4d7cfe);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.25s linear;
   pointer-events: none;
 }
