@@ -254,21 +254,12 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     metadata["narration_source"] = narration_source
     metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
 
-    # 5.5 Parallel Processing: Lifestyle Summaries, AQI Summary, and TTS
-    yield {"type": "log", "message": "Parallel processing: Summarization & TTS..."}
-    from concurrent.futures import ThreadPoolExecutor
+    # 5.5 Synthesize TTS
+    yield {"type": "log", "message": "Synthesizing audio briefing..."}
     from narration.tts_client import synthesize_and_upload as _synth
-
+    
     summaries = parsed.get("cards", {})
-    if not summaries:
-        logger.warning("---CARDS--- block missing from narration; lifestyle cards will use fallbacks")
-
-    with ThreadPoolExecutor(max_workers=2) as _tts_exec:
-        future_tts = _tts_exec.submit(_synth, narration_text, date_str=date_str, lang=lang)
-        yield {"type": "log", "message": "Collecting TTS audio..."}
-        audio_urls = future_tts.result()
-
-    yield {"type": "log", "message": "Parallel processing complete."}
+    audio_urls = _synth(narration_text, date_str=date_str, lang=lang)
 
     # 7. Save
     yield {"type": "log", "message": "Saving broadcast to history..."}

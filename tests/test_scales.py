@@ -3,7 +3,8 @@ from data.scales import (
     _val_to_scale, _wind_to_level, _aqi_to_level,
     wind_ms_to_beaufort, _beaufort_index, wx_to_cloud_cover,
     degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
-    UV_SCALE, PRECIP_SCALE_5, HUM_SCALE_5, PRES_SCALE_5, VIS_SCALE_5, BEAUFORT_SCALE_5,
+    wx_to_pop, _hum_to_scale,
+    UV_SCALE, PRECIP_SCALE_5, PRES_SCALE_5, VIS_SCALE_5, BEAUFORT_SCALE_5,
 )
 
 # ── _val_to_scale ──────────────────────────────────────────────────────────────
@@ -21,8 +22,8 @@ def test_precip_possible(): assert _val_to_scale(50, PRECIP_SCALE_5)[0] == "Poss
 def test_precip_likely():   assert _val_to_scale(70, PRECIP_SCALE_5)[0] == "Likely"
 def test_precip_very_likely(): assert _val_to_scale(90, PRECIP_SCALE_5)[0] == "Very Likely"
 
-def test_hum_dry():        assert _val_to_scale(15, HUM_SCALE_5)[0] == "Dry"
-def test_hum_soggy():      assert _val_to_scale(90, HUM_SCALE_5)[0] == "Soggy"
+def test_hum_dry():        assert _hum_to_scale(15)[0] == "Very Dry"
+def test_hum_soggy():      assert _hum_to_scale(90)[0] == "Very Humid"
 
 def test_vis_very_poor():  assert _val_to_scale(0.5, VIS_SCALE_5)[0] == "Very Poor"
 def test_vis_excellent():  assert _val_to_scale(15.0, VIS_SCALE_5)[0] == "Excellent"
@@ -70,3 +71,11 @@ def test_aqi_status_unhealthy(): assert translate_aqi_status("不健康") == "Un
 
 def test_pollutant_pm25():  assert translate_pollutant("細懸浮微粒") == "PM2.5"
 def test_pollutant_o3():    assert translate_pollutant("臭氧") == "O3"
+
+
+def test_wx_to_pop():
+    assert wx_to_pop(1) == 0      # Sunny/Clear
+    assert wx_to_pop(4) == 20     # Cloudy
+    assert wx_to_pop(8) == 50     # Showers
+    assert wx_to_pop(15) == 80    # Thunderstorms
+    assert wx_to_pop(None) is None

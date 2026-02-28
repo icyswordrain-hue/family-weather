@@ -31,6 +31,7 @@ from data.scales import (
     BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5, PRECIP_SCALE_5,
     _hum_to_scale, _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
     wx_to_cloud_cover, degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
+    wx_to_pop,
 )
 from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_heads_ups
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
@@ -135,7 +136,12 @@ def process(
     for slot in primary_7day_slots:
         # AT is already apparent temperature from the CWA API (MaxAT/MinAT) — do not recalculate
         slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
-        slot["precip_text"], slot["precip_level"] = _val_to_scale(slot.get("PoP12h"), PRECIP_SCALE_5)
+        
+        pop = slot.get("PoP12h")
+        if pop is None:
+            pop = wx_to_pop(slot.get("Wx"))
+            
+        slot["precip_text"], slot["precip_level"] = _val_to_scale(pop, PRECIP_SCALE_5)
         slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
 
     # ── 3. Segment the forecast ───────────────────────────────────────────────
@@ -370,7 +376,7 @@ def _segment_forecast(
     current_seg_idx = start_idx
     target_day = now_dt.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    for i in range(4):
+    for i in range(5):
         idx = int((current_seg_idx + i) % 4)
         seg_name = SEGMENT_ORDER[idx]
         lo, hi = SEGMENTS[seg_name]
@@ -390,6 +396,10 @@ def _segment_forecast(
 
     # 3. Fill the found dict using target windows
     for seg_name, day, lo, hi in target_sequence:
+        # Skip if we already found a valid slot for this segment
+        if found[seg_name] is not None:
+            continue
+
         # Search for a slot that covers this day/hour window
         for slot in slots:
             try:

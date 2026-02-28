@@ -179,3 +179,16 @@ def translate_pollutant(name: str | None) -> str:
         "一氧化碳": "CO"
     }
     return mapping.get(name or "", name or "Unknown")
+
+
+def wx_to_pop(wx_code: int | None) -> int | None:
+    """Map Wx code to estimated PoP fallback percentage."""
+    if wx_code is None:
+        return None
+    if wx_code <= 3:
+        return 0     # Clear/Fair
+    if wx_code <= 7:
+        return 20    # Cloudy/Overcast
+    if wx_code <= 14:
+        return 50   # Showers
+    return 80                     # Thunderstorms (15+)

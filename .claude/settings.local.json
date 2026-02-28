@@ -13,7 +13,8 @@
       "Bash(printf:*)",
       "Bash(python3 -c \":*)",
       "Bash(python3 -m json.tool)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(py \"c:/Users/User/.gemini/antigravity/scratch/family-weather/.agent/skills/ui-ux-pro-max/scripts/search.py\" \"weather dashboard family minimal clean card\" --design-system -p \"Family Weather\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.gemini\\antigravity\\scratch\\family-weather"
