@@ -913,11 +913,13 @@ function initMobileNav() {
   // Mobile: all views visible via CSS (display: block).
   // No tab switching needed. Scroll is handled by the browser.
 
-  // Lift current conditions above lifestyle so the scroll order is:
-  // 1. current conditions  2. lifestyle cards  3. timelines / forecast
+  // Lift current conditions (+ its section header) above lifestyle so the
+  // scroll order is: 1. conditions  2. lifestyle cards  3. timelines / forecast
   const conditions = document.querySelector('.current-conditions-wrapper');
+  const dashHeader = document.querySelector('#view-dashboard .section-header-card');
   const lifestyle  = document.getElementById('view-lifestyle');
   if (conditions && lifestyle) {
+    if (dashHeader) lifestyle.parentNode.insertBefore(dashHeader, lifestyle);
     lifestyle.parentNode.insertBefore(conditions, lifestyle);
   }
 }
