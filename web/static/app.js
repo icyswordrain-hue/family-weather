@@ -284,6 +284,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initNav();
   initPlayerBar();
   initPlayerSheet();
+  initFAB();
   initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
@@ -833,6 +834,68 @@ function initSidebarControls() {
   // Provider toggles
   document.querySelectorAll('input[name="provider"]').forEach(input => {
     input.addEventListener('change', triggerRefresh);
+  });
+}
+
+// ── FAB (mobile controls sheet) ────────────────────────────────────────────
+function initFAB() {
+  const btn      = document.getElementById('fab-btn');
+  const sheet    = document.getElementById('fab-sheet');
+  const backdrop = document.getElementById('fab-backdrop');
+
+  if (!btn || !sheet) return;
+
+  function openFAB() {
+    sheet.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFAB() {
+    sheet.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  btn.addEventListener('click', () => {
+    sheet.classList.contains('open') ? closeFAB() : openFAB();
+  });
+  if (backdrop) backdrop.addEventListener('click', closeFAB);
+
+  // FAB language radios → mirror sidebar radios
+  document.querySelectorAll('input[name="language-fab"]').forEach(fab => {
+    fab.addEventListener('change', () => {
+      const sidebar = document.querySelector(`input[name="language"][value="${fab.value}"]`);
+      if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+  });
+
+  // FAB provider radios → mirror sidebar radios
+  document.querySelectorAll('input[name="provider-fab"]').forEach(fab => {
+    fab.addEventListener('change', () => {
+      const sidebar = document.querySelector(`input[name="provider"][value="${fab.value}"]`);
+      if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+  });
+
+  // FAB refresh → delegate to sidebar refresh button
+  const fabRefresh = document.getElementById('fab-refresh-btn');
+  if (fabRefresh) {
+    fabRefresh.addEventListener('click', () => {
+      closeFAB();
+      document.getElementById('refresh-btn')?.click();
+    });
+  }
+
+  // Sync FAB radios to current sidebar state on init
+  ['language', 'provider'].forEach(name => {
+    const checked = document.querySelector(`input[name="${name}"]:checked`);
+    if (checked) {
+      const fab = document.querySelector(`input[name="${name}-fab"][value="${checked.value}"]`);
+      if (fab) fab.checked = true;
+    }
   });
 }
 
