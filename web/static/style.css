@@ -1540,6 +1540,43 @@ html.dark .ls-badge.ls-alert-badge-warning {
     right: 0;
   }
 
+  /* Top row: compact sizing to prevent overflow */
+  .current-top-row {
+    gap: 0.4rem;
+  }
+  .current-top-row .gauge-card,
+  .current-top-row .current-hero {
+    min-height: 110px;
+  }
+  .current-top-row .gauge-card {
+    padding: 0.5rem 0.35rem;
+  }
+  .current-top-row .gauge-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+  .current-top-row .gauge-value {
+    font-size: 0.85rem;
+  }
+  .current-top-row .gauge-sub {
+    font-size: 0.6rem;
+  }
+  .current-hero {
+    padding: 0.6rem 0.4rem;
+  }
+  .hero-main {
+    gap: 0.4rem;
+  }
+  #cur-icon {
+    font-size: 1.6rem;
+  }
+  #cur-temp {
+    font-size: 1.8rem;
+  }
+  #cur-weather-text {
+    font-size: 0.75rem;
+  }
+
   /* Gauges: 4 per row, compact sizing to prevent overflow */
   .gauges-grid {
     grid-template-columns: repeat(4, 1fr);
