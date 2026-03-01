@@ -254,3 +254,46 @@ Updated `@media (max-width: 767px)` — mobile re-shows header row; condition te
 | ≥ 901 px (desktop) | shown | hidden | shown |
 | 768–900 px (tablet) | hidden | restored | shown |
 | ≤ 767 px (mobile) | shown | hidden | hidden |
+
+---
+
+## Bug fix — weekly grid misalignment when fewer than 7 day/night slots
+
+> **Commit:** `a6de8bc`
+
+### Problem
+
+The CSS grid is `repeat(7, 1fr)` × `repeat(2, auto)` = 14 fixed cells. CSS auto-placement
+fills cells left-to-right, top-to-bottom. When the broadcast data produced only 6 day +
+6 night slots (12 items, not 14), the grid misfired:
+
+| Cell | Expected | Actual |
+|---|---|---|
+| Row 1, cols 1–6 | day[0..5] | day[0..5] ✓ |
+| Row 1, col 7 | empty | **night[0] bled in** ✗ |
+| Row 2, cols 1–5 | night[0..4] | night[1..5] (off by one) ✗ |
+
+The JS padding logic (`while (night < day)` / `while (day < night)`) only equalised the
+two arrays relative to each other. When both were already equal at 6, neither got padded,
+and 12 items entered 14 cells.
+
+### Fix
+
+**`web/static/app.js`** — replace the mutual-equalisation while-loops with explicit
+normalisation to exactly 7:
+
+```js
+// Before
+while (nightItems.length < dayItems.length) nightItems.push(null);
+while (dayItems.length < nightItems.length) dayItems.push(null);
+
+// After
+while (dayItems.length   < 7) dayItems.push(null);
+while (nightItems.length < 7) nightItems.push(null);
+dayItems   = dayItems.slice(0, 7);
+nightItems = nightItems.slice(0, 7);
+```
+
+The null placeholder paths in both the header row (`hdr.textContent = '—'`) and the card
+loop (`if (!item) { ... wk-placeholder ... return; }`) were already in place and handle
+the padded slots correctly.
