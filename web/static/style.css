@@ -1570,16 +1570,16 @@ html.dark .source-claude {
   }
 
   .current-top-row .gauge-label {
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.02em;
   }
 
   .current-top-row .gauge-value {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
 
   .current-top-row .gauge-sub {
-    font-size: 0.7rem;
+    font-size: 0.78rem;
   }
 
   .current-hero {
@@ -1614,16 +1614,16 @@ html.dark .source-claude {
   }
 
   .gauges-grid .gauge-label {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: 0.02em;
   }
 
   .gauges-grid .gauge-value {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
 
   .gauges-grid .gauge-sub {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
 
   /* Lifestyle: 1 column */
