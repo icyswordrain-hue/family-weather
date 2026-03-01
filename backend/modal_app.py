@@ -45,13 +45,11 @@ def health():
 def refresh(payload: dict = None):
     import sys
     _bootstrap_gcp_credentials()
-    os.environ.setdefault("RUN_MODE", "MODAL")
+    os.environ["RUN_MODE"] = "MODAL"
     sys.path.insert(0, "/app")
     # Reset cached LLM clients so they re-initialise with injected secrets
     import narration.claude_client as _cc
     _cc._client = None
-    os.environ.setdefault("RUN_MODE", "MODAL")
-    sys.path.insert(0, "/app")
     from fastapi.responses import StreamingResponse
     from app import _pipeline_steps
 
@@ -67,6 +65,11 @@ def refresh(payload: dict = None):
                 yield json.dumps(step) + "\n"
         except Exception as e:
             yield json.dumps({"type": "error", "message": str(e)}) + "\n"
+        finally:
+            try:
+                volume.commit()
+            except Exception:
+                pass  # non-fatal
 
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 

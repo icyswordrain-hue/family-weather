@@ -1084,6 +1084,8 @@ function initPlayerBar() {
   fetch('/api/warmup').catch(() => { });
 
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
+    const audio = document.getElementById('player-audio');
+
     if (!audioUrl) {
       const date = broadcastData?.date || '';
       const slot = broadcastData?.slot || 'midday';
@@ -1091,7 +1093,6 @@ function initPlayerBar() {
       const script = paragraphs.map(p => p.text).join('\n\n');
 
       const playBtn = document.getElementById('player-play-btn');
-      const audio = document.getElementById('player-audio');
 
       const newBtn = playBtn.cloneNode(true);
       playBtn.parentNode.replaceChild(newBtn, playBtn);
@@ -1121,12 +1122,10 @@ function initPlayerBar() {
         }
       });
     } else {
-      const audio = document.getElementById('player-audio');
       audio.src = audioUrl;
     }
 
     bar.classList.remove('loading');
-    if (audioUrl) audio.src = audioUrl;
     audio.playbackRate = speed;  // set early; loadedmetadata will confirm
 
     const content = document.getElementById('ps-narration-content');

@@ -38,7 +38,6 @@ from config import (
     CWA_FORECAST_7DAY_DATASET,
     CWA_FORECAST_LOCATIONS,
     CWA_TIMEOUT,
-    RUN_MODE,
     STATION_HISTORY_PATH,
     STATION_HISTORY_DAYS,
 )
@@ -188,14 +187,6 @@ def fetch_current_conditions() -> dict:
             _prune_station_history(STATION_HISTORY_PATH, STATION_HISTORY_DAYS)
         except Exception as e:
             logger.warning("station_history write failed (non-fatal): %s", e)
-
-        # Commit only when running inside Modal (volume is mounted)
-        if RUN_MODE == "MODAL":
-            try:
-                from backend.modal_app import volume
-                volume.commit()
-            except Exception as e:
-                logger.warning("Volume commit failed (non-fatal): %s", e)
 
         return record
 
