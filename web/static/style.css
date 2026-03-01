@@ -1563,6 +1563,10 @@ html.dark .source-claude {
     font-size: 1.2rem;
   }
 
+  .ps-controls {
+    display: block;
+  }
+
   .ps-para-body {
     font-size: 1.2rem;
     line-height: 1.75;
