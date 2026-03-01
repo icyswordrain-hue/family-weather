@@ -102,6 +102,19 @@ def generate_narration_with_fallback(
             logger.info("Gemini narration successful.")
             result = text, "gemini"
         elif provider_upper == "CLAUDE":
+            try:
+                import importlib, sys
+                # Force fresh import with currently injected env vars
+                if "narration.claude_client" in sys.modules:
+                    importlib.reload(sys.modules["narration.claude_client"])
+                from narration.claude_client import generate_narration as _claude_fn
+                logger.info("Calling Claude client...")
+                text = _claude_fn(messages, lang=lang)
+                logger.info("Claude narration successful.")
+                result = text, "claude"
+            except Exception as claude_err:
+                logger.error("Claude call failed: %s", claude_err)
+        raise
             if generate_claude is None:
                 logger.error("Claude client is None — attempting late import with injected secrets")
                 # Try re-importing now that secrets should be injected

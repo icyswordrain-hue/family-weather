@@ -47,6 +47,11 @@ def refresh(payload: dict = None):
     _bootstrap_gcp_credentials()
     os.environ.setdefault("RUN_MODE", "MODAL")
     sys.path.insert(0, "/app")
+    # Reset cached LLM clients so they re-initialise with injected secrets
+    import narration.claude_client as _cc
+    _cc._client = None
+    os.environ.setdefault("RUN_MODE", "MODAL")
+    sys.path.insert(0, "/app")
     from fastapi.responses import StreamingResponse
     from app import _pipeline_steps
 
