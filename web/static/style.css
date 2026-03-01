@@ -1532,7 +1532,7 @@ html.dark .source-claude {
   .player-sheet {
     left: 0;
     right: 0;
-    height: 78vh;
+    height: 80vh;
     bottom: 42px;
   }
 
@@ -1553,6 +1553,20 @@ html.dark .source-claude {
   .player-sheet-backdrop {
     left: 0;
     right: 0;
+  }
+
+  .player-sheet-body {
+    font-size: 1.2rem;
+  }
+
+  .ps-para-body {
+    font-size: 1.2rem;
+    line-height: 1.75;
+  }
+
+  #ps-narration-content {
+    width: 80%;
+    margin: 0 auto;
   }
 
   /* Top row: compact sizing to prevent overflow */
