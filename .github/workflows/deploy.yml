@@ -37,3 +37,11 @@ jobs:
             RUN_MODE=CLOUD
             MODAL_REFRESH_URL=${{ secrets.MODAL_REFRESH_URL }}
             MODAL_BROADCAST_URL=${{ secrets.MODAL_BROADCAST_URL }}
+
+      - name: Deploy Modal pipeline
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          pip install modal
+          modal deploy backend/modal_app.py
