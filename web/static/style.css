@@ -2402,7 +2402,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
   display: none;
   position: fixed;
   top: 0;
-  bottom: 0;
+  bottom: 78px;
   left: var(--sidebar-w, 240px);
   right: var(--rp-w, 180px);
   background: rgba(0, 0, 0, 0.4);
