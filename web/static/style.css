@@ -2173,6 +2173,7 @@ html.dark .player-sheet-body {
 
 .ps-para {
   margin-bottom: 1.4rem;
+  break-inside: avoid;
 }
 
 .ps-para-title {
@@ -2431,6 +2432,14 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
   .player-sheet {
     transition: none;
+  }
+}
+
+/* ── Two-column narration at wide desktop ─────── */
+@media (min-width: 1280px) {
+  #ps-narration-content {
+    column-count: 2;
+    column-gap: 2.5rem;
   }
 }
 
