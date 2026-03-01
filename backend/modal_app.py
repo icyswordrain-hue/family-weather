@@ -30,6 +30,7 @@ def health():
 @modal.web_endpoint(method="POST")
 def refresh(payload: dict = None):
     import sys
+    os.environ.setdefault("RUN_MODE", "MODAL")
     sys.path.insert(0, "/app")
     from fastapi.responses import StreamingResponse
     from app import _pipeline_steps
@@ -37,10 +38,12 @@ def refresh(payload: dict = None):
     body = payload or {}
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
     provider = body.get("provider")
+    lang = body.get("lang", "en")
+    slot = body.get("slot", "morning")
 
     def generate():
         try:
-            for step in _pipeline_steps(date_str, provider_override=provider):
+            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang, slot=slot):
                 yield json.dumps(step) + "\n"
         except Exception as e:
             yield json.dumps({"type": "error", "message": str(e)}) + "\n"

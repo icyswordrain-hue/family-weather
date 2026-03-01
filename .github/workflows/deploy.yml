@@ -39,6 +39,7 @@ jobs:
             MODAL_BROADCAST_URL=${{ secrets.MODAL_BROADCAST_URL }}
 
       - name: Deploy Modal pipeline
+        timeout-minutes: 10
         env:
           MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
           MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}

@@ -224,7 +224,7 @@ def refresh():
             
         try:
             # Proxy the streaming response from Modal
-            resp = requests.post(modal_url, json={"date": date_str, "provider": provider, "lang": lang}, stream=True)
+            resp = requests.post(modal_url, json={"date": date_str, "provider": provider, "lang": lang, "slot": slot}, stream=True, timeout=290)
             return Response(
                 stream_with_context(resp.iter_lines()),
                 content_type=resp.headers.get('content-type', 'application/x-ndjson')
