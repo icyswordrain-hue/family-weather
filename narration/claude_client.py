@@ -17,12 +17,14 @@ logger = logging.getLogger(__name__)
 
 _client: anthropic.Anthropic | None = None
 
-
 def _get_client() -> anthropic.Anthropic:
-    """Lazy-initialise the Claude client (singleton)."""
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=0)
+        import os
+        api_key = os.environ.get("ANTHROPIC_API_KEY") or ANTHROPIC_API_KEY
+        if not api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY is not set")
+        _client = anthropic.Anthropic(api_key=api_key, max_retries=0)
     return _client
 
 

@@ -13,6 +13,7 @@ SECRET_NAMES = [
     "GCS_BUCKET_NAME",
     "GCP_PROJECT_ID",
     "GCP_SA_JSON",
+    "NARRATION_PROVIDER",
 ]
 
 # Secrets that contain multiline content (e.g. JSON) must be base64-encoded

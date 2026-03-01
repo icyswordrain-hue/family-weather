@@ -1136,9 +1136,20 @@ html.dark .ls-badge.ls-alert-badge-warning {
   /* Anthropic distinct color (often reddish/orange) */
 }
 
-html.dark .source-gemini  { background: rgba(77, 124, 254, 0.18); color: #7da4ff; }
-html.dark .source-template { background: rgba(107, 114, 128, 0.18); color: #cbd5e1; }
-html.dark .source-claude  { background: rgba(192, 57, 43, 0.18);  color: #ff7675; }
+html.dark .source-gemini {
+  background: rgba(77, 124, 254, 0.18);
+  color: #7da4ff;
+}
+
+html.dark .source-template {
+  background: rgba(107, 114, 128, 0.18);
+  color: #cbd5e1;
+}
+
+html.dark .source-claude {
+  background: rgba(192, 57, 43, 0.18);
+  color: #ff7675;
+}
 
 .native-audio {
   width: 100%;
@@ -2342,6 +2353,27 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
 .ps-tab-panel .rp-btn {
   width: 100%;
   margin-top: 4px;
+  /* Light-mode: override the dark-sidebar white-alpha defaults */
+  background: var(--blue-lt, #eef2ff);
+  color: var(--blue, #4d7cfe);
+  border-color: rgba(77, 124, 254, 0.25);
+}
+
+.ps-tab-panel .rp-btn:hover {
+  background: var(--blue, #4d7cfe);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+html.dark .ps-tab-panel .rp-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .ps-tab-panel .rp-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 .player-sheet-handle {
@@ -2507,8 +2539,8 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
 }
 
 .rp-btn .refresh-icon {
-  font-size: 1.15rem;
-  line-height: 1;
+  width: 1.15rem;
+  height: 1.15rem;
   display: inline-block;
 }
 

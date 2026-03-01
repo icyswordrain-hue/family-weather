@@ -45,7 +45,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             )
 
     # Use a fresh client with a long timeout to avoid ReadTimeout
-    client = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': 120})
+    client = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': 300})
 
     # 1. Primary Attempt: GEMINI_PRO
     try:
@@ -53,7 +53,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         if not model_to_use.startswith("models/"):
             model_to_use = f"models/{model_to_use}"
             
-        logger.info("Attempting Gemini (%s) with 120s timeout", model_to_use)
+        logger.info("Attempting Gemini (%s)", model_to_use)
         response = client.models.generate_content(
             model=model_to_use,
             contents=gemini_contents,
@@ -76,7 +76,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         if not flash_model.startswith("models/"):
             flash_model = f"models/{flash_model}"
             
-        logger.info("Attempting Gemini Flash fallback (%s) with 120s timeout", flash_model)
+        logger.info("Attempting Gemini Flash fallback (%s)", flash_model)
         response = client.models.generate_content(
             model=flash_model,
             contents=gemini_contents,
