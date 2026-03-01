@@ -20,16 +20,17 @@ _narration_cache = NarrationCache(ttl_seconds=1800)
 # We wrap in try/except so the module can still be imported even if a key is missing.
 try:
     from narration.gemini_client import generate_narration as generate_gemini
-except Exception:  # pragma: no cover
+except Exception as e:  # pragma: no cover
+    logging.getLogger(__name__).error("Failed to import gemini_client: %s", e)
     generate_gemini = None  # type: ignore[assignment]
 
 try:
     from narration.claude_client import generate_narration as generate_claude
-except Exception:  # pragma: no cover
+except Exception as e:  # pragma: no cover
+    logging.getLogger(__name__).error("Failed to import claude_client: %s", e)
     generate_claude = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
-
 
 
 def check_regen_cycle(history: list[dict], date_str: str, cycle_days: int) -> bool:
@@ -102,16 +103,27 @@ def generate_narration_with_fallback(
             result = text, "gemini"
         elif provider_upper == "CLAUDE":
             if generate_claude is None:
-                logger.error("Claude client is None (likely import failure or missing key)")
-                raise RuntimeError("Claude client not available")
+                logger.error("Claude client is None — attempting late import with injected secrets")
+                # Try re-importing now that secrets should be injected
+                try:
+                    import importlib
+                    import narration.claude_client as _cc_mod
+                    importlib.reload(_cc_mod)
+                    _late_claude = _cc_mod.generate_narration
+                    logger.info("Late import of claude_client succeeded")
+                except Exception as late_err:
+                    logger.error("Late import also failed: %s", late_err)
+                    raise RuntimeError(f"Claude client not available: {late_err}")
+            else:
+                _late_claude = generate_claude
             logger.info("Calling Claude client...")
-            text = generate_claude(messages, lang=lang)
+            text = _late_claude(messages, lang=lang)
             logger.info("Claude narration successful.")
             result = text, "claude"
         else:
             logger.error("Unsupported provider selected: %s", provider_upper)
             raise ValueError(f"Unknown provider: {provider}")
-        
+
         # ── Cache store ────────────────────────────────────────────────────
         _narration_cache.set(cache_key, result)
         return result
@@ -120,5 +132,3 @@ def generate_narration_with_fallback(
         logger.exception("Narration failed (%s), falling back to template:", provider_upper)
         text = build_narration(processed, date_str=date_str, history=history, lang=lang)
         return text, "template"
-
-
