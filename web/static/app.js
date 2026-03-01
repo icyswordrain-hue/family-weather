@@ -1126,7 +1126,7 @@ function initPlayerBar() {
     }
 
     bar.classList.remove('loading');
-    audio.src = audioUrl;
+    if (audioUrl) audio.src = audioUrl;
     audio.playbackRate = speed;  // set early; loadedmetadata will confirm
 
     const content = document.getElementById('ps-narration-content');
