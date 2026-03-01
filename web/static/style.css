@@ -1549,6 +1549,10 @@ html.dark .source-claude {
     background: rgba(255, 255, 255, 0.2);
   }
 
+  .player-sheet-tabs {
+    display: flex;   /* restore tab row on mobile */
+  }
+
   .player-sheet-backdrop {
     left: 0;
     right: 0;
@@ -1557,10 +1561,6 @@ html.dark .source-claude {
 
   .player-sheet-body {
     font-size: 1.2rem;
-  }
-
-  .ps-controls {
-    display: block;        /* restore on mobile — player bar is too slim to surface all controls */
   }
 
   .ps-para-body {
@@ -2403,6 +2403,10 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
 .player-sheet-handle {
   display: none;
+}
+
+.player-sheet-tabs {
+  display: none;   /* tabs are mobile-only; desktop shows narration directly */
 }
 
 .player-sheet-backdrop {
