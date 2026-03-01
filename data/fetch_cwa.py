@@ -38,10 +38,35 @@ from config import (
     CWA_FORECAST_7DAY_DATASET,
     CWA_FORECAST_LOCATIONS,
     CWA_TIMEOUT,
+    RUN_MODE,
+    STATION_HISTORY_PATH,
+    STATION_HISTORY_DAYS,
 )
 from data.helpers import _safe_float, _safe_int
 
 logger = logging.getLogger(__name__)
+
+
+def _prune_station_history(path, keep_days: int) -> None:
+    """Trim station_history.jsonl to the last `keep_days` days, in-place."""
+    if not path.exists():
+        return
+    cutoff = datetime.now(timezone(timedelta(hours=8))) - timedelta(days=keep_days)
+    kept = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+                ts_str = rec.get("fetched_at") or rec.get("obs_time")
+                if ts_str and datetime.fromisoformat(ts_str) >= cutoff:
+                    kept.append(line)
+            except Exception:
+                kept.append(line)  # keep unparseable lines rather than silently drop
+    with path.open("w", encoding="utf-8") as f:
+        f.write("\n".join(kept) + ("\n" if kept else ""))
 
 
 def fetch_current_conditions() -> dict:
@@ -138,21 +163,41 @@ def fetch_current_conditions() -> dict:
         # Return text description if available (for manual stations)
         wx_text = str(wx_raw) if wx_raw and not isinstance(wx_raw, (int, float)) else None
 
-        return {
+        record = {
+            "fetched_at": datetime.now(timezone(timedelta(hours=8))).isoformat(),
             "station_id": station.get("StationId"),
             "station_name": station.get("StationName"),
             "obs_time": station.get("ObsTime", {}).get("DateTime"),
-            "AT": at, 
+            "AT": at,
             "RH": rh,
             "WDSD": ws,
             "WDIR": wd,
-            "RAIN": rain, 
+            "RAIN": rain,
             "Wx": wx,
             "WxText": wx_text,
             "visibility": vis,
             "PRES": pres,
             "UVI": uvi,
         }
+
+        # Non-fatal append to JSONL cache
+        try:
+            STATION_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with STATION_HISTORY_PATH.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(record) + "\n")
+            _prune_station_history(STATION_HISTORY_PATH, STATION_HISTORY_DAYS)
+        except Exception as e:
+            logger.warning("station_history write failed (non-fatal): %s", e)
+
+        # Commit only when running inside Modal (volume is mounted)
+        if RUN_MODE == "MODAL":
+            try:
+                from backend.modal_app import volume
+                volume.commit()
+            except Exception as e:
+                logger.warning("Volume commit failed (non-fatal): %s", e)
+
+        return record
 
     except Exception as exc:
         logger.error("CWA current-conditions fetch failed: %s", exc)

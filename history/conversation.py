@@ -69,7 +69,7 @@ def load_history(days: int = 3) -> list[dict]:
 def _load_history_map() -> dict[str, dict]:
     """Unified helper to load the full history map from GCS or Local."""
     try:
-        if RUN_MODE in ["LOCAL", "MODAL"]:
+        if RUN_MODE == "LOCAL":
             return _load_history_map_local()
 
         client = storage.Client()

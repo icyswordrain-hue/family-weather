@@ -352,14 +352,14 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     metadata["narration_source"] = narration_source
     metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
 
-    # 5.5 Synthesize TTS (LOCAL: eager; CLOUD/MODAL: on-demand)
+    # 5.5 Synthesize TTS (LOCAL: eager; MODAL morning: eager; others: on-demand)
     summaries = parsed.get("cards", {})
-    if RUN_MODE == "LOCAL":
-        yield {"type": "log", "message": "Synthesising TTS audio locally\u2026"}
+    if RUN_MODE == "LOCAL" or (RUN_MODE == "MODAL" and slot == "morning"):
+        yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
         try:
             full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
         except Exception as exc:
-            logger.warning("Local TTS failed (%s) \u2014 player will fall back to on-demand.", exc)
+            logger.warning("TTS failed (%s) \u2014 player will fall back to on-demand.", exc)
             full_audio_url = None
         audio_urls = {"full_audio_url": full_audio_url}
     else:

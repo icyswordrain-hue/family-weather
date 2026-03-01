@@ -5,6 +5,7 @@ All secrets are loaded from environment variables (set via Google Secret Manager
 
 import os
 from datetime import timezone, timedelta
+from pathlib import Path
 from dotenv import load_dotenv
 
 CST = timezone(timedelta(hours=8))
@@ -18,6 +19,11 @@ if RUN_MODE == "MODAL":
     LOCAL_DATA_DIR = os.environ.get("LOCAL_DATA_DIR", "/data")
 else:
     LOCAL_DATA_DIR = os.environ.get("LOCAL_DATA_DIR", "local_data")
+
+STATION_HISTORY_PATH = Path(
+    os.environ.get("STATION_HISTORY_PATH", os.path.join(LOCAL_DATA_DIR, "station_history.jsonl"))
+)
+STATION_HISTORY_DAYS = int(os.environ.get("STATION_HISTORY_DAYS", 7))
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "").strip()
