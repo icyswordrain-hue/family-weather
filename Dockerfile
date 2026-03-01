@@ -26,4 +26,4 @@ EXPOSE 8080
 # Use gunicorn for production; 2 workers is appropriate for Cloud Run's
 # single-core default (1 vCPU). Increase if you scale up.
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", \
-     "--timeout", "120", "--log-level", "info", "app:app"]
+     "--timeout", "300", "--log-level", "info", "app:app"]
