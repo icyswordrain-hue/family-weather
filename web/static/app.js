@@ -566,9 +566,9 @@ function renderOverviewView(data) {
     }
 
     // Normalise both arrays to exactly 7 columns — pad with null, trim if over.
-    while (dayItems.length   < 7) dayItems.push(null);
+    while (dayItems.length < 7) dayItems.push(null);
     while (nightItems.length < 7) nightItems.push(null);
-    dayItems   = dayItems.slice(0, 7);
+    dayItems = dayItems.slice(0, 7);
     nightItems = nightItems.slice(0, 7);
 
     const topItems = dayItems;
@@ -1080,7 +1080,7 @@ function initPlayerBar() {
   });
 
   // On page load — warms Cloud Run instance before user clicks Play
-fetch('/api/warmup').catch(() => {});
+  fetch('/api/warmup').catch(() => { });
 
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
     if (!audioUrl) {
@@ -1091,26 +1091,26 @@ fetch('/api/warmup').catch(() => {});
 
       const playBtn = document.getElementById('player-play-btn');
       const audio = document.getElementById('player-audio');
-      
+
       const newBtn = playBtn.cloneNode(true);
       playBtn.parentNode.replaceChild(newBtn, playBtn);
-      
+
       newBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (newBtn.classList.contains('fetching')) return;
-        
+
         if (!audio.src || audio.src === location.href) {
           newBtn.classList.add('fetching');
           try {
             const res = await fetch('/api/tts', {
               method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({script, lang, date, slot}),
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ script, lang, date, slot }),
             });
-            const {url} = await res.json();
+            const { url } = await res.json();
             audio.src = url;
             audio.play();
-          } catch(err) {
+          } catch (err) {
             console.error("TTS fetch failed", err);
           } finally {
             newBtn.classList.remove('fetching');
@@ -1430,30 +1430,25 @@ async function triggerRefresh() {
   }
 
   showLoading(true);
-  startLoadingAnimation(); // Start fake messages until connection established
+  startLoadingAnimation();
   addLog(T.boot);
 
-  // Read selected provider
   const providerInput = document.querySelector('input[name="provider"]:checked');
   const provider = providerInput ? providerInput.value : 'CLAUDE';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
   addLog(`${T.log_requesting}${provider}`);
 
+  let gotResult = false;
+
   try {
     const res = await fetch('/api/refresh', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        provider,
-        lang: getLang()
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, lang: getLang() })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // Stream reader
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -1464,17 +1459,16 @@ async function triggerRefresh() {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
-      buffer = lines.pop(); // Keep incomplete line
+      buffer = lines.pop();
 
       for (const line of lines) {
         if (!line.trim()) continue;
         try {
-          // If the line is not JSON (e.g. raw error string from server), log it and move on
           if (!line.trim().startsWith('{')) {
             addLog(`Server: ${line.trim()}`);
             if (line.toLowerCase().includes('error')) {
               showError(line.trim());
-              return;
+              gotResult = true; // treat as terminal
             }
             continue;
           }
@@ -1491,25 +1485,40 @@ async function triggerRefresh() {
             render(broadcastData);
             saveBroadcastCache(broadcastData);
             showContent();
-            return; // Exit successfully
+            gotResult = true;
           } else if (msg.type === 'error') {
             showError(msg.message || 'Pipeline failed');
-            return;
+            gotResult = true;
           }
         } catch (e) {
           console.error("Stream parse error:", e, "on line:", line);
-          // If it's a critical error keyword in a non-JSON line, catch it
           if (line.toLowerCase().includes('failed') || line.toLowerCase().includes('error')) {
             showError(line);
-            return;
+            gotResult = true;
           }
         }
       }
     }
-    // If we reach here without a 'result' or 'error' message but the stream is done
-    if (!broadcastData) {
-      showError("Pipeline ended without a result.");
+
+    // Stream ended without a result — fetch latest cached broadcast instead of hanging
+    if (!gotResult) {
+      console.warn("Stream ended without result event — falling back to /api/broadcast");
+      addLog("Pipeline stream truncated — loading last available broadcast…");
+      try {
+        const fallback = await fetch(`/api/broadcast?lang=${getLang()}`);
+        if (fallback.ok) {
+          broadcastData = await fallback.json();
+          render(broadcastData);
+          saveBroadcastCache(broadcastData);
+          showContent();
+        } else {
+          showError("Pipeline ended without a result and no cached broadcast available.");
+        }
+      } catch (fallbackErr) {
+        showError("Pipeline ended without a result.");
+      }
     }
+
   } catch (err) {
     addLog(`Error: ${err.message}`);
     showError(err.message || 'Refresh failed');
@@ -1521,7 +1530,6 @@ async function triggerRefresh() {
     }
   }
 }
-
 
 function startLoadingAnimation() {
   const txt = document.getElementById('loading-text');
