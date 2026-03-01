@@ -74,10 +74,9 @@ LOCATION_LON = 121.4279
 TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 
 # ── Google Gemini ─────────────────────────────────────────────────────────
-GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL", "gemini-1.5-pro-latest")
-GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL", "gemini-1.5-flash-latest")
+GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-2.0-pro-exp")
+GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.0-flash")
 GEMINI_MAX_TOKENS = 4096
-
 # ── Anthropic Claude ──────────────────────────────────────────────────────
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
@@ -104,8 +103,8 @@ CLIMATE_RH_AC_TRIGGER = 80        # % — high RH triggers cooling/AC
 # ── Timeouts (Seconds) ──────────────────────────────────────────────────
 CWA_TIMEOUT = 20
 MOENV_TIMEOUT = 20
-NARRATION_TIMEOUT_PRO = 60
-NARRATION_TIMEOUT_FLASH = 30
+NARRATION_TIMEOUT_PRO = 240
+NARRATION_TIMEOUT_FLASH = 90
 TTS_TIMEOUT = 30
 
 # ── Narration Provider ────────────────────────────────────────────────────
