@@ -1569,8 +1569,13 @@ html.dark .source-claude {
   }
 
   #ps-narration-content {
-    width: 80%;
+    width: 90%;
     margin: 0 auto;
+  }
+
+  .ps-tab {
+    padding: 10px 18px;
+    font-size: 1rem;
   }
 
   /* Top row: compact sizing to prevent overflow */
