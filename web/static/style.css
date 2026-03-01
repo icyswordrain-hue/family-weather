@@ -2004,6 +2004,10 @@ html.dark .player-progress-wrap {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.player-progress-wrap {
+  display: none;
+}
+
 .player-progress-bar {
   height: 100%;
   width: 0%;
@@ -2016,6 +2020,7 @@ html.dark .player-progress-wrap {
   font-size: 1.1rem;
   color: var(--muted, #7a8ca0);
   flex-shrink: 0;
+  flex: 1;
   min-width: 90px;
   text-align: right;
   font-variant-numeric: tabular-nums;
