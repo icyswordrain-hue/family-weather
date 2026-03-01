@@ -1490,6 +1490,11 @@ html.dark .source-claude {
     display: flex;
   }
 
+  .compact-header {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
   /* All views visible — no tab gating on mobile */
   .view-container {
     display: block !important;
@@ -1507,7 +1512,7 @@ html.dark .source-claude {
   .player-bar {
     left: 0;
     right: 0;
-    height: 42px;
+    height: 40px;
     gap: 10px;
     padding: 0 14px;
     cursor: pointer;
@@ -1531,8 +1536,8 @@ html.dark .source-claude {
   .player-sheet {
     left: 0;
     right: 0;
-    height: calc(90vh - 42px);
-    bottom: 42px;
+    height: calc(90vh - 40px);
+    bottom: 40px;
   }
 
   .player-sheet-handle {
@@ -1552,19 +1557,23 @@ html.dark .source-claude {
   .player-sheet-backdrop {
     left: 0;
     right: 0;
-    bottom: 42px;
+    bottom: 40px;
   }
 
   .player-sheet-body {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
   }
 
   .ps-controls {
     display: block;
   }
 
+  .ps-para-title {
+    font-size: 1.5rem;
+  }
+
   .ps-para-body {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     line-height: 1.75;
   }
 
@@ -2186,7 +2195,7 @@ html.dark .player-sheet-body {
 }
 
 .ps-para-title {
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2195,7 +2204,7 @@ html.dark .player-sheet-body {
 }
 
 .ps-para-body {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.7;
   color: var(--text, #1e2a3a);
   white-space: pre-wrap;

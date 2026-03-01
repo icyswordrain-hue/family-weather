@@ -443,3 +443,78 @@ fix(mobile): restore tab row and enlarge touch targets in player sheet
 1. Open player sheet → tab bar visible (Narration / Settings); tabs are tall and easy to tap
 2. Narration panel → controls row (duration + speed pills) visible above text
 3. Content centred at 90% width
+
+---
+
+## Part 4 — Narration Font Refinements + Slim Mobile Header/Bar (2026-03-01)
+
+**Goal:** Further increase narration readability on both breakpoints, reduce the mobile clock/location header height by ~20%, and match the player bar height to that slimmed header for visual consistency.
+
+**Architecture:** All changes in `web/static/style.css` only.
+
+---
+
+### Task 18: Desktop — Bump Narration Paragraph Font Sizes
+
+| Selector | Property | From | To |
+|---|---|---|---|
+| `.ps-para-title` | font-size | `0.88rem` | `1rem` |
+| `.ps-para-body` | font-size | `0.78rem` | `0.9rem` |
+
+Title remains larger than body; ratio preserved.
+
+---
+
+### Task 19: Mobile — Larger Narration Text (Fix Hierarchy Inversion)
+
+Without a mobile override, `.ps-para-title` stayed at `1rem` while `.ps-para-body` was `1.2rem` — inverted hierarchy (title smaller than body). Fixed by adding a `.ps-para-title` override and bumping both sizes:
+
+| Selector | Property | From | To |
+|---|---|---|---|
+| `.player-sheet-body` (mobile) | font-size | `1.2rem` | `1.4rem` |
+| `.ps-para-body` (mobile) | font-size | `1.2rem` | `1.4rem` |
+| `.ps-para-title` (mobile, **new**) | font-size | *(no rule)* | `1.5rem` |
+
+---
+
+### Task 20: Mobile — Slim Compact Header −20%
+
+`.compact-header` (clock + location sticky row) has no explicit height — driven by base `padding: 12px 16px`. Estimated height ~50px (12 + 26px content + 12). Target 80% = ~40px.
+
+Added to `@media (max-width: 767px)`:
+
+```css
+.compact-header {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+```
+
+---
+
+### Task 21: Mobile — Player Bar Height = Compact Header (40px)
+
+Aligns the bottom bar visually with the top header. All three references to the `42px` bar height updated to `40px`:
+
+| Selector | Property | From | To |
+|---|---|---|---|
+| `.player-bar` | height | `42px` | `40px` |
+| `.player-sheet` | bottom | `42px` | `40px` |
+| `.player-sheet` | height | `calc(90vh - 42px)` | `calc(90vh - 40px)` |
+| `.player-sheet-backdrop` | bottom | `42px` | `40px` |
+
+```
+feat(both): refine narration font sizes; slim mobile compact-header and player bar
+```
+
+---
+
+### Verification (Part 4)
+
+**Desktop (>767px):**
+1. Open player sheet → `.ps-para-title` (1rem) visibly larger than `.ps-para-body` (0.9rem)
+
+**Mobile (≤767px, DevTools 375px):**
+1. Open narration tab → headings (1.5rem) clearly larger than body (1.4rem); hierarchy correct
+2. Top sticky header (clock + location) visibly shorter than before (~20% slimmer)
+3. Bottom player bar height matches the compact header height (~40px)
