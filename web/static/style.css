@@ -2594,7 +2594,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
 .wk-col-header {
   text-align: center;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2609,7 +2609,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
 /* Condition text */
 .wk-cond {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   color: var(--muted);
   text-align: center;
   white-space: nowrap;
@@ -2645,12 +2645,12 @@ html.dark .ps-tab-panel .rp-btn:hover {
 .wk-card {
   background: var(--surface);
   border-radius: 10px;
-  padding: 8px 6px;
+  padding: 14px 8px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   min-height: 0;
 }
 
@@ -2664,20 +2664,20 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-icon {
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   line-height: 1;
 }
 
 .wk-temp {
   font-family: 'Fira Code', monospace;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
 }
 
 .wk-rain {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
