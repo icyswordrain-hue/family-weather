@@ -262,7 +262,7 @@ def _build_fallback_metadata(processed: dict, history: list[dict] | None) -> dic
 
     at = current.get("AT")
     rain_gear_bool = any(
-        "likely" in (seg.get("precip_text") or "").lower()
+        "likely" in (seg.get("precip_text") or "").lower() if seg else False
         for seg in forecast_segs.values()
     )
 
