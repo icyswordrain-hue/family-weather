@@ -338,3 +338,108 @@ git commit -m "feat(mobile): keep player bar interactive when sheet is open"
 **Mobile (≤767px, DevTools 375px):**
 1. Open player sheet (tap bar) → sheet fills ~90% of viewport, 10% visible above
 2. With sheet open → tap play/pause → responds normally (backdrop stops at 42px bar)
+
+---
+
+## Part 3 — Player Sheet Polish (2026-03-01)
+
+**Goal:** Clean up the player sheet on both breakpoints: hide redundant UI on desktop, add two-column narration layout, reduce text to match card density, widen the content area, enlarge mobile tab targets, and fix a CSS cascade bug that was silently hiding the tab row on mobile.
+
+**Architecture:** All changes in `web/static/style.css` only.
+
+---
+
+### Task 12: Desktop — Hide Redundant Controls Row
+
+`.ps-controls { display: none; }` in base styles. The duration and speed controls are now always accessible in the always-interactive player bar (fixed in Part 2).
+
+```
+feat(desktop): hide redundant controls row in player sheet
+```
+
+---
+
+### Task 13: Desktop — Two-Column Narration Layout (≥1280px)
+
+Added `@media (min-width: 1280px)` block:
+
+```css
+#ps-narration-content { column-count: 2; column-gap: 2.5rem; }
+.ps-para { break-inside: avoid; }
+```
+
+Columns only activate at ≥1280px to avoid cramped layout at 1024px.
+
+```
+feat(desktop): two-column narration layout in player sheet (>=1280px)
+```
+
+---
+
+### Task 14: Desktop — Hide Tab Row; Controls Hidden on All Breakpoints
+
+- `.player-sheet-tabs` hidden via `@media (min-width: 768px) { display: none; }` — tabs are mobile-only; desktop shows narration directly
+- Removed the earlier mobile `.ps-controls { display: block; }` restore (controls hidden everywhere at this point; later reversed in Task 16)
+
+```
+feat(desktop): hide tab row; hide sheet controls on all breakpoints
+```
+
+---
+
+### Task 15: Desktop — Reduce Narration Text; 90% Content Width
+
+Narration text reduced to match lifestyle card density:
+
+| Selector | Property | From | To |
+|---|---|---|---|
+| `.ps-para-title` | font-size | `0.72rem` | `0.88rem` (larger than body) |
+| `.ps-para-body` | font-size | `1.2rem` | `0.78rem` (matches `.ls-text`) |
+| `#ps-narration-content` | width | (none) | `90%; margin: 0 auto` |
+
+```
+feat(desktop): reduce narration text to match lifestyle cards; 90% content width
+```
+
+---
+
+### Task 16: Mobile — Wider Content; Larger Tab Targets; Restore Controls
+
+- `#ps-narration-content` mobile width: `80%` → `90%`
+- `.ps-tab` mobile: `padding: 10px 18px; font-size: 1rem`
+- `.ps-controls { display: block; }` restored in mobile block
+
+```
+feat(mobile): wider narration content and larger tab touch targets
+feat(mobile): restore controls row in player sheet
+```
+
+---
+
+### Task 17: Fix — Restore Tab Row on Mobile (CSS Cascade Bug)
+
+**Bug:** `.player-sheet-tabs { display: none; }` (Task 14) was declared as a base rule at line ~2422, *after* the mobile `display: flex` override at line ~1552. In CSS, equal-specificity rules resolve by file order — the later base rule silently won on mobile, hiding the tabs.
+
+**Fix:** Wrapped the hide in `@media (min-width: 768px)` so it only applies on desktop. Removed the now-redundant mobile `display: flex` override.
+
+**Also enlarged mobile tab row:**
+- `.player-sheet-header` mobile: `padding: 14px 16px`
+- `.ps-tab` mobile: `padding: 12px 22px; font-size: 1.05rem`
+
+```
+fix(mobile): restore tab row and enlarge touch targets in player sheet
+```
+
+---
+
+### Verification (Part 3)
+
+**Desktop (>767px):**
+1. Open player sheet → no controls row (duration/speed hidden); no tab bar
+2. Narration text at ~0.78rem body / 0.88rem headings; content centred at 90% width
+3. At ≥1280px → text flows in two columns
+
+**Mobile (≤767px, DevTools 375px):**
+1. Open player sheet → tab bar visible (Narration / Settings); tabs are tall and easy to tap
+2. Narration panel → controls row (duration + speed pills) visible above text
+3. Content centred at 90% width
