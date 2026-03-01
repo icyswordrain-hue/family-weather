@@ -1077,7 +1077,51 @@ function initPlayerBar() {
     }
   });
 
+  // On page load — warms Cloud Run instance before user clicks Play
+fetch('/api/warmup').catch(() => {});
+
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
+    if (!audioUrl) {
+      const date = broadcastData?.date || '';
+      const slot = broadcastData?.slot || 'midday';
+      const lang = getLang();
+      const script = paragraphs.map(p => p.text).join('\n\n');
+
+      const playBtn = document.getElementById('player-play-btn');
+      const audio = document.getElementById('player-audio');
+      
+      const newBtn = playBtn.cloneNode(true);
+      playBtn.parentNode.replaceChild(newBtn, playBtn);
+      
+      newBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (newBtn.classList.contains('fetching')) return;
+        
+        if (!audio.src || audio.src === location.href) {
+          newBtn.classList.add('fetching');
+          try {
+            const res = await fetch('/api/tts', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({script, lang, date, slot}),
+            });
+            const {url} = await res.json();
+            audio.src = url;
+            audio.play();
+          } catch(err) {
+            console.error("TTS fetch failed", err);
+          } finally {
+            newBtn.classList.remove('fetching');
+          }
+        } else {
+          audio.paused ? audio.play() : audio.pause();
+        }
+      });
+    } else {
+      const audio = document.getElementById('player-audio');
+      audio.src = audioUrl;
+    }
+
     bar.classList.remove('loading');
     audio.src = audioUrl;
     audio.playbackRate = speed;  // set early; loadedmetadata will confirm

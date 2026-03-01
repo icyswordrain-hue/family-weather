@@ -5739,91 +5739,25 @@
     }
   },
   "2026-02-28": {
-    "generated_at": "2026-02-28T20:13:21.174047+08:00",
+    "generated_at": "2026-02-28T23:56:30.420156+08:00",
     "raw_data": {
       "current": {
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-02-28T20:00:00+08:00",
-        "AT": 19.2,
-        "RH": 91.0,
-        "WDSD": 0.6,
-        "WDIR": 120.0,
+        "obs_time": "2026-02-28T23:40:00+08:00",
+        "AT": 19.5,
+        "RH": 90.0,
+        "WDSD": 1.2,
+        "WDIR": 160.0,
         "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1011.2,
+        "PRES": 1010.8,
         "UVI": 0.0
       },
       "forecasts": {
         "三峽區": [
-          {
-            "start_time": "2026-02-28T18:00:00+08:00",
-            "end_time": "2026-02-28T18:00:00+08:00",
-            "T": 21.0,
-            "AT": 22.0,
-            "RH": 78.0,
-            "WS": 2.0,
-            "WD": null,
-            "PoP6h": 20.0,
-            "Wx": 7
-          },
-          {
-            "start_time": "2026-02-28T19:00:00+08:00",
-            "end_time": "2026-02-28T19:00:00+08:00",
-            "T": 21.0,
-            "AT": 22.0,
-            "RH": 81.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T20:00:00+08:00",
-            "end_time": "2026-02-28T20:00:00+08:00",
-            "T": 20.0,
-            "AT": 22.0,
-            "RH": 83.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T21:00:00+08:00",
-            "end_time": "2026-02-28T21:00:00+08:00",
-            "T": 20.0,
-            "AT": 22.0,
-            "RH": 85.0,
-            "WS": 2.0,
-            "WD": null,
-            "PoP6h": 30.0,
-            "Wx": 8
-          },
-          {
-            "start_time": "2026-02-28T22:00:00+08:00",
-            "end_time": "2026-02-28T22:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
-            "RH": 86.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T23:00:00+08:00",
-            "end_time": "2026-02-28T23:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
-            "RH": 87.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
           {
             "start_time": "2026-03-01T00:00:00+08:00",
             "end_time": "2026-03-01T00:00:00+08:00",
@@ -5964,7 +5898,7 @@
             "RH": 78.0,
             "WS": 1.0,
             "WD": null,
-            "PoP6h": 10.0,
+            "PoP6h": 20.0,
             "Wx": 4
           },
           {
@@ -6063,7 +5997,7 @@
             "RH": 95.0,
             "WS": 1.0,
             "WD": null,
-            "PoP6h": 10.0,
+            "PoP6h": 20.0,
             "Wx": 7
           },
           {
@@ -6166,6 +6100,28 @@
             "Wx": 8
           },
           {
+            "start_time": "2026-03-02T07:00:00+08:00",
+            "end_time": "2026-03-02T07:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 90.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T08:00:00+08:00",
+            "end_time": "2026-03-02T08:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
             "start_time": "2026-03-02T09:00:00+08:00",
             "end_time": "2026-03-02T09:00:00+08:00",
             "T": 23.0,
@@ -6175,6 +6131,28 @@
             "WD": null,
             "PoP6h": 30.0,
             "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T10:00:00+08:00",
+            "end_time": "2026-03-02T10:00:00+08:00",
+            "T": 25.0,
+            "AT": 28.0,
+            "RH": 83.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T11:00:00+08:00",
+            "end_time": "2026-03-02T11:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 80.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
           },
           {
             "start_time": "2026-03-02T12:00:00+08:00",
@@ -6373,75 +6351,31 @@
             "WD": null,
             "PoP6h": 40.0,
             "Wx": 8
-          }
-        ],
-        "板橋區": [
+          },
           {
-            "start_time": "2026-02-28T18:00:00+08:00",
-            "end_time": "2026-02-28T18:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
+            "start_time": "2026-03-04T18:00:00+08:00",
+            "end_time": "2026-03-04T18:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
             "RH": 80.0,
-            "WS": 3.0,
-            "WD": null,
-            "PoP6h": 20.0,
-            "Wx": 7
-          },
-          {
-            "start_time": "2026-02-28T19:00:00+08:00",
-            "end_time": "2026-02-28T19:00:00+08:00",
-            "T": 21.0,
-            "AT": 22.0,
-            "RH": 83.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T20:00:00+08:00",
-            "end_time": "2026-02-28T20:00:00+08:00",
-            "T": 21.0,
-            "AT": 22.0,
-            "RH": 84.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T21:00:00+08:00",
-            "end_time": "2026-02-28T21:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
-            "RH": 84.0,
             "WS": 3.0,
             "WD": null,
             "PoP6h": 30.0,
             "Wx": 8
           },
           {
-            "start_time": "2026-02-28T22:00:00+08:00",
-            "end_time": "2026-02-28T22:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
-            "RH": 84.0,
-            "WS": null,
+            "start_time": "2026-03-04T21:00:00+08:00",
+            "end_time": "2026-03-04T21:00:00+08:00",
+            "T": 17.0,
+            "AT": 18.0,
+            "RH": 87.0,
+            "WS": 2.0,
             "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
-          {
-            "start_time": "2026-02-28T23:00:00+08:00",
-            "end_time": "2026-02-28T23:00:00+08:00",
-            "T": 20.0,
-            "AT": 21.0,
-            "RH": 84.0,
-            "WS": null,
-            "WD": null,
-            "PoP6h": null,
-            "Wx": null
-          },
+            "PoP6h": 30.0,
+            "Wx": 8
+          }
+        ],
+        "板橋區": [
           {
             "start_time": "2026-03-01T00:00:00+08:00",
             "end_time": "2026-03-01T00:00:00+08:00",
@@ -6582,7 +6516,7 @@
             "RH": 74.0,
             "WS": 1.0,
             "WD": null,
-            "PoP6h": 10.0,
+            "PoP6h": 20.0,
             "Wx": 4
           },
           {
@@ -6681,7 +6615,7 @@
             "RH": 86.0,
             "WS": 1.0,
             "WD": null,
-            "PoP6h": 10.0,
+            "PoP6h": 20.0,
             "Wx": 4
           },
           {
@@ -6784,6 +6718,28 @@
             "Wx": 8
           },
           {
+            "start_time": "2026-03-02T07:00:00+08:00",
+            "end_time": "2026-03-02T07:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 90.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T08:00:00+08:00",
+            "end_time": "2026-03-02T08:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
             "start_time": "2026-03-02T09:00:00+08:00",
             "end_time": "2026-03-02T09:00:00+08:00",
             "T": 22.0,
@@ -6793,6 +6749,28 @@
             "WD": null,
             "PoP6h": 30.0,
             "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T10:00:00+08:00",
+            "end_time": "2026-03-02T10:00:00+08:00",
+            "T": 24.0,
+            "AT": 27.0,
+            "RH": 82.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T11:00:00+08:00",
+            "end_time": "2026-03-02T11:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 79.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
           },
           {
             "start_time": "2026-03-02T12:00:00+08:00",
@@ -6991,24 +6969,46 @@
             "WD": null,
             "PoP6h": 20.0,
             "Wx": 7
+          },
+          {
+            "start_time": "2026-03-04T18:00:00+08:00",
+            "end_time": "2026-03-04T18:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 79.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T21:00:00+08:00",
+            "end_time": "2026-03-04T21:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 84.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
           }
         ]
       },
       "aqi": {
         "realtime": {
           "station_name": "土城",
-          "aqi": 32,
+          "aqi": 33,
           "status": "良好",
-          "pm25": 5.0,
-          "pm10": 10.0,
-          "publish_time": "2026/02/28 20:00:00"
+          "pm25": 8.0,
+          "pm10": 6.0,
+          "publish_time": "2026/02/28 23:00:00"
         },
         "forecast": {
           "area": "北部",
           "aqi": 60,
           "status": "二氧化氮",
-          "forecast_date": "2026-02-28",
-          "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依10時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日10時氣象資料顯示：28日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、中部、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、雲嘉南、高屏空品區為「普通」等級。\n3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物稍易累積；晚間中部以北地區及馬祖易有低雲或局部霧影響能見度。竹苗、宜蘭、花東空品區及澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖、金門為「普通」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n未來一週，28日華南雲雨區東移及東北季風影響，中南部位於下風處，污染物稍易累積；3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至5日鋒面通過及東北季風再增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。"
+          "forecast_date": "2026-03-04",
+          "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依18時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日18時氣象資料顯示：3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物易累積；晚間中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及澎湖為「良好」等級；北部、竹苗、中部、高屏空品區及馬祖、金門為「普通」等級，清晨至上午高屏零星地區短時間可能達橘色提醒等級；雲嘉南空品區為「橘色提醒」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n3月3日東北季風增強，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、宜蘭、花東空品區及金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖為「普通」等級。\n未來一週，3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至6日東北季風增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。"
         }
       }
     },
@@ -7016,19 +7016,19 @@
       "current": {
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-02-28T20:00:00+08:00",
+        "obs_time": "2026-02-28T23:40:00+08:00",
         "AT": 21.4,
-        "RH": 91.0,
-        "WDSD": 0.6,
-        "WDIR": 120.0,
+        "RH": 90.0,
+        "WDSD": 1.2,
+        "WDIR": 160.0,
         "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1011.2,
+        "PRES": 1010.8,
         "UVI": 0.0,
-        "dew_point": 17.7,
-        "dew_gap": 1.5,
+        "dew_point": 17.8,
+        "dew_gap": 1.7,
         "saturation_label": "near_saturated",
         "Wx_text": "陰",
         "uv_text": "Low",
@@ -7039,8 +7039,8 @@
         "pres_level": 3,
         "wind_text": "Light air",
         "wind_level": 1,
-        "wind_dir_text": "ESE",
-        "aqi": 32,
+        "wind_dir_text": "SSE",
+        "aqi": 33,
         "aqi_status": "Good",
         "aqi_level": 1,
         "vis_text": "Unknown",
@@ -7080,7 +7080,7 @@
           "RH": 78.0,
           "WS": 1.0,
           "WD": null,
-          "PoP6h": 10.0,
+          "PoP6h": 20.0,
           "Wx": 4,
           "dew_point": 22.8,
           "dew_gap": 4.2,
@@ -7096,27 +7096,27 @@
           "beaufort_desc": "Calm"
         },
         "Evening": {
-          "start_time": "2026-02-28T18:00:00+08:00",
-          "end_time": "2026-02-28T18:00:00+08:00",
-          "T": 21.0,
-          "AT": 22.0,
-          "RH": 78.0,
-          "WS": 2.0,
+          "start_time": "2026-03-01T18:00:00+08:00",
+          "end_time": "2026-03-01T18:00:00+08:00",
+          "T": 23.0,
+          "AT": 26.0,
+          "RH": 83.0,
+          "WS": 1.0,
           "WD": null,
           "PoP6h": 20.0,
           "Wx": 7,
-          "dew_point": 17.0,
-          "dew_gap": 4.0,
+          "dew_point": 20.0,
+          "dew_gap": 3.0,
           "saturation_label": "clammy",
           "hum_text": "Clammy",
           "hum_level": 4,
-          "wind_text": "Breezy",
-          "wind_level": 2,
+          "wind_text": "Calm",
+          "wind_level": 1,
           "wind_dir_text": "Unknown",
           "precip_text": "Very Unlikely",
           "precip_level": 1,
           "cloud_cover": "Mixed Clouds",
-          "beaufort_desc": "Breezy"
+          "beaufort_desc": "Calm"
         },
         "Overnight": {
           "start_time": "2026-03-01T00:00:00+08:00",
@@ -7146,7 +7146,7 @@
         {
           "start_time": "2026-02-28T18:00:00+08:00",
           "AT": 21.0,
-          "RH": 86.0,
+          "RH": 88.0,
           "WS": 3.0,
           "PoP12h": 40.0,
           "Wx": 11,
@@ -7350,8 +7350,8 @@
             {
               "metric": "AT",
               "from": 31.4,
-              "to": 22.0,
-              "delta": -9.399999999999999
+              "to": 26.0,
+              "delta": -5.399999999999999
             }
           ],
           "is_transition": true
@@ -7359,8 +7359,15 @@
         {
           "from_segment": "Evening",
           "to_segment": "Overnight",
-          "breaches": [],
-          "is_transition": false
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 26.0,
+              "to": 20.6,
+              "delta": -5.399999999999999
+            }
+          ],
+          "is_transition": true
         }
       ],
       "heads_ups": [],
@@ -7368,9 +7375,9 @@
         "morning": {
           "start_time": "2026-03-01T02:00:00+08:00",
           "end_time": "2026-03-04T06:00:00+08:00",
-          "AT": 20.1,
-          "T": 18.8,
-          "RH": 91.2,
+          "AT": 20.2,
+          "T": 18.9,
+          "RH": 91.0,
           "WS": 1.8,
           "WD": null,
           "PoP6h": 33.8,
@@ -7382,14 +7389,14 @@
           "hazards": []
         },
         "evening": {
-          "start_time": "2026-02-28T18:00:00+08:00",
-          "end_time": "2026-03-04T15:00:00+08:00",
-          "AT": 24.7,
-          "T": 22.9,
-          "RH": 78.1,
-          "WS": 2.0,
+          "start_time": "2026-03-01T12:00:00+08:00",
+          "end_time": "2026-03-04T18:00:00+08:00",
+          "AT": 24.5,
+          "T": 22.8,
+          "RH": 78.2,
+          "WS": 2.1,
           "WD": null,
-          "PoP6h": 34.2,
+          "PoP6h": 35.8,
           "Wx": 8,
           "beaufort_desc": "Light breeze",
           "wind_dir_text": "Unknown",
@@ -7400,8 +7407,8 @@
       },
       "meal_mood": {
         "mood": "Cool & Damp",
-        "avg_at": 24.7,
-        "avg_rh": 81.7,
+        "avg_at": 26.0,
+        "avg_rh": 83.3,
         "is_rainy": false,
         "all_suggestions": [
           "牛肉麵 (niú ròu miàn)",
@@ -7412,7 +7419,7 @@
           "四神湯 (sì shén tāng)"
         ],
         "top_suggestions": [
-          "牛肉麵 (niú ròu miàn)"
+          "麻油雞 (má yóu jī)"
         ]
       },
       "recent_meals": [],
@@ -7533,7 +7540,15 @@
       },
       "recent_locations": [],
       "climate_control": {
-        "mode": "Off",
+        "mode": "cooling",
+        "dehumidifier": "recommended",
+        "ac_mode": "dry",
+        "windows": "close",
+        "dew_reasons": [
+          "outdoor dew point 22.8°C — muggy, dehumidifier recommended",
+          "dew gap only 4.2°C — air nearly saturated, AC dry mode addresses moisture better than cool mode",
+          "outdoor dew point 22.8°C — keep windows closed to limit moisture infiltration"
+        ],
         "recommendations": []
       },
       "cardiac_alert": {
@@ -7551,23 +7566,23 @@
       },
       "aqi_realtime": {
         "station_name": "土城",
-        "aqi": 32,
+        "aqi": 33,
         "status": "良好",
-        "pm25": 5.0,
-        "pm10": 10.0,
-        "publish_time": "2026/02/28 20:00:00"
+        "pm25": 8.0,
+        "pm10": 6.0,
+        "publish_time": "2026/02/28 23:00:00"
       },
       "aqi_forecast": {
         "area": "北部",
         "aqi": 60,
         "status": "NO2",
-        "forecast_date": "2026-02-28",
-        "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依10時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日10時氣象資料顯示：28日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、中部、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、雲嘉南、高屏空品區為「普通」等級。\n3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物稍易累積；晚間中部以北地區及馬祖易有低雲或局部霧影響能見度。竹苗、宜蘭、花東空品區及澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖、金門為「普通」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n未來一週，28日華南雲雨區東移及東北季風影響，中南部位於下風處，污染物稍易累積；3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至5日鋒面通過及東北季風再增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+        "forecast_date": "2026-03-04",
+        "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依18時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日18時氣象資料顯示：3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物易累積；晚間中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及澎湖為「良好」等級；北部、竹苗、中部、高屏空品區及馬祖、金門為「普通」等級，清晨至上午高屏零星地區短時間可能達橘色提醒等級；雲嘉南空品區為「橘色提醒」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n3月3日東北季風增強，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、宜蘭、花東空品區及金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖為「普通」等級。\n未來一週，3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至6日東北季風增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
         "summary_en": "Tomorrow's air quality is Expected to be Moderate.",
         "summary_zh": "明日北部空氣品質預測為「普通」等級。"
       },
       "outdoor_index": {
-        "overall_score": 72,
+        "overall_score": 67,
         "overall_grade": "B",
         "overall_label": "Good",
         "segments": {
@@ -7591,11 +7606,12 @@
             ]
           },
           "Evening": {
-            "score": 72,
+            "score": 67,
             "grade": "B",
             "label": "Good",
             "blockers": [],
             "cautions": [
+              "sticky",
               "humid"
             ]
           }
@@ -7639,31 +7655,1980 @@
         }
       }
     },
-    "narration_text": "Good evening, family. It's Saturday the twenty-eighth of February, and here's your evening update for tonight and tomorrow.\n\nNothing to flag on the alert board tonight — smooth sailing so far. Right now it feels like twenty-one degrees, but the air is almost saturated at ninety-one percent humidity — that thick, close feeling where the air just sits on you. Wind is barely a whisper, just a light air out of the east-southeast, and the sky is fully overcast. The ground is dry, which is a small mercy given how heavy the air feels. AQI is thirty-two — good and clean.\n\nBottom line — enjoy a warm Sunday morning with Dad, get inside before the afternoon heat peaks, and keep the umbrella handy just in case.\n\nFinally, forecast accuracy. Yesterday I called for a warm, two-halves day with the temperature climbing hard to around thirty-one by midday. The actual morning reading came in at twenty point eight degrees apparent — a touch warmer than I expected for the start, and the humidity sat at eighty-nine percent, which was right in line. Overall the shape of the day was close, though the morning felt milder and more comfortable than the big swing I flagged. I'd call that close — the pattern was right, the exact numbers were a little off at the margins.",
+    "narration_text": "Smooth sailing tonight — no active weather alerts for the Shulin and Banqiao area. Right now it feels like 21 degrees, but the air is near-saturated at 90 percent humidity, so everything feels damp and close against your skin. Wind is barely a whisper out of the SSE, the sky is fully overcast, and the ground is dry. Air quality is good with an AQI of 33 — slightly better than yesterday's already clean reading. Anyone sensitive to high humidity — particularly if Ménière's is a concern — take it easy this evening, stay well hydrated, and avoid sudden movements that could trigger dizziness. Light layers are all you need tonight; no rain gear required before bed.\n\nYesterday's beds were asked to dry out, and one more dry night helps — hold off watering again tomorrow morning and check that saucers are empty. The morning commute toward Sanxia and Shulin should be comfortable at around 21 degrees with overcast skies and rain unlikely, but humidity will be thick so keep windows cracked only slightly. The evening return warms to around 24 degrees with a light breeze — still overcast but no hazards flagged either way.\n\nMid-morning is the window for Dad. Head to the Shulin Riverside Greenway — the flat paved five-kilometre loop with shaded sections and water stations is ideal for steady footing. Get out by nine and turn back before eleven, well ahead of the afternoon heat surge. The surface is paved and Parkinson's-friendly, so no cane needed on this route.\n\nTonight, a bowl of ma you ji — sesame oil chicken — is exactly right for this sticky, damp close-of-day. For climate control, run the AC in dry mode and keep windows closed; the outdoor dew point will be high through tomorrow afternoon, and letting that moisture in will make the house feel swampy.\n\nTomorrow runs hot and humid before easing. The morning starts overcast near 21 degrees, then heat surges fast to a muggy 31 degrees around lunch — that is your biggest watch point. By evening it pulls back to 26, then overnight a breezy front nudges temperatures down toward 21. The bigger shift arrives Tuesday evening into Wednesday, when a front drops temperatures sharply and rain becomes likely. Enjoy the warmth while it lasts — Wednesday will feel like a different season.\n\nToday's forecast was close. The overnight temperature and humidity landed almost exactly on target, though the predicted afternoon peak was bold — we will see how Sunday's surge verifies tomorrow.",
     "paragraphs": {
-      "p1_conditions": "Good evening, family. It's Saturday the twenty-eighth of February, and here's your evening update for tonight and tomorrow.",
-      "p2_garden_commute": "Nothing to flag on the alert board tonight — smooth sailing so far. Right now it feels like twenty-one degrees, but the air is almost saturated at ninety-one percent humidity — that thick, close feeling where the air just sits on you. Wind is barely a whisper, just a light air out of the east-southeast, and the sky is fully overcast. The ground is dry, which is a small mercy given how heavy the air feels. AQI is thirty-two — good and clean.",
-      "p5_forecast": "Bottom line — enjoy a warm Sunday morning with Dad, get inside before the afternoon heat peaks, and keep the umbrella handy just in case.",
-      "p6_accuracy": "Finally, forecast accuracy. Yesterday I called for a warm, two-halves day with the temperature climbing hard to around thirty-one by midday. The actual morning reading came in at twenty point eight degrees apparent — a touch warmer than I expected for the start, and the humidity sat at eighty-nine percent, which was right in line. Overall the shape of the day was close, though the morning felt milder and more comfortable than the big swing I flagged. I'd call that close — the pattern was right, the exact numbers were a little off at the margins."
+      "p1_conditions": "Smooth sailing tonight — no active weather alerts for the Shulin and Banqiao area. Right now it feels like 21 degrees, but the air is near-saturated at 90 percent humidity, so everything feels damp and close against your skin. Wind is barely a whisper out of the SSE, the sky is fully overcast, and the ground is dry. Air quality is good with an AQI of 33 — slightly better than yesterday's already clean reading. Anyone sensitive to high humidity — particularly if Ménière's is a concern — take it easy this evening, stay well hydrated, and avoid sudden movements that could trigger dizziness. Light layers are all you need tonight; no rain gear required before bed.",
+      "p2_garden_commute": "Yesterday's beds were asked to dry out, and one more dry night helps — hold off watering again tomorrow morning and check that saucers are empty. The morning commute toward Sanxia and Shulin should be comfortable at around 21 degrees with overcast skies and rain unlikely, but humidity will be thick so keep windows cracked only slightly. The evening return warms to around 24 degrees with a light breeze — still overcast but no hazards flagged either way.",
+      "p3_outdoor": "Mid-morning is the window for Dad. Head to the Shulin Riverside Greenway — the flat paved five-kilometre loop with shaded sections and water stations is ideal for steady footing. Get out by nine and turn back before eleven, well ahead of the afternoon heat surge. The surface is paved and Parkinson's-friendly, so no cane needed on this route.",
+      "p4_meal_climate": "Tonight, a bowl of ma you ji — sesame oil chicken — is exactly right for this sticky, damp close-of-day. For climate control, run the AC in dry mode and keep windows closed; the outdoor dew point will be high through tomorrow afternoon, and letting that moisture in will make the house feel swampy.",
+      "p5_forecast": "Tomorrow runs hot and humid before easing. The morning starts overcast near 21 degrees, then heat surges fast to a muggy 31 degrees around lunch — that is your biggest watch point. By evening it pulls back to 26, then overnight a breezy front nudges temperatures down toward 21. The bigger shift arrives Tuesday evening into Wednesday, when a front drops temperatures sharply and rain becomes likely. Enjoy the warmth while it lasts — Wednesday will feel like a different season.",
+      "p6_accuracy": "Today's forecast was close. The overnight temperature and humidity landed almost exactly on target, though the predicted afternoon peak was bold — we will see how Sunday's surge verifies tomorrow."
     },
     "metadata": {
-      "wardrobe": "A light breathable layer is enough for tonight and tomorrow morning, with something slightly warmer for the evening temperature drop.",
+      "wardrobe": "Light layers are fine for tonight and tomorrow morning around 21 degrees.",
       "rain_gear": false,
-      "commute_am": "Morning drive from Sanxia to Shulin around seven should be mild and calm — overcast, around twenty degrees, rain unlikely.",
-      "commute_pm": "Evening return around five feels warmer at around twenty-five degrees, light breeze, overcast, no hazards flagged.",
+      "commute_am": "Overcast and humid around 21 degrees heading toward Sanxia and Shulin — rain unlikely but keep a light layer handy.",
+      "commute_pm": "Evening return warms to around 24 degrees with a light breeze and overcast skies — no hazards, but humidity stays thick.",
       "meal": "ma you ji",
-      "outdoor": "Mid-morning nine to eleven at the Shulin Riverside Greenway — flat paved five-kilometre loop with shade and water stations, ideal for a gentle walk with Dad before the afternoon heat builds.",
-      "garden": "Skip watering, check pot drainage",
-      "climate": null,
+      "outdoor": "Mid-morning walk on the Shulin Riverside Greenway — flat paved 5km loop, shaded, back before the afternoon heat builds.",
+      "garden": "Hold watering, check saucers empty",
+      "climate": "Run AC in dry mode and keep windows closed to block high outdoor dew point moisture through tomorrow afternoon.",
       "cardiac_alert": false,
       "menieres_alert": true,
-      "forecast_oneliner": "Enjoy a warm Sunday morning with Dad, get inside before the afternoon heat peaks, and keep the umbrella handy just in case.",
+      "forecast_oneliner": "Enjoy the warm morning window — heat surges to 31 at lunch, then a front arrives Wednesday with rain and a sharp cool-down.",
       "accuracy_grade": "close",
       "narration_source": "claude",
       "narration_model": "claude-sonnet-4-6"
     },
     "audio_urls": {
       "full_audio_url": "/local_assets/broadcasts/2026-02-28/broadcast.mp3"
+    }
+  },
+  "2026-03-01": {
+    "generated_at": "2026-03-01T00:24:18.286873+08:00",
+    "raw_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-03-01T00:10:00+08:00",
+        "AT": 19.3,
+        "RH": 91.0,
+        "WDSD": 0.8,
+        "WDIR": 100.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "陰",
+        "visibility": null,
+        "PRES": 1010.5,
+        "UVI": 0.0
+      },
+      "forecasts": {
+        "三峽區": [
+          {
+            "start_time": "2026-03-01T00:00:00+08:00",
+            "end_time": "2026-03-01T00:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T01:00:00+08:00",
+            "end_time": "2026-03-01T01:00:00+08:00",
+            "T": 20.0,
+            "AT": 22.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T02:00:00+08:00",
+            "end_time": "2026-03-01T02:00:00+08:00",
+            "T": 20.0,
+            "AT": 22.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T03:00:00+08:00",
+            "end_time": "2026-03-01T03:00:00+08:00",
+            "T": 20.0,
+            "AT": 22.0,
+            "RH": 89.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T04:00:00+08:00",
+            "end_time": "2026-03-01T04:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T05:00:00+08:00",
+            "end_time": "2026-03-01T05:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T06:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 89.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T07:00:00+08:00",
+            "end_time": "2026-03-01T07:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T08:00:00+08:00",
+            "end_time": "2026-03-01T08:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T09:00:00+08:00",
+            "end_time": "2026-03-01T09:00:00+08:00",
+            "T": 23.0,
+            "AT": 26.0,
+            "RH": 88.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T10:00:00+08:00",
+            "end_time": "2026-03-01T10:00:00+08:00",
+            "T": 25.0,
+            "AT": 29.0,
+            "RH": 87.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T11:00:00+08:00",
+            "end_time": "2026-03-01T11:00:00+08:00",
+            "T": 26.0,
+            "AT": 30.0,
+            "RH": 84.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T12:00:00+08:00",
+            "end_time": "2026-03-01T12:00:00+08:00",
+            "T": 27.0,
+            "AT": 31.0,
+            "RH": 78.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-03-01T13:00:00+08:00",
+            "end_time": "2026-03-01T13:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 72.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T14:00:00+08:00",
+            "end_time": "2026-03-01T14:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 69.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T15:00:00+08:00",
+            "end_time": "2026-03-01T15:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 69.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-03-01T16:00:00+08:00",
+            "end_time": "2026-03-01T16:00:00+08:00",
+            "T": 25.0,
+            "AT": 28.0,
+            "RH": 73.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T17:00:00+08:00",
+            "end_time": "2026-03-01T17:00:00+08:00",
+            "T": 24.0,
+            "AT": 27.0,
+            "RH": 78.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T18:00:00+08:00",
+            "end_time": "2026-03-01T18:00:00+08:00",
+            "T": 23.0,
+            "AT": 25.0,
+            "RH": 83.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T19:00:00+08:00",
+            "end_time": "2026-03-01T19:00:00+08:00",
+            "T": 22.0,
+            "AT": 25.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T20:00:00+08:00",
+            "end_time": "2026-03-01T20:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 93.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T21:00:00+08:00",
+            "end_time": "2026-03-01T21:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 95.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T22:00:00+08:00",
+            "end_time": "2026-03-01T22:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 95.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T23:00:00+08:00",
+            "end_time": "2026-03-01T23:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 95.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T00:00:00+08:00",
+            "end_time": "2026-03-02T00:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 95.0,
+            "WS": 0.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-03-02T01:00:00+08:00",
+            "end_time": "2026-03-02T01:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 94.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T02:00:00+08:00",
+            "end_time": "2026-03-02T02:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 94.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T03:00:00+08:00",
+            "end_time": "2026-03-02T03:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 93.0,
+            "WS": 0.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-02T04:00:00+08:00",
+            "end_time": "2026-03-02T04:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 92.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T05:00:00+08:00",
+            "end_time": "2026-03-02T05:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 92.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T06:00:00+08:00",
+            "end_time": "2026-03-02T06:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 91.0,
+            "WS": 0.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T07:00:00+08:00",
+            "end_time": "2026-03-02T07:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 90.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T08:00:00+08:00",
+            "end_time": "2026-03-02T08:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T09:00:00+08:00",
+            "end_time": "2026-03-02T09:00:00+08:00",
+            "T": 23.0,
+            "AT": 27.0,
+            "RH": 86.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T10:00:00+08:00",
+            "end_time": "2026-03-02T10:00:00+08:00",
+            "T": 25.0,
+            "AT": 28.0,
+            "RH": 83.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T11:00:00+08:00",
+            "end_time": "2026-03-02T11:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 80.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T12:00:00+08:00",
+            "end_time": "2026-03-02T12:00:00+08:00",
+            "T": 28.0,
+            "AT": 31.0,
+            "RH": 75.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T15:00:00+08:00",
+            "end_time": "2026-03-02T15:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 73.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T18:00:00+08:00",
+            "end_time": "2026-03-02T18:00:00+08:00",
+            "T": 22.0,
+            "AT": 26.0,
+            "RH": 91.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T21:00:00+08:00",
+            "end_time": "2026-03-02T21:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 97.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T00:00:00+08:00",
+            "end_time": "2026-03-03T00:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 98.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T03:00:00+08:00",
+            "end_time": "2026-03-03T03:00:00+08:00",
+            "T": 18.0,
+            "AT": 20.0,
+            "RH": 98.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T06:00:00+08:00",
+            "end_time": "2026-03-03T06:00:00+08:00",
+            "T": 17.0,
+            "AT": 16.0,
+            "RH": 96.0,
+            "WS": 5.0,
+            "WD": null,
+            "PoP6h": 50.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T09:00:00+08:00",
+            "end_time": "2026-03-03T09:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 96.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 80.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T12:00:00+08:00",
+            "end_time": "2026-03-03T12:00:00+08:00",
+            "T": 18.0,
+            "AT": 20.0,
+            "RH": 96.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 80.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T15:00:00+08:00",
+            "end_time": "2026-03-03T15:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 85.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 60.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T18:00:00+08:00",
+            "end_time": "2026-03-03T18:00:00+08:00",
+            "T": 16.0,
+            "AT": 17.0,
+            "RH": 80.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T21:00:00+08:00",
+            "end_time": "2026-03-03T21:00:00+08:00",
+            "T": 16.0,
+            "AT": 16.0,
+            "RH": 88.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T00:00:00+08:00",
+            "end_time": "2026-03-04T00:00:00+08:00",
+            "T": 16.0,
+            "AT": 16.0,
+            "RH": 90.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T03:00:00+08:00",
+            "end_time": "2026-03-04T03:00:00+08:00",
+            "T": 15.0,
+            "AT": 15.0,
+            "RH": 91.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T06:00:00+08:00",
+            "end_time": "2026-03-04T06:00:00+08:00",
+            "T": 15.0,
+            "AT": 14.0,
+            "RH": 91.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T09:00:00+08:00",
+            "end_time": "2026-03-04T09:00:00+08:00",
+            "T": 17.0,
+            "AT": 17.0,
+            "RH": 86.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T12:00:00+08:00",
+            "end_time": "2026-03-04T12:00:00+08:00",
+            "T": 19.0,
+            "AT": 19.0,
+            "RH": 77.0,
+            "WS": 4.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T15:00:00+08:00",
+            "end_time": "2026-03-04T15:00:00+08:00",
+            "T": 19.0,
+            "AT": 19.0,
+            "RH": 73.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T18:00:00+08:00",
+            "end_time": "2026-03-04T18:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 80.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T21:00:00+08:00",
+            "end_time": "2026-03-04T21:00:00+08:00",
+            "T": 17.0,
+            "AT": 18.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          }
+        ],
+        "板橋區": [
+          {
+            "start_time": "2026-03-01T00:00:00+08:00",
+            "end_time": "2026-03-01T00:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 85.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T01:00:00+08:00",
+            "end_time": "2026-03-01T01:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 86.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T02:00:00+08:00",
+            "end_time": "2026-03-01T02:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T03:00:00+08:00",
+            "end_time": "2026-03-01T03:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 50.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T04:00:00+08:00",
+            "end_time": "2026-03-01T04:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T05:00:00+08:00",
+            "end_time": "2026-03-01T05:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T06:00:00+08:00",
+            "end_time": "2026-03-01T06:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T07:00:00+08:00",
+            "end_time": "2026-03-01T07:00:00+08:00",
+            "T": 20.0,
+            "AT": 21.0,
+            "RH": 87.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T08:00:00+08:00",
+            "end_time": "2026-03-01T08:00:00+08:00",
+            "T": 21.0,
+            "AT": 23.0,
+            "RH": 86.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T09:00:00+08:00",
+            "end_time": "2026-03-01T09:00:00+08:00",
+            "T": 22.0,
+            "AT": 25.0,
+            "RH": 84.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-01T10:00:00+08:00",
+            "end_time": "2026-03-01T10:00:00+08:00",
+            "T": 24.0,
+            "AT": 27.0,
+            "RH": 81.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T11:00:00+08:00",
+            "end_time": "2026-03-01T11:00:00+08:00",
+            "T": 25.0,
+            "AT": 29.0,
+            "RH": 78.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T12:00:00+08:00",
+            "end_time": "2026-03-01T12:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 74.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-03-01T13:00:00+08:00",
+            "end_time": "2026-03-01T13:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 69.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T14:00:00+08:00",
+            "end_time": "2026-03-01T14:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 67.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T15:00:00+08:00",
+            "end_time": "2026-03-01T15:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 70.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T16:00:00+08:00",
+            "end_time": "2026-03-01T16:00:00+08:00",
+            "T": 25.0,
+            "AT": 28.0,
+            "RH": 75.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T17:00:00+08:00",
+            "end_time": "2026-03-01T17:00:00+08:00",
+            "T": 24.0,
+            "AT": 27.0,
+            "RH": 79.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T18:00:00+08:00",
+            "end_time": "2026-03-01T18:00:00+08:00",
+            "T": 23.0,
+            "AT": 25.0,
+            "RH": 81.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-01T19:00:00+08:00",
+            "end_time": "2026-03-01T19:00:00+08:00",
+            "T": 22.0,
+            "AT": 25.0,
+            "RH": 83.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T20:00:00+08:00",
+            "end_time": "2026-03-01T20:00:00+08:00",
+            "T": 22.0,
+            "AT": 24.0,
+            "RH": 84.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T21:00:00+08:00",
+            "end_time": "2026-03-01T21:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 86.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 4
+          },
+          {
+            "start_time": "2026-03-01T22:00:00+08:00",
+            "end_time": "2026-03-01T22:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 89.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-01T23:00:00+08:00",
+            "end_time": "2026-03-01T23:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 91.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T00:00:00+08:00",
+            "end_time": "2026-03-02T00:00:00+08:00",
+            "T": 21.0,
+            "AT": 24.0,
+            "RH": 93.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 1
+          },
+          {
+            "start_time": "2026-03-02T01:00:00+08:00",
+            "end_time": "2026-03-02T01:00:00+08:00",
+            "T": 21.0,
+            "AT": 23.0,
+            "RH": 94.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T02:00:00+08:00",
+            "end_time": "2026-03-02T02:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 94.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T03:00:00+08:00",
+            "end_time": "2026-03-02T03:00:00+08:00",
+            "T": 20.0,
+            "AT": 22.0,
+            "RH": 94.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 10.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-02T04:00:00+08:00",
+            "end_time": "2026-03-02T04:00:00+08:00",
+            "T": 19.0,
+            "AT": 22.0,
+            "RH": 93.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T05:00:00+08:00",
+            "end_time": "2026-03-02T05:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 92.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T06:00:00+08:00",
+            "end_time": "2026-03-02T06:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 91.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T07:00:00+08:00",
+            "end_time": "2026-03-02T07:00:00+08:00",
+            "T": 19.0,
+            "AT": 21.0,
+            "RH": 90.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T08:00:00+08:00",
+            "end_time": "2026-03-02T08:00:00+08:00",
+            "T": 20.0,
+            "AT": 23.0,
+            "RH": 88.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T09:00:00+08:00",
+            "end_time": "2026-03-02T09:00:00+08:00",
+            "T": 22.0,
+            "AT": 25.0,
+            "RH": 85.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T10:00:00+08:00",
+            "end_time": "2026-03-02T10:00:00+08:00",
+            "T": 24.0,
+            "AT": 27.0,
+            "RH": 82.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T11:00:00+08:00",
+            "end_time": "2026-03-02T11:00:00+08:00",
+            "T": 26.0,
+            "AT": 29.0,
+            "RH": 79.0,
+            "WS": null,
+            "WD": null,
+            "PoP6h": null,
+            "Wx": null
+          },
+          {
+            "start_time": "2026-03-02T12:00:00+08:00",
+            "end_time": "2026-03-02T12:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 76.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T15:00:00+08:00",
+            "end_time": "2026-03-02T15:00:00+08:00",
+            "T": 27.0,
+            "AT": 30.0,
+            "RH": 78.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T18:00:00+08:00",
+            "end_time": "2026-03-02T18:00:00+08:00",
+            "T": 23.0,
+            "AT": 25.0,
+            "RH": 91.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-02T21:00:00+08:00",
+            "end_time": "2026-03-02T21:00:00+08:00",
+            "T": 21.0,
+            "AT": 23.0,
+            "RH": 93.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T00:00:00+08:00",
+            "end_time": "2026-03-03T00:00:00+08:00",
+            "T": 20.0,
+            "AT": 22.0,
+            "RH": 95.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T03:00:00+08:00",
+            "end_time": "2026-03-03T03:00:00+08:00",
+            "T": 19.0,
+            "AT": 20.0,
+            "RH": 89.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 40.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T06:00:00+08:00",
+            "end_time": "2026-03-03T06:00:00+08:00",
+            "T": 17.0,
+            "AT": 17.0,
+            "RH": 88.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 50.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T09:00:00+08:00",
+            "end_time": "2026-03-03T09:00:00+08:00",
+            "T": 17.0,
+            "AT": 18.0,
+            "RH": 90.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 80.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T12:00:00+08:00",
+            "end_time": "2026-03-03T12:00:00+08:00",
+            "T": 18.0,
+            "AT": 19.0,
+            "RH": 95.0,
+            "WS": 1.0,
+            "WD": null,
+            "PoP6h": 80.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T15:00:00+08:00",
+            "end_time": "2026-03-03T15:00:00+08:00",
+            "T": 17.0,
+            "AT": 18.0,
+            "RH": 86.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 60.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-03T18:00:00+08:00",
+            "end_time": "2026-03-03T18:00:00+08:00",
+            "T": 17.0,
+            "AT": 17.0,
+            "RH": 77.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-03T21:00:00+08:00",
+            "end_time": "2026-03-03T21:00:00+08:00",
+            "T": 16.0,
+            "AT": 17.0,
+            "RH": 83.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T00:00:00+08:00",
+            "end_time": "2026-03-04T00:00:00+08:00",
+            "T": 16.0,
+            "AT": 17.0,
+            "RH": 85.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-04T03:00:00+08:00",
+            "end_time": "2026-03-04T03:00:00+08:00",
+            "T": 16.0,
+            "AT": 16.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T06:00:00+08:00",
+            "end_time": "2026-03-04T06:00:00+08:00",
+            "T": 16.0,
+            "AT": 16.0,
+            "RH": 87.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T09:00:00+08:00",
+            "end_time": "2026-03-04T09:00:00+08:00",
+            "T": 17.0,
+            "AT": 17.0,
+            "RH": 85.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T12:00:00+08:00",
+            "end_time": "2026-03-04T12:00:00+08:00",
+            "T": 19.0,
+            "AT": 19.0,
+            "RH": 78.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T15:00:00+08:00",
+            "end_time": "2026-03-04T15:00:00+08:00",
+            "T": 19.0,
+            "AT": 19.0,
+            "RH": 75.0,
+            "WS": 3.0,
+            "WD": null,
+            "PoP6h": 20.0,
+            "Wx": 7
+          },
+          {
+            "start_time": "2026-03-04T18:00:00+08:00",
+            "end_time": "2026-03-04T18:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 79.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          },
+          {
+            "start_time": "2026-03-04T21:00:00+08:00",
+            "end_time": "2026-03-04T21:00:00+08:00",
+            "T": 18.0,
+            "AT": 18.0,
+            "RH": 84.0,
+            "WS": 2.0,
+            "WD": null,
+            "PoP6h": 30.0,
+            "Wx": 8
+          }
+        ]
+      },
+      "aqi": {
+        "realtime": {
+          "station_name": "土城",
+          "aqi": 29,
+          "status": "良好",
+          "pm25": 6.0,
+          "pm10": 7.0,
+          "publish_time": "2026/03/01 00:00:00"
+        },
+        "forecast": {
+          "area": "北部",
+          "aqi": 65,
+          "status": "細懸浮微粒",
+          "forecast_date": "2026-03-01",
+          "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依18時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日18時氣象資料顯示：3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物易累積；晚間中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及澎湖為「良好」等級；北部、竹苗、中部、高屏空品區及馬祖、金門為「普通」等級，清晨至上午高屏零星地區短時間可能達橘色提醒等級；雲嘉南空品區為「橘色提醒」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n3月3日東北季風增強，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、宜蘭、花東空品區及金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖為「普通」等級。\n未來一週，3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至6日東北季風增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。"
+        }
+      }
+    },
+    "processed_data": {
+      "current": {
+        "station_id": "466881",
+        "station_name": "新北",
+        "obs_time": "2026-03-01T00:10:00+08:00",
+        "AT": 21.5,
+        "RH": 91.0,
+        "WDSD": 0.8,
+        "WDIR": 100.0,
+        "RAIN": 0.0,
+        "Wx": null,
+        "WxText": "陰",
+        "visibility": null,
+        "PRES": 1010.5,
+        "UVI": 0.0,
+        "dew_point": 17.8,
+        "dew_gap": 1.5,
+        "saturation_label": "near_saturated",
+        "Wx_text": "陰",
+        "uv_text": "Low",
+        "uv_level": 1,
+        "hum_text": "Near Saturated",
+        "hum_level": 5,
+        "pres_text": "Normal",
+        "pres_level": 3,
+        "wind_text": "Light air",
+        "wind_level": 1,
+        "wind_dir_text": "E",
+        "aqi": 29,
+        "aqi_status": "Good",
+        "aqi_level": 1,
+        "vis_text": "Unknown",
+        "vis_level": 0,
+        "ground_state": "Dry",
+        "ground_level": 1
+      },
+      "forecast_segments": {
+        "Morning": {
+          "start_time": "2026-03-01T06:00:00+08:00",
+          "end_time": "2026-03-01T06:00:00+08:00",
+          "T": 19.0,
+          "AT": 20.7,
+          "RH": 89.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 40.0,
+          "Wx": 8,
+          "dew_point": 17.1,
+          "dew_gap": 1.9,
+          "saturation_label": "near_saturated",
+          "hum_text": "Near Saturated",
+          "hum_level": 5,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Overcast",
+          "beaufort_desc": "Calm"
+        },
+        "Afternoon": {
+          "start_time": "2026-03-01T12:00:00+08:00",
+          "end_time": "2026-03-01T12:00:00+08:00",
+          "T": 27.0,
+          "AT": 31.4,
+          "RH": 78.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 20.0,
+          "Wx": 4,
+          "dew_point": 22.8,
+          "dew_gap": 4.2,
+          "saturation_label": "clammy",
+          "hum_text": "Clammy",
+          "hum_level": 4,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds",
+          "beaufort_desc": "Calm"
+        },
+        "Evening": {
+          "start_time": "2026-03-01T18:00:00+08:00",
+          "end_time": "2026-03-01T18:00:00+08:00",
+          "T": 23.0,
+          "AT": 26.0,
+          "RH": 83.0,
+          "WS": 1.0,
+          "WD": null,
+          "PoP6h": 20.0,
+          "Wx": 7,
+          "dew_point": 20.0,
+          "dew_gap": 3.0,
+          "saturation_label": "clammy",
+          "hum_text": "Clammy",
+          "hum_level": 4,
+          "wind_text": "Calm",
+          "wind_level": 1,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds",
+          "beaufort_desc": "Calm"
+        },
+        "Overnight": {
+          "start_time": "2026-03-01T00:00:00+08:00",
+          "end_time": "2026-03-01T00:00:00+08:00",
+          "T": 20.0,
+          "AT": 20.6,
+          "RH": 87.0,
+          "WS": 3.0,
+          "WD": null,
+          "PoP6h": 20.0,
+          "Wx": 7,
+          "dew_point": 17.8,
+          "dew_gap": 2.2,
+          "saturation_label": "clammy",
+          "hum_text": "Clammy",
+          "hum_level": 4,
+          "wind_text": "Breezy",
+          "wind_level": 2,
+          "wind_dir_text": "Unknown",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds",
+          "beaufort_desc": "Breezy"
+        }
+      },
+      "forecast_7day": [
+        {
+          "start_time": "2026-02-28T18:00:00+08:00",
+          "AT": 21.0,
+          "RH": 88.0,
+          "WS": 3.0,
+          "PoP12h": 40.0,
+          "Wx": 11,
+          "wind_text": "Light breeze",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Rain"
+        },
+        {
+          "start_time": "2026-03-01T06:00:00+08:00",
+          "AT": 31.0,
+          "RH": 81.0,
+          "WS": 2.0,
+          "PoP12h": 40.0,
+          "Wx": 10,
+          "wind_text": "Light breeze",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-01T18:00:00+08:00",
+          "AT": 21.0,
+          "RH": 92.0,
+          "WS": 1.0,
+          "PoP12h": 20.0,
+          "Wx": 6,
+          "wind_text": "Light air",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        },
+        {
+          "start_time": "2026-03-02T06:00:00+08:00",
+          "AT": 31.0,
+          "RH": 82.0,
+          "WS": 3.0,
+          "PoP12h": 30.0,
+          "Wx": 8,
+          "wind_text": "Light breeze",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-02T18:00:00+08:00",
+          "AT": 16.0,
+          "RH": 97.0,
+          "WS": 5.0,
+          "PoP12h": 40.0,
+          "Wx": 11,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Rain"
+        },
+        {
+          "start_time": "2026-03-03T06:00:00+08:00",
+          "AT": 20.0,
+          "RH": 91.0,
+          "WS": 5.0,
+          "PoP12h": 80.0,
+          "Wx": 11,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Likely",
+          "precip_level": 4,
+          "cloud_cover": "Rain"
+        },
+        {
+          "start_time": "2026-03-03T18:00:00+08:00",
+          "AT": 14.0,
+          "RH": 89.0,
+          "WS": 3.0,
+          "PoP12h": 30.0,
+          "Wx": 11,
+          "wind_text": "Light breeze",
+          "precip_text": "Unlikely",
+          "precip_level": 2,
+          "cloud_cover": "Rain"
+        },
+        {
+          "start_time": "2026-03-04T06:00:00+08:00",
+          "AT": 19.0,
+          "RH": 81.0,
+          "WS": 4.0,
+          "PoP12h": null,
+          "Wx": 11,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Rain"
+        },
+        {
+          "start_time": "2026-03-04T18:00:00+08:00",
+          "AT": 18.0,
+          "RH": 90.0,
+          "WS": 3.0,
+          "PoP12h": null,
+          "Wx": 10,
+          "wind_text": "Light breeze",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-05T06:00:00+08:00",
+          "AT": 25.0,
+          "RH": 87.0,
+          "WS": 2.0,
+          "PoP12h": null,
+          "Wx": 8,
+          "wind_text": "Light breeze",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-05T18:00:00+08:00",
+          "AT": 19.0,
+          "RH": 91.0,
+          "WS": 1.0,
+          "PoP12h": null,
+          "Wx": 9,
+          "wind_text": "Light air",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-06T06:00:00+08:00",
+          "AT": 22.0,
+          "RH": 90.0,
+          "WS": 3.0,
+          "PoP12h": null,
+          "Wx": 10,
+          "wind_text": "Light breeze",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-06T18:00:00+08:00",
+          "AT": 15.0,
+          "RH": 88.0,
+          "WS": 3.0,
+          "PoP12h": null,
+          "Wx": 8,
+          "wind_text": "Light breeze",
+          "precip_text": "Possible",
+          "precip_level": 3,
+          "cloud_cover": "Overcast"
+        },
+        {
+          "start_time": "2026-03-07T06:00:00+08:00",
+          "AT": 20.0,
+          "RH": 77.0,
+          "WS": 4.0,
+          "PoP12h": null,
+          "Wx": 5,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Very Unlikely",
+          "precip_level": 1,
+          "cloud_cover": "Mixed Clouds"
+        },
+        {
+          "start_time": "2026-03-07T18:00:00+08:00",
+          "AT": 14.0,
+          "RH": 85.0,
+          "WS": 4.0,
+          "PoP12h": null,
+          "Wx": 3,
+          "wind_text": "Gentle breeze",
+          "precip_text": "Dry",
+          "precip_level": 1,
+          "cloud_cover": "Fair"
+        }
+      ],
+      "transitions": [
+        {
+          "from_segment": "Morning",
+          "to_segment": "Afternoon",
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 20.7,
+              "to": 31.4,
+              "delta": 10.7
+            },
+            {
+              "metric": "CloudCover",
+              "from": "Overcast",
+              "to": "Mixed Clouds"
+            }
+          ],
+          "is_transition": true
+        },
+        {
+          "from_segment": "Afternoon",
+          "to_segment": "Evening",
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 31.4,
+              "to": 26.0,
+              "delta": -5.399999999999999
+            }
+          ],
+          "is_transition": true
+        },
+        {
+          "from_segment": "Evening",
+          "to_segment": "Overnight",
+          "breaches": [
+            {
+              "metric": "AT",
+              "from": 26.0,
+              "to": 20.6,
+              "delta": -5.399999999999999
+            }
+          ],
+          "is_transition": true
+        }
+      ],
+      "heads_ups": [],
+      "commute": {
+        "morning": {
+          "start_time": "2026-03-01T02:00:00+08:00",
+          "end_time": "2026-03-04T06:00:00+08:00",
+          "AT": 20.2,
+          "T": 18.9,
+          "RH": 91.0,
+          "WS": 1.8,
+          "WD": null,
+          "PoP6h": 33.8,
+          "Wx": 8,
+          "beaufort_desc": "Light breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        },
+        "evening": {
+          "start_time": "2026-03-01T12:00:00+08:00",
+          "end_time": "2026-03-04T18:00:00+08:00",
+          "AT": 24.5,
+          "T": 22.8,
+          "RH": 78.2,
+          "WS": 2.1,
+          "WD": null,
+          "PoP6h": 35.8,
+          "Wx": 8,
+          "beaufort_desc": "Light breeze",
+          "wind_dir_text": "Unknown",
+          "precip_text": "Unlikely",
+          "cloud_cover": "Overcast",
+          "hazards": []
+        }
+      },
+      "meal_mood": {
+        "mood": "Cool & Damp",
+        "avg_at": 26.0,
+        "avg_rh": 83.3,
+        "is_rainy": false,
+        "all_suggestions": [
+          "牛肉麵 (niú ròu miàn)",
+          "麻油雞 (má yóu jī)",
+          "藥燉排骨 (herbal pork rib soup)",
+          "火鍋 (huǒ guō)",
+          "鹹粥 (savory congee)",
+          "四神湯 (sì shén tāng)"
+        ],
+        "top_suggestions": [
+          "藥燉排骨 (herbal pork rib soup)"
+        ]
+      },
+      "recent_meals": [],
+      "location_rec": {
+        "mood": "Warm",
+        "all_locations": [
+          {
+            "name": "Shulin Riverside Greenway",
+            "activity": "cycling / jogging",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.987,
+            "lng": 121.428,
+            "notes": "Local favourite — 5km flat loop, shaded sections, water stations"
+          },
+          {
+            "name": "Yingge Ceramics Museum Park",
+            "activity": "strolling",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.906,
+            "lng": 121.345,
+            "notes": "Outdoor sculpture garden, paved paths, interesting for all ages"
+          },
+          {
+            "name": "Sanxia Old Street & Zushi Temple",
+            "activity": "walking / culture",
+            "surface": "cobblestone + paved",
+            "parkinsons": "ok",
+            "lat": 24.942,
+            "lng": 121.369,
+            "notes": "Best in morning before crowds; cobblestones can be tricky — bring a cane"
+          },
+          {
+            "name": "Zhonghe Yuantong Mountain Trail",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.996,
+            "lng": 121.496,
+            "notes": "Shaded climb ~3km, cooler than valley floor, good workout"
+          },
+          {
+            "name": "Banqiao Lin Family Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved garden paths",
+            "parkinsons": "good",
+            "lat": 25.014,
+            "lng": 121.462,
+            "notes": "Historic garden, very flat, shaded by large banyan trees"
+          },
+          {
+            "name": "Tamsui Old Street & Waterfront",
+            "activity": "walking / boat",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.17,
+            "lng": 121.432,
+            "notes": "Worth the 50km drive — waterfront promenade, sunset views"
+          }
+        ],
+        "top_locations": [
+          {
+            "name": "Shulin Riverside Greenway",
+            "activity": "cycling / jogging",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.987,
+            "lng": 121.428,
+            "notes": "Local favourite — 5km flat loop, shaded sections, water stations"
+          },
+          {
+            "name": "Yingge Ceramics Museum Park",
+            "activity": "strolling",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 24.906,
+            "lng": 121.345,
+            "notes": "Outdoor sculpture garden, paved paths, interesting for all ages"
+          },
+          {
+            "name": "Sanxia Old Street & Zushi Temple",
+            "activity": "walking / culture",
+            "surface": "cobblestone + paved",
+            "parkinsons": "ok",
+            "lat": 24.942,
+            "lng": 121.369,
+            "notes": "Best in morning before crowds; cobblestones can be tricky — bring a cane"
+          },
+          {
+            "name": "Zhonghe Yuantong Mountain Trail",
+            "activity": "hiking",
+            "surface": "dirt + stone steps",
+            "parkinsons": "ok",
+            "lat": 24.996,
+            "lng": 121.496,
+            "notes": "Shaded climb ~3km, cooler than valley floor, good workout"
+          },
+          {
+            "name": "Banqiao Lin Family Garden",
+            "activity": "strolling / tai chi",
+            "surface": "paved garden paths",
+            "parkinsons": "good",
+            "lat": 25.014,
+            "lng": 121.462,
+            "notes": "Historic garden, very flat, shaded by large banyan trees"
+          },
+          {
+            "name": "Tamsui Old Street & Waterfront",
+            "activity": "walking / boat",
+            "surface": "paved",
+            "parkinsons": "good",
+            "lat": 25.17,
+            "lng": 121.432,
+            "notes": "Worth the 50km drive — waterfront promenade, sunset views"
+          }
+        ]
+      },
+      "recent_locations": [],
+      "climate_control": {
+        "mode": "cooling",
+        "dehumidifier": "recommended",
+        "ac_mode": "dry",
+        "windows": "close",
+        "dew_reasons": [
+          "outdoor dew point 22.8°C — muggy, dehumidifier recommended",
+          "dew gap only 4.2°C — air nearly saturated, AC dry mode addresses moisture better than cool mode",
+          "outdoor dew point 22.8°C — keep windows closed to limit moisture infiltration"
+        ],
+        "recommendations": []
+      },
+      "cardiac_alert": {
+        "triggered": false,
+        "reasons": [],
+        "type": "Cardiac"
+      },
+      "menieres_alert": {
+        "triggered": true,
+        "severity": "moderate",
+        "reasons": [
+          "High humidity discomfort"
+        ],
+        "type": "Menieres"
+      },
+      "aqi_realtime": {
+        "station_name": "土城",
+        "aqi": 29,
+        "status": "良好",
+        "pm25": 6.0,
+        "pm10": 7.0,
+        "publish_time": "2026/03/01 00:00:00"
+      },
+      "aqi_forecast": {
+        "area": "北部",
+        "aqi": 65,
+        "status": "PM2.5",
+        "forecast_date": "2026-03-01",
+        "content": "今（28）日華南雲雨區東移及東北季風影響，環境風場為東北風，中南部位於下風處，污染物稍易累積。依18時監測結果，竹苗、宜蘭、花東空品區及馬祖、金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區為「普通」等級。\n依監測資料及氣象署28日18時氣象資料顯示：3月1日東北季風減弱，環境風場轉為偏東風至東南風，西半部擴散條件稍差，污染物易累積；晚間中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及澎湖為「良好」等級；北部、竹苗、中部、高屏空品區及馬祖、金門為「普通」等級，清晨至上午高屏零星地區短時間可能達橘色提醒等級；雲嘉南空品區為「橘色提醒」等級。\n3月2日鋒面影響，環境風場為偏南風至西南風，雲嘉南以北擴散條件稍差，污染物稍易累積；中部以北地區及金門、馬祖易有低雲或局部霧影響能見度。宜蘭、花東空品區及馬祖、澎湖為「良好」等級；北部、竹苗、中部、雲嘉南、高屏空品區及金門為「普通」等級。\n3月3日東北季風增強，環境風場為東北風，中南部位於下風處，污染物稍易累積。竹苗、宜蘭、花東空品區及金門、澎湖為「良好」等級；北部、中部、雲嘉南、高屏空品區及馬祖為「普通」等級。\n未來一週，3月1日至2日環境風場為偏東風轉西南風，西半部污染物稍易累積；3日至6日東北季風增強影響，環境風場為東北風，中南部污染物稍易累積。空氣品質受氣象條件影響大，有其不確定性，請隨時留意最新空氣品質資訊。",
+        "summary_en": "Tomorrow's air quality is Expected to be Moderate.",
+        "summary_zh": "明日北部空氣品質預測為「普通」等級。"
+      },
+      "outdoor_index": {
+        "overall_score": 67,
+        "overall_grade": "B",
+        "overall_label": "Good",
+        "segments": {
+          "Morning": {
+            "score": 65,
+            "grade": "B",
+            "label": "Good",
+            "blockers": [],
+            "cautions": [
+              "very_humid"
+            ]
+          },
+          "Afternoon": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair",
+            "blockers": [],
+            "cautions": [
+              "muggy",
+              "humid"
+            ]
+          },
+          "Evening": {
+            "score": 67,
+            "grade": "B",
+            "label": "Good",
+            "blockers": [],
+            "cautions": [
+              "sticky",
+              "humid"
+            ]
+          }
+        },
+        "activities": {
+          "strolling": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          },
+          "cycling": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          },
+          "hiking": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          },
+          "picnic": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          },
+          "swimming": {
+            "score": 80,
+            "grade": "A",
+            "label": "Excellent"
+          },
+          "sports": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          },
+          "photography": {
+            "score": 62,
+            "grade": "C",
+            "label": "Fair"
+          }
+        }
+      },
+      "regenerate_meal_lists": true
+    },
+    "narration_text": "Smooth sailing tonight — no active weather alerts for the Shulin and Banqiao area. Right now it feels like 21 degrees, but the air is near-saturated at 90 percent humidity, so everything feels damp and close against your skin. Wind is barely a whisper out of the SSE, the sky is fully overcast, and the ground is dry. Air quality is good with an AQI of 33 — slightly better than yesterday's already clean reading. Anyone sensitive to high humidity — particularly if Ménière's is a concern — take it easy this evening, stay well hydrated, and avoid sudden movements that could trigger dizziness. Light layers are all you need tonight; no rain gear required before bed.\n\nYesterday's beds were asked to dry out, and one more dry night helps — hold off watering again tomorrow morning and check that saucers are empty. The morning commute toward Sanxia and Shulin should be comfortable at around 21 degrees with overcast skies and rain unlikely, but humidity will be thick so keep windows cracked only slightly. The evening return warms to around 24 degrees with a light breeze — still overcast but no hazards flagged either way.\n\nMid-morning is the window for Dad. Head to the Shulin Riverside Greenway — the flat paved five-kilometre loop with shaded sections and water stations is ideal for steady footing. Get out by nine and turn back before eleven, well ahead of the afternoon heat surge. The surface is paved and Parkinson's-friendly, so no cane needed on this route.\n\nTonight, a bowl of ma you ji — sesame oil chicken — is exactly right for this sticky, damp close-of-day. For climate control, run the AC in dry mode and keep windows closed; the outdoor dew point will be high through tomorrow afternoon, and letting that moisture in will make the house feel swampy.\n\nTomorrow runs hot and humid before easing. The morning starts overcast near 21 degrees, then heat surges fast to a muggy 31 degrees around lunch — that is your biggest watch point. By evening it pulls back to 26, then overnight a breezy front nudges temperatures down toward 21. The bigger shift arrives Tuesday evening into Wednesday, when a front drops temperatures sharply and rain becomes likely. Enjoy the warmth while it lasts — Wednesday will feel like a different season.\n\nToday's forecast was close. The overnight temperature and humidity landed almost exactly on target, though the predicted afternoon peak was bold — we will see how Sunday's surge verifies tomorrow.",
+    "paragraphs": {
+      "p1_conditions": "Smooth sailing tonight — no active weather alerts for the Shulin and Banqiao area. Right now it feels like 21 degrees, but the air is near-saturated at 90 percent humidity, so everything feels damp and close against your skin. Wind is barely a whisper out of the SSE, the sky is fully overcast, and the ground is dry. Air quality is good with an AQI of 33 — slightly better than yesterday's already clean reading. Anyone sensitive to high humidity — particularly if Ménière's is a concern — take it easy this evening, stay well hydrated, and avoid sudden movements that could trigger dizziness. Light layers are all you need tonight; no rain gear required before bed.",
+      "p2_garden_commute": "Yesterday's beds were asked to dry out, and one more dry night helps — hold off watering again tomorrow morning and check that saucers are empty. The morning commute toward Sanxia and Shulin should be comfortable at around 21 degrees with overcast skies and rain unlikely, but humidity will be thick so keep windows cracked only slightly. The evening return warms to around 24 degrees with a light breeze — still overcast but no hazards flagged either way.",
+      "p3_outdoor": "Mid-morning is the window for Dad. Head to the Shulin Riverside Greenway — the flat paved five-kilometre loop with shaded sections and water stations is ideal for steady footing. Get out by nine and turn back before eleven, well ahead of the afternoon heat surge. The surface is paved and Parkinson's-friendly, so no cane needed on this route.",
+      "p4_meal_climate": "Tonight, a bowl of ma you ji — sesame oil chicken — is exactly right for this sticky, damp close-of-day. For climate control, run the AC in dry mode and keep windows closed; the outdoor dew point will be high through tomorrow afternoon, and letting that moisture in will make the house feel swampy.",
+      "p5_forecast": "Tomorrow runs hot and humid before easing. The morning starts overcast near 21 degrees, then heat surges fast to a muggy 31 degrees around lunch — that is your biggest watch point. By evening it pulls back to 26, then overnight a breezy front nudges temperatures down toward 21. The bigger shift arrives Tuesday evening into Wednesday, when a front drops temperatures sharply and rain becomes likely. Enjoy the warmth while it lasts — Wednesday will feel like a different season.",
+      "p6_accuracy": "Today's forecast was close. The overnight temperature and humidity landed almost exactly on target, though the predicted afternoon peak was bold — we will see how Sunday's surge verifies tomorrow."
+    },
+    "metadata": {
+      "wardrobe": "Light layers are fine for tonight and tomorrow morning around 21 degrees.",
+      "rain_gear": false,
+      "commute_am": "Overcast and humid around 21 degrees heading toward Sanxia and Shulin — rain unlikely but keep a light layer handy.",
+      "commute_pm": "Evening return warms to around 24 degrees with a light breeze and overcast skies — no hazards, but humidity stays thick.",
+      "meal": "ma you ji",
+      "outdoor": "Mid-morning walk on the Shulin Riverside Greenway — flat paved 5km loop, shaded, back before the afternoon heat builds.",
+      "garden": "Hold watering, check saucers empty",
+      "climate": "Run AC in dry mode and keep windows closed to block high outdoor dew point moisture through tomorrow afternoon.",
+      "cardiac_alert": false,
+      "menieres_alert": true,
+      "forecast_oneliner": "Enjoy the warm morning window — heat surges to 31 at lunch, then a front arrives Wednesday with rain and a sharp cool-down.",
+      "accuracy_grade": "close",
+      "narration_source": "claude",
+      "narration_model": "claude-sonnet-4-6"
+    },
+    "audio_urls": {
+      "full_audio_url": "/local_assets/broadcasts/2026-03-01/broadcast.mp3"
     }
   }
 }

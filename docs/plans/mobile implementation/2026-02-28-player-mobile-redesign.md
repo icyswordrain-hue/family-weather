@@ -209,3 +209,43 @@ Boot call updated: `initFAB()` → `initSheetSettings()`.
 | `web/templates/dashboard.html` | SVG chevron, tabbed sheet header, narration/settings panels, FAB removed |
 | `web/static/style.css` | 42px mobile bar, tab styles, speed pills, ps-controls, light-surface overrides, FAB CSS removed |
 | `web/static/app.js` | Speed pill sync, sheet scrub bar, bar tap-to-open, tab switching, `initSheetSettings`, i18n keys |
+
+---
+
+## Post-Implementation Fix — 2026-03-01
+
+Two visual bugs found on Pixel 9 Pro (448px logical width) after the redesign shipped.
+
+### Bug 1 — Vertical dividing line at ~240px
+
+**Root cause:** `:root` variables `--sidebar-w: 240px` and `--rp-w: 180px` were never zeroed in the mobile media query. Any element using `var(--sidebar-w)` without an explicit `left: 0` override resolved to 240px, creating a visible vertical boundary through the content area.
+
+**Fix:** Reset both variables inside `@media (max-width: 767px)`:
+
+```css
+:root {
+  --sidebar-w: 0px;
+  --rp-w: 0px;
+}
+```
+
+This is placed at the top of the mobile block so all downstream `var()` usages naturally resolve to 0 — covers any element that might be missed with per-rule `left: 0` overrides.
+
+### Bug 2 — 36px gap between sheet bottom and player bar
+
+**Root cause:** The mobile `.player-sheet` override set `left`, `right`, and `height` but not `bottom`. The desktop default of `bottom: 78px` (matching the old 78px bar) was inherited on mobile, placing the sheet bottom 78px up instead of 42px.
+
+**Fix:** Add `bottom: 42px` to the mobile `.player-sheet` block:
+
+```css
+.player-sheet {
+  left: 0;
+  right: 0;
+  height: 78vh;
+  bottom: 42px;  /* flush with 42px slim bar */
+}
+```
+
+The `transform: translateY(calc(100% + 78px))` on the hidden (closed) state does **not** need updating — extra clearance below the viewport is harmless and only the open state (`translateY(0)`) affects visible layout.
+
+**Commit:** `94e9451`

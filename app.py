@@ -23,20 +23,55 @@ from flask import Flask, jsonify, render_template, request, abort, Response, str
 from config import RUN_MODE
 
 import config
-from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS
+from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS, CST
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts, fetch_all_forecasts_7day
 from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
 from narration.fallback_narrator import build_narration
 from narration.llm_prompt_builder import build_prompt
 
-from narration.tts_client import synthesize_and_upload
 from history.conversation import load_history, save_day, get_today_broadcast
 from web.routes import build_slices
 from backend.pipeline import (
     check_regen_cycle,
     generate_narration_with_fallback,
 )
+
+_regen_cache = {}
+
+def _persist_regen(payload: dict) -> None:
+    regen = payload.get("regen")
+    if not regen:
+        return
+    if RUN_MODE in ("CLOUD", "MODAL"):
+        from google.cloud import storage
+        blob = storage.Client().bucket(config.GCS_BUCKET_NAME).blob(config.GCS_REGEN_PATH)
+        blob.upload_from_string(
+            json.dumps(regen, ensure_ascii=False, indent=2),
+            content_type="application/json",
+        )
+    else:
+        from pathlib import Path
+        p = Path(f"{LOCAL_DATA_DIR}/regen.json")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(
+            json.dumps(regen, ensure_ascii=False, indent=2)
+        )
+
+def _restore_regen_from_gcs() -> None:
+    """Call on container startup before first request."""
+    if RUN_MODE not in ("CLOUD", "MODAL"):
+        return
+    try:
+        from google.cloud import storage
+        blob = storage.Client().bucket(config.GCS_BUCKET_NAME).blob(config.GCS_REGEN_PATH)
+        if blob.exists():
+            _regen_cache.update(json.loads(blob.download_as_text()))
+            logger.info("regen.json restored from GCS")
+    except Exception as e:
+        logger.warning(f"Could not restore regen from GCS: {e}")
+
+_restore_regen_from_gcs()
 
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(
@@ -82,6 +117,21 @@ if RUN_MODE == "LOCAL":
 def health():
     """Health check endpoint required by Cloud Run."""
     return jsonify({"status": "ok", "timestamp": datetime.now(_TAIPEI_TZ).isoformat()})
+
+@app.route("/api/tts", methods=["POST"])
+def tts_on_demand():
+    data   = request.json or {}
+    script = data["script"]
+    lang   = data.get("lang", "zh-TW")
+    date   = data.get("date", datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d"))
+    slot   = data.get("slot", "midday")
+    from narration.tts_client import synthesise_with_cache
+    url    = synthesise_with_cache(script, lang, date, slot)
+    return jsonify({"url": url})
+
+@app.route("/api/warmup")
+def warmup():
+    return jsonify({"status": "warm"}), 200
 
 
 @app.route("/debug/log", methods=["POST"])
@@ -148,6 +198,24 @@ def refresh():
     lang = body.get("lang", "en")
     logger.info("DEBUG: Received refresh request. Body: %s, Provider: %s, Lang: %s", body, provider, lang)
 
+    slot = classify_run_slot(body)
+
+    if slot == "midday":
+        try:
+            from data.fetch_cwa import fetch_current_conditions
+            from history.conversation import load_broadcast
+            current = fetch_current_conditions()
+            m_broadcast = load_broadcast(date=date_str, slot="morning")
+            morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
+            if morning:
+                changed, reasons = _conditions_changed(current, morning)
+                if not changed:
+                    logger.info("Midday skip: conditions unchanged")
+                    return jsonify({"status": "skipped", "broadcast": m_broadcast}), 200
+                logger.info(f"Midday proceeding: {reasons}")
+        except Exception as e:
+            logger.warning(f"Midday skip check failed ({e}), running full pipeline")
+
     if RUN_MODE == "CLOUD":
         # Proxy to Modal
         modal_url = os.environ.get("MODAL_REFRESH_URL")
@@ -167,7 +235,7 @@ def refresh():
 
     def generate():
         try:
-            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang):
+            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang, slot=slot):
                 yield json.dumps(step) + "\n"
         except Exception as exc:
             logger.error("Pipeline error: %s", exc, exc_info=True)
@@ -178,7 +246,38 @@ def refresh():
 
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
-def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "en"):
+def classify_run_slot(body: dict) -> str:
+    if "slot" in body:
+        return body["slot"]
+    h = datetime.now(CST).hour
+    return "morning" if h < 9 else "midday" if h < 14 else "evening"
+
+def _aqi_category(aqi: int) -> str:
+    if aqi <= 50:  return "good"
+    if aqi <= 100: return "moderate"
+    if aqi <= 150: return "unhealthy_sensitive"
+    if aqi <= 200: return "unhealthy"
+    return "very_unhealthy"
+
+def _conditions_changed(current: dict, morning: dict) -> tuple[bool, list[str]]:
+    reasons = []
+    c_temp = current.get("temp", 0)
+    m_temp = morning.get("temp", 0)
+    if abs(c_temp - m_temp) >= 3:
+        reasons.append(f"temp {m_temp}→{c_temp}°C")
+    if (current.get("precip_mm", 0) > 0) != (morning.get("precip_mm", 0) > 0):
+        reasons.append("rain status changed")
+    if set(current.get("alerts", [])) != set(morning.get("alerts", [])):
+        reasons.append("alert state changed")
+    if _aqi_category(current.get("aqi", 0)) != _aqi_category(morning.get("aqi", 0)):
+        reasons.append("AQI category crossed boundary")
+    if current.get("score_label") != morning.get("score_label"):
+        reasons.append(f"outdoor score {morning.get('score_label')}→{current.get('score_label')}")
+    if abs(current.get("dew_point", 0) - morning.get("dew_point", 0)) >= 3:
+        reasons.append("dew point shift ≥3°C")
+    return bool(reasons), reasons
+
+def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "en", slot: str = "midday"):
     """
     Generator that yields log messages and finally the result dict.
     Yields: {"type": "log", "message": str} OR {"type": "result", "payload": dict}
@@ -255,11 +354,10 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
 
     # 5.5 Synthesize TTS
-    yield {"type": "log", "message": "Synthesizing audio briefing..."}
-    from narration.tts_client import synthesize_and_upload as _synth
+    yield {"type": "log", "message": "Audio briefing TTS (deferred to on-demand)..."}
     
     summaries = parsed.get("cards", {})
-    audio_urls = _synth(narration_text, date_str=date_str, lang=lang)
+    audio_urls = {"full_audio_url": None}
 
     # 7. Save
     yield {"type": "log", "message": "Saving broadcast to history..."}
@@ -278,17 +376,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     if regen_data:
         yield {"type": "log", "message": "Persisting regenerated meal/location database..."}
         logger.info("Regen data received, writing to regen.json")
-        regen_path = os.path.join(LOCAL_DATA_DIR, "regen.json")
-        try:
-            os.makedirs(LOCAL_DATA_DIR, exist_ok=True)
-            with open(regen_path, "w", encoding="utf-8") as _f:
-                json.dump({
-                    **regen_data,
-                    "updated_at": datetime.now(_TAIPEI_TZ).isoformat(),
-                }, _f, ensure_ascii=False, indent=2)
-            logger.info("Regen data written to %s", regen_path)
-        except Exception as exc:
-            logger.warning("Failed to write regen.json: %s", exc)
+        _persist_regen({"regen": {**regen_data, "updated_at": datetime.now(_TAIPEI_TZ).isoformat()}})
 
     # 8. Result
     result = {

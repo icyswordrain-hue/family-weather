@@ -14,7 +14,10 @@
       "Bash(python3 -c \":*)",
       "Bash(python3 -m json.tool)",
       "Bash(python3:*)",
-      "Bash(py \"c:/Users/User/.gemini/antigravity/scratch/family-weather/.agent/skills/ui-ux-pro-max/scripts/search.py\" \"weather dashboard family minimal clean card\" --design-system -p \"Family Weather\")"
+      "Bash(py \"c:/Users/User/.gemini/antigravity/scratch/family-weather/.agent/skills/ui-ux-pro-max/scripts/search.py\" \"weather dashboard family minimal clean card\" --design-system -p \"Family Weather\")",
+      "Bash(grep -l \"narration\\\\|player\\\\|sheet\\\\|transcript\" /c/Users/User/.gemini/antigravity/scratch/family-weather/docs/plans/**/*.md)",
+      "Bash(find /c/Users/User/.gemini/antigravity/scratch/family-weather -name \"*.py\" -exec grep -l \"word\\\\|duration\\\\|length\\\\|char\" {} ;)",
+      "Bash(grep -r \"300\\\\|400\\\\|500\\\\|words\\\\|seconds\\\\|minutes\" /c/Users/User/.gemini/antigravity/scratch/family-weather/*.md)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.gemini\\antigravity\\scratch\\family-weather"

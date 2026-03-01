@@ -4,7 +4,10 @@ All secrets are loaded from environment variables (set via Google Secret Manager
 """
 
 import os
+from datetime import timezone, timedelta
 from dotenv import load_dotenv
+
+CST = timezone(timedelta(hours=8))
 
 load_dotenv(override=True)
 
@@ -154,3 +157,10 @@ OUTDOOR_UVI_EXTREME = 11
 OUTDOOR_UVI_VERY_HIGH = 8
 OUTDOOR_VIS_VERY_POOR = 1.0
 OUTDOOR_VIS_POOR = 2.0
+
+# ── GCS & Audio Config ────────────────────────────────────────────────────────
+GCS_AUDIO_PREFIX   = os.getenv("GCS_AUDIO_PREFIX", "audio")
+GCS_REGEN_PATH     = os.getenv("GCS_REGEN_PATH", "regen/regen.json")
+DESKTOP_TTS_URL    = os.getenv("DESKTOP_TTS_URL")
+DESKTOP_TTS_SECRET = os.getenv("DESKTOP_TTS_SECRET")
+DESKTOP_TTS_TIMEOUT = int(os.getenv("DESKTOP_TTS_TIMEOUT", "8"))
