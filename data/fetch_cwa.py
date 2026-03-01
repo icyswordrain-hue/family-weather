@@ -18,7 +18,7 @@ TIMEZONE NOTE:
 import json
 import logging
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # AI AGENT NOTE: Read inline comments labeled "AI AGENT NOTE" 
 # throughout this file before modifying fetching or parsing logic.
