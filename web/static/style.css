@@ -1549,10 +1549,6 @@ html.dark .source-claude {
     background: rgba(255, 255, 255, 0.2);
   }
 
-  .player-sheet-tabs {
-    display: flex;   /* restore tab row on mobile */
-  }
-
   .player-sheet-backdrop {
     left: 0;
     right: 0;
@@ -1577,9 +1573,13 @@ html.dark .source-claude {
     margin: 0 auto;
   }
 
+  .player-sheet-header {
+    padding: 14px 16px;
+  }
+
   .ps-tab {
-    padding: 10px 18px;
-    font-size: 1rem;
+    padding: 12px 22px;
+    font-size: 1.05rem;
   }
 
   /* Top row: compact sizing to prevent overflow */
@@ -2419,8 +2419,10 @@ html.dark .ps-tab-panel .rp-btn:hover {
   display: none;
 }
 
-.player-sheet-tabs {
-  display: none;   /* tabs are mobile-only; desktop shows narration directly */
+@media (min-width: 768px) {
+  .player-sheet-tabs {
+    display: none;   /* tabs are mobile-only; desktop shows narration directly */
+  }
 }
 
 .player-sheet-backdrop {
