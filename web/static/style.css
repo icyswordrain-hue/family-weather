@@ -2177,7 +2177,7 @@ html.dark .player-sheet-body {
 }
 
 .ps-para-title {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2186,7 +2186,7 @@ html.dark .player-sheet-body {
 }
 
 .ps-para-body {
-  font-size: 1.2rem;
+  font-size: 0.78rem;
   line-height: 1.7;
   color: var(--text, #1e2a3a);
   white-space: pre-wrap;
@@ -2205,6 +2205,11 @@ html.dark .ps-para-body {
 
 html.dark .ps-meta {
   border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+#ps-narration-content {
+  width: 90%;
+  margin: 0 auto;
 }
 
 /* ── Player Sheet Tabs ───────────────────────── */
