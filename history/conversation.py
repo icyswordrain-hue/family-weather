@@ -40,7 +40,6 @@ from google.api_core.exceptions import NotFound
 from config import (
     GCS_BUCKET_NAME,
     GCS_HISTORY_KEY,
-    TIMEZONE,
     RUN_MODE,
     LOCAL_DATA_DIR,
 )
@@ -155,24 +154,6 @@ def save_day(
             logger.error("Could not save history: blob is not initialized")
     logger.info("Saved conversation history for %s (%s)", date_str, RUN_MODE)
 
-
-def load_broadcast(date: str, slot: str) -> Optional[dict]:
-    path = f"broadcasts/{date}/{slot}.json"
-    if RUN_MODE in ("CLOUD", "MODAL"):
-        try:
-            from google.cloud import storage
-            blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(path)
-            if blob.exists():
-                return json.loads(blob.download_as_text())
-        except Exception as e:
-            logger.warning(f"Could not load {path} from GCS: {e}")
-    else:
-        import os, json
-        local_path = os.path.join(LOCAL_DATA_DIR, path)
-        if os.path.exists(local_path):
-            with open(local_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-    return None
 
 def get_today_broadcast(date_str: str | None = None) -> Optional[dict]:
     """
