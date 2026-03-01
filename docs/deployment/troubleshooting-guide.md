@@ -509,3 +509,50 @@ Removed `load_broadcast()` and the unused `TIMEZONE` config import from `history
 | File | Change |
 |---|---|
 | `history/conversation.py` | Removed `load_broadcast()` (16 lines) and unused `TIMEZONE` import |
+
+---
+
+## Fix — 2026-03-01: GCP credentials missing in Modal (GCS reads/writes silently failing)
+
+### Problem
+
+Modal's secret `family-weather-secrets` only contained API keys (`CWA_API_KEY`, `ANTHROPIC_API_KEY`, etc.) — no GCP service account credentials. Every `storage.Client()` call inside Modal (TTS audio cache, regen data) was failing silently inside `try/except`, so:
+- Audio was never uploaded to GCS → `audio_url` always null in the broadcast
+- Regen data was never written back to GCS
+
+`history/conversation.py` was unaffected because in `RUN_MODE=MODAL` it uses the Modal Volume at `/data`, not GCS.
+
+### Fix
+
+1. Created a dedicated GCP service account `modal-pipeline@...` with `roles/storage.objectAdmin` on `gs://family-weather-dashboard`
+2. Downloaded its JSON key, stored in GCP Secret Manager as `GCP_SA_JSON`
+3. Updated `scripts/sync_secrets_to_modal.py` to sync `GCP_SA_JSON`, base64-encoding it first so the multiline JSON survives Modal CLI's `key=value` format
+4. Added `_bootstrap_gcp_credentials()` to `backend/modal_app.py` — decodes the base64 JSON, writes it to a temp file, sets `GOOGLE_APPLICATION_CREDENTIALS` before any GCS imports
+
+### How to re-run if credentials rotate
+
+```bash
+# Re-create the key
+gcloud iam service-accounts keys create local_data/modal-gcs-key.json \
+  --iam-account=modal-pipeline@gen-lang-client-0266464307.iam.gserviceaccount.com
+
+# Update Secret Manager
+gcloud secrets versions add GCP_SA_JSON \
+  --data-file=local_data/modal-gcs-key.json \
+  --project=gen-lang-client-0266464307
+
+# Sync to Modal
+python scripts/sync_secrets_to_modal.py
+
+# Redeploy
+modal deploy backend/modal_app.py
+
+# Clean up
+del local_data\modal-gcs-key.json
+```
+
+### Files changed
+| File | Change |
+|---|---|
+| `backend/modal_app.py` | Added `_bootstrap_gcp_credentials()`; called in `refresh` and `broadcast` |
+| `scripts/sync_secrets_to_modal.py` | Added `GCP_SA_JSON` to `SECRET_NAMES`; base64-encodes it before syncing |

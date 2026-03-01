@@ -1,4 +1,5 @@
 import subprocess
+import base64
 
 GCP_PROJECT  = "gen-lang-client-0266464307"
 MODAL_SECRET = "family-weather-secrets"
@@ -11,7 +12,12 @@ SECRET_NAMES = [
     "GEMINI_API_KEY",
     "GCS_BUCKET_NAME",
     "GCP_PROJECT_ID",
+    "GCP_SA_JSON",
 ]
+
+# Secrets that contain multiline content (e.g. JSON) must be base64-encoded
+# before being passed to Modal CLI's key=value format.
+BASE64_ENCODE = {"GCP_SA_JSON"}
 
 def pull_from_gcp(name: str):
     result = subprocess.run(
@@ -35,6 +41,12 @@ def main():
     if not secrets:
         print("No secrets pulled. Check GCP project and secret names.")
         return
+
+    # Base64-encode multiline secrets so they survive Modal CLI key=value format
+    for name in BASE64_ENCODE:
+        if name in secrets:
+            secrets[name] = base64.b64encode(secrets[name].encode()).decode()
+            print(f"  ENC  {name} (base64)")
 
     args = [MODAL_EXE, "secret", "create", MODAL_SECRET]
     for key, value in secrets.items():
