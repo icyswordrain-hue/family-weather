@@ -2094,7 +2094,7 @@ html.dark .player-speed-btn:hover {
   bottom: 78px;
   left: var(--sidebar-w, 240px);
   right: var(--rp-w, 180px);
-  height: 60vh;
+  height: calc(90vh - 78px);
   background: var(--surface, #ffffff);
   border-top: 1px solid var(--border, #e8ecf3);
   overflow: hidden;
