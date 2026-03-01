@@ -24,6 +24,12 @@ except Exception as e:  # pragma: no cover
     logging.getLogger(__name__).error("Failed to import gemini_client: %s", e)
     generate_gemini = None  # type: ignore[assignment]
 
+try:
+    from narration.claude_client import generate_narration as generate_claude
+except Exception as e:  # pragma: no cover
+    logging.getLogger(__name__).error("Failed to import claude_client: %s", e)
+    generate_claude = None  # type: ignore[assignment]
+
 
 logger = logging.getLogger(__name__)
 
@@ -97,19 +103,13 @@ def generate_narration_with_fallback(
             logger.info("Gemini narration successful.")
             result = text, "gemini"
         elif provider_upper == "CLAUDE":
-            try:
-                import importlib, sys
-                # Force fresh import with currently injected env vars
-                if "narration.claude_client" in sys.modules:
-                    importlib.reload(sys.modules["narration.claude_client"])
-                from narration.claude_client import generate_narration as _claude_fn
-                logger.info("Calling Claude client...")
-                text = _claude_fn(messages, lang=lang)
-                logger.info("Claude narration successful.")
-                result = text, "claude"
-            except Exception as claude_err:
-                logger.error("Claude call failed: %s", claude_err)
-                raise
+            if generate_claude is None:
+                logger.error("Claude client is None (likely import failure or missing key)")
+                raise RuntimeError("Claude client not available")
+            logger.info("Calling Claude client...")
+            text = generate_claude(messages, lang=lang)
+            logger.info("Claude narration successful.")
+            result = text, "claude"
         else:
             logger.error("Unsupported provider selected: %s", provider_upper)
             raise ValueError(f"Unknown provider: {provider}")

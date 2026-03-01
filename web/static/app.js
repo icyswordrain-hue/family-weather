@@ -380,13 +380,14 @@ function render(data) {
   renderOverviewView(slices.overview);
   renderLifestyleView(slices.lifestyle);
 
-  // Wire player bar when audio is available
-  if (data.audio_urls && data.audio_urls.full_audio_url) {
+  // Wire player bar — always called so transcript renders even without audio
+  {
     const narrationSlice = data.slices && data.slices.narration;
     const paragraphs = narrationSlice ? (narrationSlice.paragraphs || []) : [];
     const meta = narrationSlice ? (narrationSlice.meta || {}) : {};
+    const audioUrl = data.audio_urls && data.audio_urls.full_audio_url || null;
     if (window._playerBarSetAudio) {
-      window._playerBarSetAudio(data.audio_urls.full_audio_url, paragraphs, meta);
+      window._playerBarSetAudio(audioUrl, paragraphs, meta);
     }
   }
 
