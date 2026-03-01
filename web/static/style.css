@@ -1552,6 +1552,7 @@ html.dark .source-claude {
   .player-sheet-backdrop {
     left: 0;
     right: 0;
+    bottom: 42px;
   }
 
   .player-sheet-body {
