@@ -565,9 +565,11 @@ function renderOverviewView(data) {
       nightItems.shift(); // Remove Tonight (first night item)
     }
 
-    // Pad whichever array is shorter so both rows have equal column count.
-    while (nightItems.length < dayItems.length) nightItems.push(null);
-    while (dayItems.length < nightItems.length) dayItems.push(null);
+    // Normalise both arrays to exactly 7 columns — pad with null, trim if over.
+    while (dayItems.length   < 7) dayItems.push(null);
+    while (nightItems.length < 7) nightItems.push(null);
+    dayItems   = dayItems.slice(0, 7);
+    nightItems = nightItems.slice(0, 7);
 
     const topItems = dayItems;
     const bottomItems = nightItems;
