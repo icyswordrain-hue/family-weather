@@ -1559,6 +1559,10 @@ html.dark .source-claude {
     font-size: 1.2rem;
   }
 
+  .ps-controls {
+    display: block;        /* restore on mobile — player bar is too slim to surface all controls */
+  }
+
   .ps-para-body {
     font-size: 1.2rem;
     line-height: 1.75;
@@ -2247,6 +2251,7 @@ html.dark .ps-tab:hover:not(.active) {
 
 /* ── Sheet Controls (progress + speed in narration tab) ── */
 .ps-controls {
+  display: none;           /* hidden on desktop — controls live in the always-visible player bar */
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border, #e8ecf3);
