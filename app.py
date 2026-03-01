@@ -28,7 +28,8 @@ from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts, fetch_
 from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
 from narration.fallback_narrator import build_narration
-from narration.llm_prompt_builder import build_prompt
+from narration.llm_prompt_builder import build_prompt, parse_narration_response
+from narration.tts_client import synthesise_with_cache
 
 from history.conversation import load_history, save_day, get_today_broadcast
 from web.routes import build_slices
@@ -195,7 +196,7 @@ def refresh():
     body = request.get_json(silent=True) or {}
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
     provider = body.get("provider") # Optional: "GEMINI" or "CLAUDE"
-    lang = body.get("lang", "en")
+    lang = body.get("lang", "zh-TW")
     logger.info("DEBUG: Received refresh request. Body: %s, Provider: %s, Lang: %s", body, provider, lang)
 
     slot = classify_run_slot(body)
@@ -277,7 +278,7 @@ def _conditions_changed(current: dict, morning: dict) -> tuple[bool, list[str]]:
         reasons.append("dew point shift ≥3°C")
     return bool(reasons), reasons
 
-def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "en", slot: str = "midday"):
+def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "zh-TW", slot: str = "midday"):
     """
     Generator that yields log messages and finally the result dict.
     Yields: {"type": "log", "message": str} OR {"type": "result", "payload": dict}
@@ -339,8 +340,6 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
     # 5. Extract paragraphs and metadata using v6 parser
     yield {"type": "log", "message": "Parsing narration structure & metadata (v6)..."}
-    from narration.llm_prompt_builder import parse_narration_response
-    
     parsed = parse_narration_response(narration_text)
     paragraphs = parsed["paragraphs"]
     metadata = parsed["metadata"]
@@ -353,11 +352,19 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     metadata["narration_source"] = narration_source
     metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
 
-    # 5.5 Synthesize TTS
-    yield {"type": "log", "message": "Audio briefing TTS (deferred to on-demand)..."}
-    
+    # 5.5 Synthesize TTS (LOCAL: eager; CLOUD/MODAL: on-demand)
     summaries = parsed.get("cards", {})
-    audio_urls = {"full_audio_url": None}
+    if RUN_MODE == "LOCAL":
+        yield {"type": "log", "message": "Synthesising TTS audio locally\u2026"}
+        try:
+            full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
+        except Exception as exc:
+            logger.warning("Local TTS failed (%s) \u2014 player will fall back to on-demand.", exc)
+            full_audio_url = None
+        audio_urls = {"full_audio_url": full_audio_url}
+    else:
+        yield {"type": "log", "message": "Audio briefing TTS (deferred to on-demand)..."}
+        audio_urls = {"full_audio_url": None}
 
     # 7. Save
     yield {"type": "log", "message": "Saving broadcast to history..."}
