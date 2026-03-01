@@ -1531,7 +1531,7 @@ html.dark .source-claude {
   .player-sheet {
     left: 0;
     right: 0;
-    height: 80vh;
+    height: calc(90vh - 42px);
     bottom: 42px;
   }
 
