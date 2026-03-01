@@ -243,3 +243,98 @@ Then open `http://localhost:5000` in a browser.
 **Dark mode:** Toggle and spot-check — no contrast regressions expected.
 
 ### No automated tests cover CSS/HTML structure. Visual-only.
+
+---
+
+## Part 2 — Further UI Improvements (2026-03-01)
+
+**Goal:** Taller 7-day forecast cards, player sheet at 90% of visible screen, and keep the audio player bar interactive when the sheet is open (both breakpoints).
+
+**Architecture:** All changes in `web/static/style.css` only — no HTML or JS changes.
+
+**Root cause (player bar blocked):** The backdrop (`z-index: 199`) had `bottom: 0`, extending over the player bar (`z-index: 150`). Fix: set `bottom` on the backdrop to the player bar height per breakpoint.
+
+---
+
+### Task 7: Desktop — Taller 7-Day Forecast Cards
+
+**Files:** `web/static/style.css` (base rules)
+
+| Selector | Property | From | To |
+|---|---|---|---|
+| `.wk-card` | padding | `8px 6px` | `14px 8px` |
+| `.wk-card` | gap | `2px` | `4px` |
+| `.wk-col-header` | font-size | `0.65rem` | `0.75rem` |
+| `.wk-icon` | font-size | `1.4rem` | `1.7rem` |
+| `.wk-temp` | font-size | `1.1rem` | `1.35rem` |
+| `.wk-cond` | font-size | `0.6rem` | `0.72rem` |
+| `.wk-rain` | font-size | `0.7rem` | `0.85rem` |
+
+```
+git commit -m "feat(desktop): taller 7-day forecast cards with larger text"
+```
+
+---
+
+### Task 8: Desktop — Player Sheet at 90% of Visible Screen
+
+**Files:** `web/static/style.css` (base `.player-sheet`)
+
+`.player-sheet` `height: 60vh` → **`height: calc(90vh - 78px)`**
+
+Sheet bottom stays at 78px (above player bar); top sits at ~10% from viewport top.
+
+```
+git commit -m "feat(desktop): expand player sheet to 90% of visible screen"
+```
+
+---
+
+### Task 9: Desktop — Keep Player Bar Interactive When Sheet Is Open
+
+**Files:** `web/static/style.css` (base `.player-sheet-backdrop`)
+
+`.player-sheet-backdrop` `bottom: 0` → **`bottom: 78px`**
+
+Backdrop no longer covers the player bar area.
+
+```
+git commit -m "feat(desktop): keep player bar interactive when sheet is open"
+```
+
+---
+
+### Task 10: Mobile — Player Sheet at 90% of Visible Screen
+
+**Files:** `web/static/style.css` (inside `@media (max-width: 767px)`)
+
+`.player-sheet` `height: 80vh` → **`height: calc(90vh - 42px)`**
+
+```
+git commit -m "feat(mobile): expand player sheet to 90% of visible screen"
+```
+
+---
+
+### Task 11: Mobile — Keep Player Bar Interactive When Sheet Is Open
+
+**Files:** `web/static/style.css` (inside `@media (max-width: 767px)`)
+
+Add `bottom: 42px` to the `.player-sheet-backdrop` mobile override.
+
+```
+git commit -m "feat(mobile): keep player bar interactive when sheet is open"
+```
+
+---
+
+### Verification (Part 2)
+
+**Desktop (>767px):**
+1. Weekly forecast section → cards noticeably taller; temp/icon/condition text larger
+2. Open player sheet (▲) → sheet fills ~90% of viewport, ~10% of content visible above
+3. With sheet open → click play/pause and speed button → both respond (backdrop no longer blocks bar)
+
+**Mobile (≤767px, DevTools 375px):**
+1. Open player sheet (tap bar) → sheet fills ~90% of viewport, 10% visible above
+2. With sheet open → tap play/pause → responds normally (backdrop stops at 42px bar)
