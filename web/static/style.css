@@ -1517,8 +1517,7 @@ html.dark .source-claude {
     padding: 6px;
   }
 
-  /* Speed btn + sheet toggle hidden in slim bar — controls live in sheet */
-  .player-speed-btn,
+  /* Sheet toggle hidden in slim bar */
   .player-sheet-toggle {
     display: none;
   }
