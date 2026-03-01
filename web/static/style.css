@@ -892,20 +892,20 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-title {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
   margin-bottom: 0.4rem;
 }
 
 .ls-text {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--text);
   line-height: 1.45;
   white-space: pre-line;
 }
 
 .ls-sub {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   color: var(--muted);
   margin-top: 0.35rem;
   font-weight: 500;
