@@ -271,3 +271,36 @@ pytest tests/ -v                          # full suite — no regressions
 
 ### Manual Verification (CLOUD — no regression)
 The Flask app itself in CLOUD mode proxies to Modal, so there's nothing to start locally. Confirm that the Modal worker code (`_pipeline_steps` generator running remotely) still emits `audio_urls.full_audio_url = None` and the `/api/tts` on-demand endpoint still works when the user presses play on the deployed dashboard.
+
+---
+
+## Post-plan fixes (2026-03-01)
+
+### Fix: `generate_claude` not patchable in `backend/pipeline.py`
+
+**Problem:** `test_narration_claude_success` was failing with `AttributeError: <module 'backend.pipeline'> does not have the attribute 'generate_claude'`. The CLAUDE branch inside `generate_narration_with_fallback` used a runtime `importlib.reload` + local import, so `generate_claude` never existed as a module-level name — making `@patch("backend.pipeline.generate_claude")` impossible.
+
+**Fix:** Added a module-level `try/except` import in `backend/pipeline.py` (mirroring the Gemini pattern) and updated the CLAUDE branch to call the module-level binding directly:
+
+```python
+try:
+    from narration.claude_client import generate_narration as generate_claude
+except Exception as e:
+    generate_claude = None
+```
+
+**Commit:** `fix: add module-level generate_claude import so @patch resolves correctly`
+
+---
+
+### Change: default language `zh-TW`, default provider `CLAUDE`
+
+**Defaults confirmed/set:**
+- `config.py` `NARRATION_PROVIDER` — already `"CLAUDE"` ✅
+- `app.py` `refresh()` — `lang` default changed `"en"` → `"zh-TW"`
+- `app.py` `_pipeline_steps()` — `lang` default changed `"en"` → `"zh-TW"`
+
+Frontend can still override both via `{"lang": "en", "provider": "GEMINI"}` in the POST body.
+
+**Commit:** `feat: default lang zh-TW, confirm default provider CLAUDE`
+
