@@ -249,9 +249,11 @@ const TRANSLATIONS = {
       'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風', 'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風', 'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風', 'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
       'Good': '良好', 'Moderate': '普通', 'Unhealthy for Sensitive Groups': '對敏感族群不健康', 'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
       'Low': '低', 'High': '高', 'Very High': '極高', 'Extreme': '極端',
+      'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
       'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
       'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
-      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知'
+      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知',
+      'All clear': '完全安全', 'Stay in': '建議待室內'
     },
     slots: {
       'Morning': '早上',
@@ -486,7 +488,7 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow(T.rain, seg.PoP6h != null ? Math.round(seg.PoP6h) + '%' : localiseMetric(seg.precip_text) || '—', seg.precip_level || 1);
+      addRow(T.rain, localiseMetric(seg.precip_text) || '—', seg.precip_level || 0);
       if (seg.outdoor_grade) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         addRow(T.outdoor, seg.outdoor_grade, gradeToLvl[seg.outdoor_grade] || 0);
@@ -647,7 +649,7 @@ function renderOverviewView(data) {
       card.appendChild(temp);
       if (item.PoP12h != null) {
         const rain = document.createElement('div');
-        rain.className = `wk-rain lvl-${item.precip_level || 1}`;
+        rain.className = `wk-rain lvl-${item.precip_level || 0}`;
         rain.textContent = Math.round(item.PoP12h) + '%';
         card.appendChild(rain);
       }
@@ -810,11 +812,9 @@ function renderOverviewView(data) {
 
 function aqiToLevel(val) {
   const n = parseInt(val);
-  if (isNaN(n)) return 1;
-  if (n <= 50) return 1;
-  if (n <= 100) return 2;
-  if (n <= 150) return 3;
-  if (n <= 200) return 4;
+  if (isNaN(n)) return 0;
+  if (n < 60) return 1;
+  if (n < 120) return 3;
   return 5;
 }
 
