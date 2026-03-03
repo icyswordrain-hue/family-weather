@@ -119,6 +119,7 @@ def _slice_overview(
             seg_grade_data = outdoor_index.get("segments", {}).get(name, {})
             seg_copy["outdoor_score"] = seg_grade_data.get("score")
             seg_copy["outdoor_grade"] = seg_grade_data.get("grade")
+            seg_copy["outdoor_label"] = seg_grade_data.get("label")
             timeline_list.append(seg_copy)
 
     timeline_list.sort(key=lambda x: x["start_time"])

@@ -114,6 +114,16 @@ function localiseMetric(text) {
   return (T.metrics && T.metrics[text]) ? T.metrics[text] : text;
 }
 
+function localisePrecipText(text) {
+  if (!text) return '—';
+  if (getLang() !== 'zh-TW') return text;
+  if (text === 'All clear') return '不會降雨';
+  if (text === 'Stay in') return '建議待室內';
+  const m = text.match(/^~(\d+)\s*min$/);
+  if (m) return `約 ${m[1]} 分鐘`;
+  return text;
+}
+
 const ICONS = {
   'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
   'partly-cloudy': '⛅', 'Mixed Clouds': '⛅', '2': '⛅', '3': '⛅',
@@ -174,7 +184,7 @@ const TRANSLATIONS = {
     h2_24h: '24-Hour Forecast',
     h2_7day: '7-Day Forecast',
     lang_label: 'Language',
-    provider_label: 'Provider',
+    theme_label: 'Theme',
     system_controls: 'System Controls',
     refresh_btn: 'Refresh',
     tab_narration: 'Narration',
@@ -234,7 +244,7 @@ const TRANSLATIONS = {
     h2_24h: '24 小時預報',
     h2_7day: '七日預報',
     lang_label: 'Language',
-    provider_label: 'Provider',
+    theme_label: '外觀主題',
     system_controls: '系統控制',
     refresh_btn: '重新整理',
     tab_narration: '解說',
@@ -253,8 +263,7 @@ const TRANSLATIONS = {
       'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
       'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
       'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
-      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知',
-      'All clear': '完全安全', 'Stay in': '建議待室內'
+      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知'
     },
     slots: {
       'Morning': '早上',
@@ -489,10 +498,11 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow(T.rain, localiseMetric(seg.precip_text) || '—', seg.precip_level || 0);
+      addRow(T.rain, localisePrecipText(seg.precip_text), seg.precip_level || 0);
       if (seg.outdoor_grade) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
-        addRow(T.outdoor, seg.outdoor_grade, gradeToLvl[seg.outdoor_grade] || 0);
+        const outdoorDisplay = localiseMetric(seg.outdoor_label) || seg.outdoor_grade;
+        addRow(T.outdoor, outdoorDisplay, gradeToLvl[seg.outdoor_grade] || 0);
       }
       card.appendChild(header);
       card.appendChild(icon);
@@ -651,7 +661,9 @@ function renderOverviewView(data) {
       if (item.PoP12h != null) {
         const rain = document.createElement('div');
         rain.className = `wk-rain lvl-${item.precip_level || 0}`;
-        rain.textContent = Math.round(item.PoP12h) + '%';
+        rain.textContent = item.precip_text
+          ? localisePrecipText(item.precip_text)
+          : Math.round(item.PoP12h) + '%';
         card.appendChild(rain);
       }
       weeklyTimelineEl.appendChild(card);
@@ -965,9 +977,23 @@ function renderLifestyleView(data) {
 // ── System Theme ───────────────────────────────────────────────────────────
 function initSystemTheme() {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
-  const apply = (dark) => document.documentElement.classList.toggle('dark', dark);
-  apply(mq.matches);
-  mq.addEventListener('change', (e) => apply(e.matches));
+  const apply = () => {
+    const override = localStorage.getItem('theme');
+    const isDark = override === 'dark' || (override !== 'light' && mq.matches);
+    document.documentElement.classList.toggle('dark', isDark);
+    const val = override || 'auto';
+    document.querySelector(`input[name="theme"][value="${val}"]`)?.['checked'] === false &&
+      (document.querySelector(`input[name="theme"][value="${val}"]`).checked = true);
+    const sheetR = document.querySelector(`input[name="theme-sheet"][value="${val}"]`);
+    if (sheetR) sheetR.checked = true;
+  };
+  apply();
+  mq.addEventListener('change', apply);
+  window.setTheme = (val) => {
+    if (val === 'auto') localStorage.removeItem('theme');
+    else localStorage.setItem('theme', val);
+    apply();
+  };
 }
 
 // ── Player Bar ─────────────────────────────────────────────────────────────
@@ -1212,9 +1238,9 @@ function initSidebarControls() {
     });
   });
 
-  // Provider toggles
-  document.querySelectorAll('input[name="provider"]').forEach(input => {
-    input.addEventListener('change', triggerRefresh);
+  // Theme toggles
+  document.querySelectorAll('input[name="theme"]').forEach(input => {
+    input.addEventListener('change', () => window.setTheme && window.setTheme(input.value));
   });
 }
 
@@ -1228,10 +1254,10 @@ function initSheetSettings() {
     });
   });
 
-  // Sheet provider radios → mirror sidebar radios
-  document.querySelectorAll('input[name="provider-sheet"]').forEach(radio => {
+  // Sheet theme radios → mirror sidebar radios
+  document.querySelectorAll('input[name="theme-sheet"]').forEach(radio => {
     radio.addEventListener('change', () => {
-      const sidebar = document.querySelector(`input[name="provider"][value="${radio.value}"]`);
+      const sidebar = document.querySelector(`input[name="theme"][value="${radio.value}"]`);
       if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
     });
   });
@@ -1246,7 +1272,7 @@ function initSheetSettings() {
   }
 
   // Sync sheet radios to current sidebar state on init
-  ['language', 'provider'].forEach(name => {
+  ['language', 'theme'].forEach(name => {
     const checked = document.querySelector(`input[name="${name}"]:checked`);
     if (checked) {
       const sheetRadio = document.querySelector(`input[name="${name}-sheet"][value="${checked.value}"]`);
@@ -1434,8 +1460,7 @@ async function triggerRefresh() {
   startLoadingAnimation();
   addLog(T.boot);
 
-  const providerInput = document.querySelector('input[name="provider"]:checked');
-  const provider = providerInput ? providerInput.value : 'CLAUDE';
+  const provider = 'CLAUDE';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
   addLog(`${T.log_requesting}${provider}`);
