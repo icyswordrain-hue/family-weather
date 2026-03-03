@@ -33,6 +33,7 @@ from data.scales import (
     _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
     wx_to_cloud_cover, degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
     wx_to_pop, dew_gap_to_hum,
+    pop_to_safe_minutes, safe_minutes_to_level, _wx_to_rain_risk,
 )
 from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_heads_ups
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
@@ -175,7 +176,14 @@ def process(
         if pop is None:
             pop = wx_to_pop(slot.get("Wx"))
             
-        slot["precip_text"], slot["precip_level"] = _val_to_scale(pop, PRECIP_SCALE_5)
+        wx   = slot.get("Wx")
+        risk = _wx_to_rain_risk(wx)
+        if risk is None:
+            safe_min = 720
+        else:
+            safe_min = pop_to_safe_minutes(pop, window_minutes=720, risk_pct=risk * 100)
+        slot["safe_minutes"]  = safe_min
+        slot["precip_level"], slot["precip_text"] = safe_minutes_to_level(safe_min)
         slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
 
     # ── 3. Segment the forecast ───────────────────────────────────────────────
@@ -210,7 +218,16 @@ def process(
             seg["wind_text"], seg["wind_level"] = _val_to_scale(ws, BEAUFORT_SCALE_5)
             seg["wind_dir_text"] = degrees_to_cardinal(seg.get("WD"))
 
-            seg["precip_text"], seg["precip_level"] = _val_to_scale(seg.get("PoP6h"), PRECIP_SCALE_5)
+            pop6h = seg.get("PoP6h")
+            wx    = seg.get("Wx")
+            risk  = _wx_to_rain_risk(wx)
+            if risk is None:
+                # No rain in forecast — full window safe
+                safe_min = 360
+            else:
+                safe_min = pop_to_safe_minutes(pop6h, window_minutes=360, risk_pct=risk * 100)
+            seg["safe_minutes"] = safe_min
+            seg["precip_level"], seg["precip_text"] = safe_minutes_to_level(safe_min)
             seg["cloud_cover"] = wx_to_cloud_cover(seg.get("Wx"))
 
             # Add placeholders for text segments if needed
