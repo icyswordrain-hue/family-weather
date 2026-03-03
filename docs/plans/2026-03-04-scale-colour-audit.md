@@ -45,3 +45,39 @@ Old scale had 5 abstract levels (`Low / Moderate / High / Very High / Extreme`).
 - Wind, pressure, humidity (dew-gap), visibility scales — all kept at 5 levels (each step has distinct actionable meaning)
 - Precip scale (`PRECIP_SCALE_5`) — see `docs/plans/2026-03-04-poisson-safe-outing.md` for planned replacement
 - Frontend gauge wiring — gauges consume `level` fields emitted by backend; no JS logic changes beyond `aqiToLevel()` sync fix
+
+---
+
+### 3. Outdoor dew point penalties — halved
+
+Stacking of two simultaneous dew-related penalties (`dp_*` + `dew_gap_*`) was collapsing otherwise good outdoor scores on normal Taiwan summer days.
+
+| Key | Before | After |
+|---|---|---|
+| `dp_oppressive` | −20 | −12 |
+| `dp_muggy` | −10 | −6 |
+| `dp_sticky` | −5 | −3 |
+| `dew_gap_clammy` | −15 | −8 |
+| `dew_gap_humid` | −8 | −4 |
+
+Worst-case simultaneous stack: −35 → **−20**. Files: `data/outdoor_scoring.py`.
+
+---
+
+### 4. Outdoor grade labels — replaced with action words
+
+Letter grades (A/B/C/D/F) replaced with decision-oriented English labels. Letter keys retained for CSS `oi-grade-*` colour classes.
+
+| Grade | Old label | New label | zh-TW |
+|---|---|---|---|
+| A | Excellent | Go out | 適合外出 |
+| B | Good | Good to go | 可以出門 |
+| C | Fair | Manageable | 勉強可行 |
+| D | Poor | Think twice | 建議斟酌 |
+| F | Avoid | Stay in | 建議待室內 |
+
+- `GRADE_THRESHOLDS` in `outdoor_scoring.py`
+- Lifestyle badge in `app.js` now shows localised label only (removed `Grade X · ` prefix)
+- zh-TW translations added to `app.js` metrics map
+
+**Commit:** `384259a`

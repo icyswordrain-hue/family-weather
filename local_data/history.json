@@ -13447,22 +13447,22 @@
     }
   },
   "2026-03-04": {
-    "generated_at": "2026-03-04T05:38:56.710452+08:00",
+    "generated_at": "2026-03-04T06:36:58.508000+08:00",
     "raw_data": {
       "current": {
-        "fetched_at": "2026-03-04T05:38:12.047857+08:00",
+        "fetched_at": "2026-03-04T06:36:55.880245+08:00",
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-03-04T05:20:00+08:00",
-        "AT": 15.2,
-        "RH": 85.0,
-        "WDSD": 2.6,
-        "WDIR": 110.0,
-        "RAIN": 0.0,
+        "obs_time": "2026-03-04T06:20:00+08:00",
+        "AT": 15.1,
+        "RH": 86.0,
+        "WDSD": 3.7,
+        "WDIR": 90.0,
+        "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1016.2,
+        "PRES": 1015.8,
         "UVI": 0.0
       },
       "forecasts": {
@@ -14126,8 +14126,8 @@
             "RH": 81.0,
             "WS": 3.0,
             "WD": null,
-            "PoP6h": 20.0,
-            "Wx": 7
+            "PoP6h": 30.0,
+            "Wx": 8
           },
           {
             "start_time": "2026-03-04T10:00:00+08:00",
@@ -14706,11 +14706,11 @@
       "aqi": {
         "realtime": {
           "station_name": "土城",
-          "aqi": 36,
+          "aqi": 37,
           "status": "良好",
           "pm25": 3.0,
-          "pm10": 15.0,
-          "publish_time": "2026/03/04 05:00:00"
+          "pm10": 11.0,
+          "publish_time": "2026/03/04 06:00:00"
         },
         "forecast": {
           "area": "北部",
@@ -14723,34 +14723,34 @@
     },
     "processed_data": {
       "current": {
-        "fetched_at": "2026-03-04T05:38:12.047857+08:00",
+        "fetched_at": "2026-03-04T06:36:55.880245+08:00",
         "station_id": "466881",
         "station_name": "新北",
-        "obs_time": "2026-03-04T05:20:00+08:00",
-        "AT": 14.2,
-        "RH": 85.0,
-        "WDSD": 2.6,
-        "WDIR": 110.0,
-        "RAIN": 0.0,
+        "obs_time": "2026-03-04T06:20:00+08:00",
+        "AT": 13.4,
+        "RH": 86.0,
+        "WDSD": 3.7,
+        "WDIR": 90.0,
+        "RAIN": -990.0,
         "Wx": null,
         "WxText": "陰",
         "visibility": null,
-        "PRES": 1016.2,
+        "PRES": 1015.8,
         "UVI": 0.0,
-        "dew_point": 12.7,
-        "dew_gap": 2.5,
+        "dew_point": 12.8,
+        "dew_gap": 2.3,
         "saturation_label": "clammy",
         "Wx_text": "陰",
-        "uv_text": "Low",
+        "uv_text": "Safe",
         "uv_level": 1,
         "hum_text": "Clammy",
         "hum_level": 4,
         "pres_text": "Normal",
         "pres_level": 3,
-        "wind_text": "Light breeze",
+        "wind_text": "Gentle breeze",
         "wind_level": 2,
-        "wind_dir_text": "ESE",
-        "aqi": 36,
+        "wind_dir_text": "E",
+        "aqi": 37,
         "aqi_status": "Good",
         "aqi_level": 1,
         "vis_text": "Unknown",
@@ -14777,8 +14777,9 @@
           "wind_text": "Breezy",
           "wind_level": 2,
           "wind_dir_text": "Unknown",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 360,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Overcast",
           "beaufort_desc": "Breezy"
         },
@@ -14800,8 +14801,9 @@
           "wind_text": "Breezy",
           "wind_level": 2,
           "wind_dir_text": "Unknown",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 360,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds",
           "beaufort_desc": "Breezy"
         },
@@ -14823,8 +14825,9 @@
           "wind_text": "Breezy",
           "wind_level": 2,
           "wind_dir_text": "Unknown",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 360,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds",
           "beaufort_desc": "Breezy"
         },
@@ -14846,8 +14849,9 @@
           "wind_text": "Breezy",
           "wind_level": 2,
           "wind_dir_text": "Unknown",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 360,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Overcast",
           "beaufort_desc": "Breezy"
         }
@@ -14861,8 +14865,9 @@
           "PoP12h": 30.0,
           "Wx": 11,
           "wind_text": "Gentle breeze",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 581,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Rain"
         },
         {
@@ -14873,8 +14878,9 @@
           "PoP12h": 30.0,
           "Wx": 11,
           "wind_text": "Gentle breeze",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 581,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Rain"
         },
         {
@@ -14885,8 +14891,9 @@
           "PoP12h": 20.0,
           "Wx": 6,
           "wind_text": "Light breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14897,8 +14904,9 @@
           "PoP12h": 20.0,
           "Wx": 5,
           "wind_text": "Light air",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14909,8 +14917,9 @@
           "PoP12h": 30.0,
           "Wx": 11,
           "wind_text": "Light breeze",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 581,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Rain"
         },
         {
@@ -14921,8 +14930,9 @@
           "PoP12h": 30.0,
           "Wx": 11,
           "wind_text": "Light breeze",
-          "precip_text": "Unlikely",
-          "precip_level": 2,
+          "safe_minutes": 581,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Rain"
         },
         {
@@ -14933,8 +14943,9 @@
           "PoP12h": null,
           "Wx": 7,
           "wind_text": "Gentle breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14945,8 +14956,9 @@
           "PoP12h": null,
           "Wx": 6,
           "wind_text": "Gentle breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14957,8 +14969,9 @@
           "PoP12h": null,
           "Wx": 4,
           "wind_text": "Gentle breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14969,8 +14982,9 @@
           "PoP12h": null,
           "Wx": 3,
           "wind_text": "Gentle breeze",
-          "precip_text": "Dry",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Fair"
         },
         {
@@ -14981,8 +14995,9 @@
           "PoP12h": null,
           "Wx": 4,
           "wind_text": "Gentle breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         },
         {
@@ -14993,8 +15008,9 @@
           "PoP12h": null,
           "Wx": 10,
           "wind_text": "Gentle breeze",
-          "precip_text": "Possible",
-          "precip_level": 3,
+          "safe_minutes": 720,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Overcast"
         },
         {
@@ -15005,8 +15021,9 @@
           "PoP12h": null,
           "Wx": 11,
           "wind_text": "Light breeze",
-          "precip_text": "Possible",
-          "precip_level": 3,
+          "safe_minutes": 299,
+          "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Rain"
         },
         {
@@ -15017,8 +15034,9 @@
           "PoP12h": null,
           "Wx": 6,
           "wind_text": "Light breeze",
-          "precip_text": "Very Unlikely",
+          "safe_minutes": 720,
           "precip_level": 1,
+          "precip_text": "All clear",
           "cloud_cover": "Mixed Clouds"
         }
       ],
@@ -15109,7 +15127,7 @@
           "四神湯 (sì shén tāng)"
         ],
         "top_suggestions": [
-          "火鍋 (huǒ guō)"
+          "牛肉麵 (niú ròu miàn)"
         ]
       },
       "recent_meals": [],
@@ -15244,17 +15262,19 @@
       },
       "menieres_alert": {
         "triggered": false,
-        "severity": "none",
-        "reasons": [],
+        "severity": "moderate",
+        "reasons": [
+          "High humidity discomfort"
+        ],
         "type": "Menieres"
       },
       "aqi_realtime": {
         "station_name": "土城",
-        "aqi": 36,
+        "aqi": 37,
         "status": "良好",
         "pm25": 3.0,
-        "pm10": 15.0,
-        "publish_time": "2026/03/04 05:00:00"
+        "pm10": 11.0,
+        "publish_time": "2026/03/04 06:00:00"
       },
       "aqi_forecast": {
         "area": "北部",
@@ -15268,12 +15288,12 @@
       "outdoor_index": {
         "overall_score": 100,
         "overall_grade": "A",
-        "overall_label": "Excellent",
+        "overall_label": "Go out",
         "segments": {
           "Morning": {
-            "score": 75,
-            "grade": "B",
-            "label": "Good",
+            "score": 82,
+            "grade": "A",
+            "label": "Go out",
             "blockers": [],
             "cautions": [
               "cold",
@@ -15283,14 +15303,14 @@
           "Afternoon": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent",
+            "label": "Go out",
             "blockers": [],
             "cautions": []
           },
           "Evening": {
-            "score": 92,
+            "score": 96,
             "grade": "A",
-            "label": "Excellent",
+            "label": "Go out",
             "blockers": [],
             "cautions": [
               "humid"
@@ -15301,68 +15321,68 @@
           "strolling": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "cycling": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "hiking": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "picnic": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "swimming": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "sports": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           },
           "photography": {
             "score": 100,
             "grade": "A",
-            "label": "Excellent"
+            "label": "Go out"
           }
         }
       }
     },
-    "narration_text": "Smooth sailing today — no alerts to flag. Right now at five-thirty in the morning, it feels like 14 degrees, clammy but not soaked, with a light breeze drifting in from the east-southeast. The ground is dry, air quality is good at AQI 36, and the sky is fully overcast. That is a degree cooler than yesterday morning, so the chill is real. Wear a mid-layer fleece or light jacket over a long-sleeve base; you can leave the umbrella at home today.\n\nSoil has been on the damp side after recent overcast days, so hold off on watering and check that pot drainage is clear before heading out. The morning commute to Sanxia or Shulin feels like about 16 degrees with a light breeze and rain very unlikely — comfortable but layer up. Coming home this evening is easier, around 21 degrees with mixed clouds and still very unlikely to rain — no hazards flagged either way.\n\nMid-morning is the sweet spot for Dad's outing once clouds start to thin. Head to the Banqiao 435 Art Zone Garden — fully paved, flat sculpture paths, frequent benches, and accessible toilets make it ideal for Parkinson's safety. Aim to be back before noon before any afternoon breezes pick up.\n\nTonight calls for a pot of huo guo — the cool and clammy air is exactly the mood for a warm communal hotpot at the table. No air conditioning or heating needed today; climate control can stay off, and windows are fine open if you want fresh air given the clean AQI.\n\nToday warms steadily, with clouds thinning through the afternoon to reach a comfortable 18 degrees by lunch — that is the day's best stretch. Overnight, clouds close back in and the feel drops to around 17 degrees with rain unlikely but possible. Tomorrow brings a notable warm jump, touching 27 degrees in the afternoon before another front nudges in Friday evening. Keep an eye on Saturday as temperatures could dip sharply again.\n\nToday's forecast was close — the morning chill landed right on target at 14 degrees, though yesterday's forecast called for 11 degrees apparent, running a few degrees cooler than what actually arrived.",
+    "narration_text": "Smooth sailing this morning — no alerts to flag. Right now it feels like 13 degrees with a gentle easterly breeze, clammy but not dripping, and the ground is dry. Air quality is good with an AQI of 37, so no concerns there. Layer up before you head out — a light jacket is enough, and no rain gear needed today.\n\nSoil is still holding moisture from the recent wet stretch, so hold off on watering and focus on checking pot drainage instead. The morning commute into Shulin or Sanxia looks calm — a light breeze, all clear on precip, and mixed clouds by the time you roll in. The evening ride home stays dry and comfortable, a touch warmer than the morning, so no surprises either way.\n\nMid-morning is the sweet spot for Dad today. Head to the Dahan River Bikeway at the Yingge section — flat paved trail, well-shaded, and easy to park. A gentle walk along the riverside is ideal; the surface is smooth and Parkinson's-friendly, with no steps to navigate.\n\nTonight calls for a steaming bowl of niu rou mian — perfectly matched to a cool and clammy evening around 18 degrees. Climate control can stay off today; the data shows no dehumidifier or AC needed, and with good air quality you can crack a window this afternoon to let the warmer air circulate.\n\nToday's big story is the temperature climb. Clouds thin through the morning and the feel rises nearly 7 degrees by lunchtime — that afternoon stretch around 18 degrees is the day's most comfortable window. Overnight, clouds close back in and the feel slips to around 17, but rain stays unlikely. Tomorrow jumps sharply to 27 degrees before another front nudges in Friday evening and drags temperatures back down. Enjoy Thursday while it lasts.\n\nYesterday's forecast called for a comfortable 18 degrees by lunch and a mild overnight — today's actual morning reading of 13 degrees came in cooler than predicted, so the forecast ran a little warm on the overnight low.",
     "paragraphs": {
-      "p1_conditions": "Smooth sailing today — no alerts to flag. Right now at five-thirty in the morning, it feels like 14 degrees, clammy but not soaked, with a light breeze drifting in from the east-southeast. The ground is dry, air quality is good at AQI 36, and the sky is fully overcast. That is a degree cooler than yesterday morning, so the chill is real. Wear a mid-layer fleece or light jacket over a long-sleeve base; you can leave the umbrella at home today.",
-      "p2_garden_commute": "Soil has been on the damp side after recent overcast days, so hold off on watering and check that pot drainage is clear before heading out. The morning commute to Sanxia or Shulin feels like about 16 degrees with a light breeze and rain very unlikely — comfortable but layer up. Coming home this evening is easier, around 21 degrees with mixed clouds and still very unlikely to rain — no hazards flagged either way.",
-      "p3_outdoor": "Mid-morning is the sweet spot for Dad's outing once clouds start to thin. Head to the Banqiao 435 Art Zone Garden — fully paved, flat sculpture paths, frequent benches, and accessible toilets make it ideal for Parkinson's safety. Aim to be back before noon before any afternoon breezes pick up.",
-      "p4_meal_climate": "Tonight calls for a pot of huo guo — the cool and clammy air is exactly the mood for a warm communal hotpot at the table. No air conditioning or heating needed today; climate control can stay off, and windows are fine open if you want fresh air given the clean AQI.",
-      "p5_forecast": "Today warms steadily, with clouds thinning through the afternoon to reach a comfortable 18 degrees by lunch — that is the day's best stretch. Overnight, clouds close back in and the feel drops to around 17 degrees with rain unlikely but possible. Tomorrow brings a notable warm jump, touching 27 degrees in the afternoon before another front nudges in Friday evening. Keep an eye on Saturday as temperatures could dip sharply again.",
-      "p6_accuracy": "Today's forecast was close — the morning chill landed right on target at 14 degrees, though yesterday's forecast called for 11 degrees apparent, running a few degrees cooler than what actually arrived."
+      "p1_conditions": "Smooth sailing this morning — no alerts to flag. Right now it feels like 13 degrees with a gentle easterly breeze, clammy but not dripping, and the ground is dry. Air quality is good with an AQI of 37, so no concerns there. Layer up before you head out — a light jacket is enough, and no rain gear needed today.",
+      "p2_garden_commute": "Soil is still holding moisture from the recent wet stretch, so hold off on watering and focus on checking pot drainage instead. The morning commute into Shulin or Sanxia looks calm — a light breeze, all clear on precip, and mixed clouds by the time you roll in. The evening ride home stays dry and comfortable, a touch warmer than the morning, so no surprises either way.",
+      "p3_outdoor": "Mid-morning is the sweet spot for Dad today. Head to the Dahan River Bikeway at the Yingge section — flat paved trail, well-shaded, and easy to park. A gentle walk along the riverside is ideal; the surface is smooth and Parkinson's-friendly, with no steps to navigate.",
+      "p4_meal_climate": "Tonight calls for a steaming bowl of niu rou mian — perfectly matched to a cool and clammy evening around 18 degrees. Climate control can stay off today; the data shows no dehumidifier or AC needed, and with good air quality you can crack a window this afternoon to let the warmer air circulate.",
+      "p5_forecast": "Today's big story is the temperature climb. Clouds thin through the morning and the feel rises nearly 7 degrees by lunchtime — that afternoon stretch around 18 degrees is the day's most comfortable window. Overnight, clouds close back in and the feel slips to around 17, but rain stays unlikely. Tomorrow jumps sharply to 27 degrees before another front nudges in Friday evening and drags temperatures back down. Enjoy Thursday while it lasts.",
+      "p6_accuracy": "Yesterday's forecast called for a comfortable 18 degrees by lunch and a mild overnight — today's actual morning reading of 13 degrees came in cooler than predicted, so the forecast ran a little warm on the overnight low."
     },
     "metadata": {
-      "wardrobe": "Wear a mid-layer fleece or light jacket over a long-sleeve base for the cool 14-degree morning, peeling back to a single layer by afternoon.",
+      "wardrobe": "A light jacket over a long-sleeve layer handles the cool morning and comfortable afternoon.",
       "rain_gear": false,
-      "commute_am": "Morning commute feels like 16 degrees with a light breeze and rain very unlikely — layer up but roads are clear.",
-      "commute_pm": "Evening return is around 21 degrees with mixed clouds and rain very unlikely — no hazards on the road.",
-      "meal": "huo guo",
-      "outdoor": "Mid-morning stroll at the Banqiao 435 Art Zone Garden — flat paved paths, frequent benches, and accessible toilets make it Parkinson's-friendly.",
+      "commute_am": "Light breeze, all clear on rain, and mixed clouds make for an easy morning run to Shulin or Sanxia.",
+      "commute_pm": "The evening commute stays dry and slightly warmer — no hazards expected.",
+      "meal": "niu rou mian",
+      "outdoor": "Mid-morning walk along the flat paved Dahan River Bikeway at the Yingge section — smooth surface, well-shaded, and Parkinson's-friendly.",
       "garden": "Hold watering, check pot drainage",
-      "climate": "Climate control can stay off today; windows are fine open given the clean air quality.",
+      "climate": "Climate control off all day; open a window this afternoon to enjoy the warmer air.",
       "cardiac_alert": false,
       "menieres_alert": false,
-      "forecast_oneliner": "Today warms nicely through the afternoon before clouds return overnight, with a big warm jump tomorrow and another front arriving Friday evening.",
+      "forecast_oneliner": "Enjoy Thursday's warm afternoon peak — another front arrives Friday evening and cools things back down.",
       "accuracy_grade": "close",
       "narration_source": "claude",
       "narration_model": "claude-sonnet-4-6"
     },
     "audio_urls": {
-      "full_audio_url": "/local_assets/audio/morning_en_d0650c0dea87.mp3"
+      "full_audio_url": "/local_assets/audio/morning_en_1d1f082eb183.mp3"
     }
   }
 }
