@@ -30,11 +30,10 @@ BEAUFORT_SCALE_5 = [
 ]
 
 UV_SCALE = [
-    (2,  "Low", 1),
-    (5,  "Moderate", 2),
-    (7,  "High", 3),
-    (10, "Very High", 4),
-    (float("inf"), "Extreme", 5),
+    (3,           "Safe",           1),
+    (7,           "Wear Sunscreen", 2),
+    (10,          "Seek Shade",     4),
+    (float("inf"),"Extreme",        5),
 ]
 
 
@@ -119,13 +118,70 @@ def _wind_to_level(ms: float | None) -> int:
     return 5
 
 def _aqi_to_level(aqi: int | None) -> int:
-    """Map AQI to 1-5 level."""
+    """Map AQI to 1/3/5 level — Good / Moderate / Danger."""
     if aqi is None: return 0
-    if aqi <= 50: return 1
-    if aqi <= 100: return 2
-    if aqi <= 150: return 3
-    if aqi <= 200: return 4
+    if aqi < 60: return 1
+    if aqi < 120: return 3
     return 5
+
+import math as _math
+
+# Risk threshold config — tunable per intensity class
+_RISK_DRIZZLE  = 0.25   # Wx 11-12: annoying but tolerable
+_RISK_MODERATE = 0.15   # Wx 13-14: meaningfully uncomfortable
+_RISK_HEAVY    = 0.08   # Wx 15+:   dangerous / damage to belongings
+
+def _wx_to_rain_risk(wx: int | None) -> float | None:
+    """Map Wx code to acceptable rain-exposure risk threshold.
+    Returns None when Wx indicates no rain (skip safe-window calc)."""
+    if wx is None or wx <= 10:
+        return None          # no rain forecast — full window is safe
+    if wx <= 12: return _RISK_DRIZZLE
+    if wx <= 14: return _RISK_MODERATE
+    return _RISK_HEAVY
+
+
+def pop_to_safe_minutes(
+    pop: float | None,
+    window_minutes: int = 360,
+    risk_pct: float = 15,
+) -> int | None:
+    """Poisson-derived safe outing window in minutes.
+
+    Args:
+        pop:            Probability of Precipitation (0–100).
+        window_minutes: Length of the forecast block (360 for 6h, 720 for 12h).
+        risk_pct:       Acceptable chance (%) of getting rained on during outing.
+
+    Returns max minutes outside such that P(rain during outing) <= risk_pct/100.
+    Returns None when pop is None. Returns window_minutes when pop==0.
+    Returns 0 when pop==100.
+    """
+    if pop is None:
+        return None
+    if pop <= 0:
+        return window_minutes
+    if pop >= 100:
+        return 0
+    p = pop / 100.0
+    r = risk_pct / 100.0
+    safe_frac = _math.log(1.0 - r) / _math.log(1.0 - p)
+    return round(min(max(safe_frac * window_minutes, 0), window_minutes))
+
+
+def safe_minutes_to_level(minutes: int | None) -> tuple[int, str]:
+    """Map safe outing minutes to (level, display_text).
+
+    Levels use the existing CSS lvl-N scheme: 1=green, 3=yellow, 5=red.
+    """
+    if minutes is None:
+        return (0, "Unknown")
+    if minutes >= 120:
+        return (1, "All clear")
+    if minutes >= 20:
+        return (3, f"~{minutes} min")
+    return (5, "Stay in")
+
 
 def wind_ms_to_beaufort(ms: float | None) -> str:
     """Map wind speed (m/s) to Beaufort text."""

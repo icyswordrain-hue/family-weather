@@ -9,12 +9,13 @@ from data.scales import (
 
 # ── _val_to_scale ──────────────────────────────────────────────────────────────
 
-def test_uv_low():         assert _val_to_scale(1, UV_SCALE) == ("Low", 1)
-def test_uv_moderate():    assert _val_to_scale(3, UV_SCALE) == ("Moderate", 2)
-def test_uv_high():        assert _val_to_scale(6, UV_SCALE) == ("High", 3)
-def test_uv_very_high():   assert _val_to_scale(9, UV_SCALE) == ("Very High", 4)
-def test_uv_extreme():     assert _val_to_scale(12, UV_SCALE) == ("Extreme", 5)
-def test_uv_none():        assert _val_to_scale(None, UV_SCALE) == ("Unknown", 0)
+def test_uv_safe():         assert _val_to_scale(3,  UV_SCALE) == ("Safe",           1)
+def test_uv_safe_edge():    assert _val_to_scale(4,  UV_SCALE) == ("Wear Sunscreen", 2)
+def test_uv_sunscreen():    assert _val_to_scale(7,  UV_SCALE) == ("Wear Sunscreen", 2)
+def test_uv_shade_edge():   assert _val_to_scale(8,  UV_SCALE) == ("Seek Shade",     4)
+def test_uv_shade():        assert _val_to_scale(10, UV_SCALE) == ("Seek Shade",     4)
+def test_uv_extreme():      assert _val_to_scale(11, UV_SCALE) == ("Extreme",        5)
+def test_uv_none():         assert _val_to_scale(None, UV_SCALE) == ("Unknown", 0)
 
 def test_precip_dry():     assert _val_to_scale(0, PRECIP_SCALE_5)[0] == "Dry"
 def test_precip_unlikely(): assert _val_to_scale(30, PRECIP_SCALE_5)[0] == "Unlikely"
@@ -43,12 +44,12 @@ def test_wind_level_none():   assert _wind_to_level(None) == 0
 
 # ── AQI ───────────────────────────────────────────────────────────────────────
 
-def test_aqi_good():       assert _aqi_to_level(40) == 1
-def test_aqi_moderate():   assert _aqi_to_level(80) == 2
-def test_aqi_sensitive():  assert _aqi_to_level(120) == 3
-def test_aqi_unhealthy():  assert _aqi_to_level(180) == 4
-def test_aqi_hazardous():  assert _aqi_to_level(350) == 5
-def test_aqi_none():       assert _aqi_to_level(None) == 0
+def test_aqi_good():        assert _aqi_to_level(59)  == 1
+def test_aqi_good_edge():   assert _aqi_to_level(60)  == 3
+def test_aqi_moderate():    assert _aqi_to_level(119) == 3
+def test_aqi_danger_edge(): assert _aqi_to_level(120) == 5
+def test_aqi_hazardous():   assert _aqi_to_level(350) == 5
+def test_aqi_none():        assert _aqi_to_level(None) == 0
 
 # ── text helpers ──────────────────────────────────────────────────────────────
 
@@ -79,3 +80,33 @@ def test_wx_to_pop():
     assert wx_to_pop(8) == 50     # Showers
     assert wx_to_pop(15) == 80    # Thunderstorms
     assert wx_to_pop(None) is None
+
+
+# ── Poisson safe-outing ────────────────────────────────────────────────────────
+from data.scales import pop_to_safe_minutes, safe_minutes_to_level
+
+def test_safe_no_rain():
+    assert pop_to_safe_minutes(0, 360) == 360
+
+def test_safe_full_rain():
+    assert pop_to_safe_minutes(100, 360) == 0
+
+def test_safe_drizzle_50pop():
+    # 25% threshold, 6h window, PoP=50
+    # log(0.75)/log(0.5) * 360 ≈ 151 min
+    result = pop_to_safe_minutes(50, 360, risk_pct=25)
+    assert 140 <= result <= 165
+
+def test_safe_heavy_50pop():
+    # 8% threshold, 6h window, PoP=50
+    # log(0.92)/log(0.5) * 360 ≈ 45 min
+    result = pop_to_safe_minutes(50, 360, risk_pct=8)
+    assert 40 <= result <= 55
+
+def test_safe_none_pop():
+    assert pop_to_safe_minutes(None, 360) is None
+
+def test_level_all_clear():   assert safe_minutes_to_level(120) == (1, "All clear")
+def test_level_short():       assert safe_minutes_to_level(60)  == (3, "~60 min")
+def test_level_stay_in():     assert safe_minutes_to_level(10)  == (5, "Stay in")
+def test_level_none():        assert safe_minutes_to_level(None) == (0, "Unknown")
