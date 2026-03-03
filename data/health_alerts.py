@@ -41,11 +41,11 @@ def _detect_menieres_alert(current: dict, history: list[dict], segmented: dict[s
     pres = current.get("PRES")
     if pres is not None:
         if pres < 1005:
-            triggered = True
+            # Moderate risk — record for observability but do not trigger alert
             severity = "moderate"
             reasons.append(f"Low pressure ({pres}hPa)")
-        
-        # Look for rapid drops in history
+
+        # Look for rapid changes in history (rise OR drop) — this is high severity
         if history:
             prev_pres = history[-1].get("raw_data", {}).get("current", {}).get("PRES")
             if prev_pres and abs(pres - prev_pres) > 8:
@@ -53,10 +53,9 @@ def _detect_menieres_alert(current: dict, history: list[dict], segmented: dict[s
                 severity = "high"
                 reasons.append("Rapid pressure transition")
 
-    # 2. Extreme Humidity
+    # 2. Extreme Humidity — moderate risk only, does not trigger alert
     rh = current.get("RH")
     if rh is not None and rh > 85:
-        triggered = True
         if severity == "none": severity = "moderate"
         reasons.append("High humidity discomfort")
 
@@ -82,7 +81,7 @@ def _compute_heads_ups(
     # Priority 1: Critical Health
     if cardiac.get("triggered"):
         alerts.append({"level": "CRITICAL", "type": "Health", "msg": cardiac["reasons"][0]})
-    if menieres.get("triggered") and menieres.get("severity") == "high":
+    if menieres.get("triggered"):  # only True for severity=="high" (rapid pressure change)
         alerts.append({"level": "CRITICAL", "type": "Health", "msg": "High Ménière's risk — avoid sudden movements"})
 
     # Priority 2: Weather Hazards

@@ -296,7 +296,7 @@ def _build_fallback_metadata(processed: dict, history: list[dict] | None) -> dic
 
     cardiac_triggered = bool(cardiac and isinstance(cardiac, dict) and cardiac.get("triggered"))
     menieres_triggered = bool(
-        menieres and isinstance(menieres, dict) and menieres.get("severity") in ("high", "moderate")
+        menieres and isinstance(menieres, dict) and menieres.get("triggered")
     )
 
     morning_seg = forecast_segs.get("Morning", {})

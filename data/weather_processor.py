@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 from data.location_loader import OUTDOOR_LOCATIONS
 from data.scales import (
-    BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5, PRECIP_SCALE_5,
+    BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5,
     _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
     wx_to_cloud_cover, degrees_to_cardinal, pop_to_text, translate_aqi_status, translate_pollutant,
     wx_to_pop, dew_gap_to_hum,

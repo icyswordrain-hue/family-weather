@@ -82,11 +82,11 @@ TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 # ── Google Gemini ─────────────────────────────────────────────────────────
 GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-2.0-pro-exp")
 GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.0-flash")
-GEMINI_MAX_TOKENS = 4096
+GEMINI_MAX_TOKENS = 2000
 # ── Anthropic Claude ──────────────────────────────────────────────────────
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
-CLAUDE_MAX_TOKENS = 4096
+CLAUDE_MAX_TOKENS = 2000
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 
 # ── Pipeline Behaviour ────────────────────────────────────────────────────────
