@@ -9,19 +9,19 @@ from data.location_loader import OUTDOOR_LOCATIONS
 logger = logging.getLogger(__name__)
 
 GRADE_THRESHOLDS = [
-    (80, "A", "Excellent"),
-    (65, "B", "Good"),
-    (50, "C", "Fair"),
-    (35, "D", "Poor"),
-    (0,  "F", "Avoid"),
+    (80, "A", "Go out"),
+    (65, "B", "Good to go"),
+    (50, "C", "Manageable"),
+    (35, "D", "Think twice"),
+    (0,  "F", "Stay in"),
 ]
 
 OUTDOOR_WEIGHTS_GENERAL = {
     "rain_active": -50, "rain_light": -25,
     "pop_high": -25, "pop_mid": -12,
     "at_extreme_hot": -30, "at_hot": -15, "at_cold": -10, "at_extreme_cold": -20,
-    "dp_oppressive": -20, "dp_muggy": -10, "dp_sticky": -5,
-    "dew_gap_clammy": -15, "dew_gap_humid": -8,
+    "dp_oppressive": -12, "dp_muggy": -6, "dp_sticky": -3,
+    "dew_gap_clammy": -8, "dew_gap_humid": -4,
     "wind_strong": -35, "wind_moderate": -10,
     "aqi_unhealthy": -40, "aqi_sensitive": -15,
     "uvi_extreme": -15, "uvi_very_high": -8,

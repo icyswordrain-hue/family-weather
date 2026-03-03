@@ -248,6 +248,7 @@ const TRANSLATIONS = {
       'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
       'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風', 'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風', 'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風', 'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
       'Good': '良好', 'Moderate': '普通', 'Unhealthy for Sensitive Groups': '對敏感族群不健康', 'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
+      'Go out': '適合外出', 'Good to go': '可以出門', 'Manageable': '勉強可行', 'Think twice': '建議斟酌', 'Stay in': '建議待室內',
       'Low': '低', 'High': '高', 'Very High': '極高', 'Extreme': '極端',
       'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
       'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
@@ -933,7 +934,7 @@ function renderLifestyleView(data) {
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
     const extras = [];
-    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, `Grade ${data.outdoor.grade} · ${data.outdoor.label || ''}`));
+    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
     if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
     add('🌳', T.outdoor_act, data.outdoor.text, extras);
   }
