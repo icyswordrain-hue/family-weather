@@ -80,4 +80,36 @@ Letter grades (A/B/C/D/F) replaced with decision-oriented English labels. Letter
 - Lifestyle badge in `app.js` now shows localised label only (removed `Grade X · ` prefix)
 - zh-TW translations added to `app.js` metrics map
 
+
 **Commit:** `384259a`
+
+---
+
+## Planned: PoP zh-TW translation upgrade
+
+Current translations for `PRECIP_SCALE_5` are passive probability phrases (`極不可能`, `不太可能` …). Replacing with action-signal translations that answer the umbrella decision directly.
+
+| English | Current zh-TW | Planned zh-TW |
+|---|---|---|
+| Dry | 乾燥 | 不用帶傘 |
+| Very Unlikely | 極不可能 | 帶傘備著就好 |
+| Unlikely | 不太可能 | 可以不帶傘 |
+| Possible | 有可能 | 建議帶傘 |
+| Likely | 很有可能 | 一定要帶傘 |
+| Very Likely | 極有可能 | 做好淋雨準備 |
+
+**File:** `web/static/app.js` metrics map line 256. Stopgap until the Poisson safe-outing window replaces precip labels entirely (see `2026-03-04-poisson-safe-outing.md`).
+
+---
+
+### 5. Outdoor timeline card — shows action label, not letter grade (bugfix)
+
+`routes.py` only copied `outdoor_grade` (the letter) into the segment dict, never `outdoor_label`. The timeline JS then displayed the raw letter.
+
+- `web/routes.py` line 122 — added `seg_copy["outdoor_label"] = seg_grade_data.get("label")`
+- `web/static/app.js` line 504 — changed to `localiseMetric(seg.outdoor_label) || seg.outdoor_grade`
+
+Timeline now shows e.g. `Good to go` / `可以出門` instead of `B`.
+
+**Commit:** `056fd3a`
+
