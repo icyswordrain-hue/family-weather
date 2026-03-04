@@ -977,11 +977,8 @@ function renderLifestyleView(data) {
 function initSystemTheme() {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const apply = () => {
-    let override = localStorage.getItem('theme');
-    if (!override) {
-      override = mq.matches ? 'dark' : 'light';
-      localStorage.setItem('theme', override);
-    }
+    let override = 'light'; // Forced for Phase 1
+    localStorage.setItem('theme', override);
     const isDark = override === 'dark';
     document.documentElement.classList.toggle('dark', isDark);
     document.querySelector(`input[name="theme"][value="${override}"]`)?.['checked'] === false &&
