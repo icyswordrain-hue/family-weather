@@ -331,3 +331,27 @@ Expected: all pass.
 git add -A
 git commit -m "chore: remove unused PRECIP_SCALE_5 after Poisson migration"
 ```
+
+---
+
+## Post-Implementation Change Record
+
+### 2026-03-04 — Fix: 7-day grid showing raw PoP% instead of `precip_text`
+
+**Bug:** After Task 3 was implemented, the 7-day weekly cards (`wk-rain`) were colored by `precip_level` (the Poisson-derived level) but displayed raw `PoP12h` as a percentage. This caused a mismatch — e.g. a card could show green "50%" when the color system implied "All clear", or red "80%" when it implied "Stay in". The color and the text were sourced from different signals.
+
+**Root cause:** Task 3 Step 2 correctly updated the 24h timeline (`addRow(T.rain, localiseMetric(seg.precip_text) ...` at line 492), but the 7-day weekly card render block (line 651–656) was left using `Math.round(item.PoP12h) + '%'` and was not updated to use the parallel `item.precip_text`.
+
+**Fix applied to `web/static/app.js`:**
+
+```diff
+- rain.textContent = Math.round(item.PoP12h) + '%';
++ rain.textContent = item.precip_text
++   ? localiseMetric(item.precip_text)
++   : Math.round(item.PoP12h) + '%';
+```
+
+The `item.precip_text` fallback to `PoP12h %` handles any cached payloads generated before this fix was deployed.
+
+**24h timeline** — confirmed unaffected. Line 492 already used `localiseMetric(seg.precip_text)` consistently with `precip_level`.
+```
