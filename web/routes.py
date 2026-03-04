@@ -262,9 +262,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         "wardrobe": {
             "text": wardrobe_text,
             "feels_like": at,
-        },
-        "rain_gear": {
-            "text": rain_gear_text,
+            "rain_gear_text": rain_gear_text,
         },
         "commute": {
             "text": commute_text,

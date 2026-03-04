@@ -918,12 +918,11 @@ function renderLifestyleView(data) {
     card.appendChild(content);
     grid.appendChild(card);
   }
-  // 2. Rain Gear
-  if (data.rain_gear) add('☂️', T.rain_gear, data.rain_gear.text);
-  // 3. Wardrobe
+  // 2. Wardrobe (includes rain gear as sub-line)
   if (data.wardrobe) {
     const extras = [];
     if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
+    if (data.wardrobe.rain_gear_text) extras.push(mkSub(`☂️ ${data.wardrobe.rain_gear_text}`));
     add('🧥', T.wardrobe, data.wardrobe.text, extras);
   }
   // 4. Commute
