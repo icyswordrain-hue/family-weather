@@ -485,6 +485,9 @@ input:focus-visible {
   color: var(--text);
   font-family: var(--font-serif);
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
 }
 
 /* ── View 1: Current ─────────────────────────────────────────────────────── */
@@ -921,6 +924,12 @@ html.dark .audio-toggle-btn.active {
   max-width: 100%;
   height: auto;
   margin: 0 auto;
+}
+.view-heading-icon.brand-icon {
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  display: inline-block;
 }
 .ls-alert-type-icon .brand-icon {
   height: 0.9rem;
@@ -1510,6 +1519,12 @@ html.dark .source-claude {
   border-bottom: 2px solid var(--border);
   margin-bottom: 1.5rem;
 }
+.section-header-card .brand-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  display: inline-block;
+}
 
 
 @media (max-width: 767px) {
@@ -1783,8 +1798,7 @@ html.dark .source-claude {
   }
 
   .logo-text,
-  .nav-section-label,
-  .nav-item span:not(.nav-icon) {
+  .nav-section-label {
     display: none;
   }
 
