@@ -16,8 +16,8 @@ A private, AI-narrated daily weather broadcast for a family in Shulin/Sanxia/Ban
 | **Health & Safety Alerts** | Early warnings for Cardiac risk (cold/wet swings) and Ménière's disease triggers (barometric drops) |
 | **Lifestyle Advice** | Weather-driven meal suggestions, commuter hazard warnings (rain/wind), HVAC mode and wardrobing tips |
 | **Language toggle** | English / Traditional Chinese (`zh-TW`) — narration, UI labels, and TTS voice all switch together |
-| **Earthy Theme** | Custom "earthy sophistication" light mode (Dark mode disabled for Phase 1) |
-| **Earthy Theme** | Custom "earthy sophistication" light mode (Phase 1) |
+| **Brand Icons** | Custom fine-line sketch illustrations (`web/static/brand-icons/`) replace all emoji in the UI — weather conditions, lifestyle categories, alert states |
+| **Earthy Theme** | Custom "earthy sophistication" colour palette — terracotta, sand, sage, dusty plum; light mode (dark mode planned) |
 | **PWA** | Service worker + web manifest for installable offline use |
 | **Streaming refresh** | Pipeline progress streamed to the browser via NDJSON (Server-Sent Events) |
 | **Narration cache** | 30-minute in-memory cache keyed by language + city + weather condition + time-of-day |
@@ -100,7 +100,8 @@ family-weather/
 │   ├── static/app.js       # Dashboard logic & language toggle
 │   ├── static/style.css
 │   ├── static/manifest.json
-│   └── static/service-worker.js
+│   ├── static/service-worker.js
+│   └── static/brand-icons/ # Fine-line sketch PNGs (weather, lifestyle, alerts)
 │
 ├── history/
 │   └── conversation.py     # Read/write daily broadcast history
