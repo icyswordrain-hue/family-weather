@@ -433,3 +433,39 @@ sizes. Moving them to the view heading gives them more display area and better r
 | Mobile section header (`.section-header-card`) | 1.5rem (~24px) | ≤767px |
 
 **Commit:** `68f67a3` — `ui: move nav icons to view h1 headings; text-only sidebar nav`
+
+---
+
+### Task 12: Fix view heading icon wiped by i18n re-render
+
+**Problem:** The brand icons added to the `<h1>` headings in Task 11 were visible on mobile but
+invisible on desktop. On mobile, `.view-header` is hidden and `.section-header-card` is used
+instead — its icon lives in a separate `<span>` sibling, never touched by JS. On desktop, the
+icon was a child node inside the `<h1>` which held the `id` targeted by `setText()`.
+
+**Root cause:** `setText()` in `app.js` (line 1341) uses `el.textContent = val`, which replaces
+all child nodes with a plain text node — destroying the `<img>` on every i18n render call.
+
+**Fix — `web/templates/dashboard.html`:**
+
+Move `id` and `data-i18n` from the `<h1>` onto a `<span>` inside it, so `setText()` targets
+only the text span while the `<img>` remains an untouched sibling:
+
+```html
+<!-- before (img destroyed by setText targeting h1) -->
+<h1 id="view-heading-lifestyle" data-i18n="h1_lifestyle">
+  <img src="…/commute.png" class="brand-icon view-heading-icon" alt="" />生活指南
+</h1>
+
+<!-- after (setText targets span only; img sibling is safe) -->
+<h1>
+  <img src="…/commute.png" class="brand-icon view-heading-icon" alt="" />
+  <span id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</span>
+</h1>
+```
+
+Same change applied to the Dashboard heading (`view-heading-dashboard` / `dashboard.png`).
+
+No CSS changes required.
+
+**Commit:** `ff3ec45` — `fix: preserve view heading icon across i18n re-renders`
