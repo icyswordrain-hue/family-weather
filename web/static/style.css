@@ -522,6 +522,7 @@ input:focus-visible {
 
 #cur-icon {
   font-size: 2.5rem;
+  width: 5rem;
 }
 
 #cur-temp {
@@ -920,6 +921,13 @@ html.dark .audio-toggle-btn.active {
   max-width: 100%;
   height: auto;
   margin: 0 auto;
+}
+.ls-alert-type-icon .brand-icon {
+  height: 0.9rem;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
 }
 
 .ls-title {
@@ -1660,6 +1668,7 @@ html.dark .source-claude {
 
   #cur-icon {
     font-size: 2rem;
+    width: 3.5rem;
   }
 
   #cur-temp {
