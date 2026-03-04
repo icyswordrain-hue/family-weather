@@ -977,20 +977,21 @@ function renderLifestyleView(data) {
 function initSystemTheme() {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const apply = () => {
-    const override = localStorage.getItem('theme');
-    const isDark = override === 'dark' || (override !== 'light' && mq.matches);
+    let override = localStorage.getItem('theme');
+    if (!override) {
+      override = mq.matches ? 'dark' : 'light';
+      localStorage.setItem('theme', override);
+    }
+    const isDark = override === 'dark';
     document.documentElement.classList.toggle('dark', isDark);
-    const val = override || 'auto';
-    document.querySelector(`input[name="theme"][value="${val}"]`)?.['checked'] === false &&
-      (document.querySelector(`input[name="theme"][value="${val}"]`).checked = true);
-    const sheetR = document.querySelector(`input[name="theme-sheet"][value="${val}"]`);
+    document.querySelector(`input[name="theme"][value="${override}"]`)?.['checked'] === false &&
+      (document.querySelector(`input[name="theme"][value="${override}"]`).checked = true);
+    const sheetR = document.querySelector(`input[name="theme-sheet"][value="${override}"]`);
     if (sheetR) sheetR.checked = true;
   };
   apply();
-  mq.addEventListener('change', apply);
   window.setTheme = (val) => {
-    if (val === 'auto') localStorage.removeItem('theme');
-    else localStorage.setItem('theme', val);
+    localStorage.setItem('theme', val);
     apply();
   };
 }

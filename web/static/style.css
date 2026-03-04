@@ -8,37 +8,46 @@
 }
 
 :root {
-  /* Palette */
-  /* Light mode sidebar / right panel */
-  --sidebar-bg: #2c3e6b;
-  --sidebar-hover: #374d7f;
-  --sidebar-active: #4a5f9a;
-  --sidebar-text: #b0c4de;
+  /* ── Earthy Palette ───────────────────────────────────────────────────── */
+  /* Sidebar / right panel — dark walnut */
+  --sidebar-bg: #3B2F1E;
+  --sidebar-hover: #4F3E28;
+  --sidebar-active: #6B5237;
+  --sidebar-text: #C9B89E;
   --sidebar-active-text: #ffffff;
-  --rp-bg: #2c3e6b;
+  --rp-bg: #3B2F1E;
 
-  --main-bg: #f4f6fb;
-  --surface: #ffffff;
-  --border: #e8ecf3;
-  --text: #1e2a3a;
-  --muted: #64748b;
+  /* Main canvas — warm cream */
+  --main-bg: #F3F0E8;
+  --surface: #FAF8F3;
+  --border: #E0D9CC;
+  --text: #2C2318;
+  --muted: #7A6E64;
+  --hover: #EDE7DD;
 
-  /* Accents */
-  --blue: #4d7cfe;
-  --blue-lt: #eef2ff;
-  --teal: #00c9a7;
-  --coral: #ff6b6b;
-  --warn: #ff7675;
-  --warn-lt: #fff0f0;
-  --ok: #55efc4;
-  --ok-lt: #e8fdf5;
+  /* Primary accent — deep sage (replaces blue) */
+  --blue: #5B8C85;
+  --blue-lt: #E9F0EF;
+  --teal: #5B8C85;
 
-  /* Semantic Levels */
-  --lvl-1: #00b894;
-  --lvl-2: #55efc4;
-  --lvl-3: #f9ca24;
-  --lvl-4: #f0932b;
-  --lvl-5: #eb4d4b;
+  /* Alert / danger — terracotta (replaces coral) */
+  --coral: #E26C3B;
+  --warn: #E26C3B;
+  --warn-lt: #FDF0E9;
+
+  /* Success — muted sage green */
+  --ok: #7DB89A;
+  --ok-lt: #EBF6F1;
+
+  /* Semantic Levels — earthy, mid-contrast */
+  --lvl-1: #4FA882;
+  --lvl-2: #7DB89A;
+  --lvl-3: #D99B3F;
+  --lvl-4: #E26C3B;
+  --lvl-5: #C0392B;
+
+  /* Misc surface accent (fixes previously-undefined token) */
+  --accent: #5B8C85;
 
   --radius: 16px;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -48,6 +57,7 @@
   --rp-w: 180px;
 
   --font: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+  --font-serif: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
   --transition: 180ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -461,6 +471,8 @@ input:focus-visible {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
 }
 
 /* ── View 1: Current ─────────────────────────────────────────────────────── */
