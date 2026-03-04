@@ -234,11 +234,16 @@ Rewrite `ICONS` and `TYPE_ICONS` dictionaries in `app.js` to return `<img>` temp
 
 Change instances of `innerElement.textContent = ...` or `icon.textContent = ...` to `innerElement.innerHTML = ...` when injecting these HTML strings. Do the same for `dashboard.html` nav icons manually (replacing `🚲` with the image tag).
 
+In `routes.py`, update the wardrobe functions to inject raw HTML strings directly into the returned text arrays:
+```python
+        parts.append(f'舒適/短袖 <img src="/static/brand-icons/tshirt.png" class="brand-icon" alt="T-Shirt" />' if is_zh else f'Comfortable / T-shirt <img src="/static/brand-icons/tshirt.png" class="brand-icon" alt="T-Shirt" />')
+```
+
 **Step 2: Verify in browser**
 Run the server to verify the native emojis are gone and not throwing broken image box indicators.
 
 **Step 3: Commit**
 ```bash
-git add web/static/app.js web/templates/dashboard.html
+git add web/static/app.js web/templates/dashboard.html web/routes.py
 git commit -m "feat: replace unicode emojis with generated brand illustrations"
 ```
