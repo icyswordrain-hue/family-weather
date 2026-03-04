@@ -14,6 +14,9 @@
 
 'use strict';
 
+// ── Log Error Counter (top-level so onerror can access it) ─────────────────
+let _logErrorCount = 0;
+
 // ── Global Error Handler (Top Level) ───────────────────────────────────────
 function remoteLog(type, msg) {
   fetch('/debug/log', {
@@ -33,6 +36,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     span.textContent = `${(window._T_runtime_error || 'Runtime Error: ')}${msg}`;
     div.appendChild(span);
     logList.appendChild(div);
+    _incrementLogBadge();
   }
   remoteLog('error', `${msg} at ${url}:${lineNo}`);
   console.error("Global Error:", msg, error);
@@ -343,6 +347,7 @@ window.addEventListener('DOMContentLoaded', () => {
   addLog(T.boot);
 
   initNav();
+  initLogPill();
   initPlayerBar();
   initPlayerSheet();
   initSheetSettings();
@@ -1287,51 +1292,45 @@ function initNav() {
 }
 
 function initMobileNav() {
-  // Mobile: all views visible via CSS (display: block).
-  // No tab switching needed. Scroll is handled by the browser.
+  // Mobile: 2-col stacks to single column via CSS.
+  // No view reordering needed — wx-rail stacks below lifestyle naturally.
+}
 
-  // Lift current conditions (+ its section header) above lifestyle so the
-  // scroll order is: 1. conditions  2. lifestyle cards  3. timelines / forecast
-  const conditions = document.querySelector('.current-conditions-wrapper');
-  const dashHeader = document.querySelector('#view-dashboard .section-header-card');
-  const lifestyle = document.getElementById('view-lifestyle');
-  if (conditions && lifestyle) {
-    if (dashHeader) lifestyle.parentNode.insertBefore(dashHeader, lifestyle);
-    lifestyle.parentNode.insertBefore(conditions, lifestyle);
+// ── Sidebar (static — both views always visible in 2-col layout) ───────────
+function initSidebarNav() {
+  // Nav items are now decorative only; no view switching needed.
+}
+
+// ── Log Pill + Drawer ──────────────────────────────────────────────────────
+function initLogPill() {
+  const pill = document.getElementById('log-pill');
+  const drawer = document.getElementById('log-drawer');
+  const closeBtn = document.getElementById('log-drawer-close');
+  if (!pill || !drawer) return;
+
+  pill.addEventListener('click', () => {
+    const isOpen = drawer.classList.contains('open');
+    drawer.classList.toggle('open', !isOpen);
+    drawer.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+    pill.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      pill.setAttribute('aria-expanded', 'false');
+    });
   }
 }
 
-// ── Sidebar & Navigation ───────────────────────────────────────────────────
-function initSidebarNav() {
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
-      if (view) switchView(view);
-    });
-  });
-}
-
-function switchView(viewName) {
-  const views = ['lifestyle', 'dashboard'];
-  const oldIdx = views.indexOf(currentView);
-  const newIdx = views.indexOf(viewName);
-  const direction = newIdx > oldIdx ? 'slide-in-right' : 'slide-in-left';
-
-  currentView = viewName;
-
-  // Update Nav
-  document.querySelectorAll('.nav-item').forEach(b => {
-    b.classList.toggle('active', b.dataset.view === viewName);
-  });
-
-  document.querySelectorAll('.view-container').forEach(v => {
-    v.classList.remove('slide-in-right', 'slide-in-left');
-    if (v.id === `view-${viewName}`) {
-      v.classList.add('active', direction);
-    } else {
-      v.classList.remove('active');
-    }
-  });
+function _incrementLogBadge() {
+  _logErrorCount++;
+  const badge = document.getElementById('log-badge');
+  if (badge) {
+    badge.textContent = _logErrorCount;
+    badge.classList.add('visible');
+  }
 }
 
 

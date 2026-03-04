@@ -12,7 +12,7 @@
   <link rel="icon" href="/static/icon-192.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icon-192.svg" />
   <title>家庭天氣儀表板</title>
-  <link rel="stylesheet" href="/static/style.css?v=19" />
+  <link rel="stylesheet" href="/static/style.css?v=20" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -54,14 +54,14 @@
 
       <nav class="sidebar-nav">
         <p class="nav-section-label" data-i18n="nav_section">功能</p>
-        <button class="nav-item active" data-view="lifestyle">
+        <div class="nav-item active">
           <span class="nav-icon"><img src="/static/brand-icons/commute.png" class="brand-icon" alt="Lifestyle" /></span>
           <span data-i18n="nav_lifestyle">生活建議</span>
-        </button>
-        <button class="nav-item" data-view="dashboard">
-          <span class="nav-icon">📊</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon"><img src="/static/brand-icons/general.png" class="brand-icon" alt="Weather" /></span>
           <span data-i18n="nav_dashboard">天氣總覽</span>
-        </button>
+        </div>
       </nav>
 
       <!-- Sidebar Controls -->
@@ -119,31 +119,20 @@
 
       <!-- ── Content (shown after load) ────────────────────────────────── -->
       <div class="main-content hidden" id="main-content">
+        <div class="main-two-col">
 
-        <!-- VIEW 1: Lifestyle (Default) -->
-        <div id="view-lifestyle" class="view-container active">
-          <header class="view-header">
-            <h1 id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</h1>
-          </header>
-          <div class="section-header-card">
-            <span><img src="/static/brand-icons/commute.png" class="brand-icon" alt="Lifestyle" /></span>
-            <span data-i18n="nav_lifestyle">生活建議</span>
+          <!-- LEFT: Lifestyle Column -->
+          <div id="col-lifestyle">
+            <div class="section-header-card">
+              <span><img src="/static/brand-icons/commute.png" class="brand-icon" alt="Lifestyle" /></span>
+              <span data-i18n="nav_lifestyle">生活建議</span>
+            </div>
+            <div class="lifestyle-grid" id="lifestyle-grid"></div>
           </div>
-          <div class="lifestyle-grid" id="lifestyle-grid"></div>
-        </div>
 
-        <!-- VIEW 2: Dashboard (Overview) -->
-        <div id="view-dashboard" class="view-container">
-          <header class="view-header">
-            <h1 id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</h1>
-          </header>
-          <div class="section-header-card">
-            <span>📊</span>
-            <span data-i18n="nav_dashboard">天氣總覽</span>
-          </div>
-          <div class="current-conditions-wrapper">
-            <div class="current-top-row">
-              <div class="gauge-card" id="gauge-ground"></div>
+          <!-- RIGHT: Weather Rail -->
+          <div id="wx-rail">
+            <div class="wx-rail-hero">
               <div class="current-hero">
                 <div class="hero-main">
                   <span id="cur-icon"></span>
@@ -151,31 +140,34 @@
                 </div>
                 <div id="cur-weather-text">--</div>
               </div>
-              <div class="gauge-card" id="gauge-wind"></div>
+              <div class="wx-rail-gauges-top">
+                <div class="gauge-card" id="gauge-ground"></div>
+                <div class="gauge-card" id="gauge-wind"></div>
+              </div>
             </div>
 
-            <div class="gauges-grid">
+            <div class="gauges-grid" id="wx-gauges-grid">
               <div class="gauge-card" id="gauge-hum"></div>
               <div class="gauge-card" id="gauge-aqi"></div>
               <div class="gauge-card" id="gauge-uv"></div>
               <div class="gauge-card" id="gauge-pres"></div>
             </div>
-          </div>
 
-          <hr class="view-divider">
+            <hr class="view-divider">
 
-          <div class="dashboard-overview-section">
-            <h2 class="section-title" id="section-heading-24h">24 小時預報</h2>
-            <div class="timeline-grid" id="ov-timeline"></div>
-          </div>
-
-          <div class="dashboard-overview-section">
-            <h2 class="section-title" id="section-heading-7day">七日預報</h2>
-            <div class="wk-header-row" id="ov-weekly-header"></div>
-            <div class="timeline-scroll" id="ov-weekly-timeline"></div>
-            <div class="weekly-sparkline-wrap">
-              <canvas id="ov-weekly-sparkline"></canvas>
+            <div class="dashboard-overview-section">
+              <h2 class="section-title" id="section-heading-24h" data-i18n="h2_24h">24 小時預報</h2>
+              <div class="timeline-grid" id="ov-timeline"></div>
             </div>
+
+            <details class="wx-rail-weekly">
+              <summary class="wx-rail-weekly-toggle" data-i18n="h2_7day">七日預報</summary>
+              <div class="wk-header-row" id="ov-weekly-header"></div>
+              <div class="timeline-scroll" id="ov-weekly-timeline"></div>
+              <div class="weekly-sparkline-wrap">
+                <canvas id="ov-weekly-sparkline"></canvas>
+              </div>
+            </details>
           </div>
 
         </div>
@@ -259,26 +251,32 @@
       </div>
       <div class="player-sheet-backdrop" id="player-sheet-backdrop"></div>
 
+      <!-- ── Log Pill (floating, above player bar) ──────────────────────── -->
+      <button class="log-pill" id="log-pill" aria-label="System Log">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+          <circle cx="6" cy="6" r="4.5" opacity="0.7"/>
+        </svg>
+        <span>LOG</span>
+        <span class="log-badge" id="log-badge" aria-label="Error count"></span>
+      </button>
 
-    </main>
-
-    <!-- ── Right Panel ────────────────────────────────────────────────────── -->
-    <aside class="right-panel">
-
-      <!-- System Log -->
-      <div class="rp-log-container">
-        <div class="rp-log-header">
+      <!-- ── Log Drawer (slides up from bottom-right) ───────────────────── -->
+      <div class="log-drawer" id="log-drawer" aria-hidden="true">
+        <div class="log-drawer-header">
           <span data-i18n="log_title">系統記錄</span>
-          <span class="log-clear-btn" onclick="document.getElementById('rp-log-list').innerHTML=''"
-            title="Clear Log">🗑️</span>
+          <div class="log-drawer-actions">
+            <span class="log-clear-btn" onclick="document.getElementById('rp-log-list').innerHTML=''; document.getElementById('log-badge').textContent=''; document.getElementById('log-badge').classList.remove('visible');" title="Clear Log">🗑️</span>
+            <button class="log-drawer-close" id="log-drawer-close" aria-label="Close log">✕</button>
+          </div>
         </div>
         <div class="rp-log-list" id="rp-log-list"></div>
       </div>
-    </aside>
+
+    </main>
 
   </div><!-- /app-shell -->
 
-  <script src="/static/app.js?v=18"></script>
+  <script src="/static/app.js?v=19"></script>
   <script>
     // Register Service Worker
     if ('serviceWorker' in navigator) {
