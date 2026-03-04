@@ -352,3 +352,36 @@ parent already has `width: 5rem / 3.5rem` which clamps the PNG via `max-width: 1
 | 7-day (`.wk-icon`) | 36px | 32px | 28px |
 
 **Commit:** `fix: add explicit brand-icon sizing hierarchy for forecast sections`
+
+---
+
+### Task 10: Generate missing Dashboard nav icon
+
+**Problem:** The Dashboard nav button (`data-view="dashboard"`) in `dashboard.html` was never
+updated during Task 6. It still displayed the raw `📊` emoji while the Lifestyle nav button had
+already been converted to use `commute.png`.
+
+**Root cause:** `dashboard.png` did not exist in `web/static/brand-icons/` — it was omitted from
+the original Task 2 generation batch.
+
+**Fix:**
+
+1. **Generated `web/static/brand-icons/dashboard.png`** via Nano Banana Pro using
+   `vase-icon.png` as the fine-line sketch style reference.
+   - Subject: vintage hand-drawn barometer dial with needle
+   - Primary color: Mustard Yellow `#D99B3F` (General / overview category)
+   - Resolution: 1K (auto-detected from vase reference)
+
+2. **Updated `web/templates/dashboard.html`** line 62 — replaced emoji span with brand icon:
+   ```html
+   <!-- before -->
+   <span class="nav-icon">📊</span>
+
+   <!-- after -->
+   <span class="nav-icon"><img src="/static/brand-icons/dashboard.png" class="brand-icon" alt="Dashboard" /></span>
+   ```
+
+No CSS changes required — `.nav-icon .brand-icon` sizing (24px via `max-width: 100%`) already
+applied from Task 7.
+
+**Commit:** `35bd02c` — `assets: generate dashboard brand icon and wire to nav button`
