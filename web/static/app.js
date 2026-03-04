@@ -977,17 +977,10 @@ function renderLifestyleView(data) {
 function initSystemTheme() {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const apply = () => {
-    let override = localStorage.getItem('theme');
-    if (!override) {
-      override = mq.matches ? 'dark' : 'light';
-      localStorage.setItem('theme', override);
-    }
+    let override = 'light'; // Forced for Phase 1
+    localStorage.setItem('theme', override);
     const isDark = override === 'dark';
     document.documentElement.classList.toggle('dark', isDark);
-    document.querySelector(`input[name="theme"][value="${override}"]`)?.['checked'] === false &&
-      (document.querySelector(`input[name="theme"][value="${override}"]`).checked = true);
-    const sheetR = document.querySelector(`input[name="theme-sheet"][value="${override}"]`);
-    if (sheetR) sheetR.checked = true;
   };
   apply();
   window.setTheme = (val) => {
@@ -1238,10 +1231,6 @@ function initSidebarControls() {
     });
   });
 
-  // Theme toggles
-  document.querySelectorAll('input[name="theme"]').forEach(input => {
-    input.addEventListener('change', () => window.setTheme && window.setTheme(input.value));
-  });
 }
 
 // ── Sheet Settings Controls ─────────────────────────────────────────────────
@@ -1254,13 +1243,6 @@ function initSheetSettings() {
     });
   });
 
-  // Sheet theme radios → mirror sidebar radios
-  document.querySelectorAll('input[name="theme-sheet"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const sidebar = document.querySelector(`input[name="theme"][value="${radio.value}"]`);
-      if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
-    });
-  });
 
   // Sheet refresh → delegate to sidebar refresh button
   const sheetRefresh = document.getElementById('sheet-refresh-btn');
@@ -1272,7 +1254,7 @@ function initSheetSettings() {
   }
 
   // Sync sheet radios to current sidebar state on init
-  ['language', 'theme'].forEach(name => {
+  ['language'].forEach(name => {
     const checked = document.querySelector(`input[name="${name}"]:checked`);
     if (checked) {
       const sheetRadio = document.querySelector(`input[name="${name}-sheet"][value="${checked.value}"]`);
