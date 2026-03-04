@@ -341,12 +341,12 @@ def _wardrobe_tip(at: float | None, lang: str = "en") -> str:
         return "請查看預報。" if is_zh else "Check forecast."
         
     if at < 15:
-        parts.append("建議穿著厚外套及保暖衣物 🧥" if is_zh else "Heavy coat & layers 🧥")
+        parts.append("建議穿著厚外套及保暖衣物" if is_zh else "Heavy coat & layers")
     elif at < 20:
-        parts.append("建議穿著輕薄外套或毛衣 🧥" if is_zh else "Light jacket or sweater 🧥")
+        parts.append("建議穿著輕薄外套或毛衣" if is_zh else "Light jacket or sweater")
     elif at < 26:
-        parts.append("舒適/短袖 👕" if is_zh else "Comfortable / T-shirt 👕")
+        parts.append("舒適/短袖" if is_zh else "Comfortable / T-shirt")
     else:
-        parts.append("輕薄衣物及防曬 🌞" if is_zh else "Light clothing & sunscreen 🌞")
+        parts.append("輕薄衣物及防曬" if is_zh else "Light clothing & sunscreen")
         
     return " · ".join(parts) if is_zh else " + ".join(parts)

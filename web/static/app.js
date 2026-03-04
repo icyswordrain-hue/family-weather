@@ -124,12 +124,20 @@ function localisePrecipText(text) {
   return text;
 }
 
+const IMG = (name, alt) =>
+  `<img src="/static/brand-icons/${name}.png" class="brand-icon" alt="${alt}" />`;
+
 const ICONS = {
-  'sunny': '☀️', 'Sunny/Clear': '☀️', '1': '☀️',
-  'partly-cloudy': '⛅', 'Mixed Clouds': '⛅', '2': '⛅', '3': '⛅',
-  'cloudy': '☁️', 'Overcast': '☁️', '4': '☁️', '5': '☁️', '6': '☁️', '7': '☁️',
-  'rainy': '🌧️', '8': '🌧️', '9': '🌧️', '10': '🌧️', '11': '🌧️', '12': '🌧️', '13': '🌧️',
-  '14': '🌧️', '15': '🌧️', '16': '🌧️', '17': '🌧️', '18': '🌧️', '19': '🌧️', '20': '🌧️'
+  'sunny': IMG('sunny','Sunny'), 'Sunny/Clear': IMG('sunny','Sunny'), '1': IMG('sunny','Sunny'),
+  'partly-cloudy': IMG('partly-cloudy','Partly Cloudy'), 'Mixed Clouds': IMG('partly-cloudy','Partly Cloudy'),
+  '2': IMG('partly-cloudy','Partly Cloudy'), '3': IMG('partly-cloudy','Partly Cloudy'),
+  'cloudy': IMG('cloudy','Cloudy'), 'Overcast': IMG('cloudy','Cloudy'),
+  '4': IMG('cloudy','Cloudy'), '5': IMG('cloudy','Cloudy'), '6': IMG('cloudy','Cloudy'), '7': IMG('cloudy','Cloudy'),
+  'rainy': IMG('rainy','Rainy'),
+  '8':  IMG('rainy','Rainy'), '9':  IMG('rainy','Rainy'), '10': IMG('rainy','Rainy'),
+  '11': IMG('rainy','Rainy'), '12': IMG('rainy','Rainy'), '13': IMG('rainy','Rainy'),
+  '14': IMG('rainy','Rainy'), '15': IMG('rainy','Rainy'), '16': IMG('rainy','Rainy'),
+  '17': IMG('rainy','Rainy'), '18': IMG('rainy','Rainy'), '19': IMG('rainy','Rainy'), '20': IMG('rainy','Rainy'),
 };
 
 // ── Translations ───────────────────────────────────────────────────────────
@@ -420,7 +428,7 @@ function renderCurrentView(data) {
   if (!data) return;
   setText('cur-temp', Math.round(data.temp) + '°');
   setText('cur-weather-text', localiseWeatherText(data.weather_text || '—'));
-  setText('cur-icon', ICONS[data.weather_code] || ICONS[data.weather_text] || '🌤️');
+  document.getElementById('cur-icon').innerHTML = ICONS[data.weather_code] || ICONS[data.weather_text] || IMG('partly-cloudy', 'Weather');
   setText('rp-location', localiseLocation(data.location || '—'));
   const mobileLoc = document.getElementById('mobile-location');
   if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '—');
@@ -478,7 +486,7 @@ function renderOverviewView(data) {
       header.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
       const icon = document.createElement('div');
       icon.className = 'tc-icon';
-      icon.textContent = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || '☁️';
+      icon.innerHTML = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || IMG('cloudy', 'Cloudy');
       const temp = document.createElement('div');
       temp.className = 'tc-temp';
       temp.textContent = `${Math.round(seg.AT ?? seg.T ?? 0)}°`;
@@ -644,7 +652,7 @@ function renderOverviewView(data) {
 
       const icon = document.createElement('div');
       icon.className = 'wk-icon';
-      icon.textContent = ICONS[item.cloud_cover] || ICONS[item.Wx] || '☁️';
+      icon.innerHTML = ICONS[item.cloud_cover] || ICONS[item.Wx] || IMG('cloudy', 'Cloudy');
 
       const cond = document.createElement('div');
       cond.className = 'wk-cond';
@@ -848,7 +856,7 @@ function renderLifestyleView(data) {
     card.className = 'ls-card';
     const ic = document.createElement('div');
     ic.className = 'ls-icon';
-    ic.textContent = icon;
+    ic.innerHTML = icon;
     const content = document.createElement('div');
     content.className = 'ls-content';
     const t = document.createElement('div');
@@ -889,20 +897,25 @@ function renderLifestyleView(data) {
     card.className = alertClass;
     const ic = document.createElement('div');
     ic.className = 'ls-icon';
-    ic.textContent = hasCritical ? '🚨' : (hasWarning ? '⚠️' : '✅');
+    ic.innerHTML = hasCritical ? IMG('alert','Alert') : (hasWarning ? IMG('heads-up','Warning') : IMG('all-clear','Clear'));
     const content = document.createElement('div');
     content.className = 'ls-content';
     const ttl = document.createElement('div');
     ttl.className = 'ls-title';
     ttl.textContent = T.heads_up_title;
     content.appendChild(ttl);
-    const TYPE_ICONS = { Health: '❤️', Commute: '🚗', Air: '🌫️', General: '📌' };
+    const TYPE_ICONS = {
+      Health:  IMG('health',      'Health'),
+      Commute: IMG('commute',     'Commute'),
+      Air:     IMG('air-quality', 'Air Quality'),
+      General: IMG('general',     'General'),
+    };
     data.alert.forEach(item => {
       const row = document.createElement('div');
       row.className = 'ls-alert-item';
       const ico = document.createElement('span');
       ico.className = 'ls-alert-type-icon';
-      ico.textContent = TYPE_ICONS[item.type] || '📌';
+      ico.innerHTML = TYPE_ICONS[item.type] || IMG('general','General');
       const msg = document.createElement('span');
       msg.className = 'ls-alert-msg';
       msg.textContent = item.msg;
@@ -923,7 +936,7 @@ function renderLifestyleView(data) {
     const extras = [];
     if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
     if (data.wardrobe.rain_gear_text) extras.push(mkSub(`☂️ ${data.wardrobe.rain_gear_text}`));
-    add('🧥', T.wardrobe, data.wardrobe.text, extras);
+    add(IMG('wardrobe','Wardrobe'), T.wardrobe, data.wardrobe.text, extras);
   }
   // 4. Commute
   if (data.commute) {
@@ -938,28 +951,28 @@ function renderLifestyleView(data) {
       });
       extras.push(ul);
     }
-    add('🚗', T.commute, data.commute.text, extras);
+    add(IMG('commute','Commute'), T.commute, data.commute.text, extras);
   }
   // 5. Garden Health
-  if (data.garden && data.garden.text) add('🌱', T.garden, data.garden.text);
+  if (data.garden && data.garden.text) add(IMG('garden','Garden'), T.garden, data.garden.text);
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
     const extras = [];
     if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
     if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
-    add('🌳', T.outdoor_act, data.outdoor.text, extras);
+    add(IMG('outdoor','Outdoor'), T.outdoor_act, data.outdoor.text, extras);
   }
   // 7. Meals
   if (data.meals && data.meals.text) {
     const extras = [];
     if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
-    add('🍱', T.meals, data.meals.text, extras);
+    add(IMG('meals','Meals'), T.meals, data.meals.text, extras);
   }
   // 8. HVAC Advice
   if (data.hvac) {
     const extras = [];
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
-    add('🌡️', T.hvac, data.hvac.text, extras);
+    add(IMG('hvac','HVAC'), T.hvac, data.hvac.text, extras);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {
@@ -969,7 +982,7 @@ function renderLifestyleView(data) {
       const statusText = data.air_quality.status || String(data.air_quality.aqi);
       extras.push(mkBadge(`lvl-${lvl}`, statusText));
     }
-    add('💨', T.air_quality, data.air_quality.text, extras);
+    add(IMG('air-quality','Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
 }
 
