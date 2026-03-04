@@ -914,6 +914,13 @@ html.dark .audio-toggle-btn.active {
   justify-content: center;
   flex-shrink: 0;
 }
+/* Brand Icon Integration */
+.brand-icon {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
 
 .ls-title {
   font-size: 1.05rem;
