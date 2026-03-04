@@ -930,6 +930,16 @@ html.dark .audio-toggle-btn.active {
   margin: 0;
 }
 
+/* Forecast icon sizing hierarchy: current > 24h > 7-day */
+.tc-icon .brand-icon {
+  width: 60px;
+  height: 60px;
+}
+.wk-icon .brand-icon {
+  width: 36px;
+  height: 36px;
+}
+
 .ls-title {
   font-size: 1.05rem;
   font-weight: 400;
@@ -1730,6 +1740,11 @@ html.dark .source-claude {
   .tc-icon {
     font-size: 1.4rem;
     margin: 0.2rem 0;
+  }
+
+  .tc-icon .brand-icon {
+    width: 44px;
+    height: 44px;
   }
 
   .tc-temp {
@@ -2814,6 +2829,11 @@ html.dark .wk-card.wk-night .wk-temp {
   .wk-day-name {
     display: inline;
   }
+
+  .wk-icon .brand-icon {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -2846,6 +2866,11 @@ html.dark .wk-card.wk-night .wk-temp {
 
   .wk-icon {
     font-size: 1.2rem;
+  }
+
+  .wk-icon .brand-icon {
+    width: 28px;
+    height: 28px;
   }
 
   .wk-temp {

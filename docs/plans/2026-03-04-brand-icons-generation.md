@@ -310,3 +310,45 @@ centres it in block containers.
 ```
 
 **Commit:** `11e86cc` — `fix: constrain brand icon sizes for dashboard hero and alert type icons`
+
+---
+
+### Task 9: Forecast icon sizing hierarchy — current > 24h > 7-day
+
+**Problem:** `.tc-icon` and `.wk-icon` containers had no explicit width on their `.brand-icon`
+children. Icons sized implicitly via `max-width: 100%` against card width — correct by accident
+but fragile. On mobile, 24h cards (~80px wide) made forecast icons appear disproportionately large
+relative to the 7-day grid.
+
+**Design:** Explicit `width` + `height` on `.brand-icon` within each forecast context, plus
+responsive overrides at 900px and 767px breakpoints. The `#cur-icon` hero is left untouched — its
+parent already has `width: 5rem / 3.5rem` which clamps the PNG via `max-width: 100%`.
+
+**Fix — `web/static/style.css`:**
+
+```css
+/* Base (desktop) — after .ls-alert-type-icon .brand-icon block */
+.tc-icon .brand-icon { width: 60px; height: 60px; }
+.wk-icon .brand-icon { width: 36px; height: 36px; }
+
+/* 900px tablet — inside @media (max-width: 900px) */
+/* 7-day switches to 4-col; cards wider, icon can afford 32px */
+.wk-icon .brand-icon { width: 32px; height: 32px; }
+
+/* 767px mobile — inside @media (max-width: 767px) timeline section */
+.tc-icon .brand-icon { width: 44px; height: 44px; }
+
+/* 767px mobile — inside @media (max-width: 767px) weekly section */
+/* 7-col ultra-compact; strip to 28px */
+.wk-icon .brand-icon { width: 28px; height: 28px; }
+```
+
+**Size table across breakpoints:**
+
+| Section | Desktop | Tablet (900px) | Mobile (767px) |
+|---------|---------|----------------|----------------|
+| Current (`#cur-icon`) | ~80px (via parent `width: 5rem`) | ~80px | ~56px (via parent `width: 3.5rem`) |
+| 24-hour (`.tc-icon`) | 60px | 60px | 44px |
+| 7-day (`.wk-icon`) | 36px | 32px | 28px |
+
+**Commit:** `fix: add explicit brand-icon sizing hierarchy for forecast sections`
