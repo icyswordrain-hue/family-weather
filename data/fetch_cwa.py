@@ -72,127 +72,138 @@ def _prune_station_history(path, keep_days: int) -> None:
         f.write("\n".join(kept) + ("\n" if kept else ""))
 
 
-def fetch_current_conditions() -> dict:
+def _fetch_station_obs(dataset: str, station_id: str) -> dict | None:
     """
-    Fetch latest manual station observations for Banqiao (466881).
-
-    Returns a dict with keys:
-        station_id, station_name, obs_time,
-        AT (apparent temp °C), RH (%), WDSD (m/s), WDIR (°),
-        RAIN (mm past 2h), Wx (weather code int)
-    Raises RuntimeError on API failure.
+    Fetch raw observations for one station/dataset combination.
+    Returns a parsed dict or None on failure.
+    Internal helper shared by fetch_current_conditions and fetch_work_conditions.
     """
-    url = f"{CWA_BASE_URL}/{CWA_CURRENT_DATASET}"
+    url = f"{CWA_BASE_URL}/{dataset}"
     params = {
         "Authorization": CWA_API_KEY,
-        "StationId": CWA_STATION_ID,
+        "StationId": station_id,
         "WeatherElement": "AirTemperature,RelativeHumidity,WindSpeed,WindDirection,Now,Weather,Visibility,AirPressure,UVIndex",
         "format": "JSON",
     }
-
     try:
         try:
             resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
             resp.raise_for_status()
         except requests.exceptions.SSLError:
-            # AI AGENT NOTE: CWA API SSL Certificate Issues
-            # The API often has SSL certificate issues (specifically Missing Subject Key Identifier).
-            # Workaround: Always handle SSLError by falling back to verify=False.
-            logger.warning("CWA SSL verification failed, retrying with verify=False")
+            logger.warning("CWA SSL verification failed for %s, retrying with verify=False", station_id)
             resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
             resp.raise_for_status()
-        
-        # Robust decoding
+
         raw_text = resp.content.decode("utf-8", errors="ignore")
         body = json.loads(raw_text)
+        stations = body.get("records", {}).get("Station", [])
+        if not stations:
+            return None
 
-        records = body.get("records", {}).get("Station", [])
-        if not records:
-            raise ValueError(f"No station data returned for StationId={CWA_STATION_ID}")
-        
-        station = records[0]
-        # O-A0001-001 (Auto) vs O-A0003-001 (Manual)
-        # Auto: WeatherElement is a dict? No, actually CWA structure varies.
-        # Manual: WeatherElement is a dict.
-        obs = station.get("WeatherElement", {})
-        
-        # Helper to get value
-        def _get_val(key, default=None):
-            if isinstance(obs, dict):
-                 return obs.get(key, default)
-            # If obs is list (some datasets?), would need iteration
-            return default
+        s = stations[0]
+        obs = s.get("WeatherElement", {})
 
-        # Parse numeric values
-        at = _safe_float(_get_val("AirTemperature"))
-        rh = _safe_float(_get_val("RelativeHumidity"))
-        ws = _safe_float(_get_val("WindSpeed"))
-        wd = _safe_float(_get_val("WindDirection"))
-        pres = _safe_float(_get_val("AirPressure"))
-        uvi = _safe_float(_get_val("UVIndex"))
-        
-        # Visibility: Check 'Visibility' first, then 'VisibilityDescription'
-        vis_raw = _get_val("Visibility")
+        def _val(key, default=None):
+            return obs.get(key, default) if isinstance(obs, dict) else default
+
+        at   = _safe_float(_val("AirTemperature"))
+        rh   = _safe_float(_val("RelativeHumidity"))
+        ws   = _safe_float(_val("WindSpeed"))
+        wd   = _safe_float(_val("WindDirection"))
+        pres = _safe_float(_val("AirPressure"))
+        uvi  = _safe_float(_val("UVIndex"))
+
+        vis_raw = _val("Visibility")
         vis = _safe_float(vis_raw)
-        
         if vis is None:
-            vis_desc = _get_val("VisibilityDescription")
+            vis_desc = _val("VisibilityDescription")
             if vis_desc:
-                # Handle formats like "11-15", ">30", "15", etc.
-                cleaned_desc = str(vis_desc).strip().replace(">", "").replace("<", "")
-                if "-" in cleaned_desc:
+                cleaned = str(vis_desc).strip().replace(">", "").replace("<", "")
+                if "-" in cleaned:
                     try:
-                        low, high = map(float, cleaned_desc.split("-"))
+                        low, high = map(float, cleaned.split("-"))
                         vis = (low + high) / 2
-                    except:
+                    except Exception:
                         pass
                 else:
-                    vis = _safe_float(cleaned_desc)
-                
+                    vis = _safe_float(cleaned)
                 if vis is None:
-                    logger.warning(f"Visibility parsing failed for description: {vis_desc}")
-        
-        # Rain is nested in Now -> Precipitation for Manual?
-        # Manual: 'Now': {'Precipitation': '1.0'}
-        now = _get_val("Now", {})
+                    logger.warning("Visibility parsing failed for description: %s", vis_desc)
+
+        now  = _val("Now", {})
         rain = _safe_float(now.get("Precipitation"))
 
-        # Weather code might be missing or -99
-        wx_raw = _get_val("Weather")
-        wx = _safe_int(wx_raw)
+        wx_raw  = _val("Weather")
+        wx      = _safe_int(wx_raw)
         if wx is not None and wx < 0:
             wx = None
-
-        # Return text description if available (for manual stations)
         wx_text = str(wx_raw) if wx_raw and not isinstance(wx_raw, (int, float)) else None
 
-        record = {
-            "fetched_at": datetime.now(timezone(timedelta(hours=8))).isoformat(),
-            "station_id": station.get("StationId"),
-            "station_name": station.get("StationName"),
-            "obs_time": station.get("ObsTime", {}).get("DateTime"),
-            "AT": at,
-            "RH": rh,
-            "WDSD": ws,
-            "WDIR": wd,
-            "RAIN": rain,
-            "Wx": wx,
-            "WxText": wx_text,
-            "visibility": vis,
-            "PRES": pres,
-            "UVI": uvi,
+        return {
+            "station_id":   s.get("StationId"),
+            "station_name": s.get("StationName"),
+            "obs_time":     s.get("ObsTime", {}).get("DateTime"),
+            "AT":           at,
+            "RH":           rh,
+            "WDSD":         ws,
+            "WDIR":         wd,
+            "RAIN":         rain,
+            "Wx":           wx,
+            "WxText":       wx_text,
+            "visibility":   vis,
+            "PRES":         pres,
+            "UVI":          uvi,
         }
+    except Exception as exc:
+        logger.warning("_fetch_station_obs failed for %s/%s: %s", dataset, station_id, exc)
+        return None
+
+
+def fetch_current_conditions() -> dict:
+    """
+    Fetch latest observations for the home station (72AI40, Shulin Manual).
+
+    Applies a two-station merge (same pattern as fetch_work_conditions):
+      Primary  — 72AI40  (O-A0003-001): real local temp/RH/wind.
+      Fallback — 466881  (O-A0003-001): fills AirPressure, UVIndex, Visibility
+                          which 72AI40 does not instrument (-99 → None).
+    Fields present in the primary always win.
+
+    Returns a dict with keys:
+        station_id, station_name, obs_time,
+        AT (°C), RH (%), WDSD (m/s), WDIR (°),
+        RAIN (mm), Wx (int), WxText, visibility, PRES, UVI
+    Raises RuntimeError on total failure.
+    """
+    try:
+        primary  = _fetch_station_obs(CWA_CURRENT_DATASET, CWA_STATION_ID)
+        fallback = _fetch_station_obs(CWA_SYNOPTIC_DATASET, CWA_SYNOPTIC_STATION_ID)
+
+        if primary is None and fallback is None:
+            raise ValueError("Both home station fetches returned no data")
+
+        merged = primary or {}
+        if fallback:
+            for key, val in fallback.items():
+                if merged.get(key) is None:
+                    merged[key] = val
+
+        # Always keep the home station identity for display
+        if primary and primary.get("station_name"):
+            merged["station_name"] = primary["station_name"]
+
+        merged["fetched_at"] = datetime.now(timezone(timedelta(hours=8))).isoformat()
 
         # Non-fatal append to JSONL cache
         try:
             STATION_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
             with STATION_HISTORY_PATH.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(record) + "\n")
+                f.write(json.dumps(merged) + "\n")
             _prune_station_history(STATION_HISTORY_PATH, STATION_HISTORY_DAYS)
         except Exception as e:
             logger.warning("station_history write failed (non-fatal): %s", e)
 
-        return record
+        return merged
 
     except Exception as exc:
         logger.error("CWA current-conditions fetch failed: %s", exc)
@@ -211,94 +222,32 @@ def fetch_work_conditions() -> dict:
     Fields from the primary station always win; fallback values only fill
     keys that are None after the primary fetch.
     """
-    def _fetch_one(dataset, station_id):
-        url = f"{CWA_BASE_URL}/{dataset}"
-        params = {
-            "Authorization": CWA_API_KEY,
-            "StationId": station_id,
-            "WeatherElement": "AirTemperature,RelativeHumidity,WindSpeed,WindDirection,Now,Weather,Visibility,AirPressure,UVIndex",
-            "format": "JSON",
-        }
-        try:
-            resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
-            resp.raise_for_status()
-        except requests.exceptions.SSLError:
-            logger.warning("CWA work SSL verification failed, retrying with verify=False")
-            resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
-            resp.raise_for_status()
-        raw_text = resp.content.decode("utf-8", errors="ignore")
-        body = json.loads(raw_text)
-        stations = body.get("records", {}).get("Station", [])
-        if not stations:
-            return None
-        s = stations[0]
-        obs = s.get("WeatherElement", {})
-
-        def _val(key):
-            return obs.get(key) if isinstance(obs, dict) else None
-
-        vis_raw = _val("Visibility")
-        vis = _safe_float(vis_raw)
-        if vis is None:
-            vis_desc = _val("VisibilityDescription")
-            if vis_desc:
-                cleaned = str(vis_desc).strip().replace(">", "").replace("<", "")
-                if "-" in cleaned:
-                    try:
-                        low, high = map(float, cleaned.split("-"))
-                        vis = (low + high) / 2
-                    except Exception:
-                        pass
-                else:
-                    vis = _safe_float(cleaned)
-
-        now = _val("Now") or {}
-        wx_raw = _val("Weather")
-        wx = _safe_int(wx_raw)
-        if wx is not None and wx < 0:
-            wx = None
-        wx_text = str(wx_raw) if wx_raw and not isinstance(wx_raw, (int, float)) else None
-
-        return {
-            "station_id":   s.get("StationId"),
-            "station_name": s.get("StationName"),
-            "obs_time":     s.get("ObsTime", {}).get("DateTime"),
-            "AT":   _safe_float(_val("AirTemperature")),
-            "RH":   _safe_float(_val("RelativeHumidity")),
-            "WDSD": _safe_float(_val("WindSpeed")),
-            "WDIR": _safe_float(_val("WindDirection")),
-            "RAIN": _safe_float(now.get("Precipitation")),
-            "Wx":   wx,
-            "WxText": wx_text,
-            "visibility": vis,
-            "PRES": _safe_float(_val("AirPressure")),
-            "UVI":  _safe_float(_val("UVIndex")),
-        }
-
     try:
-        primary  = _fetch_one(CWA_WORK_DATASET,     CWA_WORK_STATION_ID)
-        fallback = _fetch_one(CWA_SYNOPTIC_DATASET, CWA_SYNOPTIC_STATION_ID)
+        primary  = _fetch_station_obs(CWA_WORK_DATASET,     CWA_WORK_STATION_ID)
+        fallback = _fetch_station_obs(CWA_SYNOPTIC_DATASET, CWA_SYNOPTIC_STATION_ID)
 
         if primary is None and fallback is None:
             raise ValueError("Both work station fetches returned no data")
 
-        # Merge: primary wins; fallback fills None fields only
         merged = primary or {}
         if fallback:
             for key, val in fallback.items():
                 if merged.get(key) is None:
                     merged[key] = val
 
-        # Use work station name for location display, note fallback source
-        merged["fetched_at"] = datetime.now(timezone(timedelta(hours=8))).isoformat()
         if primary and primary.get("station_name"):
             merged["station_name"] = primary["station_name"]
 
+        merged["fetched_at"] = datetime.now(timezone(timedelta(hours=8))).isoformat()
         return merged
 
     except Exception as exc:
         logger.error("CWA work-conditions fetch failed: %s", exc)
         raise RuntimeError(f"Failed to fetch CWA work conditions: {exc}") from exc
+
+
+
+
 
 
 def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
