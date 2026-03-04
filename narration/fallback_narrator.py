@@ -10,6 +10,8 @@ import json
 from datetime import datetime
 import logging
 
+from history.conversation import load_history as _load_history
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,12 +32,19 @@ def build_narration(
         processed: Output of data.processor.process()
         date_str:  ISO date (YYYY-MM-DD), defaults to today.
         history:   Conversation history list (for garden continuity).
+                   If None, loaded automatically from history.conversation.
         lang:      "en" or "zh-TW".
 
     Returns:
         Plain-text string with ---METADATA--- and ---CARDS--- appended.
     """
     date_str = date_str or datetime.now().strftime("%Y-%m-%d")
+    if history is None:
+        try:
+            history = _load_history(days=3)
+        except Exception:
+            logger.warning("fallback_narrator: could not load history, continuing without it")
+            history = []
     lines: list[str] = []
 
     # ── P1: Heads-Up & Current conditions ─────────────────────────────────────
