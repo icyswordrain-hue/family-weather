@@ -40,10 +40,14 @@
   --ok-lt: #EBF6F1;
 
   /* Tint palette — earthy badge & grade-pill backgrounds */
-  --tint-heat:    #FAE8DF;   /* terracotta tint — heating, grade D, source-claude */
-  --tint-cool:    #DFF0EE;   /* sage-cool tint  — HVAC cooling */
-  --tint-caution: #F5EDD8;   /* mustard tint    — warnings, grade C */
-  --tint-danger:  #F5DDD9;   /* red tint        — grade F */
+  --tint-heat: #FAE8DF;
+  /* terracotta tint — heating, grade D, source-claude */
+  --tint-cool: #DFF0EE;
+  /* sage-cool tint  — HVAC cooling */
+  --tint-caution: #F5EDD8;
+  /* mustard tint    — warnings, grade C */
+  --tint-danger: #F5DDD9;
+  /* red tint        — grade F */
 
   /* Semantic Levels — earthy, mid-contrast */
   --lvl-1: #4FA882;
