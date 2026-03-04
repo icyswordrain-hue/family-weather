@@ -113,3 +113,17 @@ Timeline now shows e.g. `Good to go` / `可以出門` instead of `B`.
 
 **Commit:** `056fd3a`
 
+---
+
+### 6. Fallback narrator — self-loads history
+
+`build_narration()` previously required the caller to pass `history=` explicitly. If a call site omitted it the narrator ran without garden continuity.
+
+- Added `from history.conversation import load_history as _load_history` import
+- When `history is None`, `load_history(days=3)` is called automatically; any load failure logs a warning and falls back to `[]`
+- The `history=` param is preserved for test overrides and explicit caller injection
+
+No call-site changes required. 7 existing tests still pass.
+
+**Commit:** `ba384b8`
+
