@@ -39,6 +39,12 @@
   --ok: #7DB89A;
   --ok-lt: #EBF6F1;
 
+  /* Tint palette — earthy badge & grade-pill backgrounds */
+  --tint-heat:    #FAE8DF;   /* terracotta tint — heating, grade D, source-claude */
+  --tint-cool:    #DFF0EE;   /* sage-cool tint  — HVAC cooling */
+  --tint-caution: #F5EDD8;   /* mustard tint    — warnings, grade C */
+  --tint-danger:  #F5DDD9;   /* red tint        — grade F */
+
   /* Semantic Levels — earthy, mid-contrast */
   --lvl-1: #4FA882;
   --lvl-2: #7DB89A;
@@ -906,10 +912,10 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-title {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 400;
   margin-bottom: 0.4rem;
-  font-family: var(--font-serif);
+  font-family: 'Noto Serif TC', serif;
   letter-spacing: 0.02em;
 }
 
@@ -970,22 +976,22 @@ html[lang="zh-TW"] .rp-text {
 }
 
 .ls-badge.hvac-heating {
-  background: #FAE8DF;
+  background: var(--tint-heat);
   color: #c0392b;
 }
 
 .ls-badge.hvac-cooling {
-  background: #DFF0EE;
+  background: var(--tint-cool);
   color: #2980b9;
 }
 
 .ls-badge.hvac-dehumidify {
-  background: #E4F2EB;
+  background: var(--ok-lt);
   color: #27ae60;
 }
 
 .ls-badge.hvac-fan {
-  background: #EDE8DE;
+  background: var(--hover);
   color: #7f8c8d;
 }
 
@@ -1031,7 +1037,7 @@ html.dark .ls-badge.mood-badge {
 
 .ls-alert-card.ls-alert-warning {
   border-left-color: #f39c12;
-  background: linear-gradient(to right, #F5EDD8, var(--surface));
+  background: linear-gradient(to right, var(--tint-caution), var(--surface));
 }
 
 .ls-alert-item {
@@ -1060,7 +1066,7 @@ html.dark .ls-badge.mood-badge {
 }
 
 .ls-badge.ls-alert-badge-warning {
-  background: #F5EDD8;
+  background: var(--tint-caution);
   color: #e67e22;
 }
 
@@ -1075,27 +1081,27 @@ html.dark .ls-badge.ls-alert-badge-warning {
 
 /* Outdoor Index Grade Pills */
 .oi-grade-A {
-  background: #DFF2EA;
+  background: var(--ok-lt);
   color: #00b894;
 }
 
 .oi-grade-B {
-  background: #E4F2EB;
+  background: var(--ok-lt);
   color: #27ae60;
 }
 
 .oi-grade-C {
-  background: #F5EDD8;
+  background: var(--tint-caution);
   color: #f39c12;
 }
 
 .oi-grade-D {
-  background: #FAE8DF;
+  background: var(--tint-heat);
   color: #e67e22;
 }
 
 .oi-grade-F {
-  background: #F5DDD9;
+  background: var(--tint-danger);
   color: #e74c3c;
 }
 
@@ -1142,12 +1148,12 @@ html.dark .ls-badge.ls-alert-badge-warning {
 }
 
 .source-template {
-  background: #EDE8DE;
+  background: var(--hover);
   color: var(--muted);
 }
 
 .source-claude {
-  background: #FAE8DF;
+  background: var(--tint-heat);
   color: #c0392b;
 }
 
