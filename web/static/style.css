@@ -392,6 +392,8 @@ input:focus-visible {
   color: var(--text);
   margin-bottom: 1.5rem;
   font-weight: 700;
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
 }
 
 /* ── Main Panel ──────────────────────────────────────────────────────────── */
@@ -468,7 +470,7 @@ input:focus-visible {
 }
 
 .view-header h1 {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--text);
   font-family: var(--font-serif);
@@ -904,9 +906,11 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-title {
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 700;
   margin-bottom: 0.4rem;
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
 }
 
 .ls-text {
@@ -937,7 +941,7 @@ html.dark .audio-toggle-btn.active {
 
 /* Accessibility for Elderly in Chinese Mode */
 html[lang="zh-TW"] .ls-title {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 
 html[lang="zh-TW"] .ls-text {
@@ -966,22 +970,22 @@ html[lang="zh-TW"] .rp-text {
 }
 
 .ls-badge.hvac-heating {
-  background: #fff0ee;
+  background: #FAE8DF;
   color: #c0392b;
 }
 
 .ls-badge.hvac-cooling {
-  background: #eef6ff;
+  background: #DFF0EE;
   color: #2980b9;
 }
 
 .ls-badge.hvac-dehumidify {
-  background: #f0fff8;
+  background: #E4F2EB;
   color: #27ae60;
 }
 
 .ls-badge.hvac-fan {
-  background: #f5f5f5;
+  background: #EDE8DE;
   color: #7f8c8d;
 }
 
@@ -1027,7 +1031,7 @@ html.dark .ls-badge.mood-badge {
 
 .ls-alert-card.ls-alert-warning {
   border-left-color: #f39c12;
-  background: linear-gradient(to right, #fffbf0, var(--surface));
+  background: linear-gradient(to right, #F5EDD8, var(--surface));
 }
 
 .ls-alert-item {
@@ -1056,7 +1060,7 @@ html.dark .ls-badge.mood-badge {
 }
 
 .ls-badge.ls-alert-badge-warning {
-  background: #fff8e1;
+  background: #F5EDD8;
   color: #e67e22;
 }
 
@@ -1071,27 +1075,27 @@ html.dark .ls-badge.ls-alert-badge-warning {
 
 /* Outdoor Index Grade Pills */
 .oi-grade-A {
-  background: #e8f8f0;
+  background: #DFF2EA;
   color: #00b894;
 }
 
 .oi-grade-B {
-  background: #f0fff4;
+  background: #E4F2EB;
   color: #27ae60;
 }
 
 .oi-grade-C {
-  background: #fefde8;
+  background: #F5EDD8;
   color: #f39c12;
 }
 
 .oi-grade-D {
-  background: #fff4e8;
+  background: #FAE8DF;
   color: #e67e22;
 }
 
 .oi-grade-F {
-  background: #feecec;
+  background: #F5DDD9;
   color: #e74c3c;
 }
 
@@ -1133,19 +1137,18 @@ html.dark .ls-badge.ls-alert-badge-warning {
 }
 
 .source-gemini {
-  background: #eef2ff;
-  color: #4d7cfe;
+  background: var(--blue-lt);
+  color: var(--blue);
 }
 
 .source-template {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #EDE8DE;
+  color: var(--muted);
 }
 
 .source-claude {
-  background: #fff0f0;
+  background: #FAE8DF;
   color: #c0392b;
-  /* Anthropic distinct color (often reddish/orange) */
 }
 
 html.dark .source-gemini {
@@ -2287,7 +2290,8 @@ html.dark .ps-tab:hover:not(.active) {
 
 /* ── Sheet Controls (progress + speed in narration tab) ── */
 .ps-controls {
-  display: none;           /* hidden on desktop — controls live in the always-visible player bar */
+  display: none;
+  /* hidden on desktop — controls live in the always-visible player bar */
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border, #e8ecf3);
@@ -2442,7 +2446,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
 @media (min-width: 768px) {
   .player-sheet-tabs {
-    display: none;   /* tabs are mobile-only; desktop shows narration directly */
+    display: none;
+    /* tabs are mobile-only; desktop shows narration directly */
   }
 }
 
