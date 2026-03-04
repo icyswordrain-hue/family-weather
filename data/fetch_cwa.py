@@ -34,6 +34,10 @@ from config import (
     CWA_BASE_URL,
     CWA_CURRENT_DATASET,
     CWA_STATION_ID,
+    CWA_WORK_STATION_ID,
+    CWA_WORK_DATASET,
+    CWA_SYNOPTIC_STATION_ID,
+    CWA_SYNOPTIC_DATASET,
     CWA_FORECAST_DATASET,
     CWA_FORECAST_7DAY_DATASET,
     CWA_FORECAST_LOCATIONS,
@@ -193,6 +197,108 @@ def fetch_current_conditions() -> dict:
     except Exception as exc:
         logger.error("CWA current-conditions fetch failed: %s", exc)
         raise RuntimeError(f"Failed to fetch CWA current conditions: {exc}") from exc
+
+
+def fetch_work_conditions() -> dict:
+    """
+    Fetch current conditions for the work/commute location.
+
+    Strategy (see docs/reference/API_QUIRKS.md ·7):
+      Primary  — C0AJ80 (Banqiao auto, O-A0001-001): real local temp/RH/wind/pressure.
+      Fallback — 466881 (Xindian manual, O-A0003-001): fills UVIndex, Visibility,
+                  and Weather text which the auto station does not provide.
+
+    Fields from the primary station always win; fallback values only fill
+    keys that are None after the primary fetch.
+    """
+    def _fetch_one(dataset, station_id):
+        url = f"{CWA_BASE_URL}/{dataset}"
+        params = {
+            "Authorization": CWA_API_KEY,
+            "StationId": station_id,
+            "WeatherElement": "AirTemperature,RelativeHumidity,WindSpeed,WindDirection,Now,Weather,Visibility,AirPressure,UVIndex",
+            "format": "JSON",
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT))
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            logger.warning("CWA work SSL verification failed, retrying with verify=False")
+            resp = requests.get(url, params=params, timeout=(5, CWA_TIMEOUT), verify=False)
+            resp.raise_for_status()
+        raw_text = resp.content.decode("utf-8", errors="ignore")
+        body = json.loads(raw_text)
+        stations = body.get("records", {}).get("Station", [])
+        if not stations:
+            return None
+        s = stations[0]
+        obs = s.get("WeatherElement", {})
+
+        def _val(key):
+            return obs.get(key) if isinstance(obs, dict) else None
+
+        vis_raw = _val("Visibility")
+        vis = _safe_float(vis_raw)
+        if vis is None:
+            vis_desc = _val("VisibilityDescription")
+            if vis_desc:
+                cleaned = str(vis_desc).strip().replace(">", "").replace("<", "")
+                if "-" in cleaned:
+                    try:
+                        low, high = map(float, cleaned.split("-"))
+                        vis = (low + high) / 2
+                    except Exception:
+                        pass
+                else:
+                    vis = _safe_float(cleaned)
+
+        now = _val("Now") or {}
+        wx_raw = _val("Weather")
+        wx = _safe_int(wx_raw)
+        if wx is not None and wx < 0:
+            wx = None
+        wx_text = str(wx_raw) if wx_raw and not isinstance(wx_raw, (int, float)) else None
+
+        return {
+            "station_id":   s.get("StationId"),
+            "station_name": s.get("StationName"),
+            "obs_time":     s.get("ObsTime", {}).get("DateTime"),
+            "AT":   _safe_float(_val("AirTemperature")),
+            "RH":   _safe_float(_val("RelativeHumidity")),
+            "WDSD": _safe_float(_val("WindSpeed")),
+            "WDIR": _safe_float(_val("WindDirection")),
+            "RAIN": _safe_float(now.get("Precipitation")),
+            "Wx":   wx,
+            "WxText": wx_text,
+            "visibility": vis,
+            "PRES": _safe_float(_val("AirPressure")),
+            "UVI":  _safe_float(_val("UVIndex")),
+        }
+
+    try:
+        primary  = _fetch_one(CWA_WORK_DATASET,     CWA_WORK_STATION_ID)
+        fallback = _fetch_one(CWA_SYNOPTIC_DATASET, CWA_SYNOPTIC_STATION_ID)
+
+        if primary is None and fallback is None:
+            raise ValueError("Both work station fetches returned no data")
+
+        # Merge: primary wins; fallback fills None fields only
+        merged = primary or {}
+        if fallback:
+            for key, val in fallback.items():
+                if merged.get(key) is None:
+                    merged[key] = val
+
+        # Use work station name for location display, note fallback source
+        merged["fetched_at"] = datetime.now(timezone(timedelta(hours=8))).isoformat()
+        if primary and primary.get("station_name"):
+            merged["station_name"] = primary["station_name"]
+
+        return merged
+
+    except Exception as exc:
+        logger.error("CWA work-conditions fetch failed: %s", exc)
+        raise RuntimeError(f"Failed to fetch CWA work conditions: {exc}") from exc
 
 
 def fetch_forecast(location_name: str = "三峽區") -> list[dict]:

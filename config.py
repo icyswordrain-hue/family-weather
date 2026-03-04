@@ -39,8 +39,15 @@ GCP_REGION = os.environ.get("GCP_REGION", "asia-east1")
 CWA_BASE_URL = "https://opendata.cwa.gov.tw/api/v1/rest/datastore"
 # AI AGENT NOTE: For a list of all verified station IDs, see docs/reference/stations.txt
 # If you need to know exactly what elements the 7-day API returns, see docs/reference/cwa_7day_elements.json
-CWA_STATION_ID = "466881"  # Banqiao (Manual) - Full synoptic station (Vis, Cloud, WxText) + Auto sensors
+CWA_STATION_ID = "72AI40"   # Shulin (Manual) — home station, closest to home address
 CWA_CURRENT_DATASET = "O-A0003-001" # Manual stations
+
+# Work/commute station: Banqiao auto-station (primary) + Xindian manual (fallback for UV/vis)
+# See docs/reference/API_QUIRKS.md ·7 for the two-station merge pattern.
+CWA_WORK_STATION_ID     = "C0AJ80"  # Banqiao auto-station (real local readings)
+CWA_WORK_DATASET        = "O-A0001-001"  # Auto stations
+CWA_SYNOPTIC_STATION_ID = "466881"  # Xindian manual (full synoptic: UV, vis, pressure)
+CWA_SYNOPTIC_DATASET    = "O-A0003-001"
 
 # AI AGENT NOTE: Correct Dataset IDs for New Taipei City (F-D0047 Series)
 # Per docs/reference/API_QUIRKS.md:
@@ -50,8 +57,8 @@ CWA_FORECAST_DATASET = "F-D0047-069" # New Taipei City Township Forecast (36h se
 CWA_FORECAST_7DAY_DATASET = "F-D0047-071" # New Taipei City Township Forecast (7-day)
 # Visibility data
 
-# Location names for Sanxia and Banqiao townships
-CWA_FORECAST_LOCATIONS = ["三峽區", "板橋區"]
+# Location names for Shulin (home) and Banqiao (work) townships
+CWA_FORECAST_LOCATIONS = ["樹林區", "板橋區"]
 
 # ── MOENV Endpoints ───────────────────────────────────────────────────────────
 MOENV_BASE_URL = "https://data.moenv.gov.tw/api/v2"

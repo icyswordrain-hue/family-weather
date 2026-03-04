@@ -53,7 +53,30 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
    
    - *Note:* Do not mix these up. The `F-D0047` series specifically targets New Taipei City data, while its target "locations" represent townships (e.g., 三峽區, 板橋區) rather than concrete observing stations.
 
-5. **Reference Files & Looping Hazard**
+5. **Station ID Validity — Always Verify Against `stations.txt`**
+   - Not every station ID that exists informally is recognised by the CWA API. Example: `C0AJ8` returns zero results in both `O-A0001-001` and `O-A0003-001`. The correct sibling auto-station is `C0AJ80`.
+   - Station `466881` ("新北") is a **Manual synoptic station** in **新店區 (Xindian)**, not in Banqiao or Shulin. Do not assume the label "新北" means it is geographically near the family's home address.
+   - Verified station-to-township mapping (confirmed 2026-03-05):
+
+     | StationId | Name | Township | Dataset |
+     |---|---|---|---|
+     | `466881` | 新北 | 新店區 | O-A0003-001 (Manual) |
+     | `72AI40`  | 桃改臺北 | 樹林區 | O-A0003-001 (Manual) |
+     | `72AI40`  | 樹林 | 樹林區 | O-A0001-001 (Auto) |
+     | `C0AJ80`  | 板橋 | 板橋區 | O-A0001-001 (Auto) |
+
+6. **`-99` / `-999` Sentinel Values (Missing Observations)**
+   - Several auto and manual stations return `-99` (or occasionally `-999`) as a sentinel for instruments that are not installed or not reporting. Fields confirmed to return `-99` for `72AI40` on `O-A0003-001`: `AirPressure`, `UVIndex`, `VisibilityDescription`.
+   - **Critical:** `safe_float("-99")` parses silently to `-99.0`. This poisons downstream threshold logic (e.g. UV ≥ 8 = "Very High" never fires; negative pressure skews any pressure-derived calculation).
+   - **Workaround:** `safe_float` and `safe_int` in `data/helpers.py` must map `-99.0` and `-999.0` to `None` before returning.
+
+7. **Two-Station Merge Pattern for Work/Commute Conditions**
+   - `C0AJ80` (Banqiao auto, `O-A0001-001`) provides good local readings but **lacks** `UVIndex`, `Visibility`, and rich `Weather` text.
+   - `466881` (Xindian manual, `O-A0003-001`) provides the full synoptic set but is geographically further away.
+   - **Pattern:** Fetch `C0AJ80` first; for any field that comes back `None`, fall back to the matching field from `466881`. Fields that `C0AJ80` supplies always take priority.
+   - Relevant config constants to define: `CWA_WORK_STATION_ID = "C0AJ80"`, `CWA_WORK_DATASET = "O-A0001-001"`, `CWA_SYNOPTIC_STATION_ID = "466881"`.
+
+8. **Reference Files & Looping Hazard**
    - **`docs/reference/stations.txt`**: Contains verified Station IDs (e.g., `466881` for Banqiao). Always consult this file instead of guessing station IDs.
    - **`docs/reference/cwa_7day_elements.json`**: Contains the exact Chinese element names returned by the 7-day API. The API often changes the keys or uses Chinese strings like `"最高體感溫度"` instead of English keys like `"MaximumApparentTemperature"`.
    - **CRITICAL:** Do not write loops that continuously retry fetching if a field is "missing" (e.g., `AT` or `PoP12h`). If a field is missing, it is usually because the dataset ID is wrong or the Chinese ElementName was not matched correctly. Read the reference JSON instead of looping over API calls.

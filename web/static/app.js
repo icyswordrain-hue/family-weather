@@ -80,17 +80,23 @@ function localiseWeatherText(text) {
 }
 
 const LOCATION_EN = {
-  '板橋': 'Banqiao',
-  '新北': 'New Taipei',
+  // ── CWA Station names (as returned by StationName field) ──────────────
+  '桃改臺北': 'Shulin Station',   // 72AI40 — home station
+  '桃改台北': 'Shulin Station',   // alternate romanisation
+  '板橋': 'Banqiao Station',  // C0AJ80 — work station
+  '新北': 'Xindian Stn.',     // 466881 — synoptic fallback
+  '樹林': 'Shulin Station',   // 72AI40 auto name
+  // ── Township district names (from forecast location names) ────────────
+  '樹林區': 'Shulin',
+  '板橋區': 'Banqiao',
+  '三峽區': 'Sanxia',
   '三重': 'Sanchong',
   '中和': 'Zhonghe',
   '永和': 'Yonghe',
   '新莊': 'Xinzhuang',
   '土城': 'Tucheng',
   '蘆洲': 'Luzhou',
-  '樹林': 'Shulin',
   '鶯歌': 'Yingge',
-  '三峽': 'Sanxia',
   '淡水': 'Tamsui',
   '汐止': 'Xizhi',
   '瑞芳': 'Ruifang',
@@ -106,7 +112,15 @@ const LOCATION_EN = {
 
 function localiseLocation(name) {
   if (getLang() === 'en') return LOCATION_EN[name] || name;
-  return name;
+  // zh-TW: map raw station names to friendly district labels
+  const ZH_STATION = {
+    '桃改臺北': '樹林站',
+    '桃改台北': '樹林站',
+    '樹林': '樹林站',
+    '板橋': '板橋站',
+    '新北': '新店站',
+  };
+  return ZH_STATION[name] || name;
 }
 
 function localiseMetric(text) {
@@ -128,16 +142,16 @@ const IMG = (name, alt) =>
   `<img src="/static/brand-icons/${name}.png" class="brand-icon" alt="${alt}" />`;
 
 const ICONS = {
-  'sunny': IMG('sunny','Sunny'), 'Sunny/Clear': IMG('sunny','Sunny'), '1': IMG('sunny','Sunny'),
-  'partly-cloudy': IMG('partly-cloudy','Partly Cloudy'), 'Mixed Clouds': IMG('partly-cloudy','Partly Cloudy'),
-  '2': IMG('partly-cloudy','Partly Cloudy'), '3': IMG('partly-cloudy','Partly Cloudy'),
-  'cloudy': IMG('cloudy','Cloudy'), 'Overcast': IMG('cloudy','Cloudy'),
-  '4': IMG('cloudy','Cloudy'), '5': IMG('cloudy','Cloudy'), '6': IMG('cloudy','Cloudy'), '7': IMG('cloudy','Cloudy'),
-  'rainy': IMG('rainy','Rainy'),
-  '8':  IMG('rainy','Rainy'), '9':  IMG('rainy','Rainy'), '10': IMG('rainy','Rainy'),
-  '11': IMG('rainy','Rainy'), '12': IMG('rainy','Rainy'), '13': IMG('rainy','Rainy'),
-  '14': IMG('rainy','Rainy'), '15': IMG('rainy','Rainy'), '16': IMG('rainy','Rainy'),
-  '17': IMG('rainy','Rainy'), '18': IMG('rainy','Rainy'), '19': IMG('rainy','Rainy'), '20': IMG('rainy','Rainy'),
+  'sunny': IMG('sunny', 'Sunny'), 'Sunny/Clear': IMG('sunny', 'Sunny'), '1': IMG('sunny', 'Sunny'),
+  'partly-cloudy': IMG('partly-cloudy', 'Partly Cloudy'), 'Mixed Clouds': IMG('partly-cloudy', 'Partly Cloudy'),
+  '2': IMG('partly-cloudy', 'Partly Cloudy'), '3': IMG('partly-cloudy', 'Partly Cloudy'),
+  'cloudy': IMG('cloudy', 'Cloudy'), 'Overcast': IMG('cloudy', 'Cloudy'),
+  '4': IMG('cloudy', 'Cloudy'), '5': IMG('cloudy', 'Cloudy'), '6': IMG('cloudy', 'Cloudy'), '7': IMG('cloudy', 'Cloudy'),
+  'rainy': IMG('rainy', 'Rainy'),
+  '8': IMG('rainy', 'Rainy'), '9': IMG('rainy', 'Rainy'), '10': IMG('rainy', 'Rainy'),
+  '11': IMG('rainy', 'Rainy'), '12': IMG('rainy', 'Rainy'), '13': IMG('rainy', 'Rainy'),
+  '14': IMG('rainy', 'Rainy'), '15': IMG('rainy', 'Rainy'), '16': IMG('rainy', 'Rainy'),
+  '17': IMG('rainy', 'Rainy'), '18': IMG('rainy', 'Rainy'), '19': IMG('rainy', 'Rainy'), '20': IMG('rainy', 'Rainy'),
 };
 
 // ── Translations ───────────────────────────────────────────────────────────
@@ -176,7 +190,7 @@ const TRANSLATIONS = {
     boot: 'System Boot: Initiating connection…',
     data_ok: 'Data received successfully.',
     render: 'Pipeline success. Rendering…',
-    step1: 'Connecting to CWA Banqiao Station…',
+    step1: 'Connecting to CWA Shulin Station…',
     step2: 'Retrieving Township Forecasts…',
     step3: 'Checking MOENV Air Quality…',
     step4: 'Processing Logic…',
@@ -236,7 +250,7 @@ const TRANSLATIONS = {
     boot: '系統啟動：初始化連線…',
     data_ok: '資料接收成功。',
     render: '管道成功，正在渲染…',
-    step1: '連線至 CWA 板橋站…',
+    step1: '連線至 CWA 樹林站…',
     step2: '取得鄉鎮預報…',
     step3: '查詢 MOENV 空氣品質…',
     step4: '處理天氣邏輯…',
@@ -897,7 +911,7 @@ function renderLifestyleView(data) {
     card.className = alertClass;
     const ic = document.createElement('div');
     ic.className = 'ls-icon';
-    ic.innerHTML = hasCritical ? IMG('alert','Alert') : (hasWarning ? IMG('heads-up','Warning') : IMG('all-clear','Clear'));
+    ic.innerHTML = hasCritical ? IMG('alert', 'Alert') : (hasWarning ? IMG('heads-up', 'Warning') : IMG('all-clear', 'Clear'));
     const content = document.createElement('div');
     content.className = 'ls-content';
     const ttl = document.createElement('div');
@@ -905,17 +919,17 @@ function renderLifestyleView(data) {
     ttl.textContent = T.heads_up_title;
     content.appendChild(ttl);
     const TYPE_ICONS = {
-      Health:  IMG('health',      'Health'),
-      Commute: IMG('commute',     'Commute'),
-      Air:     IMG('air-quality', 'Air Quality'),
-      General: IMG('general',     'General'),
+      Health: IMG('health', 'Health'),
+      Commute: IMG('commute', 'Commute'),
+      Air: IMG('air-quality', 'Air Quality'),
+      General: IMG('general', 'General'),
     };
     data.alert.forEach(item => {
       const row = document.createElement('div');
       row.className = 'ls-alert-item';
       const ico = document.createElement('span');
       ico.className = 'ls-alert-type-icon';
-      ico.innerHTML = TYPE_ICONS[item.type] || IMG('general','General');
+      ico.innerHTML = TYPE_ICONS[item.type] || IMG('general', 'General');
       const msg = document.createElement('span');
       msg.className = 'ls-alert-msg';
       msg.textContent = item.msg;
@@ -936,7 +950,7 @@ function renderLifestyleView(data) {
     const extras = [];
     if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
     if (data.wardrobe.rain_gear_text) extras.push(mkSub(`☂️ ${data.wardrobe.rain_gear_text}`));
-    add(IMG('wardrobe','Wardrobe'), T.wardrobe, data.wardrobe.text, extras);
+    add(IMG('wardrobe', 'Wardrobe'), T.wardrobe, data.wardrobe.text, extras);
   }
   // 4. Commute
   if (data.commute) {
@@ -951,28 +965,28 @@ function renderLifestyleView(data) {
       });
       extras.push(ul);
     }
-    add(IMG('commute','Commute'), T.commute, data.commute.text, extras);
+    add(IMG('commute', 'Commute'), T.commute, data.commute.text, extras);
   }
   // 5. Garden Health
-  if (data.garden && data.garden.text) add(IMG('garden','Garden'), T.garden, data.garden.text);
+  if (data.garden && data.garden.text) add(IMG('garden', 'Garden'), T.garden, data.garden.text);
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
     const extras = [];
     if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
     if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
-    add(IMG('outdoor','Outdoor'), T.outdoor_act, data.outdoor.text, extras);
+    add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.text, extras);
   }
   // 7. Meals
   if (data.meals && data.meals.text) {
     const extras = [];
     if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
-    add(IMG('meals','Meals'), T.meals, data.meals.text, extras);
+    add(IMG('meals', 'Meals'), T.meals, data.meals.text, extras);
   }
   // 8. HVAC Advice
   if (data.hvac) {
     const extras = [];
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
-    add(IMG('hvac','HVAC'), T.hvac, data.hvac.text, extras);
+    add(IMG('hvac', 'HVAC'), T.hvac, data.hvac.text, extras);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {
@@ -982,7 +996,7 @@ function renderLifestyleView(data) {
       const statusText = data.air_quality.status || String(data.air_quality.aqi);
       extras.push(mkBadge(`lvl-${lvl}`, statusText));
     }
-    add(IMG('air-quality','Air Quality'), T.air_quality, data.air_quality.text, extras);
+    add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
 }
 
