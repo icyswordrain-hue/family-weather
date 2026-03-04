@@ -247,3 +247,29 @@ Run the server to verify the native emojis are gone and not throwing broken imag
 git add web/static/app.js web/templates/dashboard.html web/routes.py
 git commit -m "feat: replace unicode emojis with generated brand illustrations"
 ```
+
+---
+
+### Task 7: Fix brand icon sizing (post-integration bugfix)
+
+**Problem:** `.brand-icon` CSS class was never written to `style.css` in Task 1. Images rendered
+at native Gemini-generated resolution (~512px+), overflowing the 40×40px `.ls-icon` container
+(which has no `overflow: hidden`).
+
+**Fix — `web/static/style.css`** (appended after `.ls-icon` block):
+
+```css
+/* Brand Icon Integration */
+.brand-icon {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+```
+
+`max-width: 100%` clamps the image to its container width (40px inside `.ls-icon`,
+24px inside `.nav-icon`). `height: auto` preserves aspect ratio. `margin: 0 auto`
+centres it in block containers.
+
+**Commit:** `201625e` — `fix: add .brand-icon CSS to constrain brand illustrations to container size`
