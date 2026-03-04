@@ -93,9 +93,9 @@ def dew_gap_to_hum(dew_gap_c: float | None) -> tuple[str, int]:
     if dew_gap_c is None:
         return "Unknown", 0
     if dew_gap_c < 2:  return "Near Saturated", 5
-    if dew_gap_c < 5:  return "Clammy",          4
-    if dew_gap_c < 10: return "Humid",            3
-    if dew_gap_c < 15: return "Comfortable",      1
+    if dew_gap_c < 4:  return "Clammy",          4
+    if dew_gap_c < 8:  return "Humid",            3
+    if dew_gap_c < 14: return "Comfortable",      1
     return               "Dry",                   2
 
 def _val_to_scale(val: float | None, scale: list[tuple]) -> tuple[str, int]:
