@@ -385,3 +385,51 @@ No CSS changes required — `.nav-icon .brand-icon` sizing (24px via `max-width:
 applied from Task 7.
 
 **Commit:** `35bd02c` — `assets: generate dashboard brand icon and wire to nav button`
+
+---
+
+### Task 11: Relocate nav icons → view h1 headings; text-only sidebar nav
+
+**Motivation:** Icons in the compact sidebar nav added visual noise with little benefit at small
+sizes. Moving them to the view heading gives them more display area and better reading hierarchy.
+
+**Changes — `web/templates/dashboard.html`:**
+
+1. **Removed `.nav-icon` spans** from both nav buttons — buttons now contain only the text label:
+   ```html
+   <button class="nav-item active" data-view="lifestyle">
+     <span data-i18n="nav_lifestyle">生活建議</span>
+   </button>
+   ```
+
+2. **Added icon inside each `<h1>`** (desktop view-header):
+   ```html
+   <h1 id="view-heading-lifestyle" data-i18n="h1_lifestyle">
+     <img src="/static/brand-icons/commute.png" class="brand-icon view-heading-icon" alt="" />生活指南
+   </h1>
+   ```
+   - Lifestyle → `commute.png`
+   - Dashboard → `dashboard.png`
+
+3. **Fixed mobile section-header-card** — replaced leftover `📊` emoji with `dashboard.png`:
+   ```html
+   <span><img src="/static/brand-icons/dashboard.png" class="brand-icon" alt="" /></span>
+   ```
+
+**Changes — `web/static/style.css`:**
+
+| Rule | Change |
+|------|--------|
+| `.view-header h1` | Added `display: flex; align-items: center; gap: 0.45em;` |
+| `.view-heading-icon.brand-icon` | New rule — `width: 2rem; height: 2rem; margin: 0;` |
+| `.section-header-card .brand-icon` | New rule — `width: 1.5rem; height: 1.5rem; margin: 0;` (mobile) |
+| `≤1024px` media query | Removed `.nav-item span:not(.nav-icon)` from hide list — nav text stays visible on tablet |
+
+**Icon size summary:**
+
+| Context | Size | Breakpoint |
+|---------|------|------------|
+| View h1 heading (`.view-heading-icon`) | 2rem (~32px) | Desktop / tablet |
+| Mobile section header (`.section-header-card`) | 1.5rem (~24px) | ≤767px |
+
+**Commit:** `68f67a3` — `ui: move nav icons to view h1 headings; text-only sidebar nav`
