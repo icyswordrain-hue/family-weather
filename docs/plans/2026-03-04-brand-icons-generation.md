@@ -273,3 +273,40 @@ at native Gemini-generated resolution (~512px+), overflowing the 40×40px `.ls-i
 centres it in block containers.
 
 **Commit:** `201625e` — `fix: add .brand-icon CSS to constrain brand illustrations to container size`
+
+---
+
+### Task 8: Fine-tune sizing — dashboard hero icon + alert type icon
+
+**Problems observed after Task 7:**
+1. **`#cur-icon` (dashboard hero)** — still too large; `#cur-icon` had no explicit width so
+   `max-width: 100%` resolved to the full flex-parent width (~200px+).
+2. **`.ls-alert-type-icon`** (Heads Up card per-item icon) — brand icon rendered at native
+   resolution (~500px) because the unsized `<span>` gave `max-width: 100%` nothing to clamp to.
+
+**Fix — `web/static/style.css`:**
+
+```css
+/* desktop */
+#cur-icon {
+  font-size: 2.5rem;
+  width: 5rem;        /* ← added */
+}
+
+/* mobile override */
+#cur-icon {
+  font-size: 2rem;
+  width: 3.5rem;      /* ← added */
+}
+
+/* scoped alert icon rule (appended after .brand-icon block) */
+.ls-alert-type-icon .brand-icon {
+  height: 0.9rem;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+}
+```
+
+**Commit:** `11e86cc` — `fix: constrain brand icon sizes for dashboard hero and alert type icons`
