@@ -391,7 +391,7 @@ input:focus-visible {
   font-size: 1.4rem;
   color: var(--text);
   margin-bottom: 1.5rem;
-  font-weight: 700;
+  font-weight: 400;
   font-family: var(--font-serif);
   letter-spacing: 0.02em;
 }
@@ -471,7 +471,7 @@ input:focus-visible {
 
 .view-header h1 {
   font-size: 1.6rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--text);
   font-family: var(--font-serif);
   letter-spacing: 0.02em;
@@ -907,7 +907,7 @@ html.dark .audio-toggle-btn.active {
 
 .ls-title {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 0.4rem;
   font-family: var(--font-serif);
   letter-spacing: 0.02em;
