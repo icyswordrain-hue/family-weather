@@ -451,7 +451,8 @@ function renderCurrentView(data) {
   renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
   renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
   renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`);
-  renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
+  const aqiSub = data.aqi.pm25 != null ? `AQI ${data.aqi.val} · PM2.5 ${data.aqi.pm25}` : `AQI ${data.aqi.val}`;
+  renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, aqiSub, `lvl-${data.aqi.level}`);
   renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
   renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
 
@@ -536,6 +537,9 @@ function renderOverviewView(data) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         const outdoorDisplay = localiseMetric(seg.outdoor_label) || seg.outdoor_grade;
         addRow(T.outdoor, outdoorDisplay, gradeToLvl[seg.outdoor_grade] || 0);
+      }
+      if (seg.aqi != null) {
+        addRow('AQI', String(seg.aqi), aqiToLevel(seg.aqi));
       }
       card.appendChild(header);
       card.appendChild(icon);
@@ -859,8 +863,10 @@ function renderOverviewView(data) {
 function aqiToLevel(val) {
   const n = parseInt(val);
   if (isNaN(n)) return 0;
-  if (n < 60) return 1;
-  if (n < 120) return 3;
+  if (n <= 50) return 1;
+  if (n <= 100) return 2;
+  if (n <= 150) return 3;
+  if (n <= 200) return 4;
   return 5;
 }
 
@@ -985,6 +991,9 @@ function renderLifestyleView(data) {
     const extras = [];
     if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
     if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
+    if (data.air_quality && data.air_quality.aqi != null && data.air_quality.aqi > 100) {
+      extras.push(mkSub(`⚠ Outdoor score reduced — AQI ${data.air_quality.aqi}`));
+    }
     add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.text, extras);
   }
   // 7. Meals
@@ -1006,6 +1015,9 @@ function renderLifestyleView(data) {
       const lvl = aqiToLevel(data.air_quality.aqi);
       const statusText = data.air_quality.status || String(data.air_quality.aqi);
       extras.push(mkBadge(`lvl-${lvl}`, statusText));
+    }
+    if (data.air_quality.peak_window) {
+      extras.push(mkSub(`⚠ ${data.air_quality.peak_window}`));
     }
     add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }

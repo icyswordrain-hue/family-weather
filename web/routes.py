@@ -11,6 +11,74 @@ Views:
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
+
+def _compute_aqi_peak_window(hourly: list[dict]) -> str | None:
+    """Return a human-readable peak-AQI window string from hourly AQI data.
+
+    If any hour hits AQI >= 100, returns the contiguous bad window, e.g. "11:00–16:00".
+    Otherwise returns the single worst hour, e.g. "Peak at 14:00 (AQI 85)".
+    Returns None when hourly data is absent.
+    """
+    if not hourly:
+        return None
+    bad = []
+    for h in hourly:
+        aqi = h.get("aqi")
+        ft = h.get("forecast_time", "")
+        if aqi is None or not ft:
+            continue
+        try:
+            dt = datetime.fromisoformat(str(ft).replace("Z", "+00:00"))
+            if aqi >= 100:
+                bad.append((dt, aqi))
+        except ValueError:
+            continue
+    if bad:
+        bad.sort(key=lambda x: x[0])
+        start = bad[0][0].strftime("%H:%M")
+        end_dt = bad[-1][0]
+        # Advance end by 1 hour to show the close of the window
+        end = f"{end_dt.hour + 1:02d}:00" if end_dt.hour < 23 else "24:00"
+        return f"{start}–{end}"
+    # No bad hours — show peak hour
+    try:
+        best = max(hourly, key=lambda h: h.get("aqi") or 0)
+        aqi_val = best.get("aqi")
+        ft = best.get("forecast_time", "")
+        if aqi_val and ft:
+            dt = datetime.fromisoformat(str(ft).replace("Z", "+00:00"))
+            return f"Peak at {dt.strftime('%H:%M')} (AQI {aqi_val})"
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
+def _match_aqi_to_segment(seg_start: str, hourly: list[dict]) -> int | None:
+    """Return the AQI value whose forecast_time is closest to seg_start."""
+    if not hourly or not seg_start:
+        return None
+    try:
+        seg_dt = datetime.fromisoformat(str(seg_start).replace("Z", "+00:00"))
+        seg_ts = seg_dt.timestamp()
+    except ValueError:
+        return None
+    best_aqi, best_diff = None, float("inf")
+    for h in hourly:
+        ft = h.get("forecast_time", "")
+        aqi = h.get("aqi")
+        if not ft or aqi is None:
+            continue
+        try:
+            h_dt = datetime.fromisoformat(str(ft).replace("Z", "+00:00"))
+            diff = abs(h_dt.timestamp() - seg_ts)
+            if diff < best_diff:
+                best_diff, best_aqi = diff, aqi
+        except ValueError:
+            continue
+    return best_aqi
+
 
 def build_slices(broadcast: dict, lang: str = "en") -> dict:
     """
@@ -114,6 +182,8 @@ def _slice_overview(
     outdoor_index = outdoor_index or {}
     forecast_7day = forecast_7day or []
 
+    hourly_aqi = aqi_forecast.get("hourly", [])
+
     timeline_list = []
     for name, seg in segments.items():
         if seg:
@@ -123,6 +193,7 @@ def _slice_overview(
             seg_copy["outdoor_score"] = seg_grade_data.get("score")
             seg_copy["outdoor_grade"] = seg_grade_data.get("grade")
             seg_copy["outdoor_label"] = seg_grade_data.get("label")
+            seg_copy["aqi"] = _match_aqi_to_segment(seg.get("start_time"), hourly_aqi)
             timeline_list.append(seg_copy)
 
     timeline_list.sort(key=lambda x: x["start_time"])
@@ -261,6 +332,21 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     else:
         _alert = []
 
+    # Peak AQI window from hourly forecast
+    hourly_aqi = aqi_forecast.get("hourly", [])
+    peak_window = _compute_aqi_peak_window(hourly_aqi)
+
+    # Direct MOENV warnings → append to alert list
+    for w in aqi_forecast.get("warnings", []):
+        title = w.get("title", "")
+        content = w.get("content", "")
+        if title or content:
+            if title and content:
+                msg = f"{title}: {content}"
+            else:
+                msg = title or content
+            _alert.append({"level": "WARNING", "type": "Air", "msg": msg, "source": "MOENV"})
+
     return {
         "wardrobe": {
             "text": wardrobe_text,
@@ -275,6 +361,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "text": air_quality_text or ("空氣品質資料暫不可用。" if is_zh else "Air quality data unavailable."),
             "aqi": aqi_forecast.get("aqi"),
             "status": aqi_forecast.get("status", ""),
+            "peak_window": peak_window,
         },
         "hvac": {
             "text": hvac_text,
