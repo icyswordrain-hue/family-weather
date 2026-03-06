@@ -186,6 +186,28 @@ def get_broadcast():
     return jsonify({**cached, "slices": slices})
 
 
+@app.route("/api/audio/<path:filename>")
+def serve_audio(filename):
+    """Serve TTS audio from Modal volume (proxied via Cloud Run in CLOUD mode)."""
+    if RUN_MODE == "CLOUD":
+        modal_audio_url = os.environ.get("MODAL_AUDIO_URL", "")
+        if not modal_audio_url:
+            return jsonify({"error": "MODAL_AUDIO_URL not configured"}), 500
+        try:
+            resp = requests.get(modal_audio_url, params={"filename": filename}, timeout=30)
+            return Response(resp.content, mimetype="audio/mpeg", status=resp.status_code)
+        except Exception as exc:
+            logger.error("Audio proxy failed: %s", exc)
+            return jsonify({"error": str(exc)}), 502
+    # LOCAL or MODAL — serve directly from the filesystem
+    from pathlib import Path
+    from flask import send_file
+    audio_path = Path(LOCAL_DATA_DIR) / "audio" / filename
+    if not audio_path.exists():
+        return jsonify({"error": "not found"}), 404
+    return send_file(audio_path, mimetype="audio/mpeg")
+
+
 @app.route("/api/refresh", methods=["POST"])
 def refresh():
     """

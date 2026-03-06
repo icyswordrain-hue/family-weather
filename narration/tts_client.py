@@ -44,21 +44,33 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
 
 
 def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
-    """Returns public GCS URL (cloud) or local path (local). Checks cache first."""
+    """Returns /api/audio/... URL (modal), public GCS URL (cloud), or local path (local). Checks cache first."""
+    from config import LOCAL_DATA_DIR
     gcs_path = tts_cache_key(text, lang, date, slot)
+    # gcs_path = "audio/{date}/{slot}_{lang}_{hash}.mp3"
+    rel_path = gcs_path[len("audio/"):]  # "{date}/{slot}_{lang}_{hash}.mp3"
 
-    if RUN_MODE in ("CLOUD", "MODAL"):
+    if RUN_MODE == "MODAL":
+        local_path = Path(LOCAL_DATA_DIR) / gcs_path  # /data/audio/{date}/...
+        if local_path.exists():
+            log.info("TTS cache hit (volume): %s", local_path)
+            return f"/api/audio/{rel_path}"
+        audio = _render_edge_tts(text, lang)
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        local_path.write_bytes(audio)
+        return f"/api/audio/{rel_path}"
+
+    if RUN_MODE == "CLOUD":
         from google.cloud import storage
         blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(gcs_path)
         if blob.exists():
             log.info(f"TTS cache hit: {gcs_path}")
             return blob.public_url
-
-    audio = _render_edge_tts(text, lang)
-
-    if RUN_MODE in ("CLOUD", "MODAL"):
+        audio = _render_edge_tts(text, lang)
         return _upload_to_gcs(audio, gcs_path)
 
+    # LOCAL mode
+    audio = _render_edge_tts(text, lang)
     out = Path("local_data/audio") / Path(gcs_path).name
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(audio)

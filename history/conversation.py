@@ -69,7 +69,7 @@ def load_history(days: int = 3) -> list[dict]:
 def _load_history_map() -> dict[str, dict]:
     """Unified helper to load the full history map from GCS or Local."""
     try:
-        if RUN_MODE == "LOCAL":
+        if RUN_MODE in ("LOCAL", "MODAL"):
             return _load_history_map_local()
 
         client = storage.Client()
@@ -101,7 +101,7 @@ def save_day(
     """
     # Load existing history
     try:
-        if RUN_MODE == "LOCAL":
+        if RUN_MODE in ("LOCAL", "MODAL"):
             history_map = _load_history_map_local()
         else:
             client = storage.Client()
@@ -118,7 +118,7 @@ def save_day(
         logger.warning("Could not load existing history for merge: %s — starting fresh", exc)
         history_map = {}
         # Ensure blob is defined for the subsequent upload if we are in non-local mode
-        if RUN_MODE != "LOCAL":
+        if RUN_MODE not in ("LOCAL", "MODAL"):
             try:
                 client = storage.Client()
                 bucket = client.bucket(GCS_BUCKET_NAME)
@@ -144,7 +144,7 @@ def save_day(
     history_map = {k: v for k, v in history_map.items() if k >= cutoff}
 
     # Write back
-    if RUN_MODE == "LOCAL":
+    if RUN_MODE in ("LOCAL", "MODAL"):
         _save_history_local(history_map)
     else:
         # history_map contains everything
