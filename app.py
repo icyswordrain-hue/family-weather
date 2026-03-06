@@ -44,14 +44,14 @@ def _persist_regen(payload: dict) -> None:
     regen = payload.get("regen")
     if not regen:
         return
-    if RUN_MODE in ("CLOUD", "MODAL"):
+    if RUN_MODE == "CLOUD":
         from google.cloud import storage
         blob = storage.Client().bucket(config.GCS_BUCKET_NAME).blob(config.GCS_REGEN_PATH)
         blob.upload_from_string(
             json.dumps(regen, ensure_ascii=False, indent=2),
             content_type="application/json",
         )
-    else:
+    else:  # LOCAL and MODAL both use local file (MODAL → /data/regen.json)
         from pathlib import Path
         p = Path(f"{LOCAL_DATA_DIR}/regen.json")
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -61,7 +61,17 @@ def _persist_regen(payload: dict) -> None:
 
 def _restore_regen_from_gcs() -> None:
     """Call on container startup before first request."""
-    if RUN_MODE not in ("CLOUD", "MODAL"):
+    if RUN_MODE == "MODAL":
+        from pathlib import Path
+        p = Path(f"{LOCAL_DATA_DIR}/regen.json")
+        if p.exists():
+            try:
+                _regen_cache.update(json.loads(p.read_text(encoding="utf-8")))
+                logger.info("regen.json restored from Modal volume")
+            except Exception as e:
+                logger.warning("Could not restore regen from volume: %s", e)
+        return
+    if RUN_MODE != "CLOUD":
         return
     try:
         from google.cloud import storage
