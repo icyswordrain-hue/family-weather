@@ -35,13 +35,13 @@ def _bootstrap_gcp_credentials():
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @app.function(image=image, secrets=secrets, volumes={"/data": volume})
-@modal.web_endpoint()
+@modal.fastapi_endpoint()
 def health():
     return {"status": "ok", "timestamp": datetime.now(_TAIPEI_TZ).isoformat()}
 
 
 @app.function(image=image, secrets=secrets, volumes={"/data": volume}, timeout=300)
-@modal.web_endpoint(method="POST")
+@modal.fastapi_endpoint(method="POST")
 def refresh(payload: dict = None):
     import sys
     _bootstrap_gcp_credentials()
@@ -75,7 +75,7 @@ def refresh(payload: dict = None):
 
 
 @app.function(image=image, secrets=secrets, volumes={"/data": volume})
-@modal.web_endpoint()
+@modal.fastapi_endpoint()
 def broadcast(date: str = None):
     import sys
     _bootstrap_gcp_credentials()
