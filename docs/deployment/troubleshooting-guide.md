@@ -1,5 +1,5 @@
 # Family Weather Dashboard — Troubleshooting, Glossary & FAQ
-_Last updated: 2026-03-06_
+_Last updated: 2026-03-06 (CWA outage resilience)_
 
 ---
 
@@ -608,3 +608,111 @@ Modal SDK renamed `@modal.web_endpoint` to `@modal.fastapi_endpoint` on 2025-03-
 |---|---|
 | GCP Secret Manager | `GCS_BUCKET_NAME` re-stored without surrounding quotes |
 | `backend/modal_app.py` | `@modal.web_endpoint` → `@modal.fastapi_endpoint` (3 occurrences, commit `25df00f`) |
+
+---
+
+## Fix — 2026-03-06: CWA server outage causes repeated pipeline failures ("looping requests")
+
+### Symptoms observed
+- Dashboard not updating; every scheduled pipeline run (06:15, 11:15, 17:15) failing with
+  `"Data Fetch Failed: Failed to fetch CWA current conditions: ..."`
+- Modal logs showing the pipeline aborting immediately after the CWA fetch step
+- From the user's perspective: the app appeared to loop — each refresh attempt failed and
+  the browser loading indicator spun without result before showing an error
+
+### Root causes
+
+#### 1. `fetch_current_conditions()` hard-failed on total station outage — `data/fetch_cwa.py`
+
+When the CWA server is unavailable both the primary station (`72AI40` Shulin) and fallback
+(`466881` Xindian) return `None`. The function raised `RuntimeError` immediately, which was
+caught in `_pipeline_steps()` and yielded as a terminal error. No broadcast was saved.
+
+Because Cloud Scheduler fires three times a day, each scheduled run hit the same failure:
+fetch → fail → no broadcast → next scheduled run → same. This looked like the app was
+looping rather than a single clean failure.
+
+**Fix:** Before raising `RuntimeError`, attempt to read the last valid line from
+`STATION_HISTORY_PATH` (the local JSONL cache written on every successful fetch). If a
+cached record is found, return it with `"_stale": True`. The pipeline continues with stale
+data instead of aborting. `RuntimeError` is still raised if the cache is also missing
+(first-run scenario, no prior observations).
+
+```python
+# data/fetch_cwa.py — inside fetch_current_conditions(), after both stations return None
+if STATION_HISTORY_PATH.exists():
+    for line in reversed(STATION_HISTORY_PATH.read_text().splitlines()):
+        if line.strip():
+            cached = json.loads(line.strip())
+            cached["_stale"] = True
+            return cached
+raise ValueError("Both home station fetches returned no data and no cache available")
+```
+
+#### 2. `fetch_all_aqi()` had no per-call error isolation — `data/fetch_moenv.py`
+
+The four MOENV fetch calls (`fetch_realtime_aqi`, `fetch_forecast_aqi`, `fetch_hourly_aqi`,
+`fetch_environmental_warnings`) were called inline in a dict literal with no try/except. If
+any one raised (e.g. during a broader network outage), the whole pipeline failed at the AQI
+step — even if CWA data was healthy.
+
+**Fix:** Wrapped each call in its own try/except, returning an empty `{}` or `[]` on failure.
+This matches the existing pattern in `fetch_all_forecasts()`.
+
+```python
+# Before
+return {
+    "realtime": fetch_realtime_aqi(),
+    "forecast": fetch_forecast_aqi(),
+    ...
+}
+
+# After
+result = {}
+for key, fn, empty in [("realtime", fetch_realtime_aqi, {}), ...]:
+    try:
+        result[key] = fn()
+    except Exception as exc:
+        logger.warning("fetch_all_aqi: %s failed: %s", key, exc)
+        result[key] = empty
+return result
+```
+
+### Stale-data indicator — `app.py`
+
+`_pipeline_steps()` now checks `current.get("_stale")` after the fetch step and emits a
+log line visible in the browser loading screen:
+
+```
+⚠ CWA unavailable — using cached observation
+```
+
+The pipeline then continues normally — narration, TTS, and broadcast save all proceed.
+The LLM receives the stale observation as part of the processed data; no additional prompt
+engineering is needed since the degraded state is described by the stale temperature/humidity
+values rather than a special signal.
+
+### What did NOT cause a loop
+
+- No retry loops exist in the fetch code — only a single SSL fallback (`verify=False`)
+- The frontend (`triggerRefresh()` in `app.js`) has no auto-retry; the Refresh button is
+  disabled during a request and only re-enabled in `finally`
+- Cloud Scheduler is configured with `--max-retries=0` (default) and does not retry
+  when Cloud Run returns HTTP 200 with an error payload
+- The "looping" appearance was three daily scheduled runs each failing cleanly, not an
+  infinite loop within a single run
+
+### Files changed (commit `af70b71`)
+| File | Change |
+|---|---|
+| `data/fetch_cwa.py` | `fetch_current_conditions()` — station history fallback before raising; JSONL write now includes `dew_point_c`, `dew_gap_c`, `apparent_temp_c`, `saturation_label` |
+| `data/fetch_moenv.py` | `fetch_all_aqi()` — per-call try/except for all four MOENV endpoints |
+| `app.py` | `_pipeline_steps()` — `"⚠ CWA unavailable"` log when `current["_stale"]` is true |
+| `data/helpers.py` | Added `_dew_point()`, `_apparent_temp()`, `_saturation_label()` |
+| `data/station_history.py` | New — `load_recent_station_history(hours)`, `pressure_change_24h(history)` |
+| `data/health_alerts.py` | Ménière's alert uses `pressure_change_24h()` over 24h window (6 hPa threshold) instead of single broadcast-to-broadcast delta (8 hPa) |
+| `data/weather_processor.py` | `process()` accepts `station_history` param; threads it to `_detect_menieres_alert` |
+
+See also: `docs/plans/2026-03-06-historical-station-cache.md` — full design rationale
+for the station history cache that enables the fallback.
+
