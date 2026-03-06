@@ -123,3 +123,30 @@ If `/api/broadcast` returns 404 after a scheduled run:
 3. Confirm `RUN_MODE=MODAL` is set inside the container (should always be force-set now).
 
 There are no GCS credentials to check, no bucket name to verify, no IAM role to audit.
+
+---
+
+## Addendum — Regen data (commit `1283e92`)
+
+`regen.json` (14-day meal/location database) was the last remaining GCS write path inside Modal. It was missed in the initial migration because it lives in `app.py` rather than `history/conversation.py` or `tts_client.py`.
+
+**Functions changed in `app.py`:**
+
+| Function | Before | After |
+|----------|--------|-------|
+| `_persist_regen()` | `if RUN_MODE in ("CLOUD", "MODAL")` → GCS upload | `if RUN_MODE == "CLOUD"` → GCS; MODAL falls through to local-file `else` branch |
+| `_restore_regen_from_gcs()` | `if RUN_MODE not in ("CLOUD", "MODAL")` → GCS read | Added MODAL early-return that reads from `Path(LOCAL_DATA_DIR)/regen.json` (`/data/regen.json`) before the GCS path |
+
+**Complete volume layout after both changes:**
+
+```
+/data/
+  station_history.jsonl    CWA observation cache
+  history.json             broadcast records (narration, weather, audio URLs)
+  regen.json               14-day meal/location database
+  audio/
+    {date}/
+      {slot}_{lang}_{hash}.mp3
+```
+
+GCS is now unreachable from inside Modal containers. No `storage.Client()` calls are made in any MODAL-mode code path.
