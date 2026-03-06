@@ -151,3 +151,31 @@ Resolution: `--resolution 2K`. Output: `web/static/icon-512.png` (~455 KB).
 | `manifest.json` `description` | `Context-aware…` | `Canopy — 厝邊天氣 · Context-aware…` |
 
 **Commit:** `939843b` — `chore: rename app to Canopy / 厝邊天氣 throughout`
+
+---
+
+### Task 5: Rebuild PWA app icon — simpler, mobile-readable
+
+**Problem:** `icon-512.png` (Task 3) was generated at 2K with a complex illustrated scene (arching leaves, rooftop silhouette, amber sky). At 192px or below the detail was unreadable and the icon was unmemorable.
+
+**Design principles applied:** Max 3 colors, single dominant shape/silhouette, flat style, must read at 32px favicon size.
+
+**Three variants generated in parallel at 1K:**
+
+| Variant | File | Concept |
+|---|---|---|
+| A | `icon-variant-a.png` | Bold arch of 3 sage-green leaves on navy |
+| B ✓ | `icon-variant-b.png` | Terracotta tile rooftop + amber arc on navy |
+| C (kept) | `icon-variant-c.png` | Single leaf + raindrop on dark teal |
+
+**Selected: Variant B** — Rooftop Sliver. Chosen for its unique silhouette and strong neighbourhood identity.
+
+**Prompt used:**
+```
+App icon, deep navy square with rounded corners, minimalist Taiwanese tile
+rooftop silhouette in terracotta at bottom third, single bold arc of warm amber
+light above it like sunrise under an eave, flat vector style, 3 colors only:
+navy, terracotta, amber, no text, strong contrast, reads clearly at 32px
+```
+
+**Files updated:** `icon-512.png` and `icon-192.png` overwritten with variant B. `icon-variant-c.png` retained. No manifest or HTML changes required (already pointing to `icon-512.png`).
