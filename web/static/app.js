@@ -1544,6 +1544,8 @@ async function triggerRefresh() {
             saveBroadcastCache(broadcastData);
             showContent();
             gotResult = true;
+          } else if (msg.type === 'status') {
+            _addStatusRow(msg.sources);
           } else if (msg.type === 'error') {
             showError(msg.message || 'Pipeline failed');
             gotResult = true;
@@ -1609,6 +1611,21 @@ function stopLoadingAnimation() {
     clearInterval(loadingInterval);
     loadingInterval = null;
   }
+}
+
+function _addStatusRow(sources) {
+  const list = document.getElementById('rp-log-list');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'log-entry log-status-row';
+  (sources || []).forEach(src => {
+    const chip = document.createElement('span');
+    chip.className = `log-status-chip log-status-${src.state}`;
+    chip.textContent = `${src.name} ${src.detail}`;
+    row.appendChild(chip);
+  });
+  list.appendChild(row);
+  list.scrollTop = list.scrollHeight;
 }
 
 function addLog(msg) {

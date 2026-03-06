@@ -346,6 +346,34 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         yield {"type": "error", "message": f"Data Fetch Failed: {exc}"}
         return
 
+    # Fetch status summary
+    _n_total = len(CWA_FORECAST_LOCATIONS)
+    _n_fc_ok = sum(1 for v in forecasts.values() if v)
+    _n_7d_ok = sum(1 for v in forecasts_7day.values() if v)
+    _aqi_ok  = bool(aqi.get("realtime") or aqi.get("forecast"))
+    yield {"type": "status", "sources": [
+        {
+            "name": "CWA",
+            "state": "stale" if current.get("_stale") else "ok",
+            "detail": "stale" if current.get("_stale") else current.get("station_name", "?"),
+        },
+        {
+            "name": "24h",
+            "state": "ok" if _n_fc_ok == _n_total else ("warn" if _n_fc_ok else "fail"),
+            "detail": f"{_n_fc_ok}/{_n_total}",
+        },
+        {
+            "name": "7d",
+            "state": "ok" if _n_7d_ok == _n_total else ("warn" if _n_7d_ok else "fail"),
+            "detail": f"{_n_7d_ok}/{_n_total}",
+        },
+        {
+            "name": "AQI",
+            "state": "ok" if _aqi_ok else "warn",
+            "detail": "✓" if _aqi_ok else "—",
+        },
+    ]}
+
     # 2. Load history
     yield {"type": "log", "message": "Loading conversation history..."}
     history = load_history(days=HISTORY_DAYS)
