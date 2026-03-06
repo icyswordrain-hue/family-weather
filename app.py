@@ -25,6 +25,7 @@ from config import RUN_MODE
 import config
 from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS, CST
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts, fetch_all_forecasts_7day
+from data.station_history import load_recent_station_history
 from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
 from narration.fallback_narrator import build_narration
@@ -348,11 +349,12 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     # 2. Load history
     yield {"type": "log", "message": "Loading conversation history..."}
     history = load_history(days=HISTORY_DAYS)
+    station_history = load_recent_station_history(hours=24)
 
     # 3. Process data
     yield {"type": "log", "message": "Processing weather data & logic..."}
     logger.info("Processing data...")
-    processed = process(current, forecasts, aqi, history, forecasts_7day)
+    processed = process(current, forecasts, aqi, history, forecasts_7day, station_history=station_history)
 
     # 3b. Meal/Location Database Regen (14-day cycle)
     should_regen = check_regen_cycle(history, date_str, REGEN_CYCLE_DAYS)
