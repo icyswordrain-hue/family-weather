@@ -1,5 +1,5 @@
 # Family Weather Dashboard — Troubleshooting, Glossary & FAQ
-_Last updated: 2026-03-01_
+_Last updated: 2026-03-06_
 
 ---
 
@@ -520,7 +520,7 @@ Modal's secret `family-weather-secrets` only contained API keys (`CWA_API_KEY`, 
 - Audio was never uploaded to GCS → `audio_url` always null in the broadcast
 - Regen data was never written back to GCS
 
-`history/conversation.py` was unaffected because in `RUN_MODE=MODAL` it uses the Modal Volume at `/data`, not GCS.
+> **Correction (2026-03-06):** `history/conversation.py` always uses GCS for all non-LOCAL modes — it does NOT use the Modal volume. The Modal volume stores only `station_history.jsonl`. This means GCP credentials are required in Modal for broadcast history reads and writes as well, not just audio/regen.
 
 ### Fix
 
@@ -556,3 +556,55 @@ del local_data\modal-gcs-key.json
 |---|---|
 | `backend/modal_app.py` | Added `_bootstrap_gcp_credentials()`; called in `refresh` and `broadcast` |
 | `scripts/sync_secrets_to_modal.py` | Added `GCP_SA_JSON` to `SECRET_NAMES`; base64-encodes it before syncing |
+
+---
+
+## Incident Log — 2026-03-06: All broadcasts silently missing; API returning 404
+
+### Symptoms observed
+- `/api/broadcast` returning `[{"error": "No broadcast found for <date>"}, 404]` for every date
+- Dashboard showing stale or empty data; no tiles populated
+- Cloud Scheduler jobs firing and completing normally; no errors visible in Cloud Run logs
+- `history/conversation.json` in GCS frozen at a single entry dated 2026-02-19
+- Modal secrets `last used` timestamp updating on every scheduled run (secrets accessed, pipeline invoked)
+
+### Root causes found and fixed
+
+#### 1. `GCS_BUCKET_NAME` secret stored with surrounding quotes — GCP Secret Manager
+The value in Secret Manager was `"family-weather-dashboard"` (with double-quote characters) rather than `family-weather-dashboard`. After `sync_secrets_to_modal.py` pulled and stripped whitespace, Modal received `"family-weather-dashboard"` — a bucket name starting with `"`, which is not a letter or number.
+
+Every `storage.Client()` call inside Modal raised:
+```
+ValueError: Bucket names must start and end with a number or letter.
+```
+This was swallowed by the `except Exception` blocks in `history/conversation.py` (`_load_history_map`, `save_day`) and logged only as a warning — pipeline runs appeared to complete, but no broadcast was ever written to GCS.
+
+**Diagnosis command:**
+```
+modal app logs family-weather-engine
+→ Could not load conversation history: Bucket names must start and end with a number or letter.
+```
+
+**Fix:** Re-store the secret without quotes, then re-sync to Modal:
+```bash
+echo -n "family-weather-dashboard" | gcloud secrets versions add GCS_BUCKET_NAME --data-file=- --project=gen-lang-client-0266464307
+python scripts/sync_secrets_to_modal.py
+modal deploy backend/modal_app.py
+```
+The `-n` flag on `echo` suppresses the trailing newline. Always use `echo -n` or pipe from a file when storing plain string secrets to avoid accidental whitespace.
+
+#### 2. `@modal.web_endpoint` deprecated — `backend/modal_app.py`
+Modal SDK renamed `@modal.web_endpoint` to `@modal.fastapi_endpoint` on 2025-03-05. The old decorator still functioned but emitted `DeprecationError` warnings on every container start, visible in `modal app logs`.
+
+**Fix:** Replaced all three occurrences in `backend/modal_app.py` (commit `25df00f`).
+
+### Key architectural clarification confirmed during investigation
+- Cloud Run in `RUN_MODE=CLOUD` is a **pure proxy** — it forwards `/api/refresh` and `/api/broadcast` to Modal and runs no pipeline code itself. Pipeline logs ("Fetching CWA", "Starting pipeline") are absent from Cloud Run logs; they appear only in `modal app logs`.
+- `history/conversation.json` is stored in **GCS** for all non-LOCAL modes, including `RUN_MODE=MODAL`. The Modal volume (`family-weather-data`) stores only `station_history.jsonl`.
+- `server.log` in `app.py` uses `mode="w"` (truncates on each container start) and writes to the container's ephemeral overlay disk — not RAM. The real issue is observability: logs written there are invisible to Cloud Logging. The `StreamHandler` already covers stdout correctly; `FileHandler` should be made conditional on `RUN_MODE == "LOCAL"`.
+
+### Files changed
+| File | Change |
+|---|---|
+| GCP Secret Manager | `GCS_BUCKET_NAME` re-stored without surrounding quotes |
+| `backend/modal_app.py` | `@modal.web_endpoint` → `@modal.fastapi_endpoint` (3 occurrences, commit `25df00f`) |
