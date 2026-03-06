@@ -550,6 +550,18 @@ input:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.solar-row span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.solar-row .brand-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
 .gauges-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

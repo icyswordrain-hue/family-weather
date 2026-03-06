@@ -460,8 +460,8 @@ function renderCurrentView(data) {
   const solar = data.solar;
   const solarRow = document.getElementById('solar-row');
   if (solar && solarRow) {
-    document.getElementById('solar-sunrise').textContent = `↑ ${solar.sunrise}`;
-    document.getElementById('solar-sunset').textContent  = `↓ ${solar.sunset}`;
+    document.getElementById('solar-sunrise').innerHTML = `${IMG('sunrise', 'Sunrise')} ${solar.sunrise}`;
+    document.getElementById('solar-sunset').innerHTML  = `${IMG('sunset', 'Sunset')} ${solar.sunset}`;
     solarRow.style.display = '';
   } else if (solarRow) {
     solarRow.style.display = 'none';
