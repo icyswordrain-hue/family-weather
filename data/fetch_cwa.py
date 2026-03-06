@@ -2,9 +2,10 @@
 fetch_cwa.py — CWA Open Data API client.
 
 Fetches:
-  - Current station observations from Banqiao station (466881 / O-A0003-001)
-  - Township 36-hour forecasts for Sanxia and Banqiao (F-D0047-069)
-  - Township 7-day forecasts for Sanxia and Banqiao (F-D0047-071)
+  - Current conditions: home (72AI40 Shulin, O-A0003-001 primary + 466881 Xindian fallback)
+                        work  (C0AJ80 Banqiao, O-A0001-001 primary + 466881 Xindian fallback)
+  - Township 36-hour forecasts for Shulin/Banqiao (F-D0047-069)
+  - Township 7-day forecasts for Shulin/Banqiao (F-D0047-071)
 
 TIMEZONE NOTE:
   All timestamps returned by the CWA API are in Asia/Taipei (UTC+8) and carry
@@ -24,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 # throughout this file before modifying fetching or parsing logic.
 # The CWA API has significant quirks regarding SSL, casing, and encoding.
 # CRITICAL: See docs/reference/API_QUIRKS.md for known issues.
-# CRITICAL: See docs/reference/stations.txt before guessing Station IDs.
+# CRITICAL: See station.txt (project root) for active and reference station IDs.
 # CRITICAL: See docs/reference/cwa_7day_elements.json for exact dataset element names.
 # NEVER write a while loop that retries API calls because a specific field is "missing" (like AT or PoP12h). 
 # Missing fields mean your dataset ID or Chinese ElementName match is wrong, NOT a temporary network issue.
@@ -45,7 +46,7 @@ from config import (
     STATION_HISTORY_PATH,
     STATION_HISTORY_DAYS,
 )
-from data.helpers import _safe_float, _safe_int
+from data.helpers import _safe_float, _safe_int, _dew_point, _apparent_temp, _saturation_label
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +181,24 @@ def fetch_current_conditions() -> dict:
         fallback = _fetch_station_obs(CWA_SYNOPTIC_DATASET, CWA_SYNOPTIC_STATION_ID)
 
         if primary is None and fallback is None:
-            raise ValueError("Both home station fetches returned no data")
+            # Try the on-disk station history cache before giving up
+            try:
+                if STATION_HISTORY_PATH.exists():
+                    lines = STATION_HISTORY_PATH.read_text(encoding="utf-8").splitlines()
+                    for line in reversed(lines):
+                        line = line.strip()
+                        if not line:
+                            continue
+                        cached = json.loads(line)
+                        cached["_stale"] = True
+                        logger.warning(
+                            "CWA stations unavailable — using cached observation from %s",
+                            cached.get("fetched_at", "unknown"),
+                        )
+                        return cached
+            except Exception as cache_exc:
+                logger.warning("station_history fallback also failed: %s", cache_exc)
+            raise ValueError("Both home station fetches returned no data and no cache available")
 
         merged = primary or {}
         if fallback:
@@ -194,11 +212,22 @@ def fetch_current_conditions() -> dict:
 
         merged["fetched_at"] = datetime.now(timezone(timedelta(hours=8))).isoformat()
 
-        # Non-fatal append to JSONL cache
+        # Non-fatal append to JSONL cache (with derived fields)
         try:
+            cache_record = dict(merged)
+            temp = merged.get("AT")
+            rh   = merged.get("RH")
+            wind = merged.get("WDSD") or 0.0
+            if temp is not None and rh is not None:
+                dew = _dew_point(temp, rh)
+                gap = round(temp - dew, 1)
+                cache_record["dew_point_c"]      = dew
+                cache_record["dew_gap_c"]        = gap
+                cache_record["apparent_temp_c"]  = _apparent_temp(temp, rh, wind)
+                cache_record["saturation_label"] = _saturation_label(gap)
             STATION_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
             with STATION_HISTORY_PATH.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(merged) + "\n")
+                f.write(json.dumps(cache_record) + "\n")
             _prune_station_history(STATION_HISTORY_PATH, STATION_HISTORY_DAYS)
         except Exception as e:
             logger.warning("station_history write failed (non-fatal): %s", e)

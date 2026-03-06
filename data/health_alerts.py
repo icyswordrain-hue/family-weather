@@ -31,7 +31,10 @@ def _cardiac_alert(segmented: dict[str, Optional[dict]]) -> dict:
     }
 
 
-def _detect_menieres_alert(current: dict, history: list[dict], segmented: dict[str, Optional[dict]]) -> dict:
+def _detect_menieres_alert(
+    current: dict,
+    station_history: list[dict] | None = None,
+) -> dict:
     """Detect conditions triggering Ménière's symptoms (pressure swings, high humidity)."""
     triggered = False
     severity = "none"
@@ -45,13 +48,15 @@ def _detect_menieres_alert(current: dict, history: list[dict], segmented: dict[s
             severity = "moderate"
             reasons.append(f"Low pressure ({pres}hPa)")
 
-        # Look for rapid changes in history (rise OR drop) — this is high severity
-        if history:
-            prev_pres = history[-1].get("raw_data", {}).get("current", {}).get("PRES")
-            if prev_pres and abs(pres - prev_pres) > 8:
+        # Use fine-grained station history for 24h trend when available
+        if station_history and len(station_history) >= 2:
+            from data.station_history import pressure_change_24h
+            delta = pressure_change_24h(station_history)
+            if delta is not None and abs(delta) >= 6:
                 triggered = True
                 severity = "high"
-                reasons.append("Rapid pressure transition")
+                direction = "rise" if delta > 0 else "drop"
+                reasons.append(f"Pressure {direction} {abs(delta):.1f} hPa over 24h")
 
     # 2. Extreme Humidity — moderate risk only, does not trigger alert
     rh = current.get("RH")

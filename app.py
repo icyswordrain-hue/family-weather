@@ -326,6 +326,8 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         yield {"type": "log", "message": "Fetching CWA current conditions..."}
         logger.info("Fetching CWA current conditions...")
         current = fetch_current_conditions()
+        if current.get("_stale"):
+            yield {"type": "log", "message": "⚠ CWA unavailable — using cached observation"}
 
         yield {"type": "log", "message": "Fetching CWA forecasts..."}
         logger.info("Fetching CWA forecasts...")

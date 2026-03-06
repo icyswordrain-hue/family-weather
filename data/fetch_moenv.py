@@ -252,12 +252,19 @@ def fetch_environmental_warnings() -> list[dict]:
 
 def fetch_all_aqi() -> dict:
     """Fetch real-time AQI, 3-day forecast, hourly forecast, and active warnings."""
-    return {
-        "realtime":        fetch_realtime_aqi(),
-        "forecast":        fetch_forecast_aqi(),
-        "hourly_forecast": fetch_hourly_aqi(),
-        "warnings":        fetch_environmental_warnings(),
-    }
+    result = {}
+    for key, fn, empty in [
+        ("realtime",        fetch_realtime_aqi,          {}),
+        ("forecast",        fetch_forecast_aqi,          []),
+        ("hourly_forecast", fetch_hourly_aqi,            []),
+        ("warnings",        fetch_environmental_warnings, []),
+    ]:
+        try:
+            result[key] = fn()
+        except Exception as exc:
+            logger.warning("fetch_all_aqi: %s failed: %s", key, exc)
+            result[key] = empty
+    return result
 
 
 # ── Helpers removed (moved to data.helpers) ───────────────────────────────────

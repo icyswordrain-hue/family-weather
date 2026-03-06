@@ -143,6 +143,7 @@ def process(
     aqi: dict,
     history: list[dict] | None = None,
     forecasts_7day: dict[str, list[dict]] | None = None,
+    station_history: list[dict] | None = None,
 ) -> dict:
     """
     Main processing function.
@@ -271,7 +272,7 @@ def process(
     }
 
     # ── 10. Heads-up priority system ─────────────────────────────────────────
-    menieres_alert = _detect_menieres_alert(current_processed, history, segmented)
+    menieres_alert = _detect_menieres_alert(current_processed, station_history=station_history)
     heads_ups = _compute_heads_ups(
         segmented, morning_commute, evening_commute, aqi, cardiac_alert, menieres_alert
     )
