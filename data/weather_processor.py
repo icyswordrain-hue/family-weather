@@ -296,6 +296,8 @@ def process(
     location_rec["top_locations"] = (filtered_locations if filtered_locations
                                      else location_rec.get("all_locations", []))
 
+    aqi_forecast["hourly"] = aqi.get("hourly_forecast", [])
+    aqi_forecast["warnings"] = aqi.get("warnings", [])
     aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")
     aqi_forecast["summary_zh"] = extract_aqi_summary(aqi_forecast.get("content", ""), "zh_TW")
 
@@ -380,6 +382,9 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     result["aqi"] = aqi_val
     result["aqi_status"] = translate_aqi_status(aqi_realtime.get("status"))
     result["aqi_level"] = _aqi_to_level(aqi_val)
+    if aqi_realtime.get("pm25") is not None: result["pm25"] = aqi_realtime["pm25"]
+    if aqi_realtime.get("pm10") is not None: result["pm10"] = aqi_realtime["pm10"]
+    if aqi_realtime.get("o3")   is not None: result["o3"]   = aqi_realtime["o3"]
     
     # Visibility
     vis_val = current.get("visibility")

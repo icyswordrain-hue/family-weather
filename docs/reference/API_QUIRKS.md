@@ -53,7 +53,7 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
    
    - *Note:* Do not mix these up. The `F-D0047` series specifically targets New Taipei City data, while its target "locations" represent townships (e.g., 三峽區, 板橋區) rather than concrete observing stations.
 
-5. **Station ID Validity — Always Verify Against `stations.txt`**
+5. **Station ID Validity — Always Verify Against `station.txt`**
    - Not every station ID that exists informally is recognised by the CWA API. Example: `C0AJ8` returns zero results in both `O-A0001-001` and `O-A0003-001`. The correct sibling auto-station is `C0AJ80`.
    - Station `466881` ("新北") is a **Manual synoptic station** in **新店區 (Xindian)**, not in Banqiao or Shulin. Do not assume the label "新北" means it is geographically near the family's home address.
    - Verified station-to-township mapping (confirmed 2026-03-05):
@@ -77,7 +77,7 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
    - Relevant config constants to define: `CWA_WORK_STATION_ID = "C0AJ80"`, `CWA_WORK_DATASET = "O-A0001-001"`, `CWA_SYNOPTIC_STATION_ID = "466881"`.
 
 8. **Reference Files & Looping Hazard**
-   - **`docs/reference/stations.txt`**: Contains verified Station IDs (e.g., `466881` for Banqiao). Always consult this file instead of guessing station IDs.
+   - **`station.txt`** (project root): Authoritative station reference — active stations with roles, forecast location lists, and additional NTP reference stations. Always consult instead of guessing IDs. (`docs/reference/stations.txt` is a legacy scratch file.)
    - **`docs/reference/cwa_7day_elements.json`**: Contains the exact Chinese element names returned by the 7-day API. The API often changes the keys or uses Chinese strings like `"最高體感溫度"` instead of English keys like `"MaximumApparentTemperature"`.
    - **CRITICAL:** Do not write loops that continuously retry fetching if a field is "missing" (e.g., `AT` or `PoP12h`). If a field is missing, it is usually because the dataset ID is wrong or the Chinese ElementName was not matched correctly. Read the reference JSON instead of looping over API calls.
 
@@ -117,3 +117,6 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
 
 5. **JSON Structural Variations**
    - MOENV v2 API sometimes returns a direct top-level list `[{...}]` instead of the expected `{"records": [{...}]}`. Always handle both variations flexibly when extracting `records`.
+
+6. **aqx_p_136 Dataset Fields**
+   - Expected as "Special Environmental Warnings", it actually returns observation metrics like `{"itemname": "RH", "concentration": "100", "siteid": "64", "monitordate": "..."}`. Handled dynamically by extracting `itemname`/`concentration` as `title`/`content`.

@@ -23,6 +23,8 @@ from config import (
     MOENV_FORECAST_AREA,
     MOENV_STATION_NAME,
     MOENV_TIMEOUT,
+    MOENV_HOURLY_FORECAST_DATASET,
+    MOENV_WARNINGS_DATASET,
 )
 from data.helpers import _safe_float, _safe_int
 
@@ -77,6 +79,7 @@ def fetch_realtime_aqi() -> dict:
             "status": rec.get("status"),
             "pm25": _safe_float(rec.get("pm2.5")),
             "pm10": _safe_float(rec.get("pm10")),
+            "o3": _safe_float(rec.get("o3")),
             "publish_time": rec.get("publishtime"),
         }
 
@@ -178,13 +181,82 @@ def fetch_forecast_aqi() -> dict:
         return {"area": MOENV_FORECAST_AREA, "aqi": None, "status": None, "forecast_date": None}
 
 
+def fetch_hourly_aqi() -> list[dict]:
+    """Fetch hourly AQI forecast for Northern area (aqx_p_322)."""
+    url = f"{MOENV_BASE_URL}/{MOENV_HOURLY_FORECAST_DATASET}"
+    params = {"api_key": MOENV_API_KEY, "format": "JSON", "limit": "100"}
+
+    try:
+        try:
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+            resp.raise_for_status()
+
+        body = json.loads(resp.content)
+        records = body if isinstance(body, list) else body.get("records", [])
+        area_records = [r for r in records if r.get("area") == MOENV_FORECAST_AREA]
+
+        return [
+            {
+                "forecast_time":  r.get("forecastdate"),
+                "aqi":            _safe_int(r.get("aqi")),
+                "major_pollutant": r.get("majorpollutant"),
+            }
+            for r in area_records
+        ]
+    except Exception as exc:
+        logger.warning("Could not fetch MOENV hourly AQI forecast: %s", exc)
+        return []
+
+
+def fetch_environmental_warnings() -> list[dict]:
+    """Fetch active special environmental warnings (aqx_p_136)."""
+    url = f"{MOENV_BASE_URL}/{MOENV_WARNINGS_DATASET}"
+    params = {"api_key": MOENV_API_KEY, "format": "JSON"}
+
+    try:
+        try:
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
+            resp.raise_for_status()
+        except requests.exceptions.SSLError:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
+            resp.raise_for_status()
+
+        body = json.loads(resp.content)
+        records = body if isinstance(body, list) else body.get("records", [])
+
+        # Filter to Northern Taiwan — try both field names; fallback to all records
+        area_records = [
+            r for r in records
+            if MOENV_FORECAST_AREA in str(r.get("area", "") or r.get("county", ""))
+        ]
+        if not area_records:
+            area_records = records
+
+        return [
+            {
+                "title":        r.get("itemname") or r.get("alert_title") or r.get("title", "Environmental Warning"),
+                "content":      f"{r.get('concentration', '')} {r.get('itemunit', '')}".strip() or r.get("content", ""),
+                "publish_time": r.get("monitordate") or r.get("publishtime"),
+            }
+            for r in area_records
+        ]
+    except Exception as exc:
+        logger.warning("Could not fetch MOENV warnings: %s", exc)
+        return []
+
+
 def fetch_all_aqi() -> dict:
-    """Fetch both real-time and forecast AQI and return as a single dict."""
-    realtime = fetch_realtime_aqi()
-    forecast = fetch_forecast_aqi()
+    """Fetch real-time AQI, 3-day forecast, hourly forecast, and active warnings."""
     return {
-        "realtime": realtime,
-        "forecast": forecast,
+        "realtime":        fetch_realtime_aqi(),
+        "forecast":        fetch_forecast_aqi(),
+        "hourly_forecast": fetch_hourly_aqi(),
+        "warnings":        fetch_environmental_warnings(),
     }
 
 

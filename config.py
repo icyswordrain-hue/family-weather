@@ -68,6 +68,9 @@ MOENV_BASE_URL = "https://data.moenv.gov.tw/api/v2"
 # Forecast datasets (AQF_P_01) provide area-wide narratives (e.g., "北部") rather than per-station.
 MOENV_AQI_DATASET = "aqx_p_432"   # Real-time AQI
 MOENV_FORECAST_DATASET = "AQF_P_01"  # 3-Day Regional Forecast
+MOENV_HOURLY_FORECAST_DATASET = "aqx_p_322"   # Hourly AQI forecast
+MOENV_WARNINGS_DATASET        = "aqx_p_136"   # Special environmental warnings
+# uv_s_01 (UV index) — out of scope for this integration
 MOENV_FORECAST_AREA = "北部"   # Northern Air Quality Zone (API uses short name)
 # Tucheng station
 MOENV_STATION_NAME = "土城"
