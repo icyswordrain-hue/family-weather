@@ -299,7 +299,6 @@ def process(
                                      else location_rec.get("all_locations", []))
 
     aqi_forecast["hourly"] = aqi.get("hourly_forecast", [])
-    aqi_forecast["warnings"] = aqi.get("warnings", [])
     aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")
     aqi_forecast["summary_zh"] = extract_aqi_summary(aqi_forecast.get("content", ""), "zh_TW")
 

@@ -179,7 +179,11 @@ git commit -m "feat: integrate hourly AQI forecast (aqx_p_322)"
 
 ---
 
-### Task 5: Fetch Special Environmental Warnings (`aqx_p_136`)
+### ~~Task 5: Fetch Special Environmental Warnings (`aqx_p_136`)~~ — ABANDONED
+
+> **Why dropped:** `aqx_p_136` returns station-level pollution measurement rows (fields: `itemname`, `concentration`, `itemunit`, `monitordate`) — not actionable alert strings. Injecting these as WARNING-level heads-up items caused raw readings like "PM2.5: 35.0 µg/m³" to appear in the alert card. `fetch_environmental_warnings()` has been removed; `MOENV_WARNINGS_DATASET` constant remains in `config.py` for future use if a suitable warnings dataset is identified.
+
+### [Original Task 5 content — for reference only]
 
 **Files:**
 - Modify: `data/fetch_moenv.py`

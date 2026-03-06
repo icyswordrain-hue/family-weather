@@ -336,17 +336,6 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     hourly_aqi = aqi_forecast.get("hourly", [])
     peak_window = _compute_aqi_peak_window(hourly_aqi)
 
-    # Direct MOENV warnings → append to alert list
-    for w in aqi_forecast.get("warnings", []):
-        title = w.get("title", "")
-        content = w.get("content", "")
-        if title or content:
-            if title and content:
-                msg = f"{title}: {content}"
-            else:
-                msg = title or content
-            _alert.append({"level": "WARNING", "type": "Air", "msg": msg, "source": "MOENV"})
-
     return {
         "wardrobe": {
             "text": wardrobe_text,

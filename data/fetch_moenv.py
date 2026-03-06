@@ -24,7 +24,6 @@ from config import (
     MOENV_STATION_NAME,
     MOENV_TIMEOUT,
     MOENV_HOURLY_FORECAST_DATASET,
-    MOENV_WARNINGS_DATASET,
 )
 from data.helpers import _safe_float, _safe_int
 
@@ -125,8 +124,6 @@ def fetch_forecast_aqi() -> dict:
             resp.raise_for_status()
         body = json.loads(resp.content.decode("utf-8", errors="ignore"))
 
-        body = json.loads(resp.content.decode("utf-8", errors="ignore"))
-
         # AI AGENT NOTE: MOENV JSON Structural Variations
         # MOENV v2 API sometimes returns a direct top-level list `[{...}]` 
         # instead of the expected `{"records": [{...}]}`. Handle both variations.
@@ -212,52 +209,13 @@ def fetch_hourly_aqi() -> list[dict]:
         return []
 
 
-def fetch_environmental_warnings() -> list[dict]:
-    """Fetch active special environmental warnings (aqx_p_136)."""
-    url = f"{MOENV_BASE_URL}/{MOENV_WARNINGS_DATASET}"
-    params = {"api_key": MOENV_API_KEY, "format": "JSON"}
-
-    try:
-        try:
-            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
-            resp.raise_for_status()
-        except requests.exceptions.SSLError:
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
-            resp.raise_for_status()
-
-        body = json.loads(resp.content)
-        records = body if isinstance(body, list) else body.get("records", [])
-
-        # Filter to Northern Taiwan — try both field names; fallback to all records
-        area_records = [
-            r for r in records
-            if MOENV_FORECAST_AREA in str(r.get("area", "") or r.get("county", ""))
-        ]
-        if not area_records:
-            area_records = records
-
-        return [
-            {
-                "title":        r.get("itemname") or r.get("alert_title") or r.get("title", "Environmental Warning"),
-                "content":      f"{r.get('concentration', '')} {r.get('itemunit', '')}".strip() or r.get("content", ""),
-                "publish_time": r.get("monitordate") or r.get("publishtime"),
-            }
-            for r in area_records
-        ]
-    except Exception as exc:
-        logger.warning("Could not fetch MOENV warnings: %s", exc)
-        return []
-
-
 def fetch_all_aqi() -> dict:
-    """Fetch real-time AQI, 3-day forecast, hourly forecast, and active warnings."""
+    """Fetch real-time AQI, 3-day forecast, and hourly forecast."""
     result = {}
     for key, fn, empty in [
-        ("realtime",        fetch_realtime_aqi,          {}),
-        ("forecast",        fetch_forecast_aqi,          []),
-        ("hourly_forecast", fetch_hourly_aqi,            []),
-        ("warnings",        fetch_environmental_warnings, []),
+        ("realtime",        fetch_realtime_aqi, {}),
+        ("forecast",        fetch_forecast_aqi, {}),
+        ("hourly_forecast", fetch_hourly_aqi,   []),
     ]:
         try:
             result[key] = fn()
