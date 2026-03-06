@@ -9,7 +9,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="/static/manifest.json" />
-  <link rel="icon" href="/static/icon-512.png" type="image/png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/static/icon-512.png" />
   <link rel="apple-touch-icon" href="/static/icon-512.png" />
   <title>厝邊天氣 — Canopy</title>
   <link rel="stylesheet" href="/static/style.css?v=19" />
@@ -104,7 +105,7 @@
       </div>
 
       <div class="error-screen hidden" id="error-screen">
-        <div class="error-icon"><img src="/static/brand-icons/alert.png" class="brand-icon" alt="Error" /></div>
+        <div class="error-icon"><img src="/static/brand-icons/alert.webp" class="brand-icon" alt="Error" /></div>
         <p class="error-msg" id="error-msg">廣播載入失敗。</p>
         <button onclick="window.app.fetchBroadcast()" class="retry-btn">重試</button>
       </div>
@@ -121,10 +122,10 @@
         <!-- VIEW 1: Lifestyle (Default) -->
         <div id="view-lifestyle" class="view-container active">
           <header class="view-header">
-            <h1><img src="/static/brand-icons/commute.png" class="brand-icon view-heading-icon" alt="" /><span id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</span></h1>
+            <h1><img src="/static/brand-icons/commute.webp" class="brand-icon view-heading-icon" alt="" /><span id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活指南</span></h1>
           </header>
           <div class="section-header-card">
-            <span><img src="/static/brand-icons/commute.png" class="brand-icon" alt="Lifestyle" /></span>
+            <span><img src="/static/brand-icons/commute.webp" class="brand-icon" alt="Lifestyle" /></span>
             <span data-i18n="nav_lifestyle">生活建議</span>
           </div>
           <div class="lifestyle-grid" id="lifestyle-grid"></div>
@@ -133,10 +134,10 @@
         <!-- VIEW 2: Dashboard (Overview) -->
         <div id="view-dashboard" class="view-container">
           <header class="view-header">
-            <h1><img src="/static/brand-icons/dashboard.png" class="brand-icon view-heading-icon" alt="" /><span id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</span></h1>
+            <h1><img src="/static/brand-icons/dashboard.webp" class="brand-icon view-heading-icon" alt="" /><span id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</span></h1>
           </header>
           <div class="section-header-card">
-            <span><img src="/static/brand-icons/dashboard.png" class="brand-icon" alt="" /></span>
+            <span><img src="/static/brand-icons/dashboard.webp" class="brand-icon" alt="" /></span>
             <span data-i18n="nav_dashboard">天氣總覽</span>
           </div>
           <div class="current-conditions-wrapper">

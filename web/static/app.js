@@ -139,7 +139,7 @@ function localisePrecipText(text) {
 }
 
 const IMG = (name, alt) =>
-  `<img src="/static/brand-icons/${name}.png" class="brand-icon" alt="${alt}" />`;
+  `<img src="/static/brand-icons/${name}.webp" class="brand-icon" alt="${alt}" />`;
 
 const ICONS = {
   'sunny': IMG('sunny', 'Sunny'), 'Sunny/Clear': IMG('sunny', 'Sunny'), '1': IMG('sunny', 'Sunny'),
