@@ -123,3 +123,31 @@ Resolution: `--resolution 2K`. Output: `web/static/icon-512.png` (~455 KB).
 **HTML changes (`dashboard.html` lines 12–13):**
 - `<link rel="icon">` → `icon-512.png` (`image/png`)
 - `<link rel="apple-touch-icon">` → `icon-512.png`
+
+---
+
+### Task 4: Rename app to Canopy / 厝邊天氣 throughout
+
+**Files:**
+- Modify: `web/templates/dashboard.html`
+- Modify: `web/static/app.js`
+- Modify: `web/static/service-worker.js`
+- Modify: `web/static/manifest.json`
+
+**Problem:** The app was still named `家庭天氣儀表板` / "Family Weather Dashboard" in the browser tab, i18n strings, and code comments — none of which were updated when the Canopy naming system was established.
+
+**Changes:**
+
+| Location | Before | After |
+|---|---|---|
+| `dashboard.html` `<title>` | `家庭天氣儀表板` | `厝邊天氣 — Canopy` |
+| `dashboard.html` `<meta description>` | `Context-aware…` | `Canopy — 厝邊天氣 · Context-aware…` |
+| `app.js` `nav_dashboard` EN | `Dashboard` | `Canopy` |
+| `app.js` `nav_dashboard` ZH | `天氣總覽` | `厝邊天氣` |
+| `app.js` `h1_dashboard` EN | `Weather Dashboard` | `Canopy` |
+| `app.js` `h1_dashboard` ZH | `天氣儀表板` | `厝邊天氣` |
+| `app.js` top comment | `Family Weather Dashboard` | `Canopy / 厝邊天氣` |
+| `service-worker.js` comment | `Family Weather Dashboard` | `Canopy / 厝邊天氣` |
+| `manifest.json` `description` | `Context-aware…` | `Canopy — 厝邊天氣 · Context-aware…` |
+
+**Commit:** `939843b` — `chore: rename app to Canopy / 厝邊天氣 throughout`
