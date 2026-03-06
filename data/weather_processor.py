@@ -23,7 +23,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional, cast
 
-from config import MEAL_FALLBACK_DISH, AQI_ALERT_THRESHOLD
+from config import MEAL_FALLBACK_DISH, AQI_ALERT_THRESHOLD, LOCATION_LAT, LOCATION_LON
+from data.solar import get_solar_times
 
 logger = logging.getLogger(__name__)
 
@@ -301,6 +302,25 @@ def process(
     aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")
     aqi_forecast["summary_zh"] = extract_aqi_summary(aqi_forecast.get("content", ""), "zh_TW")
 
+    # ── 12. Solar times ───────────────────────────────────────────────────────
+    today = datetime.now().date()
+    solar = get_solar_times(today, LOCATION_LAT, LOCATION_LON)
+
+    # Tag each forecast segment with is_daylight
+    for seg_name, seg in segmented.items():
+        if seg:
+            seg_start = seg.get("start_time", "")
+            seg_end   = seg.get("end_time", "")
+            try:
+                s_hour = _parse_dt(seg_start).replace(tzinfo=None).hour
+                e_hour = _parse_dt(seg_end).replace(tzinfo=None).hour or 24
+            except Exception:
+                s_hour, e_hour = 0, 0
+            sr_hour = int(solar["sunrise"].split(":")[0])
+            ss_hour = int(solar["sunset"].split(":")[0])
+            # Segment is daylight if it overlaps [sunrise_hour, sunset_hour)
+            seg["is_daylight"] = s_hour < ss_hour and e_hour > sr_hour
+
     return {
         "current": current_processed,
         "forecast_segments": segmented,
@@ -321,6 +341,7 @@ def process(
         "aqi_realtime": aqi["realtime"],
         "aqi_forecast": aqi_forecast,
         "outdoor_index": outdoor_index,
+        "solar": solar,
     }
 
 

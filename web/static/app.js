@@ -454,6 +454,17 @@ function renderCurrentView(data) {
   renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, `AQI ${data.aqi.val}`, `lvl-${data.aqi.level}`);
   renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
   renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
+
+  // Solar times
+  const solar = data.solar;
+  const solarRow = document.getElementById('solar-row');
+  if (solar && solarRow) {
+    document.getElementById('solar-sunrise').textContent = `↑ ${solar.sunrise}`;
+    document.getElementById('solar-sunset').textContent  = `↓ ${solar.sunset}`;
+    solarRow.style.display = '';
+  } else if (solarRow) {
+    solarRow.style.display = 'none';
+  }
 }
 
 function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {

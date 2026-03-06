@@ -39,8 +39,10 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
     meta = broadcast.get("metadata", {})
     outdoor_index = processed.get("outdoor_index", {})
 
+    solar = processed.get("solar")
+
     return {
-        "current": _slice_current(current_data, aqi_realtime),
+        "current": _slice_current(current_data, aqi_realtime, solar),
         "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
         "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, lang=lang),
         "narration": _slice_narration(paragraphs, meta),
@@ -49,7 +51,7 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
 
 # ── View Slices ──────────────────────────────────────────────────────────────
 
-def _slice_current(current: dict, aqi_realtime: dict | None = None) -> dict:
+def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict | None = None) -> dict:
     """Current View: Real-time conditions with 5-level insights."""
     aqi_realtime = aqi_realtime or {}
     return {
@@ -94,7 +96,8 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None) -> dict:
             "val": current.get("PRES"),
             "text": current.get("pres_text", "Normal"),
             "level": current.get("pres_level", 3)
-        }
+        },
+        "solar": solar,
     }
 
 

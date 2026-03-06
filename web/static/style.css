@@ -540,6 +540,16 @@ input:focus-visible {
   font-weight: 600;
 }
 
+.solar-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .gauges-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
