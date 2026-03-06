@@ -92,3 +92,34 @@ Style prompt suffix used on all: *"illustrated icon, soft painterly style, warm 
 All icons verified: HTTP 200 from local Flask server, file sizes 400–635 KB (matching existing icon scale).
 
 **Note:** `GEMINI_API_KEY` sourced from project `.env` via `export $(grep '^GEMINI_API_KEY=' .env)` — background bash tasks don't inherit the parent shell's environment.
+
+---
+
+### Task 3: Generate Canopy PWA app icon and wire to manifest
+
+**Files:**
+- Create: `web/static/icon-512.png`
+- Create: `web/static/icon-192.png` (copy of 512 — browser resizes as needed)
+- Modify: `web/static/manifest.json`
+- Modify: `web/templates/dashboard.html`
+
+**Background:** The existing `icon-192.svg` and `icon-512.svg` were generic placeholder SVGs (dark navy square, blue lightning bolt, red arc) with no Canopy brand identity.
+
+**Generated icon prompt:**
+```
+Square PWA app icon with rounded corners, deep dark navy background, a stylized
+painterly canopy of lush tropical leaves arching overhead in warm sage green and
+soft gold, a small Taiwanese tile rooftop silhouette at the base in terracotta,
+warm amber sky glowing through the canopy leaves, soft illustrated painterly style,
+no text, centered composition, app icon format, 1:1 square
+```
+Resolution: `--resolution 2K`. Output: `web/static/icon-512.png` (~455 KB).
+
+**Manifest changes:**
+- Updated `name` to `"Canopy — 厝邊天氣"`, `short_name` to `"厝邊天氣"`
+- Replaced SVG icon entries with PNG: `icon-192.png` (192×192) and `icon-512.png` (512×512)
+- `type` changed from `image/svg+xml` → `image/png`
+
+**HTML changes (`dashboard.html` lines 12–13):**
+- `<link rel="icon">` → `icon-512.png` (`image/png`)
+- `<link rel="apple-touch-icon">` → `icon-512.png`
