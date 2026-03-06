@@ -1,9 +1,0 @@
-{"type": "log", "message": "Starting pipeline for 2026-03-01 (refresh #2)"}
-{"type": "log", "message": "Fetching CWA current conditions..."}
-{"type": "log", "message": "Fetching CWA forecasts..."}
-{"type": "log", "message": "Fetching CWA 7-day forecasts..."}
-{"type": "log", "message": "Fetching MOENV AQI..."}
-{"type": "log", "message": "Loading conversation history..."}
-{"type": "log", "message": "Processing weather data & logic..."}
-{"type": "log", "message": "Triggering periodic database regeneration (14-day cycle)..."}
-{"type": "log", "message": "Building narration via CLAUDE..."}
