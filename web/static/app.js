@@ -1,5 +1,5 @@
 /**
- * app.js — Family Weather Dashboard frontend logic (v4 — Revamp).
+ * app.js — Canopy / 厝邊天氣 frontend logic (v4 — Revamp).
  *
  * Views:
  *  1. Current: Big gauges (Temp, Hum, Wind, AQI)
@@ -200,9 +200,9 @@ const TRANSLATIONS = {
     // Static panel labels
     nav_section: 'Views',
     nav_lifestyle: 'Lifestyle',
-    nav_dashboard: 'Dashboard',
+    nav_dashboard: 'Canopy',
     h1_lifestyle: 'Lifestyle Guide',
-    h1_dashboard: 'Weather Dashboard',
+    h1_dashboard: 'Canopy',
     h2_24h: '24-Hour Forecast',
     h2_7day: '7-Day Forecast',
     lang_label: 'Language',
@@ -260,9 +260,9 @@ const TRANSLATIONS = {
     // Static panel labels
     nav_section: '功能',
     nav_lifestyle: '生活建議',
-    nav_dashboard: '天氣總覽',
+    nav_dashboard: '厝邊天氣',
     h1_lifestyle: '生活指南',
-    h1_dashboard: '天氣儀表板',
+    h1_dashboard: '厝邊天氣',
     h2_24h: '24 小時預報',
     h2_7day: '七日預報',
     lang_label: 'Language',

@@ -1,4 +1,4 @@
-// Service Worker — Family Weather Dashboard
+// Service Worker — Canopy / 厝邊天氣
 const CACHE_NAME = 'weather-v8';
 const SHELL_ASSETS = [
     '/',

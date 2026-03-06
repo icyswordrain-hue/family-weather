@@ -1,7 +1,7 @@
 {
   "name": "Canopy — 厝邊天氣",
   "short_name": "厝邊天氣",
-  "description": "Context-aware, voice-enabled family weather broadcaster",
+  "description": "Canopy — 厝邊天氣 · Context-aware, voice-enabled family weather broadcaster",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a2235",
