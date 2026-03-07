@@ -3006,22 +3006,22 @@ html.dark .ps-tab-panel .rp-btn:hover {
   border-radius: 10px;
   padding: 10px 14px;
   box-shadow: var(--shadow);
-  min-height: 56px;
+  min-height: 84px;
 }
 
 .wk-row-day {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  flex: 0 0 52px;
-  gap: 3px;
+  flex: 0 0 auto;
+  gap: 6px;
 }
 
 .wk-row-night {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 44px;
+  flex: 0 0 54px;
 }
 
 .wk-row-label {
@@ -3065,8 +3065,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-row-day .wk-icon .brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 54px;
+  height: 54px;
 }
 
 .wk-row-night .wk-icon {
@@ -3074,20 +3074,20 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-row-night .wk-icon .brand-icon {
-  width: 30px;
-  height: 30px;
+  width: 45px;
+  height: 45px;
 }
 
 @media (max-width: 767px) {
   .wk-row {
     padding: 8px 10px;
     gap: 6px;
-    min-height: 48px;
+    min-height: 64px;
   }
-  .wk-row-day  { flex: 0 0 40px; }
-  .wk-row-night { flex: 0 0 34px; }
-  .wk-row-day .wk-icon .brand-icon  { width: 28px; height: 28px; }
-  .wk-row-night .wk-icon .brand-icon { width: 24px; height: 24px; }
+  .wk-row-day  { flex: 0 0 auto; }
+  .wk-row-night { flex: 0 0 40px; }
+  .wk-row-day .wk-icon .brand-icon  { width: 42px; height: 42px; }
+  .wk-row-night .wk-icon .brand-icon { width: 34px; height: 34px; }
   .wk-min-temp, .wk-max-temp { font-size: 0.82rem; }
   .wk-row-label { font-size: 0.58rem; }
 }

@@ -742,8 +742,8 @@ function renderOverviewView(data) {
       } else {
         labelEl.textContent = '—';
       }
-      daySection.appendChild(dayIconEl);
       daySection.appendChild(labelEl);
+      daySection.appendChild(dayIconEl);
 
       // ── Center: min | range bar | max
       // Aggregate low/high across day + night for a true daily range
