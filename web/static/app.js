@@ -516,7 +516,15 @@ function renderOverviewView(data) {
       const origSlotName = seg.display_name || 'Forecast';
       const slotName = origSlotName;
       const card = document.createElement('div');
-      card.className = 'time-card';
+      // Determine if it is a night segment for styling
+      const isNightSegment = () => {
+        try {
+          if (!seg.start_time) return false;
+          const h = new Date(seg.start_time.replace('+08:00', '')).getHours();
+          return h >= 18 || h < 6;
+        } catch { return false; }
+      };
+      card.className = `time-card wk-card ${isNightSegment() ? 'wk-night' : 'wk-day'}`;
       const header = document.createElement('div');
       header.className = 'tc-header';
       header.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
@@ -542,7 +550,7 @@ function renderOverviewView(data) {
         row.appendChild(v);
         details.appendChild(row);
       };
-      addRow(T.rain, localisePrecipText(seg.precip_text), seg.precip_level || 0);
+
       if (seg.outdoor_grade) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         const outdoorDisplay = localiseMetric(seg.outdoor_label) || seg.outdoor_grade;
@@ -1018,10 +1026,10 @@ function renderLifestyleView(data) {
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
     const hvacMode = (data.hvac.mode || '').toLowerCase();
     const hvacIconName =
-      hvacMode === 'cooling'    ? 'cool-shade'   :
-      hvacMode === 'dehumidify' ? 'drip-warning' :
-      (hvacMode === 'fan' || hvacMode === 'off') ? 'window-advice' :
-      'hvac';
+      hvacMode === 'cooling' ? 'cool-shade' :
+        hvacMode === 'dehumidify' ? 'drip-warning' :
+          (hvacMode === 'fan' || hvacMode === 'off') ? 'window-advice' :
+            'hvac';
     add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.text, extras);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
