@@ -477,6 +477,7 @@ input:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  position: relative;
 }
 
 .view-header h1 {
@@ -488,6 +489,46 @@ input:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.45em;
+  position: relative;
+  z-index: 1;
+}
+
+/* Slab icon sits behind the heading text */
+.heading-slab {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 2.8rem;
+  width: auto;
+  max-width: 100%;
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 0;
+}
+
+/* Mobile section-header slab */
+.section-header-card {
+  position: relative;
+}
+
+.section-slab {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 2rem;
+  width: auto;
+  max-width: 100%;
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.section-header-card > span {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── View 1: Current ─────────────────────────────────────────────────────── */
@@ -515,7 +556,7 @@ input:focus-visible {
 
 .current-side-stack .gauge-card {
   flex: 1;
-  min-height: 80px;
+  min-height: 55px;
 }
 
 /* Outdoor trigger card: clickable, shows expand cue */
@@ -558,11 +599,11 @@ input:focus-visible {
 }
 
 .current-top-row .current-hero {
-  min-height: 240px;
+  min-height: 160px;
 }
 
 .current-hero {
-  padding: 1.25rem;
+  padding: 0.75rem;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -576,13 +617,13 @@ input:focus-visible {
 .hero-main {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 0.25rem;
 }
 
 #cur-icon {
   font-size: 2.5rem;
-  width: 5rem;
+  width: 5.5rem;
 }
 
 #cur-temp {
@@ -681,6 +722,26 @@ input:focus-visible {
   color: var(--muted);
   margin-top: 0.4rem;
   font-weight: 500;
+}
+
+/* Gauge header row: icon left of label */
+.gauge-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+  width: 100%;
+}
+
+.gauge-header .gauge-label {
+  margin-bottom: 0;
+  font-size: 0.75rem;
+}
+
+.gauge-header .gauge-icon .brand-icon {
+  width: 18px;
+  height: 18px;
 }
 
 /* Level Colors (5-Level Scale) */
@@ -1731,7 +1792,7 @@ html.dark .source-claude {
   /* Main panel: full width, clear bottom for player bar */
   .main-panel {
     padding: 20px 16px;
-    padding-bottom: 50px;
+    padding-bottom: 40px;
     height: auto;
     overflow-y: visible;
   }
@@ -1825,12 +1886,12 @@ html.dark .source-claude {
   }
 
   .current-top-row .current-hero {
-    min-height: 130px;
+    min-height: 90px;
   }
 
   .current-side-stack .gauge-card {
-    padding: 0.5rem 0.35rem;
-    min-height: 70px;
+    padding: 0.4rem 0.3rem;
+    min-height: 45px;
   }
 
   .current-side-stack .gauge-label {
@@ -1851,7 +1912,7 @@ html.dark .source-claude {
   }
 
   .current-hero {
-    padding: 0.6rem 0.4rem;
+    padding: 0.4rem 0.3rem;
   }
 
   .hero-main {
