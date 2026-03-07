@@ -623,7 +623,7 @@ def fetch_forecast_7day(location_name: str = "樹林區") -> list[dict]:
             final_slot["RH"] = _avg(b["RH_list"])
             final_slot["WS"] = _avg(b["WS_list"])
             final_slot["PoP12h"] = _max(b["PoP12h_list"])
-            final_slot["Wx"] = b["Wx_list"][0] if b["Wx_list"] else None
+            final_slot["Wx"] = max(b["Wx_list"]) if b["Wx_list"] else None
             
             results.append(final_slot)
 

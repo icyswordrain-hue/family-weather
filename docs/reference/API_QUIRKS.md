@@ -97,6 +97,12 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
      - **Mapping `Wx` Codes:** The `天氣現象` (`Wx` Weather Code) is provided for all 7 days. Rain probability can be inferred categorically by mapping the code (e.g., Codes 8-14 = Showers, 15-18 = Thunderstorms).
      - **UI Fallback:** The frontend should be designed to handle `null` PoP percentages for Days 4-7 gracefully, relying on the rendered weather icon (derived from the `Wx` code) instead.
 
+9. **F-D0047-071: Wx Codes Have Finer Resolution Than PoP12h**
+   - The 7-day API returns `Wx` (weather code) at **3-hourly** intervals within a 12-hour Day/Night bucket, while `PoP12h` is issued once per 12-hour period.
+   - This means `Wx_list` in each bucket can have 2–4 entries whereas `PoP12h_list` typically has 1.
+   - Taking `Wx_list[0]` (first = morning) while taking `max(PoP12h_list)` (worst case) creates a **coherence mismatch**: the icon shows the morning sky but PoP reflects an afternoon shower.
+   - **Fix (2026-03-07):** `fetch_forecast_7day()` now selects `max(Wx_list)` per bucket. Higher Wx codes are monotonically more severe (1 = sunny → 15+ = thunderstorm), so `max()` picks the worst-case icon — consistent with how PoP aggregation works.
+
 ## MOENV (Ministry of Environment) API
 
 1. **SSL & Timeouts**
