@@ -332,11 +332,17 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     else:
         _alert = []
 
-    # Direct MOENV warnings: surface when AQI is elevated (>= 100)
+    # Direct MOENV warnings: surface only when AQI is genuinely hazardous (>= 150,
+    # "Unhealthy for Everyone") AND the content text contains explicit advisory language.
+    # Threshold 100 ("Sensitive Groups") fires too frequently on ordinary days; the
+    # content field is a general daily narrative that is always non-empty, so without
+    # the keyword gate it surfaces generic weather synopses as WARNING-level alerts.
+    _AIR_ALERT_KEYWORDS = ("不良", "不健康", "有害", "建議減少", "建議室內", "避免戶外")
     aqi_num = aqi_forecast.get("aqi")
-    if isinstance(aqi_num, (int, float)) and aqi_num >= 100:
+    if isinstance(aqi_num, (int, float)) and aqi_num >= 150:
         for w in aqi_forecast.get("warnings", []):
-            _alert.append({"type": "Air", "level": "WARNING", "msg": w})
+            if any(kw in w for kw in _AIR_ALERT_KEYWORDS):
+                _alert.append({"type": "Air", "level": "WARNING", "msg": w})
 
     # Peak AQI window from hourly forecast
     hourly_aqi = aqi_forecast.get("hourly", [])
@@ -357,6 +363,8 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "aqi": aqi_forecast.get("aqi"),
             "status": aqi_forecast.get("status", ""),
             "peak_window": peak_window,
+            "pm25": processed.get("current", {}).get("pm25"),
+            "pm10": processed.get("current", {}).get("pm10"),
         },
         "hvac": {
             "text": hvac_text,

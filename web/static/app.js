@@ -201,7 +201,7 @@ const TRANSLATIONS = {
     nav_section: 'Views',
     nav_lifestyle: 'Lifestyle',
     nav_dashboard: 'Canopy',
-    h1_lifestyle: 'Lifestyle Guide',
+    h1_lifestyle: 'Lifestyle',
     h1_dashboard: 'Canopy',
     h2_24h: '24-Hour Forecast',
     h2_7day: '7-Day Forecast',
@@ -261,7 +261,7 @@ const TRANSLATIONS = {
     nav_section: '功能',
     nav_lifestyle: '生活建議',
     nav_dashboard: '厝邊天氣',
-    h1_lifestyle: '生活指南',
+    h1_lifestyle: '生活建議',
     h1_dashboard: '厝邊天氣',
     h2_24h: '24 小時預報',
     h2_7day: '七日預報',
@@ -461,7 +461,7 @@ function renderCurrentView(data) {
   const solarRow = document.getElementById('solar-row');
   if (solar && solarRow) {
     document.getElementById('solar-sunrise').innerHTML = `${IMG('sunrise', 'Sunrise')} ${solar.sunrise}`;
-    document.getElementById('solar-sunset').innerHTML  = `${IMG('sunset', 'Sunset')} ${solar.sunset}`;
+    document.getElementById('solar-sunset').innerHTML = `${IMG('sunset', 'Sunset')} ${solar.sunset}`;
     solarRow.style.display = '';
   } else if (solarRow) {
     solarRow.style.display = 'none';
@@ -1015,6 +1015,11 @@ function renderLifestyleView(data) {
       const lvl = aqiToLevel(data.air_quality.aqi);
       const statusText = data.air_quality.status || String(data.air_quality.aqi);
       extras.push(mkBadge(`lvl-${lvl}`, statusText));
+    }
+    if (data.air_quality.pm25 != null) {
+      const pm25Parts = [`PM2.5 ${data.air_quality.pm25}`];
+      if (data.air_quality.pm10 != null) pm25Parts.push(`PM10 ${data.air_quality.pm10}`);
+      extras.push(mkSub(pm25Parts.join(' · ') + ' µg/m³'));
     }
     if (data.air_quality.peak_window) {
       extras.push(mkSub(`⚠ ${data.air_quality.peak_window}`));

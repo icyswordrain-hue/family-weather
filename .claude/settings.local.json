@@ -102,7 +102,8 @@
       "Bash(grep -n \"\\\\.log-\\\\|#log-\\\\|log-entry\\\\|log-warn\" \"c:/Users/User/.gemini/antigravity/scratch/family-weather/web/static/\"*.css)",
       "Bash(find \"c:/Users/User/.gemini/antigravity/scratch/family-weather/web/static\" -name \"*.css\" -exec grep -l \"log-\" {} ;)",
       "Bash(grep -n \"def fetch_current_conditions\\\\|def fetch_all_forecasts\" \"c:/Users/User/.gemini/antigravity/scratch/family-weather/data/\"*.py)",
-      "Bash(grep -n \"def fetch_all_aqi\" \"c:/Users/User/.gemini/antigravity/scratch/family-weather/data/\"*.py)"
+      "Bash(grep -n \"def fetch_all_aqi\" \"c:/Users/User/.gemini/antigravity/scratch/family-weather/data/\"*.py)",
+      "WebFetch(domain:data.moenv.gov.tw)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.gemini\\antigravity\\scratch\\family-weather"
