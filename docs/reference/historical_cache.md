@@ -468,3 +468,74 @@ FORECAST_CACHE_PATH = Path(
 _read_forecast_cache() -> dict          # read file or return {}; non-fatal
 _write_forecast_cache(key, data) -> None  # read-modify-write; non-fatal
 ```
+
+---
+
+## AQI Observation Cache (`aqi_history.jsonl`)
+
+Added 2026-03-07 (commit fb0ca86). MOENV publishes no hourly AQI forecast
+dataset — `AQF_P_01` is the only AQF endpoint in their catalogue and it
+provides a 3-day daily regional forecast only. The dataset previously used
+for sub-daily data (`aqx_p_322`) turned out to be a daily per-pollutant
+concentration table; its `area` filter never matched so `fetch_hourly_aqi()`
+silently returned `[]`. This cache is the replacement.
+
+### What it stores
+
+One JSON object per line, one line per pipeline run:
+
+```jsonl
+{"obs_time":"2026-03-07T05:00:00","aqi":62,"pm25":18.4,"pm10":null,"o3":22.1,"status":"普通"}
+{"obs_time":"2026-03-07T11:00:00","aqi":70,"pm25":21.0,"pm10":null,"o3":28.5,"status":"普通"}
+{"obs_time":"2026-03-07T17:00:00","aqi":55,"pm25":14.2,"pm10":null,"o3":19.0,"status":"良好"}
+```
+
+All values are sourced from `fetch_realtime_aqi()` (station `土城`, dataset
+`aqx_p_432`). `obs_time` is the MOENV `publishtime` normalised to full
+ISO 8601 (`YYYY-MM-DDTHH:MM:SS`) so `datetime.fromisoformat()` works across
+Python versions.
+
+### Path config
+
+```python
+# config.py
+AQI_HISTORY_PATH = Path(
+    os.environ.get("AQI_HISTORY_PATH", os.path.join(LOCAL_DATA_DIR, "aqi_history.jsonl"))
+)
+```
+
+- LOCAL → `local_data/aqi_history.jsonl`
+- MODAL → `/data/aqi_history.jsonl` (persisted on Modal volume `family-weather-data`)
+
+### Write / read strategy
+
+`fetch_all_aqi()` in `data/fetch_moenv.py`:
+
+1. Fetch realtime AQI (`fetch_realtime_aqi()`).
+2. **Immediately** call `_cache_aqi_reading(realtime)` — appends one line.
+   The write must precede step 3 so the current reading is included.
+3. Fetch 3-day forecast (`fetch_forecast_aqi()`).
+4. Call `fetch_hourly_aqi()` — reads today's lines from the JSONL, deduplicates
+   by `obs_time`, returns sorted `[{forecast_time, aqi, major_pollutant}, ...]`.
+
+`_cache_aqi_reading()` is a best-effort write: failures log a warning and are
+not re-raised so a filesystem error never breaks the broadcast pipeline.
+
+### Surfacing to the user
+
+`_compute_aqi_peak_window(hourly)` in `web/routes.py` receives today's
+observed readings and returns:
+
+- `"11:00–16:00"` — if any reading has AQI ≥ 100 (shows the contiguous bad window)
+- `"Peak at 11:00 (AQI 70)"` — otherwise, shows the single worst observation
+
+This string appears as a sub-line on the **Air Quality** lifestyle card.
+With 3 pipeline runs per day the window is coarse but meaningful; accuracy
+improves automatically as more readings accumulate across the day.
+
+### Growth and retention
+
+3 readings/day × 365 = ~1,095 lines/year ≈ 100 KB/year. No rotation is
+needed. Unlike `station_history.jsonl` (used for 24 h pressure/temp trends),
+`aqi_history.jsonl` is only read for today's date, so old entries are inert
+but harmless.
