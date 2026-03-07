@@ -1919,6 +1919,10 @@ html.dark .source-claude {
     font-size: 0.9rem;
   }
 
+  .current-side-stack .gauge-header {
+    justify-content: flex-start;
+  }
+
   .current-side-stack .gauge-header .gauge-icon .brand-icon {
     width: 30px;
     height: 30px;
