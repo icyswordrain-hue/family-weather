@@ -191,3 +191,20 @@ Expected: PASS (returns line numbers)
 git add web/static/style.css
 git commit -m "style: add CSS for inline temperature range bars"
 ```
+
+---
+
+## Implementation Notes (2026-03-07)
+
+**Implemented in a single commit.** Key differences from the plan above:
+
+- Canvas was in `web/templates/dashboard.html` (not `index.html`) at line 192–194 inside `.weekly-sparkline-wrap`.
+- The global min/max loop uses `topItems`/`bottomItems` (the actual variable names in scope after line 678), not `dayItems`/`nightItems` (which are reassigned and then aliased).
+- Sparkline block spanned lines 749–898 (150 lines), including `tempChart` declaration at line 48.
+- CSS `margin` used `0.3rem 0` instead of `0.5rem 0` to keep cards compact.
+- All three tasks (DOM cleanup, JS injection, CSS) were applied in one pass rather than three separate commits.
+
+**Files changed:**
+- `web/templates/dashboard.html` — removed `.weekly-sparkline-wrap` + `<canvas>`
+- `web/static/app.js` — removed `tempChart` var + 150-line Chart.js block; added global min/max + range bar injection
+- `web/static/style.css` — added `.wk-range-container`, `.wk-range-bar`, dark-mode variant

@@ -45,7 +45,6 @@ console.log("App.js Loaded");
 // ── State ──────────────────────────────────────────────────────────────────
 let broadcastData = null;
 let currentView = 'lifestyle'; // 'lifestyle' | 'narration' | 'dashboard'
-let tempChart = null;
 let loadingInterval = null;
 let LOADING_MSGS = []; // Populated by applyLanguage
 
@@ -677,6 +676,15 @@ function renderOverviewView(data) {
     const topItems = dayItems;
     const bottomItems = nightItems;
 
+    // Global temperature range for inline range bars
+    let globalMin = Infinity, globalMax = -Infinity;
+    [...topItems, ...bottomItems].forEach(item => {
+      if (item?.AT != null) {
+        globalMin = Math.min(globalMin, item.AT);
+        globalMax = Math.max(globalMax, item.AT);
+      }
+    });
+
     // Column header row — day name shown once above both card rows
     const headerEl = document.getElementById('ov-weekly-header');
     if (headerEl) {
@@ -739,163 +747,28 @@ function renderOverviewView(data) {
       temp.className = 'wk-temp';
       temp.textContent = `${Math.round(item.AT ?? 0)}°`;
 
+      const rangeContainer = document.createElement('div');
+      rangeContainer.className = 'wk-range-container';
+      const rangeBar = document.createElement('div');
+      rangeBar.className = 'wk-range-bar';
+      if (globalMax > globalMin && item.AT != null) {
+        const rel = ((item.AT - globalMin) / (globalMax - globalMin)) * 100;
+        rangeBar.style.left = `${Math.max(0, rel - 7.5)}%`;
+        rangeBar.style.width = '15%';
+        rangeBar.style.background = item.AT < 20
+          ? 'linear-gradient(90deg,#7da4ff,#a4c2f4)'
+          : 'linear-gradient(90deg,#f39c12,#f1c40f)';
+      }
+      rangeContainer.appendChild(rangeBar);
+
       card.appendChild(label);
       card.appendChild(icon);
       card.appendChild(cond);
+      card.appendChild(rangeContainer);
       card.appendChild(temp);
       weeklyTimelineEl.appendChild(card);
     });
 
-    // 7-Day temperature sparkline (day = amber, night = blue)
-    const sparkCanvas = document.getElementById('ov-weekly-sparkline');
-    if (sparkCanvas) {
-      // Build chart data directly from the rendered columns to guarantee perfect sync
-      const sparkLabels = [];
-      const sparkDay = [];
-      const sparkNight = [];
-
-      for (let i = 0; i < dayItems.length; i++) {
-        const dItem = dayItems[i];
-        const nItem = nightItems[i];
-
-        let displayDt = null;
-        if (dItem) {
-          try { displayDt = new Date(dItem.start_time.replace('+08:00', '')); } catch (e) { }
-        } else if (nItem) {
-          try { displayDt = new Date(nItem.start_time.replace('+08:00', '')); } catch (e) { }
-        }
-
-        if (displayDt) {
-          sparkLabels.push(T.days[displayDt.getDay()]);
-        } else {
-          sparkLabels.push('');
-        }
-
-        sparkDay.push(dItem ? Math.round(dItem.AT ?? 0) : null);
-        sparkNight.push(nItem ? Math.round(nItem.AT ?? 0) : null);
-      }
-
-      const allVals = [...sparkDay, ...sparkNight].filter(v => v != null);
-
-      // Snap axis to 5° grid; guarantee at least 3 gridlines (10° window)
-      const dataMin = allVals.length ? Math.min(...allVals) : 15;
-      const dataMax = allVals.length ? Math.max(...allVals) : 30;
-      let axisMin = Math.floor(dataMin / 5) * 5;
-      let axisMax = Math.ceil(dataMax / 5) * 5;
-      if (axisMax === axisMin) axisMax = axisMin + 10;
-      if (axisMax - axisMin < 10) axisMin = axisMax - 10;
-      const gridVals = [];
-      for (let v = axisMin; v <= axisMax; v += 5) gridVals.push(v);
-
-      // halfCard = (gridWidth - 6 * gap) / 14
-      // Setting layout.padding.left = layout.padding.right = halfCard ensures
-      // that Chart.js places dot i of 7 exactly over card i's centre column.
-      const gridWidth = weeklyTimelineEl.offsetWidth || sparkCanvas.parentElement.offsetWidth || 700;
-      const halfCard = Math.max(16, Math.round((gridWidth - 24) / 14));
-
-      // Read theme tokens at render time
-      const cs = getComputedStyle(document.documentElement);
-      const mutedColor = cs.getPropertyValue('--muted').trim() || '#8fa3c0';
-      const surfaceColor = cs.getPropertyValue('--surface').trim() || '#ffffff';
-
-      if (tempChart) { tempChart.destroy(); tempChart = null; }
-      tempChart = new Chart(sparkCanvas, {
-        type: 'line',
-        data: {
-          labels: sparkLabels,
-          datasets: [
-            {
-              label: 'Day',
-              data: sparkDay,
-              borderColor: '#f0932b',
-              tension: 0.35,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              borderWidth: 2,
-              spanGaps: true,
-              fill: false,
-            },
-            {
-              label: 'Night',
-              data: sparkNight,
-              borderColor: '#7da4ff',
-              tension: 0.35,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              borderWidth: 2,
-              spanGaps: true,
-              fill: false,
-            },
-          ],
-        },
-        plugins: [
-          {
-            id: 'sparklineExtras',
-            // Fill plot area with surface colour (behind data lines)
-            beforeDraw(chart) {
-              const { ctx, chartArea } = chart;
-              if (!chartArea) return;
-              ctx.save();
-              ctx.fillStyle = surfaceColor;
-              ctx.fillRect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
-              ctx.restore();
-            },
-            // Draw gridlines behind data lines
-            beforeDatasetsDraw(chart) {
-              const { ctx, chartArea, scales } = chart;
-              if (!chartArea) return;
-              ctx.save();
-              ctx.strokeStyle = 'rgba(127, 140, 160, 0.25)';
-              ctx.lineWidth = 1;
-              gridVals.forEach(val => {
-                const y = scales.y.getPixelForValue(val);
-                ctx.beginPath();
-                ctx.moveTo(chartArea.left, y);
-                ctx.lineTo(chartArea.right, y);
-                ctx.stroke();
-              });
-              ctx.restore();
-            },
-            // Draw axis labels in both padding zones (after everything else)
-            afterDraw(chart) {
-              const { ctx, chartArea, scales } = chart;
-              if (!chartArea) return;
-              ctx.save();
-              ctx.font = `10px 'Fira Code', monospace`;
-              ctx.fillStyle = mutedColor;
-              ctx.textBaseline = 'middle';
-              gridVals.forEach(val => {
-                const y = scales.y.getPixelForValue(val);
-                const label = `${val}°`;
-                ctx.textAlign = 'right';
-                ctx.fillText(label, chartArea.left - 22, y);
-                ctx.textAlign = 'left';
-                ctx.fillText(label, chartArea.right + 22, y);
-              });
-              ctx.restore();
-            },
-          },
-        ],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 400 },
-          layout: { padding: { left: halfCard + 28, right: halfCard + 28 } },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}°` },
-            },
-          },
-          scales: {
-            x: { display: false },
-            y: { display: false, min: axisMin, max: axisMax },
-          },
-        },
-      });
-    }
   }
 
 }
