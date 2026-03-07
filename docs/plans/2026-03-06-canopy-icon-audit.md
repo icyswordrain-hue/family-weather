@@ -233,8 +233,8 @@ navy, terracotta, amber, no text, strong contrast, reads clearly at 32px
 | `cool-shade` | HVAC card — mode `cooling` | Conditional icon per `hvacMode` |
 | `drip-warning` | HVAC card — mode `dehumidify` | Conditional icon |
 | `window-advice` | HVAC card — mode `fan`/`off` | Conditional icon (natural ventilation context) |
-| `canopy-log` | Right panel log header | `<img>` added before `<span data-i18n="log_title">` in `dashboard.html` |
-| `last-drip` | Last-updated timestamp prefix | `render()` in `app.js`: `setText` → `innerHTML` with icon prefix |
+| `canopy-log` | ~~Right panel log header~~ | Reverted (commit `c70210b`) — icon too large for narrow header |
+| `last-drip` | ~~Last-updated timestamp prefix~~ | Reverted (commit `c70210b`) — full-size brand-icon overwhelmed sidebar |
 | `morning-shade` | Sidebar lifestyle nav button | `.nav-icon` span inside `<button data-view="lifestyle">` |
 | `dusk-cover` | Sidebar dashboard nav button | `.nav-icon` span inside `<button data-view="dashboard">` |
 
