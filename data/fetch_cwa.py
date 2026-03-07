@@ -279,7 +279,7 @@ def fetch_work_conditions() -> dict:
 
 
 
-def fetch_forecast(location_name: str = "三峽區") -> list[dict]:
+def fetch_forecast(location_name: str = "樹林區") -> list[dict]:
     """
     Fetch 36-hour township forecast for the given location name.
     """
@@ -431,7 +431,7 @@ def fetch_all_forecasts() -> dict[str, list[dict]]:
     return result
 
 
-def fetch_forecast_7day(location_name: str = "三峽區") -> list[dict]:
+def fetch_forecast_7day(location_name: str = "樹林區") -> list[dict]:
     """
     Fetch 7-day township forecast (F-D0047-071) for the given location name.
     """
