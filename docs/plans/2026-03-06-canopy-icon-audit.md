@@ -179,3 +179,65 @@ navy, terracotta, amber, no text, strong contrast, reads clearly at 32px
 ```
 
 **Files updated:** `icon-512.png` and `icon-192.png` overwritten with variant B. `icon-variant-c.png` retained. No manifest or HTML changes required (already pointing to `icon-512.png`).
+
+---
+
+### Task 6: Convert PWA icons to WebP (commit `da8de17`)
+
+**Problem:** `icon-512.png` and `icon-192.png` from Task 5 were 1408×768 landscape JPEGs mislabelled as PNG — raw Gemini output. Not square, wrong dimensions, wrong format.
+
+**Fix using Pillow:**
+- Center-crop to 768×768 square (x-offset 320 to center the design within the landscape frame)
+- Resize to 512×512 → `web/static/icon-512.webp` (6KB, quality 85)
+- Resize to 192×192 → `web/static/icon-192.webp` (2.3KB)
+- Resize to 32×32 → `web/static/favicon-32.png` (1.9KB — kept PNG for broad browser compat)
+
+**Files updated:**
+- `web/static/manifest.json`: icon `src` → `.webp`, `type` → `image/webp`
+- `web/templates/dashboard.html`: favicon and apple-touch-icon refs → `.webp`, cache-bust bumped to `v=3`
+- Deleted: `web/static/icon-192.png`, `web/static/icon-512.png`
+
+---
+
+### Task 7: Full asset audit + stale file cleanup (commit `5c595d5`)
+
+**Audit scope:** `web/static/` root and `web/static/brand-icons/`
+
+**Findings:**
+- All 20 actively-wired brand-icons returned HTTP 200 from local Flask server ✓
+- 16 brand-icons were orphans (generated in Task 2 but not yet wired to UI)
+- 7 stale files identified in `web/static/` root for deletion
+
+**Deleted:**
+- `web/static/icon-192.svg`, `icon-512.svg` — original placeholder SVGs
+- `web/static/icon-variant-a.png`, `icon-variant-b.png`, `icon-variant-c.png` — design variants
+- `web/static/icon-192.png`, `icon-512.png` — superseded by WebP
+
+**Live PWA icons after cleanup:** `favicon-32.png` (32px PNG) · `icon-192.webp` · `icon-512.webp`
+
+---
+
+### Task 8: Wire 12 orphan Canopy icons to UI (commit `343aa93`)
+
+**Background:** 14 Canopy-feature icons were generated in Task 2. Two (`daily-canopy`, `high-canopy`) were already wired as view header icons in `dashboard.html`. The remaining 12 were unconnected.
+
+**Changes:**
+
+| Icon | Placement | Mechanism |
+|---|---|---|
+| `canopy-moisture` | Humidity gauge (dashboard view) | `renderGauge()` extended with optional 6th `icon` param |
+| `uv-warning` | UV gauge | Same |
+| `pressure-drop` | Pressure gauge | Same |
+| `feels-like` | Wardrobe lifestyle card | Replaced `wardrobe.webp` — AT is the primary wardrobe driver |
+| `heart-flag` | Alert `TYPE_ICONS.Health` | Replaced `health.webp` for Ménière's/cardiac alerts |
+| `cool-shade` | HVAC card — mode `cooling` | Conditional icon per `hvacMode` |
+| `drip-warning` | HVAC card — mode `dehumidify` | Conditional icon |
+| `window-advice` | HVAC card — mode `fan`/`off` | Conditional icon (natural ventilation context) |
+| `canopy-log` | Right panel log header | `<img>` added before `<span data-i18n="log_title">` in `dashboard.html` |
+| `last-drip` | Last-updated timestamp prefix | `render()` in `app.js`: `setText` → `innerHTML` with icon prefix |
+| `morning-shade` | Sidebar lifestyle nav button | `.nav-icon` span inside `<button data-view="lifestyle">` |
+| `dusk-cover` | Sidebar dashboard nav button | `.nav-icon` span inside `<button data-view="dashboard">` |
+
+**CSS additions (`style.css`):**
+- `.gauge-icon .brand-icon { width: 28px; height: 28px; }`
+- `.nav-icon .brand-icon { width: 24px; height: 24px; }`
