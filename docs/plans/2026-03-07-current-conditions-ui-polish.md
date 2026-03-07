@@ -335,3 +335,54 @@ This makes it render to the left of the heading `<span>` inside the existing `di
 ```
 Targets only `.gauges-grid` children — leaves side-stack (wind/ground/outdoor) icons intact.
 
+---
+
+## Round 6 — Side-Stack Icon Alignment Fix (`1034d5a`)
+
+### Problem
+`.gauge-header { justify-content: center }` centers the `[icon + label]` flex group within the full card width. Because label lengths differ, the icon's left position varied significantly:
+
+| Card | Group width | Card width | Icon left offset |
+|------|------------|------------|-----------------|
+| WIND | ~70px | ~185px | ~57px |
+| GROUND | ~90px | ~185px | ~47px |
+| OUTDOOR ACTIVITIES | ~170px | ~185px | ~7px |
+
+OUTDOOR ACTIVITIES nearly fills the card so its icon sits near the left edge (looks intentional). WIND/GROUND icons floated right-of-center, appearing oddly indented by comparison.
+
+### Fix
+```css
+@media (max-width: 767px) {
+  .current-side-stack .gauge-header {
+    justify-content: flex-start;
+  }
+}
+```
+All three side-stack card icons now left-align consistently to the padding edge.
+
+---
+
+## Round 7 — Heading Slab ×1.5 Opacity, Mobile Section Slab Matches Desktop (`f6868b6`)
+
+### Requests
+1. H1 slab opacity ×1.5
+2. Mobile section slab should look like the desktop heading-slab (abs-positioned behind text, not inline icon)
+
+### Changes
+
+**`.heading-slab` opacity:**
+`0.60 → 0.90`
+
+**`.section-header-card` — add `position: relative`** (required containing block for abs-positioned `.section-slab` child; was missing from base rule).
+
+**Mobile `.section-slab` override** (reverts Round 5 inline-icon approach):
+```css
+.section-slab {
+  height: 4.5rem;
+  width: 100%;
+  opacity: 0.90;
+  object-fit: cover;
+  border-radius: 0;
+}
+```
+Retains base-rule `position: absolute; left: 0; top: 50%; transform: translateY(-50%)` — the slab image sits behind the heading text at the same height and opacity as the desktop `.heading-slab`.
