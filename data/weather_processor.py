@@ -211,7 +211,7 @@ def process(
             seg["hum_text"], seg["hum_level"] = dew_gap_to_hum(dew_gap)
 
             # 5-Level Metrics
-            seg["wind_text"], seg["wind_level"] = _val_to_scale(ws, BEAUFORT_SCALE_5)
+            seg["wind_text"], seg["wind_level"] = _val_to_scale(seg.get("WS"), BEAUFORT_SCALE_5)
             seg["wind_dir_text"] = degrees_to_cardinal(seg.get("WD"))
 
             pop6h = seg.get("PoP6h")
