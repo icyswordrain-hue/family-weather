@@ -691,11 +691,7 @@ function renderOverviewView(data) {
       const daySpan = document.createElement('span');
       daySpan.className = 'wk-day-name';
       daySpan.textContent = dayLabel;
-      const periodSpan = document.createElement('span');
-      periodSpan.className = 'wk-period';
-      periodSpan.textContent = ` ${periodLabel}`;
       label.appendChild(daySpan);
-      label.appendChild(periodSpan);
 
       const icon = document.createElement('div');
       icon.className = 'wk-icon';
