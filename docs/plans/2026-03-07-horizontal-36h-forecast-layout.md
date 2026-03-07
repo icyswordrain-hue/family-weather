@@ -76,9 +76,41 @@ No HTML or backend changes. The `#ov-timeline` container keeps its `timeline-gri
 - `.tc-transition` / `.tc-col` — transition arrows between segments
 - `tlGlobalMin` / `tlGlobalMax` — global range computation (`app.js:548–554`)
 
-## UI Refinements (Post-Implementation)
+## Post-Implementation Corrections (2026-03-07)
 
-The following refinements were applied to improve clarity of the layout:
-- **Temperature Gauge**: The range bar now expands to fill the full container width (`100%`) per segment, starting at 0%. Meaning all segment range bars originate and end at identical vertical alignments, while inner labels represent the segment's actual local min/max.
-- **Right-side Stats**: Icons for Outdoor Grade and Precipitation are fully opaque (opacity 1.0) and pushed to the far right, enlarged locally to `60px` (1.5x of the default `40px` inside).
-- **Transition Alert**: Formatted as a single contiguous horizontal line (Change indicator + value shift + weather label) rather than awkwardly wrapped text elements.
+Several bugs and visual inconsistencies were fixed after initial implementation:
+
+### Temperature Range Bar (commits `fa12137`, `0ab602e`, `e08e0bf`)
+
+**Problems fixed:**
+1. `.tc-seg-center` uses `display:flex`, making `wk-row-temps` a flex *item* that collapsed to content width — the range bar had no room to render. Fixed by adding `.tc-seg-center .wk-row-temps { width: 100% }`.
+2. Bar condition `seg.AT != null` silently hid the bar when only `MinAT`/`MaxAT` were present. Fixed to `(seg.MinAT != null || seg.AT != null)`.
+3. Bar position was hardcoded to `left:0%, width:100%` (all bars full-width, no proportional meaning). Restored to proportional `leftPct`/`rightPct` using the global span.
+4. When `lo === hi` (overnight segments where all 6 hourly AT values are flat), both labels showed the same value (e.g., "15° 15°"). Fixed by suppressing the min label when `lo === hi`, showing only `maxTempEl`.
+5. **Global range now computed server-side** (`_slice_overview()` in `web/routes.py`): iterates all segments' `MinAT`/`MaxAT` → emits `timeline_temp_range: {min, max}` in the overview slice. Frontend reads `data.timeline_temp_range` directly; retains local fallback scan for old cached broadcasts.
+
+**Current bar behaviour:** Each segment bar is positioned proportionally within the full 36h AT span. Segments with a genuine 6h range (e.g., Morning 15°→19°) show a wide coloured pill; overnight flat segments show a narrow positioned point. Min label suppressed when lo === hi.
+
+### Visual Parity with 7-Day View (commit `fa12137`)
+
+| Change | Before | After |
+|--------|--------|-------|
+| Segment label size | `0.65rem` | `1rem` (matches `.wk-row-label`) |
+| Temperature label size | `1.1rem` | `1.35rem` (matches `.wk-min-temp`/`.wk-max-temp`); mobile `1.23rem` |
+| Time label | "18:00" / "00:00" under every icon | Removed — segment name conveys the slot |
+
+### Right Column: Icons + Text (commit `fa12137`)
+
+| Change | Before | After |
+|--------|--------|-------|
+| Outdoor section | `"A Good to go"` (grade letter + label, no icon) | `outdoor.webp` 20px icon + label text (grade letter removed) |
+| Precipitation section | plain `"Unlikely"` text | `rain-gear.webp` 20px icon + precip text |
+| `.tc-seg-stat` display | block | `display:flex; align-items:center; gap:4px` |
+| `.tc-seg-grade` rule | present (0.95rem bold) | removed (no longer used) |
+
+### Left Column (commit `fa12137`)
+
+| Class | Change |
+|-------|--------|
+| `.tc-seg-time` | element removed from DOM entirely |
+| `.tc-seg-label` | `font-size: 0.65rem` → `1rem` |
