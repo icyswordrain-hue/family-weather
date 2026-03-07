@@ -206,8 +206,18 @@ def _slice_overview(
 
     timeline_list.sort(key=lambda x: x["start_time"])
 
+    at_mins = [s["MinAT"] if s.get("MinAT") is not None else s.get("AT") for s in timeline_list]
+    at_maxs = [s["MaxAT"] if s.get("MaxAT") is not None else s.get("AT") for s in timeline_list]
+    at_mins = [v for v in at_mins if v is not None]
+    at_maxs = [v for v in at_maxs if v is not None]
+    timeline_temp_range = {
+        "min": min(at_mins) if at_mins else None,
+        "max": max(at_maxs) if at_maxs else None,
+    }
+
     return {
         "timeline": timeline_list,
+        "timeline_temp_range": timeline_temp_range,
         "weekly_timeline": forecast_7day[:16],
         "aqi_forecast": {
             **aqi_forecast,

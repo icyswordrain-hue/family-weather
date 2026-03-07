@@ -545,13 +545,18 @@ function renderOverviewView(data) {
     const transitionMap = {};
     (data.transitions || []).forEach(t => { if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t; });
 
-    let tlGlobalMin = Infinity, tlGlobalMax = -Infinity;
-    (data.timeline || []).forEach(seg => {
-      const lo = seg.MinAT ?? seg.AT;
-      const hi = seg.MaxAT ?? seg.AT;
-      if (lo != null) tlGlobalMin = Math.min(tlGlobalMin, lo);
-      if (hi != null) tlGlobalMax = Math.max(tlGlobalMax, hi);
-    });
+    // Use server-derived range (from MinAT/MaxAT per segment); fall back to local scan
+    // for old cached broadcasts that pre-date the timeline_temp_range field.
+    let tlGlobalMin = data.timeline_temp_range?.min ?? Infinity;
+    let tlGlobalMax = data.timeline_temp_range?.max ?? -Infinity;
+    if (!isFinite(tlGlobalMin) || !isFinite(tlGlobalMax)) {
+      (data.timeline || []).forEach(seg => {
+        const lo = seg.MinAT ?? seg.AT;
+        const hi = seg.MaxAT ?? seg.AT;
+        if (lo != null) tlGlobalMin = Math.min(tlGlobalMin, lo);
+        if (hi != null) tlGlobalMax = Math.max(tlGlobalMax, hi);
+      });
+    }
 
     (data.timeline || []).forEach((seg, idx) => {
       const origSlotName = seg.display_name || 'Forecast';
