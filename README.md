@@ -257,3 +257,19 @@ pytest tests/
 - **Weather**: [Central Weather Administration (CWA)](https://opendata.cwa.gov.tw/) — Banqiao station `466881`, New Taipei City township forecasts
 - **Air Quality**: [Ministry of Environment (MOENV)](https://data.moenv.gov.tw/) — Tucheng station, Northern zone 3-day forecast
 - **Location**: Shulin District, New Taipei City (24.9955°N, 121.4279°E), `Asia/Taipei`
+
+---
+
+## Changelog
+
+### 2026-03-07 — 36h Segment Row Refinements (`27ca251`)
+
+**Files:** `web/static/app.js`, `web/static/style.css`
+
+| # | Change | Detail |
+|---|---|---|
+| 1 | **Height 3/4** | `min-height` reduced 168 → 126 px (desktop), 128 → 96 px (mobile); padding tightened to match |
+| 2 | **Aligned temp gauge** | Bar positions already anchored to global AT min/max across all segments — no change needed; documented for clarity |
+| 3 | **2× icon watermark** | Right-column stat icons rendered as `position: absolute` at 40 px with `opacity: 0.18`, text sits on top via `z-index: 1`; uses new `.tc-stat-icon` / `.tc-stat-text` wrapper elements |
+| 4 | **Conditional outdoor / PoP** | Day segments (h < 18 and h ≥ 6) show outdoor grade; overnight segments show PoP (precipitation probability) |
+| 5 | **Alert-style transition card** | `.tc-transition` restyled as a flex card with `border-left`, `box-shadow`, and a structured icon + `CHANGE` label + detail-text layout, matching the lifestyle alert card pattern |
