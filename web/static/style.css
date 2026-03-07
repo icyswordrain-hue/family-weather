@@ -1718,9 +1718,9 @@ html.dark .source-claude {
   }
 
   .compact-header {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    font-size: 0.82rem;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    font-size: 1.23rem;
   }
 
   /* All views visible — no tab gating on mobile */
@@ -1731,7 +1731,7 @@ html.dark .source-claude {
   /* Main panel: full width, clear bottom for player bar */
   .main-panel {
     padding: 20px 16px;
-    padding-bottom: 54px;
+    padding-bottom: 50px;
     height: auto;
     overflow-y: visible;
   }
@@ -1740,7 +1740,7 @@ html.dark .source-claude {
   .player-bar {
     left: 0;
     right: 0;
-    height: 32px;
+    height: 28px;
     gap: 10px;
     padding: 0 14px;
     cursor: pointer;
@@ -1764,8 +1764,8 @@ html.dark .source-claude {
   .player-sheet {
     left: 0;
     right: 0;
-    height: calc(90vh - 32px);
-    bottom: 32px;
+    height: calc(90vh - 28px);
+    bottom: 28px;
   }
 
   .player-sheet-handle {
@@ -1785,7 +1785,7 @@ html.dark .source-claude {
   .player-sheet-backdrop {
     left: 0;
     right: 0;
-    bottom: 32px;
+    bottom: 28px;
   }
 
   .player-sheet-body {
@@ -1847,7 +1847,7 @@ html.dark .source-claude {
   }
 
   .current-conditions-wrapper {
-    max-height: calc(100dvh - 32px - 56px);
+    max-height: calc(100dvh - 28px - 56px);
   }
 
   .current-hero {
