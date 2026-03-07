@@ -940,6 +940,7 @@ html.dark .audio-toggle-btn.active {
   justify-content: center;
   flex-shrink: 0;
 }
+
 /* Brand Icon Integration */
 .brand-icon {
   display: block;
@@ -947,12 +948,14 @@ html.dark .audio-toggle-btn.active {
   height: auto;
   margin: 0 auto;
 }
+
 .view-heading-icon.brand-icon {
   width: 2rem;
   height: 2rem;
   margin: 0;
   display: inline-block;
 }
+
 .ls-alert-type-icon .brand-icon {
   height: 0.9rem;
   width: auto;
@@ -967,6 +970,7 @@ html.dark .audio-toggle-btn.active {
   display: inline-block;
   margin: 0;
 }
+
 .nav-icon .brand-icon {
   width: 24px;
   height: 24px;
@@ -979,6 +983,7 @@ html.dark .audio-toggle-btn.active {
   width: 60px;
   height: 60px;
 }
+
 .wk-icon .brand-icon {
   width: 36px;
   height: 36px;
@@ -1525,18 +1530,35 @@ html.dark .source-claude {
   gap: 4px;
   align-items: center;
 }
+
 .log-status-chip {
   font-size: 0.7rem;
   padding: 2px 7px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.07);
   color: #d0d7de;
   white-space: nowrap;
 }
-.log-status-chip.log-status-ok    { background: rgba(63,185,80,0.15);  color: #3fb950; }
-.log-status-chip.log-status-warn  { background: rgba(210,153,34,0.15); color: #d2a21a; }
-.log-status-chip.log-status-stale { background: rgba(210,153,34,0.15); color: #d2a21a; }
-.log-status-chip.log-status-fail  { background: rgba(248,81,73,0.15);  color: #f85149; }
+
+.log-status-chip.log-status-ok {
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+}
+
+.log-status-chip.log-status-warn {
+  background: rgba(210, 153, 34, 0.15);
+  color: #d2a21a;
+}
+
+.log-status-chip.log-status-stale {
+  background: rgba(210, 153, 34, 0.15);
+  color: #d2a21a;
+}
+
+.log-status-chip.log-status-fail {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
 
 /* ── Mobile Responsive ───────────────────────────────────────────────────── */
 
@@ -1572,6 +1594,7 @@ html.dark .source-claude {
   border-bottom: 2px solid var(--border);
   margin-bottom: 1.5rem;
 }
+
 .section-header-card .brand-icon {
   width: 1.5rem;
   height: 1.5rem;
@@ -2851,8 +2874,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 /* ── Day/Night card colors ───────────────────
-   Light mode: day = white surface, night = dark (sidebar bg)
-   Dark mode:  day = dark surface,  night = light (inverted)
+   Light mode: day = white surface, night = shaded surface
+   Dark mode:  day = dark surface,  night = slightly lighter surface
    ─────────────────────────────────────────── */
 .wk-card.wk-day {
   background: var(--surface);
@@ -2861,22 +2884,20 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-card.wk-night {
-  background: var(--sidebar-bg);
-  /* dark in light mode */
-  color: #ffffff;
-  border-top: 3px solid var(--sidebar-active, #4a5f9a);
+  background: var(--hover, #EDE7DD);
+  color: var(--text);
+  border-top: 3px solid var(--muted, #7A6E64);
 }
 
 .wk-card.wk-night .wk-temp {
-  color: #fff;
+  color: var(--text);
 }
 
-/* Flip night card in dark mode so it reads lighter */
+/* Flip night card in dark mode so it reads slightly lighter */
 html.dark .wk-card.wk-night {
-  background: rgba(255, 255, 255, 0.07);
-  /* lighter than dark surface */
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
-  border-top-color: #7da4ff;
+  border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 html.dark .wk-card.wk-night .wk-temp {
