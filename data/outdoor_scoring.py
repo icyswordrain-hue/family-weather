@@ -19,8 +19,6 @@ GRADE_THRESHOLDS = [
 OUTDOOR_WEIGHTS_GENERAL = {
     "rain_active": -50, "rain_light": -25,
     "pop_high": -25, "pop_mid": -12,
-    "at_extreme_hot": -30, "at_hot": -15, "at_cold": -10, "at_extreme_cold": -20,
-    "dp_oppressive": -12, "dp_muggy": -6, "dp_sticky": -3,
     "dew_gap_clammy": -8, "dew_gap_humid": -4,
     "wind_strong": -35, "wind_moderate": -10,
     "aqi_unhealthy": -40, "aqi_sensitive": -15,
@@ -39,7 +37,7 @@ OUTDOOR_WEIGHTS_BY_ACTIVITY: dict[str, dict] = {
         "wet_ground": -25, "vis_very_poor": -40, "vis_poor": -25,
     },
     "hiking": {
-        "rain_light": -35, "at_hot": -20, "at_extreme_hot": -35,
+        "rain_light": -35,
         "aqi_sensitive": -20, "aqi_unhealthy": -45,
         "uvi_very_high": -12, "uvi_extreme": -20,
         "vis_poor": -30, "vis_very_poor": -45,
@@ -49,23 +47,20 @@ OUTDOOR_WEIGHTS_BY_ACTIVITY: dict[str, dict] = {
     },
     "swimming": {
         "rain_active": 0, "rain_light": 0, "pop_high": -10, "pop_mid": -5,
-        "at_extreme_hot": 0, "at_hot": 0, "at_cold": -50, "at_extreme_cold": -80,
-        "dp_oppressive": 0, "dp_muggy": 0, "dp_sticky": 0,
         "dew_gap_clammy": 0, "dew_gap_humid": 0,
         "wind_strong": -15, "wind_moderate": -5,
         "aqi_unhealthy": -20, "aqi_sensitive": -5, "uvi_extreme": -10, "uvi_very_high": -5,
         "wet_ground": 0,
     },
     "sports": {
-        "at_extreme_hot": -35, "at_hot": -15, "dp_oppressive": -20, "dp_muggy": -10,
         "dew_gap_clammy": -20, "wet_ground": -20,
         "aqi_unhealthy": -40, "aqi_sensitive": -15,
     },
     "photography": {
         "rain_active": -15, "rain_light": 0, "pop_high": -5, "pop_mid": 0,
-        "at_extreme_hot": -10, "at_hot": -5, "at_cold": -5, "at_extreme_cold": -15,
-        "dp_oppressive": -5, "wind_strong": -10, "wind_moderate": -5,
+        "wind_strong": -10, "wind_moderate": -5,
         "aqi_unhealthy": -20, "aqi_sensitive": -5, "uvi_extreme": 0, "uvi_very_high": 0,
+        "solar_extreme": -30, "solar_high": -15,
         "wet_ground": 0, "vis_very_poor": -50, "vis_poor": -25,
     },
 }
@@ -98,13 +93,7 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
         ("rain", c.get("rain", 0), lambda v: 1 < (v or 0) <= 5, "rain_light", "caution", "light_rain"),
         ("pop", c.get("pop"), lambda v: v is not None and v > 70, "pop_high", "caution", "rain_likely"),
         ("pop", c.get("pop"), lambda v: v is not None and 40 < v <= 70, "pop_mid", "caution", "rain_possible"),
-        ("at", c.get("at"), lambda v: v is not None and v > cfg.OUTDOOR_TEMP_EXTREME_HOT, "at_extreme_hot", "caution", "extreme_heat"),
-        ("at", c.get("at"), lambda v: v is not None and cfg.OUTDOOR_TEMP_HOT < v <= cfg.OUTDOOR_TEMP_EXTREME_HOT, "at_hot", "caution", "hot"),
-        ("at", c.get("at"), lambda v: v is not None and v < cfg.OUTDOOR_TEMP_EXTREME_COLD, "at_extreme_cold", "caution", "extreme_cold"),
-        ("at", c.get("at"), lambda v: v is not None and cfg.OUTDOOR_TEMP_EXTREME_COLD <= v < cfg.OUTDOOR_TEMP_COLD, "at_cold", "caution", "cold"),
-        ("dew_point", c.get("dew_point"), lambda v: v is not None and v >= 24,      "dp_oppressive",  "caution", "oppressive_humidity"),
-        ("dew_point", c.get("dew_point"), lambda v: v is not None and 21 <= v < 24, "dp_muggy",       "caution", "muggy"),
-        ("dew_point", c.get("dew_point"), lambda v: v is not None and 18 <= v < 21, "dp_sticky",      "caution", "sticky"),
+        ("at", c.get("at"), lambda v: v is not None and v != 22, "at_comfort_penalty", "caution", "at_comfort"),
         ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and v < 2,        "dew_gap_clammy", "caution", "very_humid"),
         ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and 2 <= v < 5,   "dew_gap_humid",  "caution", "humid"),
         ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) >= 7, "wind_strong", "blocker", "strong_wind"),
@@ -116,14 +105,50 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
         ("ground_wet", c.get("ground_wet"), lambda v: v is True, "wet_ground", "caution", "wet_ground"),
         ("vis", c.get("vis"), lambda v: v is not None and v < cfg.OUTDOOR_VIS_VERY_POOR, "vis_very_poor", "blocker", "dense_fog"),
         ("vis", c.get("vis"), lambda v: v is not None and cfg.OUTDOOR_VIS_VERY_POOR <= v < cfg.OUTDOOR_VIS_POOR, "vis_poor", "caution", "low_vis"),
-        ("solar", c.get("solar_load"), lambda v: v is not None and v > 80, "solar_extreme", "caution", "harsh_sunlight"),
+        ("solar", c.get("solar_load"), lambda v: v is not None and v > 80,        "solar_extreme", "caution", "harsh_sunlight"),
+        ("solar", c.get("solar_load"), lambda v: v is not None and 50 < v <= 80, "solar_high",    "caution", "bright_sunlight"),
     ]
 
     for _, val, condition, penalty_key, rule_type, label in rules:
         if condition(val):
-            score += weights.get(penalty_key, 0)
-            if rule_type == "blocker": blockers.append(label)
-            else: cautions.append(label)
+            if penalty_key == "at_comfort_penalty":
+                # Continuous penalty for apparent temperature centered at 22C
+                at = c.get("at")
+                if at is not None:
+                    diff = at - 22
+                        
+                    # Quadratic falloff penalty
+                    # At diff=5  (27°C / 17°C) → -10
+                    # At diff=10 (32°C / 12°C) → -40
+                    # At diff=14 (36°C / 8°C)  → -75 (cap, score = 25)
+                    penalty = -int((abs(diff) ** 2) / 2.5)
+                    penalty = max(-75, penalty)
+                    
+                    # Store the label based on 3 levels of deviation (~4deg, ~8deg, >8deg)
+                    if diff > 0:
+                        if diff >= 10:    # >= 32C
+                            label_to_use = "extreme_heat"
+                        elif diff >= 6:   # 28C to 31C
+                            label_to_use = "hot"
+                        else:             # 23C to 27C
+                            label_to_use = "warm"
+                    elif diff < 0:
+                        if diff <= -10:   # <= 12C
+                            label_to_use = "extreme_cold"
+                        elif diff <= -6:  # 16C to 13C
+                            label_to_use = "cold"
+                        else:             # 21C to 17C
+                            label_to_use = "cool"
+                    else:
+                        label_to_use = "at_comfort"
+
+                    score += penalty
+                    if rule_type == "blocker": blockers.append(label_to_use)
+                    else: cautions.append(label_to_use)
+            else:
+                score += weights.get(penalty_key, 0)
+                if rule_type == "blocker": blockers.append(label)
+                else: cautions.append(label)
 
     return max(0, min(100, score)), blockers, cautions
 
