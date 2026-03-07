@@ -743,14 +743,6 @@ function renderOverviewView(data) {
       card.appendChild(icon);
       card.appendChild(cond);
       card.appendChild(temp);
-      if (item.PoP12h != null) {
-        const rain = document.createElement('div');
-        rain.className = `wk-rain lvl-${item.precip_level || 0}`;
-        rain.textContent = item.precip_text
-          ? localisePrecipText(item.precip_text)
-          : Math.round(item.PoP12h) + '%';
-        card.appendChild(rain);
-      }
       weeklyTimelineEl.appendChild(card);
     });
 
