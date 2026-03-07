@@ -526,7 +526,7 @@ input:focus-visible {
   pointer-events: none;
 }
 
-.section-header-card > span {
+.section-header-card>span {
   position: relative;
   z-index: 1;
 }
@@ -919,6 +919,7 @@ input:focus-visible {
   position: relative;
   overflow: hidden;
 }
+
 .wk-range-bar {
   position: absolute;
   height: 100%;
@@ -926,6 +927,7 @@ input:focus-visible {
   top: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 html.dark .wk-range-container {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -992,20 +994,54 @@ html.dark .wk-range-container {
 }
 
 .tc-transition {
-  background: rgba(255, 200, 0, 0.1);
-  border: 1px solid rgba(255, 200, 0, 0.35);
-  border-radius: var(--radius);
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background: var(--surface);
+  border-radius: 10px;
+  border-left: 3px solid rgba(255, 200, 0, 0.7);
+  padding: 0.55rem 0.9rem;
+  box-shadow: var(--shadow);
+}
+
+.tc-transition-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.75;
+}
+
+.tc-transition-icon .brand-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.tc-transition-body {
+  flex: 1;
+}
+
+.tc-transition-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: #b8860b;
-  text-align: center;
+  margin-bottom: 0.15rem;
+}
+
+.tc-transition-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
 }
 
 html.dark .tc-transition {
-  background: rgba(255, 200, 0, 0.1);
+  border-left-color: rgba(255, 200, 0, 0.4);
+}
+
+html.dark .tc-transition-label {
   color: #f9ca24;
-  border-color: rgba(255, 200, 0, 0.25);
 }
 
 /* ── 36h Forecast — Horizontal Segment Rows ─────────────────────────────── */
@@ -1025,9 +1061,9 @@ html.dark .tc-transition {
   gap: 14px;
   background: var(--surface);
   border-radius: 12px;
-  padding: 14px 18px;
+  padding: 10px 18px;
   box-shadow: var(--shadow);
-  min-height: 168px;
+  min-height: 126px;
   border-left: 4px solid var(--blue);
 }
 
@@ -1113,27 +1149,46 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-stat {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
+  min-height: 40px;
+  padding-left: 4px;
 }
 
-.tc-seg-stat .brand-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+/* Icon sits behind text as a decorative background layer */
+.tc-seg-stat .tc-stat-icon {
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tc-seg-stat .tc-stat-icon .brand-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.tc-seg-stat .tc-stat-text {
+  position: relative;
+  z-index: 1;
+  padding-left: 32px;
 }
 
 /* ── Mobile (≤767px) ── */
 @media (max-width: 767px) {
   .tc-seg-row {
-    padding: 10px 12px;
+    padding: 8px 10px;
     gap: 8px;
-    min-height: 128px;
+    min-height: 96px;
   }
 
   .tc-seg-left {
@@ -1149,8 +1204,13 @@ html.dark .tc-seg-row.tc-seg-night {
     flex: 0 0 82px;
   }
 
-  .tc-seg-stat  { font-size: 0.78rem; }
-  .tc-seg-temp  { font-size: 1.23rem; }
+  .tc-seg-stat {
+    font-size: 0.78rem;
+  }
+
+  .tc-seg-temp {
+    font-size: 1.23rem;
+  }
 }
 
 /* ── Kids audio toggle (#12) ─────────────────────────────────────────────── */
@@ -1892,8 +1952,13 @@ html.dark .source-claude {
   line-height: 1;
 }
 
-#mobile-last-updated.stale-amber { color: #f59e0b; }
-#mobile-last-updated.stale-red   { color: #ef4444; }
+#mobile-last-updated.stale-amber {
+  color: #f59e0b;
+}
+
+#mobile-last-updated.stale-red {
+  color: #ef4444;
+}
 
 /* ── Section Header Card (mobile only) ─────────────────────────────────── */
 .section-header-card {
@@ -3229,10 +3294,31 @@ html.dark .ps-tab-panel .rp-btn:hover {
     gap: 6px;
     min-height: 64px;
   }
-  .wk-row-day  { flex: 0 0 88px; }
-  .wk-row-night { flex: 0 0 40px; }
-  .wk-row-day .wk-icon .brand-icon  { width: 42px; height: 42px; }
-  .wk-row-night .wk-icon .brand-icon { width: 34px; height: 34px; }
-  .wk-min-temp, .wk-max-temp { font-size: 1.23rem; }
-  .wk-row-label { font-size: 0.9rem; }
+
+  .wk-row-day {
+    flex: 0 0 88px;
+  }
+
+  .wk-row-night {
+    flex: 0 0 40px;
+  }
+
+  .wk-row-day .wk-icon .brand-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .wk-row-night .wk-icon .brand-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .wk-min-temp,
+  .wk-max-temp {
+    font-size: 1.23rem;
+  }
+
+  .wk-row-label {
+    font-size: 0.9rem;
+  }
 }

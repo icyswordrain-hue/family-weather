@@ -440,7 +440,7 @@ function render(data) {
       const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;
       mobileUpdEl.textContent = `${T.last_updated}${m}/${dd} ${hh}:${min}`;
       mobileUpdEl.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
-      mobileUpdEl.classList.toggle('stale-red',   ageH >= 4);
+      mobileUpdEl.classList.toggle('stale-red', ageH >= 4);
     }
   }
 }
@@ -602,9 +602,9 @@ function renderOverviewView(data) {
         const hi = seg.MaxAT ?? seg.AT;
         minTempEl.textContent = `${Math.round(lo)}°`;
         maxTempEl.textContent = `${Math.round(hi)}°`;
-        const leftPct  = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
+        const leftPct = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
         const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
-        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.left = `${leftPct}%`;
         rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       } else {
@@ -617,22 +617,34 @@ function renderOverviewView(data) {
       tempsRow.appendChild(maxTempEl);
       centerEl.appendChild(tempsRow);
 
-      // ── Right: outdoor grade + Poisson precip text ─────────────────
+      // ── Right: outdoor grade + Poisson precip text (conditional by time-of-day)
       const rightEl = document.createElement('div');
       rightEl.className = 'tc-seg-right';
 
-      if (seg.outdoor_label) {
+      const mkStat = (iconName, altText, labelHtml, lvlClass) => {
+        const el = document.createElement('div');
+        el.className = `tc-seg-stat ${lvlClass}`;
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'tc-stat-icon';
+        iconSpan.innerHTML = IMG(iconName, altText);
+        const textSpan = document.createElement('span');
+        textSpan.className = 'tc-stat-text';
+        textSpan.innerHTML = labelHtml;
+        el.appendChild(iconSpan);
+        el.appendChild(textSpan);
+        return el;
+      };
+
+      if (!isNight && seg.outdoor_label) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
-        const el = document.createElement('div');
-        el.className = `tc-seg-stat lvl-${gradeToLvl[seg.outdoor_grade] || 0}`;
-        el.innerHTML = IMG('outdoor', 'Outdoor') + (localiseMetric(seg.outdoor_label) || seg.outdoor_label);
-        rightEl.appendChild(el);
+        rightEl.appendChild(mkStat('outdoor', 'Outdoor',
+          localiseMetric(seg.outdoor_label) || seg.outdoor_label,
+          `lvl-${gradeToLvl[seg.outdoor_grade] || 0}`));
       }
-      if (seg.precip_text != null) {
-        const el = document.createElement('div');
-        el.className = `tc-seg-stat lvl-${seg.precip_level || 0}`;
-        el.innerHTML = IMG('rain-gear', 'Rain') + seg.precip_text;
-        rightEl.appendChild(el);
+      if (isNight && seg.precip_text != null) {
+        rightEl.appendChild(mkStat('rain-gear', 'Rain',
+          seg.precip_text,
+          `lvl-${seg.precip_level || 0}`));
       }
 
       row.appendChild(leftEl);
@@ -673,7 +685,21 @@ function renderOverviewView(data) {
         });
         const t = document.createElement('div');
         t.className = 'tc-transition';
-        t.textContent = `→ ${parts.length ? parts.join(' · ') : locTrans('change')}`;
+        const tIcon = document.createElement('span');
+        tIcon.className = 'tc-transition-icon';
+        tIcon.innerHTML = IMG('heads-up', 'Change');
+        const tBody = document.createElement('span');
+        tBody.className = 'tc-transition-body';
+        const tLabel = document.createElement('div');
+        tLabel.className = 'tc-transition-label';
+        tLabel.textContent = locTrans('change');
+        const tText = document.createElement('div');
+        tText.className = 'tc-transition-text';
+        tText.textContent = parts.length ? parts.join(' · ') : '—';
+        tBody.appendChild(tLabel);
+        tBody.appendChild(tText);
+        t.appendChild(tIcon);
+        t.appendChild(tBody);
         col.appendChild(t);
       }
       timelineGrid.appendChild(col);
@@ -735,7 +761,7 @@ function renderOverviewView(data) {
 
     // Build one horizontal .wk-row per day, pairing day + night slots
     for (let i = 0; i < 7; i++) {
-      const dayItem   = topItems[i];
+      const dayItem = topItems[i];
       const nightItem = bottomItems[i];
 
       const row = document.createElement('div');
@@ -792,11 +818,11 @@ function renderOverviewView(data) {
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
       if (globalMax > globalMin && rowLo != null && rowHi != null) {
-        const span     = globalMax - globalMin;
-        const leftPct  = Math.max(0, ((rowLo - globalMin) / span) * 100);
+        const span = globalMax - globalMin;
+        const leftPct = Math.max(0, ((rowLo - globalMin) / span) * 100);
         const rightPct = Math.min(100, ((rowHi - globalMin) / span) * 100);
-        rangeBar.style.left       = `${leftPct}%`;
-        rangeBar.style.width      = `${Math.max(5, rightPct - leftPct)}%`;
+        rangeBar.style.left = `${leftPct}%`;
+        rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       }
       rangeContainer.appendChild(rangeBar);
