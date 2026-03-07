@@ -332,6 +332,12 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     else:
         _alert = []
 
+    # Direct MOENV warnings: surface when AQI is elevated (>= 100)
+    aqi_num = aqi_forecast.get("aqi")
+    if isinstance(aqi_num, (int, float)) and aqi_num >= 100:
+        for w in aqi_forecast.get("warnings", []):
+            _alert.append({"type": "Air", "level": "WARNING", "msg": w})
+
     # Peak AQI window from hourly forecast
     hourly_aqi = aqi_forecast.get("hourly", [])
     peak_window = _compute_aqi_peak_window(hourly_aqi)

@@ -269,6 +269,7 @@ def process(
         "status": translate_pollutant(raw_aqi_forecast.get("status")),
         "forecast_date": raw_aqi_forecast.get("forecast_date"),
         "content": raw_aqi_forecast.get("content"),
+        "warnings": raw_aqi_forecast.get("warnings", []),
     }
 
     # ── 10. Heads-up priority system ─────────────────────────────────────────

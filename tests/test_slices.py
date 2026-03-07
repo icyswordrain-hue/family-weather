@@ -63,3 +63,26 @@ def test_lifestyle_alert_empty_when_alert_text_blank():
     broadcast["summaries"] = {"alert": {"text": "", "level": "INFO"}}
     slices = build_slices(broadcast)
     assert slices["lifestyle"]["alert"] == []
+
+
+def test_lifestyle_alert_includes_moenv_warning_when_aqi_elevated():
+    """Air warning injected from aqi_forecast.warnings when AQI >= 100."""
+    broadcast = {**MINIMAL_BROADCAST,
+                 "processed_data": {**MINIMAL_BROADCAST["processed_data"],
+                                    "aqi_forecast": {"aqi": 110, "warnings": ["空氣品質不良，建議減少戶外活動。"]}}}
+    slices = build_slices(broadcast)
+    alert_list = slices["lifestyle"]["alert"]
+    air_items = [a for a in alert_list if a["type"] == "Air"]
+    assert len(air_items) == 1
+    assert air_items[0]["level"] == "WARNING"
+    assert "空氣品質" in air_items[0]["msg"]
+
+
+def test_lifestyle_alert_no_moenv_warning_when_aqi_below_threshold():
+    """No Air warning injected when AQI < 100."""
+    broadcast = {**MINIMAL_BROADCAST,
+                 "processed_data": {**MINIMAL_BROADCAST["processed_data"],
+                                    "aqi_forecast": {"aqi": 70, "warnings": ["空氣品質普通。"]}}}
+    slices = build_slices(broadcast)
+    alert_list = slices["lifestyle"]["alert"]
+    assert not any(a["type"] == "Air" for a in alert_list)

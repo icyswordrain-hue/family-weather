@@ -165,12 +165,15 @@ def fetch_forecast_aqi() -> dict:
         aqi_val = _safe_int(rec.get("aqi"))
         aqi_range = rec.get("aqi")  # May be a range like "51-100"
 
+        content_text = rec.get("content") or ""
+        paragraphs = [p.strip() for p in content_text.split("\n") if p.strip()]
         return {
             "area": rec.get("area"),
             "aqi": aqi_val if aqi_val is not None else aqi_range,
             "status": rec.get("majorpollutant"),
             "forecast_date": rec.get("forecastdate"),
             "content": rec.get("content"),
+            "warnings": paragraphs[:1],
         }
 
     except Exception as exc:
