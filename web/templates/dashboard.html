@@ -146,7 +146,7 @@
           </div>
           <div class="current-conditions-wrapper">
             <div class="current-top-row">
-              <div class="gauge-card" id="gauge-ground"></div>
+              <!-- Left: hero (icon + temp + description + solar) -->
               <div class="current-hero">
                 <div class="hero-main">
                   <span id="cur-icon"></span>
@@ -158,10 +158,16 @@
                   <span id="solar-sunset">--:--</span>
                 </div>
               </div>
-              <div class="gauge-card" id="gauge-wind"></div>
+              <!-- Right: stacked column (ground, wind, outdoor trigger) -->
+              <div class="current-side-stack">
+                <div class="gauge-card" id="gauge-ground"></div>
+                <div class="gauge-card" id="gauge-wind"></div>
+                <div class="gauge-card gauge-outdoor-trigger" id="gauge-outdoor" role="button" tabindex="0" aria-expanded="false"></div>
+              </div>
             </div>
 
-            <div class="gauges-grid">
+            <!-- Expanded panel: hidden by default, revealed on outdoor click -->
+            <div class="gauges-grid gauges-collapsed" id="gauges-expand" aria-hidden="true">
               <div class="gauge-card" id="gauge-hum"></div>
               <div class="gauge-card" id="gauge-aqi"></div>
               <div class="gauge-card" id="gauge-uv"></div>

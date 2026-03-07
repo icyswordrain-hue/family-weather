@@ -458,6 +458,31 @@ function renderCurrentView(data) {
   renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
   renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
 
+  // Outdoor score trigger card (side stack)
+  if (data.outdoor && data.outdoor.grade) {
+    renderGauge('gauge-outdoor', localiseMetric(data.outdoor.label || ''), T.outdoor_act, '', `oi-grade-${data.outdoor.grade}`, IMG('outdoor', 'Outdoor'));
+  } else {
+    const oel = document.getElementById('gauge-outdoor');
+    if (oel) oel.innerHTML = '';
+  }
+
+  // Wire expand/collapse toggle on outdoor trigger (idempotent — safe across re-renders)
+  const outdoorTrigger = document.getElementById('gauge-outdoor');
+  const gaugesPanel = document.getElementById('gauges-expand');
+  if (outdoorTrigger && gaugesPanel && !outdoorTrigger._expandWired) {
+    outdoorTrigger._expandWired = true;
+    const toggle = () => {
+      const expanded = outdoorTrigger.getAttribute('aria-expanded') === 'true';
+      outdoorTrigger.setAttribute('aria-expanded', String(!expanded));
+      gaugesPanel.setAttribute('aria-hidden', String(expanded));
+      gaugesPanel.classList.toggle('gauges-collapsed', expanded);
+    };
+    outdoorTrigger.addEventListener('click', toggle);
+    outdoorTrigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  }
+
   // Solar times
   const solar = data.solar;
   const solarRow = document.getElementById('solar-row');
