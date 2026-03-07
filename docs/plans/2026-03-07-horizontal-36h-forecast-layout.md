@@ -114,3 +114,23 @@ Several bugs and visual inconsistencies were fixed after initial implementation:
 |-------|--------|
 | `.tc-seg-time` | element removed from DOM entirely |
 | `.tc-seg-label` | `font-size: 0.65rem` → `1rem` |
+
+### Shared 7-Day Gauge (commit `cfb0e73`, 2026-03-08)
+
+**Problem:** The 36h and 7-day range bars used independent temperature scales — each computed its own min/max from its own data. A 22° morning segment and a 22° 7-day card would be positioned at different percentages on their respective bars, making cross-view comparison meaningless.
+
+**Fix:** `renderOverviewView` now computes `weekGlobalMin`/`weekGlobalMax` from `data.weekly_timeline` once at the top of the function (before either rendering block). Both sections reference this shared scale:
+
+```js
+// 36h bars
+const tlGlobalMin = isFinite(weekGlobalMin) ? weekGlobalMin : (data.timeline_temp_range?.min ?? Infinity);
+const tlGlobalMax = isFinite(weekGlobalMax) ? weekGlobalMax : (data.timeline_temp_range?.max ?? -Infinity);
+
+// 7-day bars
+const globalMin = weekGlobalMin;
+const globalMax = weekGlobalMax;
+```
+
+Fallback: if `data.weekly_timeline` is absent (stale cache), 36h bars fall back to `data.timeline_temp_range` (server-side 36h range). This also removes the previous 7-day local min/max scan loop (was lines 747–754).
+
+**Effect:** A segment bar at 22° now occupies the same horizontal position regardless of whether it's in the 36h or 7-day section. The coldest 7-day night anchors the left edge; the hottest 7-day afternoon anchors the right edge of both gauges.
