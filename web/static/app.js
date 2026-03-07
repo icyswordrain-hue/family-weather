@@ -185,6 +185,7 @@ const TRANSLATIONS = {
     outdoor_act: 'Outdoor Activities',
     meals: 'Meals',
     hvac: 'HVAC Advice',
+    outdoor_aqi_warn: '⚠ Outdoor score reduced — AQI ',
     best_label: 'Best',
     top_label: 'Top',
     boot: 'System Boot: Initiating connection…',
@@ -245,6 +246,7 @@ const TRANSLATIONS = {
     outdoor_act: '戶外活動',
     meals: '餐食建議',
     hvac: '空調建議',
+    outdoor_aqi_warn: '⚠ 戶外指數降低 — AQI ',
     best_label: '最佳時段',
     top_label: '推薦活動',
     boot: '系統啟動：初始化連線…',
@@ -1000,7 +1002,7 @@ function renderLifestyleView(data) {
     if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
     if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
     if (data.air_quality && data.air_quality.aqi != null && data.air_quality.aqi > 100) {
-      extras.push(mkSub(`⚠ Outdoor score reduced — AQI ${data.air_quality.aqi}`));
+      extras.push(mkSub(`${T.outdoor_aqi_warn}${data.air_quality.aqi}`));
     }
     add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.text, extras);
   }

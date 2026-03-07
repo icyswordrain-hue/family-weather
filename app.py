@@ -474,6 +474,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         paragraphs=paragraphs,
         metadata=metadata,
         audio_urls=audio_urls,
+        summaries=summaries,
     )
 
     # Persist regen data to regen.json

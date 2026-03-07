@@ -93,6 +93,7 @@ def save_day(
     paragraphs: dict[str, str],
     metadata: dict,
     audio_urls: dict[str, str],
+    summaries: dict | None = None,
 ) -> None:
     """
     Save today's broadcast record to the GCS history JSON.
@@ -137,6 +138,7 @@ def save_day(
         "paragraphs": paragraphs,
         "metadata": metadata,
         "audio_urls": audio_urls,
+        "summaries": summaries or {},
     }
 
     # Prune entries older than 30 days
