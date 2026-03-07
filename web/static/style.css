@@ -3152,7 +3152,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
   display: flex;
   flex-direction: row;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 0 0 106px;
   gap: 6px;
 }
 
@@ -3186,7 +3186,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 .wk-min-temp,
 .wk-max-temp {
   font-family: 'Fira Code', monospace;
-  font-size: 0.90rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--text);
   flex: 0 0 auto;
@@ -3223,10 +3223,10 @@ html.dark .ps-tab-panel .rp-btn:hover {
     gap: 6px;
     min-height: 64px;
   }
-  .wk-row-day  { flex: 0 0 auto; }
+  .wk-row-day  { flex: 0 0 88px; }
   .wk-row-night { flex: 0 0 40px; }
   .wk-row-day .wk-icon .brand-icon  { width: 42px; height: 42px; }
   .wk-row-night .wk-icon .brand-icon { width: 34px; height: 34px; }
-  .wk-min-temp, .wk-max-temp { font-size: 0.82rem; }
+  .wk-min-temp, .wk-max-temp { font-size: 1.23rem; }
   .wk-row-label { font-size: 0.9rem; }
 }
