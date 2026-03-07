@@ -596,17 +596,20 @@ function renderOverviewView(data) {
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
 
-      if (seg.MinAT != null || seg.AT != null) {
+      if (tlGlobalMax > tlGlobalMin && (seg.MinAT != null || seg.AT != null)) {
+        const span = tlGlobalMax - tlGlobalMin;
         const lo = seg.MinAT ?? seg.AT;
         const hi = seg.MaxAT ?? seg.AT;
-        minTempEl.textContent = `${Math.round(lo)}°`;
+        // Only show min label when there's a real range; otherwise just show the single temp on the right
+        minTempEl.textContent = (lo !== hi) ? `${Math.round(lo)}°` : '';
         maxTempEl.textContent = `${Math.round(hi)}°`;
-        // Always fill the full bar track per segment so all bars start & end at the same position
-        rangeBar.style.left = '0%';
-        rangeBar.style.width = '100%';
+        const leftPct  = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
+        const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
+        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       } else {
-        minTempEl.textContent = '—';
+        minTempEl.textContent = '';
         maxTempEl.textContent = '—';
       }
       rangeContainer.appendChild(rangeBar);
