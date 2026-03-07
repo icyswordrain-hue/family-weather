@@ -205,7 +205,7 @@ At 4.5rem height, the 4:1 aspect-ratio slab image is ~72px tall × ~288px wide �
 
 ## Round 4 — Card Height Scale, Denser Text, Slab Polish
 
-**Commit:** TBD
+**Commit:** `32f5fc6`
 
 ### Requests
 1. **Mobile:** all card heights ×1.25
