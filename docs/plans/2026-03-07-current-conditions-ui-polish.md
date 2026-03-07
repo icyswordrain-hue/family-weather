@@ -292,3 +292,46 @@ At 4.5rem height, the 4:1 aspect-ratio slab image is ~72px tall × ~288px wide �
 | `.wk-icon .brand-icon` | w/h | 34px | 42px |
 | `.wk-temp` | font-size | 0.9rem | 1.1rem |
 | `.ls-icon` | w/h | 40px | 50px |
+
+---
+
+## Round 5 — Mobile Polish: Section Icon, Solar Stack, Weather Icon, Gauge Icons (`1a36c25`)
+
+### Requests (from annotated screenshot)
+1. Section heading icon should align the same as the outdoor activities gauge-header icon (inline, left of text)
+2. Weather icon ×1.25 on mobile
+3. Solar row: stack sunrise/sunset vertically instead of side-by-side; larger icons
+4. Remove icons from the 4 expanded mini-gauges (HUMIDITY / AIR QUALITY / UV INDEX / PRESSURE)
+
+### Changes
+
+**`.section-slab` — position static on mobile:**
+The section-slab was `position: absolute` (behind text). On mobile, it becomes a flex item:
+```css
+.section-slab {
+  position: static; transform: none;
+  width: 2rem; height: 2rem;
+  object-fit: cover; object-position: left center;
+  opacity: 0.8; border-radius: 4px;
+}
+```
+This makes it render to the left of the heading `<span>` inside the existing `display:flex` section-header-card — matching the `[icon] LABEL` pattern of gauge-header rows.
+
+**`#cur-icon` ×1.25:**
+| Property | Before | After |
+|----------|--------|-------|
+| font-size | 2.5rem | 3.1rem |
+| width | 4.4rem | 5.5rem |
+
+**`.solar-row` stacked + larger icons:**
+```css
+.solar-row { flex-direction: column; gap: 0.3rem; align-items: center; }
+.solar-row .brand-icon { width: 36px; height: 36px; }
+```
+
+**Remove icons from expanded gauges:**
+```css
+.gauges-grid .gauge-header .gauge-icon { display: none; }
+```
+Targets only `.gauges-grid` children — leaves side-stack (wind/ground/outdoor) icons intact.
+
