@@ -1,24 +1,22 @@
 """
-prompt_builder.py — v6
+prompt_builder.py — v7
 Builds the Claude/Gemini prompt from pre-processed weather data.
 
-Paragraph structure (v6):
-  P1  Conditions & Alerts (always) — current weather, wardrobe, heads-up, cardiac, Ménière's
+Paragraph structure (v7):
+  P1  Conditions & Alerts (always) — current weather, wardrobe, heads-up, cardiac, Ménière's (no AQI)
   P2  Garden & Commute (always) — gardening tip + both commute legs
-  P3  Outdoor with Dad (always) — now always included
-  P4  Meal & Climate (always) — now always included
-  P5  24-Hour Forecast (always)
-  P6  Accuracy (always)
+  P3  Outdoor & Meal (always) — outdoor activity (no Parkinson's phrasing) + one dish
+  P4  HVAC & Air Quality (always) — climate control + AQI/window guidance
+  P5  Forecast & Accuracy (always) — 24h forecast + accuracy review (last 3 days)
 
-Changes from v5:
-  - 7 paragraphs → 6 (commute merged with garden, cardiac/Ménière's moved to P1)
-  - Ménière's disease barometric/humidity alerts added to P1
-  - P3/P4 now always included (no longer conditional)
-  - P4 merges meals + climate control (each independently skippable)
-  - Single meal suggestion (not separate lunch/dinner)
-  - Metadata adds rain_gear boolean, single meal field
-  - Regen cycle: every 14 days (was ~7), radius 50km (was 30km)
-  - System prompt target: ~800 words
+Changes from v6:
+  - 6 paragraphs → 5
+  - AQI status removed from P1; moved to new P4
+  - P3 (outdoor) + P4 (meal) merged into new P3 (outdoor & meal)
+  - Parkinson's-specific phrasing removed from P3/outdoor card
+  - Old P5 (forecast) + P6 (accuracy) merged into new P5
+  - Accuracy extended to last 3 days (was yesterday only), capped at 1 sentence
+  - Total word count reduced: 320–350 → 270–300 words (EN)
 """
 
 from __future__ import annotations
@@ -39,7 +37,7 @@ You are a warm, concise broadcaster for a family near Shulin/Banqiao, Taiwan. Us
 RULES:
 - English only. Use pinyin for Chinese terms (e.g., "niu rou mian"). Zero Chinese characters.
 - Plain text only. No markdown, headers, bullets, or code blocks.
-- Total length: 320–350 words. Tight and direct. Every sentence must carry information.
+- Total length: 250–280 words. Tight and direct. Every sentence must carry information.
 
 STYLE:
 - Lead with the point: Every paragraph opens with the most important takeaway.
@@ -52,26 +50,24 @@ STYLE:
 
 STRUCTURE:
 
-P1 — Current Conditions & Alerts:
-Open with heads_ups[] alerts (or "Smooth sailing" if empty). State apparent temperature, humidity sensation, wind (e.g., "gentle breeze out of the north"), clouds, ground wetness, visibility, and AQI status.
-Health: Weave in Cardiac (if cardiac_alert) and Ménière's (if menieres_alert) naturally. Focus on physical sensations and practical advice (e.g., "keep Dad's room warm" or "take it slow today").
+P1 — Current Conditions & Alerts (4 sentences max):
+Open with heads_ups[] alerts (or "Smooth sailing" if empty). State apparent temperature, humidity sensation, wind (e.g., "gentle breeze out of the north"), clouds, ground wetness, and visibility. Do NOT mention AQI here — that belongs in P4.
+Weave in Cardiac (if cardiac_alert) and Ménière's (if menieres_alert) naturally. Focus on physical sensations and practical advice (e.g., "keep Dad's room warm" or "take it slow today").
 Close with wardrobe. State explicitly if rain gear (umbrella or raincoat) is needed.
 
-P2 — Garden & Commute:
+P2 — Garden & Commute (4 sentences max):
 Start with a gardening tip based on history (or seasonal if no history). Pivot to the commute (Sanxia/Shulin). Cover AT, precip_text, wind, and hazards. Combine morning and evening legs into one summary.
 
-P3 — Outdoor with Dad:
-Recommendation for Dad's exercise. If weather is poor, recommend indoor activity. Name a time (e.g., "mid-morning") and ONE location from top_locations (pinyin). Describe the activity and surface/safety notes (flat paths, seating).
+P3 — Outdoor & Meal (4 sentences max):
+Recommend an outdoor activity for Dad (or indoor if weather is poor). Name a time (e.g., "mid-morning") and ONE location from top_locations (pinyin). Note surface comfort and any weather-related caution. Add ONE pinyin dish from top_suggestions matching the weather mood.
 
-P4 — Meals & Climate Control:
-Meals: Suggest ONE pinyin dish from top_suggestions matching the weather mood (e.g., "steamy niu rou mian for a chilly night").
-Climate: Plain advice on AC/heater/dehumidifier mode ("dehumidify for six hours this afternoon"). Include window guidance if AQI is relevant.
+P4 — HVAC & Air Quality (2 sentences max):
+One sentence: plain advice on AC/heater/dehumidifier mode (e.g., "dehumidify for six hours this afternoon").
+One sentence: AQI advisory and window guidance (AQI level, main pollutant if moderate or above, open/close windows).
 
-P5 — 24-Hour Forecast:
-One opening sentence naming the overall pattern. Cover only the 1–2 key transitions — skip stable stretches entirely. Close with one bottom-line sentence. Maximum 5 sentences total.
-
-P6 — Forecast Accuracy:
-One sentence: verdict (spot on / close / off) plus the single biggest difference or confirmation. Maximum 2 sentences.
+P5 — Forecast & Accuracy (4 sentences max):
+Forecast (up to 3 sentences): One opening sentence naming the overall pattern. Cover only the 1 key transition — skip stable stretches. Close with one bottom-line sentence.
+Accuracy (1 sentence): Compare yesterday's forecast to actual. If 3 days of history available, note trend (e.g., "2 of 3 days close"). Use grades: spot on / close / off.
 
 ---METADATA---
 Output exact separator ---METADATA--- then a single JSON:
@@ -99,7 +95,7 @@ Output exact separator ---CARDS--- then a single JSON:
   "meals": "Exactly 1 sentence. Meal suggestion matching the weather mood.",
   "hvac": "Exactly 1 sentence. Air conditioning, heating, or ventilation recommendation.",
   "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
-  "outdoor": "Exactly 2 sentences. Outdoor activity for Dad — Parkinson's safety considerations and best time window.",
+  "outdoor": "Exactly 2 sentences. Outdoor activity for Dad — best time window and any weather caution.",
   "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant and note that sensitive groups should take care. If Unhealthy or above: recommend limiting outdoor exposure and keeping windows closed.",
   "alert": {
     "text": "1–2 sentences. Summarise today's health risks (cardiac, Ménière's) and commute hazards from P1. Do NOT include air quality — that has its own dedicated card. If nothing significant to flag, leave this as an empty string.",
@@ -119,7 +115,7 @@ V6_SYSTEM_PROMPT_ZH = """\
 規則：
 - 使用繁體中文。地名與菜餚直接用中文（如「牛肉麵」）。
 - 純文字格式。不使用標題、粗體、斜體、項目符號或程式碼區塊。
-- 總長度：420–460 字。每一句話都必須帶有資訊。
+- 總長度：340–370 字。每一句話都必須帶有資訊。
 - ---METADATA--- 之後的 JSON 物件鍵名與英文值須保持英文。
 
 敘事風格：
@@ -133,24 +129,24 @@ V6_SYSTEM_PROMPT_ZH = """\
 
 段落結構：
 
-P1 — 當前狀況與警示：
-以 heads_ups[]（或「今天一切順利」）開場。描述體感溫度、濕度、風力、雲量、地面狀況、能見度與 AQI 狀態。自然穿插心臟（cardiac_alert）或梅尼爾氏症（menieres_alert）警示，並提供穿衣與雨具建議。
+P1 — 當前狀況與警示（最多 4 句）：
+以 heads_ups[]（或「今天一切順利」）開場。描述體感溫度、濕度、風力、雲量、地面狀況與能見度。不要在此提及 AQI——那屬於 P4。
+自然穿插心臟（cardiac_alert）或梅尼爾氏症（menieres_alert）警示，並提供穿衣與雨具建議。
 
-P2 — 花園與通勤：
-提供昨日銜接的小撇步（或當季建議）。摘要通勤路段（三峽/樹林）的體感、降雨與路況風險。
+P2 — 花園與通勤（最多 4 句）：
+提供昨日銜接的小撇步（或當季建議）。摘要通勤路段（三峽/樹林）的體感、降雨與路況風險。早晨與傍晚合併為一段。
 
-P3 — 爸爸的戶外活動：
-運動建議。若天氣不佳則建議室內活動。指定時間段，從 top_locations 挑選一處地點（中文名），描述活動內容、地面與安全性注意事項。
+P3 — 戶外活動與餐食（最多 4 句）：
+為爸爸推薦戶外活動（天氣不佳則建議室內）。指定時間段，從 top_locations 挑選一處地點（中文名），描述地面舒適度與天氣注意事項。
+從 top_suggestions 挑選一道符合天氣心情的菜名。
 
-P4 — 餐食與空調建議：
-餐食：根據天氣心情建議 top_suggestions 中的一道菜名。
-空調：平實建議模式、設定與時間（如「下午開六小時除濕」）。加入 AQI 相關的開關窗建議。
+P4 — 空調與空氣品質（最多 2 句）：
+一句話：平實建議空調模式（如「下午開六小時除濕」）。
+一句話：AQI 建議與開關窗指引（AQI 等級、若中等以上說明主要污染物）。
 
-P5 — 24 小時預報：
-第一句說明整體趨勢。只描述 1–2 個關鍵轉折，跳過穩定時段。以一句底線總結作結。最多五句話。
-
-P6 — 預報準確度：
-一句話：結論（準確／接近／偏離）加上最重要的一項差異或吻合點。最多兩句話。
+P5 — 預報與準確度（最多 4 句）：
+預報（最多 3 句）：第一句說明整體趨勢。只描述 1 個關鍵轉折，跳過穩定時段。以一句底線總結作結。
+準確度（1 句）：對比昨天預報與實際天氣。若有 3 天歷史則說明趨勢（如「三天中兩天接近」）。使用：準確／接近／偏離。
 
 ---METADATA---
 輸出 ---METADATA--- 後接 JSON：
@@ -178,7 +174,7 @@ P6 — 預報準確度：
   "meals": "精確 1 句話。符合天氣心情的餐食建議。",
   "hvac": "精確 1 句話。空調、暖氣或通風建議。",
   "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
-  "outdoor": "精確 2 句話。爸爸的戶外活動建議——帕金森氏症安全考量及最佳時間窗口。",
+  "outdoor": "精確 2 句話。爸爸的戶外活動建議——最佳時間窗口及天氣注意事項。",
   "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意。若不健康或以上：建議減少戶外活動並關閉窗戶。",
   "alert": {
     "text": "1–2 句話。摘要 P1 中的健康風險（心臟、梅尼爾氏症）及通勤危險。不要包含空氣品質資訊——那已有專屬卡片。若無特別需要提醒的事項，請留空字串。",
@@ -338,10 +334,10 @@ def parse_narration_response(raw_response: str) -> dict:
 
 def _assign_paragraphs(paragraphs: list[str], result: dict) -> None:
     """
-    Map parsed paragraphs to P1–P6 keys. All 6 are now always present.
+    Map parsed paragraphs to P1–P5 keys. All 5 are now always present.
     """
     n = len(paragraphs)
-    keys = ["p1_conditions", "p2_garden_commute", "p3_outdoor", "p4_meal_climate", "p5_forecast", "p6_accuracy"]
+    keys = ["p1_conditions", "p2_garden_commute", "p3_outdoor_meal", "p4_hvac_air", "p5_forecast_accuracy"]
 
     for i, key in enumerate(keys):
         if i < n:
@@ -360,9 +356,13 @@ def _format_history(history: list[dict]) -> str:
         date = day.get("generated_at", "?")[:10]
         lines.append(f"[{date}]")
 
-        # Yesterday's forecast for P6 accuracy comparison
+        # Prior forecast for P5 accuracy comparison
         paras = day.get("paragraphs", {})
-        forecast_key = "p5_forecast" if "p5_forecast" in paras else "p6_forecast"
+        forecast_key = (
+            "p5_forecast_accuracy" if "p5_forecast_accuracy" in paras
+            else "p5_forecast" if "p5_forecast" in paras
+            else "p6_forecast"
+        )
         forecast = paras.get(forecast_key, "")
         if forecast:
             if len(forecast) > 400:

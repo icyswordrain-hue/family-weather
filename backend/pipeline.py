@@ -91,15 +91,17 @@ def generate_narration_with_fallback(
         return cached
 
     provider_upper = provider.upper().strip()
-    logger.info("Narration requested via provider: %s", provider_upper)
+    is_regen = bool(processed.get("regenerate_meal_lists"))
+    logger.info("Narration requested via provider: %s (regen=%s)", provider_upper, is_regen)
     try:
+        from config import GEMINI_MAX_TOKENS_REGEN, CLAUDE_MAX_TOKENS_REGEN
         messages = build_prompt(processed, history, date_str)
         if provider_upper == "GEMINI":
             if generate_gemini is None:
                 logger.error("Gemini client is None (likely import failure or missing key)")
                 raise RuntimeError("Gemini client not available")
             logger.info("Calling Gemini client...")
-            text = generate_gemini(messages, lang=lang)
+            text = generate_gemini(messages, lang=lang, max_tokens=GEMINI_MAX_TOKENS_REGEN if is_regen else None)
             logger.info("Gemini narration successful.")
             result = text, "gemini"
         elif provider_upper == "CLAUDE":
@@ -107,7 +109,7 @@ def generate_narration_with_fallback(
                 logger.error("Claude client is None (likely import failure or missing key)")
                 raise RuntimeError("Claude client not available")
             logger.info("Calling Claude client...")
-            text = generate_claude(messages, lang=lang)
+            text = generate_claude(messages, lang=lang, max_tokens=CLAUDE_MAX_TOKENS_REGEN if is_regen else None)
             logger.info("Claude narration successful.")
             result = text, "claude"
         else:

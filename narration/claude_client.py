@@ -34,7 +34,7 @@ def _load_system_prompt(lang: str = 'en') -> str:
     return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None) -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None, max_tokens: int | None = None) -> str:
     """
     Send the prepared message list to Claude and return the narration text.
 
@@ -70,7 +70,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         logger.info("Attempting Claude (%s) with %.1fs timeout", model_to_use, float(NARRATION_TIMEOUT_PRO))
         response = client.messages.create(
             model=model_to_use,
-            max_tokens=CLAUDE_MAX_TOKENS,
+            max_tokens=max_tokens or CLAUDE_MAX_TOKENS,
             system=system_prompt,
             messages=claude_messages,
             temperature=0.7,
@@ -89,7 +89,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         logger.info("Attempting Claude fallback (%s) with %.1fs timeout", CLAUDE_FALLBACK_MODEL, float(NARRATION_TIMEOUT_FLASH))
         response = client.messages.create(
             model=CLAUDE_FALLBACK_MODEL,
-            max_tokens=CLAUDE_MAX_TOKENS,
+            max_tokens=max_tokens or CLAUDE_MAX_TOKENS,
             system=system_prompt,
             messages=claude_messages,
             temperature=0.7,

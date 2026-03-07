@@ -468,12 +468,11 @@ def _slice_narration(paragraphs: dict, metadata: dict) -> dict:
     # to translate if desired, while `title` stays in a neutral readable form.
     return {
         "paragraphs": [
-            {"key": "p1", "title": "Current & Outlook",    "text": paragraphs.get("p1_conditions", "")},
-            {"key": "p2", "title": "Garden & Commute",     "text": paragraphs.get("p2_garden_commute", "")},
-            {"key": "p3", "title": "Outdoor with Dad",     "text": paragraphs.get("p3_outdoor", "")},
-            {"key": "p4", "title": "Meals & Climate",      "text": paragraphs.get("p4_meal_climate", "")},
-            {"key": "p5", "title": "Forecast",             "text": paragraphs.get("p5_forecast", "")},
-            {"key": "p6", "title": "Yesterday's Accuracy", "text": paragraphs.get("p6_accuracy", "")},
+            {"key": "p1", "title": "Current & Outlook",   "text": paragraphs.get("p1_conditions", "")},
+            {"key": "p2", "title": "Garden & Commute",    "text": paragraphs.get("p2_garden_commute", "")},
+            {"key": "p3", "title": "Outdoor & Meal",      "text": paragraphs.get("p3_outdoor_meal", "")},
+            {"key": "p4", "title": "HVAC & Air Quality",  "text": paragraphs.get("p4_hvac_air", "")},
+            {"key": "p5", "title": "Forecast & Accuracy", "text": paragraphs.get("p5_forecast_accuracy", "")},
         ],
         "meta": {
             "model": model,
