@@ -91,11 +91,11 @@ Output exact separator ---CARDS--- then a single JSON:
 {
   "wardrobe": "Exactly 1 sentence. What to wear based on apparent temperature only. Do not mention rain or rain gear — that is covered by the rain_gear card.",
   "rain_gear": "Exactly 1 sentence. Whether to carry umbrella, raincoat, or boots.",
-  "commute": "Exactly 2 sentences. Morning and evening commute road conditions.",
+  "commute": "Exactly 2 sentences. Morning and evening commute road conditions. Must incorporate the exact commute hazards provided in the HINTS.",
   "meals": "Exactly 1 sentence. Meal suggestion matching the weather mood.",
-  "hvac": "Exactly 1 sentence. Air conditioning, heating, or ventilation recommendation.",
+  "hvac": "Exactly 1 sentence. Air conditioning, heating, or ventilation recommendation. Must recommend the exact HVAC mode provided in the HINTS.",
   "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
-  "outdoor": "Exactly 2 sentences. Use the top outdoor activity from the HINTS section. Best time window and any weather caution.",
+  "outdoor": "Exactly 2 sentences. Use the top outdoor activity from the HINTS section. Best time window and any weather caution. Must reflect the provided outdoor grade from the HINTS.",
   "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant and note that sensitive groups should take care. If Unhealthy or above: recommend limiting outdoor exposure and keeping windows closed.",
   "alert": {
     "text": "1–2 sentences. Summarise today's health risks (cardiac, Ménière's) and commute hazards from P1. Do NOT include air quality — that has its own dedicated card. If nothing significant to flag, leave this as an empty string.",
@@ -170,11 +170,11 @@ P5 — 預報與準確度（最多 4 句）：
 {
   "wardrobe": "精確 1 句話。根據體感溫度說明穿著建議。不要提及雨具或降雨，那屬於 rain_gear 卡片。",
   "rain_gear": "精確 1 句話。是否需要攜帶雨傘、雨衣或雨靴。",
-  "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。",
+  "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。必須整合 HINTS 中提供的通勤危險提示。",
   "meals": "精確 1 句話。符合天氣心情的餐食建議。",
-  "hvac": "精確 1 句話。空調、暖氣或通風建議。",
+  "hvac": "精確 1 句話。空調、暖氣或通風建議。必須推薦 HINTS 中提供的空調模式。",
   "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
-  "outdoor": "精確 2 句話。使用 HINTS 中的最佳戶外活動。最佳時間窗口及天氣注意事項。",
+  "outdoor": "精確 2 句話。使用 HINTS 中的最佳戶外活動。最佳時間窗口及天氣注意事項。必須反映 HINTS 中提供的戶外等級。",
   "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意。若不健康或以上：建議減少戶外活動並關閉窗戶。",
   "alert": {
     "text": "1–2 句話。摘要 P1 中的健康風險（心臟、梅尼爾氏症）及通勤危險。不要包含空氣品質資訊——那已有專屬卡片。若無特別需要提醒的事項，請留空字串。",
@@ -259,6 +259,13 @@ def build_prompt(
 
     _acts = processed_data.get("outdoor_index", {}).get("activities", {})
     top_activity = max(_acts, key=lambda k: _acts[k]["score"]) if _acts else "unknown"
+    outdoor_grade = processed_data.get("outdoor_index", {}).get("overall_grade", "unknown")
+
+    climate_mode = processed_data.get("climate_control", {}).get("mode", "Off")
+
+    am_hazards = processed_data.get("commute", {}).get("morning", {}).get("hazards", [])
+    pm_hazards = processed_data.get("commute", {}).get("evening", {}).get("hazards", [])
+    commute_hints = f"Morning hazards: {', '.join(am_hazards) or 'none'}; Evening hazards: {', '.join(pm_hazards) or 'none'}"
 
     user_message = f"""Date: {today}
 
@@ -270,6 +277,9 @@ DATA:
 {regen_note}
 HINTS:
 - Top outdoor activity by score: {top_activity}
+- Outdoor grade: {outdoor_grade}
+- HVAC mode to recommend: {climate_mode}
+- Commute hazards: {commute_hints}
 Generate today's broadcast."""
 
     return [
