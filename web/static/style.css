@@ -491,60 +491,55 @@ input:focus-visible {
 }
 
 /* ── View 1: Current ─────────────────────────────────────────────────────── */
-.current-top-row {
+.current-hero-row {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr;
+  grid-template-columns: 1.4fr 1fr;
   gap: 1rem;
+  align-items: start;
   margin-bottom: 1rem;
 }
 
-.current-top-row .gauge-card,
-.current-top-row .current-hero {
-  min-height: 180px;
-  /* 1.5x height compared to bottom row */
-}
-
-.current-hero {
-  padding: 1.25rem;
+.hero-left {
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.hero-main {
+  padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 0.25rem;
+  min-height: 160px;
 }
 
-#cur-icon {
-  font-size: 2.5rem;
-  width: 5rem;
+.hero-icon-block #cur-icon {
+  font-size: 3rem;
+  line-height: 1;
+  display: block;
+}
+
+.hero-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 #cur-temp {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 800;
   color: var(--text);
+  line-height: 1;
 }
 
 #cur-weather-text {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--muted);
   font-weight: 600;
 }
 
 .solar-row {
   display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-top: 0.4rem;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 0.35rem;
   font-size: 0.8rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -562,11 +557,138 @@ input:focus-visible {
   border-radius: 4px;
 }
 
-.gauges-grid {
+/* ── Hero right stack ────────────────────────────────────────────────────── */
+.hero-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero-stat {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hs-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  min-width: 4.5rem;
+}
+
+.hs-value {
+  font-family: 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.hs-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ── Outdoor score toggle ─────────────────────────────────────────────────── */
+.outdoor-toggle {
+  flex-direction: column;
+  align-items: stretch;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: var(--text);
+  transition: box-shadow 0.15s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .outdoor-toggle:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.outdoor-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.outdoor-grade-badge {
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: var(--surface-alt, rgba(0, 0, 0, 0.06));
+  flex-shrink: 0;
+}
+
+.outdoor-toggle-row #outdoor-label {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.outdoor-chevron {
+  font-size: 1.1rem;
+  color: var(--muted);
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.outdoor-toggle[aria-expanded="true"] .outdoor-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Outdoor expand panel ─────────────────────────────────────────────────── */
+.outdoor-details {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+}
+
+.outdoor-details[hidden] {
+  display: none;
+}
+
+.outdoor-factor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.of-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.of-value {
+  font-family: 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.of-text {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.of-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 .gauge-card {
@@ -1732,44 +1854,15 @@ html.dark .source-claude {
     font-size: 1.05rem;
   }
 
-  /* Top row: compact sizing to prevent overflow */
-  .current-top-row {
-    gap: 0.4rem;
+  /* Hero: single column on mobile */
+  .current-hero-row {
+    grid-template-columns: 1fr;
   }
 
-  .current-top-row .gauge-card,
-  .current-top-row .current-hero {
-    min-height: 110px;
-  }
-
-  .current-top-row .gauge-card {
-    padding: 0.5rem 0.35rem;
-  }
-
-  .current-top-row .gauge-label {
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-  }
-
-  .current-top-row .gauge-value {
-    font-size: 1.15rem;
-  }
-
-  .current-top-row .gauge-sub {
-    font-size: 0.78rem;
-  }
-
-  .current-hero {
-    padding: 0.6rem 0.4rem;
-  }
-
-  .hero-main {
-    gap: 0.4rem;
-  }
-
-  #cur-icon {
-    font-size: 2rem;
-    width: 3.5rem;
+  .hero-left {
+    min-height: auto;
+    padding: 0.85rem;
+    gap: 0.75rem;
   }
 
   #cur-temp {
@@ -1780,28 +1873,13 @@ html.dark .source-claude {
     font-size: 0.85rem;
   }
 
-  /* Gauges: 4 per row, compact sizing to prevent overflow */
-  .gauges-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.4rem;
+  .hero-stat {
+    padding: 0.6rem 0.75rem;
   }
 
-  .gauges-grid .gauge-card {
-    padding: 0.5rem 0.35rem;
-    min-height: 80px;
-  }
-
-  .gauges-grid .gauge-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-  }
-
-  .gauges-grid .gauge-value {
-    font-size: 1.15rem;
-  }
-
-  .gauges-grid .gauge-sub {
-    font-size: 0.75rem;
+  .hs-label {
+    min-width: 4rem;
+    font-size: 0.72rem;
   }
 
   /* Lifestyle: 1 column */
@@ -2875,7 +2953,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 
 /* ── Day/Night card colors ───────────────────
    Light mode: day = white surface, night = shaded surface
-   Dark mode:  day = dark surface,  night = slightly lighter surface
+   Dark mode:  day = dark surface,  night = darker inset
    ─────────────────────────────────────────── */
 .wk-card.wk-day {
   background: var(--surface);
@@ -2884,7 +2962,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-card.wk-night {
-  background: var(--hover, #EDE7DD);
+  background: #D4C9B5;
+  /* Darker earthy tone, distinct from Day */
   color: var(--text);
   border-top: 3px solid var(--muted, #7A6E64);
 }
@@ -2893,11 +2972,11 @@ html.dark .ps-tab-panel .rp-btn:hover {
   color: var(--text);
 }
 
-/* Flip night card in dark mode so it reads slightly lighter */
+/* Make night card in dark mode actually darker than the surface */
 html.dark .wk-card.wk-night {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.2);
   color: var(--text);
-  border-top-color: rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.12);
 }
 
 html.dark .wk-card.wk-night .wk-temp {
