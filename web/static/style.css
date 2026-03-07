@@ -995,12 +995,12 @@ html.dark .wk-range-container {
 
 .tc-transition {
   display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--surface);
   border-radius: 10px;
   border-left: 3px solid rgba(255, 200, 0, 0.7);
-  padding: 0.55rem 0.9rem;
+  padding: 0.45rem 0.8rem;
   box-shadow: var(--shadow);
 }
 
@@ -1034,6 +1034,7 @@ html.dark .wk-range-container {
   font-weight: 600;
   color: var(--text);
   line-height: 1.35;
+  flex: 1;
 }
 
 html.dark .tc-transition {
@@ -1141,7 +1142,7 @@ html.dark .tc-seg-row.tc-seg-night {
 
 /* ── Right column ── */
 .tc-seg-right {
-  flex: 0 0 100px;
+  flex: 0 0 130px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1149,38 +1150,33 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-stat {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
   min-height: 40px;
-  padding-left: 4px;
 }
 
-/* Icon sits behind text as a decorative background layer */
+/* Icon sits at far right, full opacity, 1.5× size */
 .tc-seg-stat .tc-stat-icon {
-  position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.18;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  opacity: 1;
   pointer-events: none;
-  z-index: 0;
 }
 
 .tc-seg-stat .tc-stat-icon .brand-icon {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
 }
 
 .tc-seg-stat .tc-stat-text {
-  position: relative;
-  z-index: 1;
-  padding-left: 32px;
+  flex: 1;
 }
 
 /* ── Mobile (≤767px) ── */

@@ -596,16 +596,14 @@ function renderOverviewView(data) {
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
 
-      if (tlGlobalMax > tlGlobalMin && (seg.MinAT != null || seg.AT != null)) {
-        const span = tlGlobalMax - tlGlobalMin;
+      if (seg.MinAT != null || seg.AT != null) {
         const lo = seg.MinAT ?? seg.AT;
         const hi = seg.MaxAT ?? seg.AT;
         minTempEl.textContent = `${Math.round(lo)}°`;
         maxTempEl.textContent = `${Math.round(hi)}°`;
-        const leftPct = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
-        const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
-        rangeBar.style.left = `${leftPct}%`;
-        rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
+        // Always fill the full bar track per segment so all bars start & end at the same position
+        rangeBar.style.left = '0%';
+        rangeBar.style.width = '100%';
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       } else {
         minTempEl.textContent = '—';
@@ -624,14 +622,14 @@ function renderOverviewView(data) {
       const mkStat = (iconName, altText, labelHtml, lvlClass) => {
         const el = document.createElement('div');
         el.className = `tc-seg-stat ${lvlClass}`;
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'tc-stat-icon';
-        iconSpan.innerHTML = IMG(iconName, altText);
         const textSpan = document.createElement('span');
         textSpan.className = 'tc-stat-text';
         textSpan.innerHTML = labelHtml;
-        el.appendChild(iconSpan);
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'tc-stat-icon';
+        iconSpan.innerHTML = IMG(iconName, altText);
         el.appendChild(textSpan);
+        el.appendChild(iconSpan);
         return el;
       };
 
@@ -688,18 +686,14 @@ function renderOverviewView(data) {
         const tIcon = document.createElement('span');
         tIcon.className = 'tc-transition-icon';
         tIcon.innerHTML = IMG('heads-up', 'Change');
-        const tBody = document.createElement('span');
-        tBody.className = 'tc-transition-body';
-        const tLabel = document.createElement('div');
-        tLabel.className = 'tc-transition-label';
-        tLabel.textContent = locTrans('change');
-        const tText = document.createElement('div');
+        // Single-line: "change  +6° · 多雲"
+        const tText = document.createElement('span');
         tText.className = 'tc-transition-text';
-        tText.textContent = parts.length ? parts.join(' · ') : '—';
-        tBody.appendChild(tLabel);
-        tBody.appendChild(tText);
+        const labelPart = locTrans('change');
+        const bodyPart = parts.length ? parts.join(' · ') : '—';
+        tText.textContent = `${labelPart}  ${bodyPart}`;
         t.appendChild(tIcon);
-        t.appendChild(tBody);
+        t.appendChild(tText);
         col.appendChild(t);
       }
       timelineGrid.appendChild(col);
