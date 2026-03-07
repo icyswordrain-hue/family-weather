@@ -499,10 +499,10 @@ input:focus-visible {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  height: 2.8rem;
+  height: 4.5rem;
   width: auto;
   max-width: 100%;
-  opacity: 0.18;
+  opacity: 0.30;
   z-index: 0;
   pointer-events: none;
   border-radius: 0;
@@ -542,7 +542,7 @@ input:focus-visible {
 
 .current-top-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   flex-shrink: 0;
 }
@@ -599,7 +599,7 @@ input:focus-visible {
 }
 
 .current-top-row .current-hero {
-  min-height: 160px;
+  min-height: 200px;
 }
 
 .current-hero {
@@ -622,18 +622,18 @@ input:focus-visible {
 }
 
 #cur-icon {
-  font-size: 2.5rem;
-  width: 5.5rem;
+  font-size: 3rem;
+  width: 8rem;
 }
 
 #cur-temp {
-  font-size: 2.8rem;
+  font-size: 3.6rem;
   font-weight: 800;
   color: var(--text);
 }
 
 #cur-weather-text {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: var(--muted);
   font-weight: 600;
 }
@@ -643,7 +643,7 @@ input:focus-visible {
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.4rem;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -655,8 +655,8 @@ input:focus-visible {
 }
 
 .solar-row .brand-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 4px;
 }
 
@@ -740,8 +740,8 @@ input:focus-visible {
 }
 
 .gauge-header .gauge-icon .brand-icon {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
 }
 
 /* Level Colors (5-Level Scale) */
