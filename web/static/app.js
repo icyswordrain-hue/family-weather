@@ -538,6 +538,15 @@ function renderGauge(id, mainVal, label, subVal = '', valueClass = '', icon = ''
 function renderOverviewView(data) {
   if (!data) return;
 
+  // Full 7-day gauge — shared scale for both the 36h and 7-day range bars
+  let weekGlobalMin = Infinity, weekGlobalMax = -Infinity;
+  (data.weekly_timeline || []).forEach(item => {
+    const lo = item.MinAT ?? item.AT;
+    const hi = item.MaxAT ?? item.AT;
+    if (lo != null) weekGlobalMin = Math.min(weekGlobalMin, lo);
+    if (hi != null) weekGlobalMax = Math.max(weekGlobalMax, hi);
+  });
+
   // Timeline
   const timelineGrid = document.getElementById('ov-timeline');
   if (timelineGrid) {
@@ -545,18 +554,9 @@ function renderOverviewView(data) {
     const transitionMap = {};
     (data.transitions || []).forEach(t => { if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t; });
 
-    // Use server-derived range (from MinAT/MaxAT per segment); fall back to local scan
-    // for old cached broadcasts that pre-date the timeline_temp_range field.
-    let tlGlobalMin = data.timeline_temp_range?.min ?? Infinity;
-    let tlGlobalMax = data.timeline_temp_range?.max ?? -Infinity;
-    if (!isFinite(tlGlobalMin) || !isFinite(tlGlobalMax)) {
-      (data.timeline || []).forEach(seg => {
-        const lo = seg.MinAT ?? seg.AT;
-        const hi = seg.MaxAT ?? seg.AT;
-        if (lo != null) tlGlobalMin = Math.min(tlGlobalMin, lo);
-        if (hi != null) tlGlobalMax = Math.max(tlGlobalMax, hi);
-      });
-    }
+    // Use the full 7-day range as the gauge; fall back to server 36h range if weekly data absent
+    const tlGlobalMin = isFinite(weekGlobalMin) ? weekGlobalMin : (data.timeline_temp_range?.min ?? Infinity);
+    const tlGlobalMax = isFinite(weekGlobalMax) ? weekGlobalMax : (data.timeline_temp_range?.max ?? -Infinity);
 
     (data.timeline || []).forEach((seg, idx) => {
       const origSlotName = seg.display_name || 'Forecast';
@@ -743,15 +743,9 @@ function renderOverviewView(data) {
     const topItems = dayItems;
     const bottomItems = nightItems;
 
-    // Global temperature range for inline range bars — use real extremes when available
-    let globalMin = Infinity, globalMax = -Infinity;
-    [...topItems, ...bottomItems].forEach(item => {
-      if (!item) return;
-      const lo = item.MinAT ?? item.AT;
-      const hi = item.MaxAT ?? item.AT;
-      if (lo != null) globalMin = Math.min(globalMin, lo);
-      if (hi != null) globalMax = Math.max(globalMax, hi);
-    });
+    // Reuse the shared 7-day gauge computed at the top of renderOverviewView
+    const globalMin = weekGlobalMin;
+    const globalMax = weekGlobalMax;
 
     // Suppress the separate column-header row — day names live inside each row now
     const headerEl = document.getElementById('ov-weekly-header');
