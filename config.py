@@ -25,6 +25,10 @@ STATION_HISTORY_PATH = Path(
 )
 STATION_HISTORY_DAYS = int(os.environ.get("STATION_HISTORY_DAYS", 7))
 
+FORECAST_CACHE_PATH = Path(
+    os.environ.get("FORECAST_CACHE_PATH", os.path.join(LOCAL_DATA_DIR, "forecast_cache.json"))
+)
+
 # ── API Keys ──────────────────────────────────────────────────────────────────
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "").strip()
 MOENV_API_KEY = os.environ.get("MOENV_API_KEY", "").strip()

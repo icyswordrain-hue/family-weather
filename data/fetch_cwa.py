@@ -45,6 +45,8 @@ from config import (
     CWA_TIMEOUT,
     STATION_HISTORY_PATH,
     STATION_HISTORY_DAYS,
+    FORECAST_CACHE_PATH,
+    CST,
 )
 from data.helpers import _safe_float, _safe_int, _dew_point, _apparent_temp, _saturation_label
 
@@ -71,6 +73,30 @@ def _prune_station_history(path, keep_days: int) -> None:
                 kept.append(line)  # keep unparseable lines rather than silently drop
     with path.open("w", encoding="utf-8") as f:
         f.write("\n".join(kept) + ("\n" if kept else ""))
+
+
+def _read_forecast_cache() -> dict:
+    """Return {cached_at, 36h: {loc: [slots]}, 7d: {loc: [slots]}} or {} on any error."""
+    try:
+        if FORECAST_CACHE_PATH.exists():
+            return json.loads(FORECAST_CACHE_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.warning("forecast cache read failed: %s", e)
+    return {}
+
+
+def _write_forecast_cache(key: str, data: dict) -> None:
+    """Update one key ('36h' or '7d') in forecast_cache.json (read-modify-write, non-fatal)."""
+    try:
+        cache = _read_forecast_cache()
+        cache[key] = data
+        cache["cached_at"] = datetime.now(CST).isoformat()
+        FORECAST_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        FORECAST_CACHE_PATH.write_text(
+            json.dumps(cache, ensure_ascii=False), encoding="utf-8"
+        )
+    except Exception as e:
+        logger.warning("forecast cache write failed (non-fatal): %s", e)
 
 
 def _fetch_station_obs(dataset: str, station_id: str) -> dict | None:
@@ -420,20 +446,33 @@ def fetch_forecast(location_name: str = "樹林區") -> list[dict]:
 
 
 def fetch_all_forecasts(errors: dict | None = None) -> dict[str, list[dict]]:
-    """Fetch forecasts for all configured locations and return as a dict.
+    """Fetch 36h forecasts for all configured locations.
 
-    If an ``errors`` dict is provided, failed locations are written into it as
-    ``{location: str(exc)}`` so callers can surface the reason to the user.
+    On per-location failure, falls back to the most recent entry in
+    forecast_cache.json. Fresh results are written back to the cache.
+    If ``errors`` is provided, failed/stale locations are recorded there.
     """
+    cache_file = _read_forecast_cache()
+    cached_36h = cache_file.get("36h", {})
+    cached_at  = cache_file.get("cached_at", "?")[:16]
     result = {}
+    fresh  = {}
     for loc in CWA_FORECAST_LOCATIONS:
         try:
             result[loc] = fetch_forecast(loc)
+            fresh[loc]  = result[loc]
         except Exception as exc:
             logger.warning("Could not fetch forecast for %s: %s", loc, exc)
-            result[loc] = []
-            if errors is not None:
-                errors[loc] = str(exc)
+            if cached_36h.get(loc):
+                result[loc] = cached_36h[loc]
+                if errors is not None:
+                    errors[loc] = f"(cached {cached_at})"
+            else:
+                result[loc] = []
+                if errors is not None:
+                    errors[loc] = str(exc)
+    if fresh:
+        _write_forecast_cache("36h", fresh)
     return result
 
 
@@ -599,20 +638,33 @@ def fetch_forecast_7day(location_name: str = "樹林區") -> list[dict]:
 
 
 def fetch_all_forecasts_7day(errors: dict | None = None) -> dict[str, list[dict]]:
-    """Fetch 7-day forecasts for all configured locations and return as a dict.
+    """Fetch 7-day forecasts for all configured locations.
 
-    If an ``errors`` dict is provided, failed locations are written into it as
-    ``{location: str(exc)}`` so callers can surface the reason to the user.
+    On per-location failure, falls back to the most recent entry in
+    forecast_cache.json. Fresh results are written back to the cache.
+    If ``errors`` is provided, failed/stale locations are recorded there.
     """
+    cache_file = _read_forecast_cache()
+    cached_7d  = cache_file.get("7d", {})
+    cached_at  = cache_file.get("cached_at", "?")[:16]
     result = {}
+    fresh  = {}
     for loc in CWA_FORECAST_LOCATIONS:
         try:
             result[loc] = fetch_forecast_7day(loc)
+            fresh[loc]  = result[loc]
         except Exception as exc:
             logger.warning("Could not fetch 7-day forecast for %s: %s", loc, exc)
-            result[loc] = []
-            if errors is not None:
-                errors[loc] = str(exc)
+            if cached_7d.get(loc):
+                result[loc] = cached_7d[loc]
+                if errors is not None:
+                    errors[loc] = f"(cached {cached_at})"
+            else:
+                result[loc] = []
+                if errors is not None:
+                    errors[loc] = str(exc)
+    if fresh:
+        _write_forecast_cache("7d", fresh)
     return result
 
 

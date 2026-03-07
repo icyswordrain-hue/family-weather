@@ -335,18 +335,26 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         _fc_errors: dict = {}
         forecasts = fetch_all_forecasts(_fc_errors)
         _failed_36h = [loc for loc, v in forecasts.items() if not v]
+        _stale_36h  = [loc for loc, v in forecasts.items()
+                       if v and _fc_errors.get(loc, "").startswith("(cached")]
         if _failed_36h:
             parts = [f"{loc} ({_fc_errors.get(loc, '?')})" for loc in _failed_36h]
             yield {"type": "log", "message": f"⚠ 36h forecast failed: {', '.join(parts)}"}
+        if _stale_36h:
+            yield {"type": "log", "message": f"⚠ 36h forecast stale: using cache for {', '.join(_stale_36h)} ({_fc_errors[_stale_36h[0]]})"}
 
         yield {"type": "log", "message": "Fetching CWA 7-day forecasts..."}
         logger.info("Fetching CWA 7-day forecasts...")
         _7d_errors: dict = {}
         forecasts_7day = fetch_all_forecasts_7day(_7d_errors)
         _failed_7d = [loc for loc, v in forecasts_7day.items() if not v]
+        _stale_7d  = [loc for loc, v in forecasts_7day.items()
+                      if v and _7d_errors.get(loc, "").startswith("(cached")]
         if _failed_7d:
             parts = [f"{loc} ({_7d_errors.get(loc, '?')})" for loc in _failed_7d]
             yield {"type": "log", "message": f"⚠ 7-day forecast failed: {', '.join(parts)}"}
+        if _stale_7d:
+            yield {"type": "log", "message": f"⚠ 7-day forecast stale: using cache for {', '.join(_stale_7d)} ({_7d_errors[_stale_7d[0]]})"}
 
         yield {"type": "log", "message": "Fetching MOENV AQI..."}
         logger.info("Fetching MOENV AQI...")
@@ -358,9 +366,19 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
     # Fetch status summary
     _n_total = len(config.CWA_FORECAST_LOCATIONS)
-    _n_fc_ok = sum(1 for v in forecasts.values() if v)
-    _n_7d_ok = sum(1 for v in forecasts_7day.values() if v)
     _aqi_ok  = bool(aqi.get("realtime") or aqi.get("forecast"))
+
+    def _chip_state(results: dict, errs: dict, n: int) -> tuple[str, str]:
+        n_ok    = sum(1 for loc, v in results.items() if v and not errs.get(loc, "").startswith("(cached"))
+        n_stale = sum(1 for loc, v in results.items() if v and errs.get(loc, "").startswith("(cached"))
+        if n_ok == n:           return "ok",    f"{n_ok}/{n}"
+        if n_stale and not (n - n_ok - n_stale): return "stale", f"{n_ok+n_stale}/{n}"
+        if n_ok + n_stale > 0:  return "warn",  f"{n_ok+n_stale}/{n}"
+        return "fail", f"0/{n}"
+
+    _36h_state, _36h_detail = _chip_state(forecasts,      _fc_errors, _n_total)
+    _7d_state,  _7d_detail  = _chip_state(forecasts_7day, _7d_errors, _n_total)
+
     yield {"type": "status", "sources": [
         {
             "name": "CWA",
@@ -369,13 +387,13 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         },
         {
             "name": "24h",
-            "state": "ok" if _n_fc_ok == _n_total else ("warn" if _n_fc_ok else "fail"),
-            "detail": f"{_n_fc_ok}/{_n_total}",
+            "state": _36h_state,
+            "detail": _36h_detail,
         },
         {
             "name": "7d",
-            "state": "ok" if _n_7d_ok == _n_total else ("warn" if _n_7d_ok else "fail"),
-            "detail": f"{_n_7d_ok}/{_n_total}",
+            "state": _7d_state,
+            "detail": _7d_detail,
         },
         {
             "name": "AQI",
@@ -445,7 +463,12 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     logger.info("Saving to conversation history...")
     save_day(
         date_str=date_str,
-        raw_data={"current": current, "forecasts": _serialize_forecasts(forecasts), "aqi": aqi},
+        raw_data={
+            "current":        current,
+            "forecasts":      _serialize_forecasts(forecasts),
+            "forecasts_7day": _serialize_forecasts(forecasts_7day),
+            "aqi":            aqi,
+        },
         processed_data=processed,
         narration_text=narration_text,
         paragraphs=paragraphs,

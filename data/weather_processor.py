@@ -163,13 +163,13 @@ def process(
     logger.debug("Step 1 - Enrich current")
     current_processed = _process_current(current, aqi["realtime"])
 
-    # ── 2. Choose primary forecast location (Sanxia first, fallback Banqiao) ─
-    primary_slots = forecasts.get("三峽區") or forecasts.get("板橋區") or []
+    # ── 2. Choose primary forecast location (Shulin first, fallback Banqiao) ─
+    primary_slots = forecasts.get("樹林區") or forecasts.get("板橋區") or []
     banqiao_slots = forecasts.get("板橋區") or []
 
     # ── 2b. Choose 7-day primary forecast ────────────────────────────────────
     forecasts_7day = forecasts_7day or {}
-    primary_7day_slots = forecasts_7day.get("三峽區") or forecasts_7day.get("板橋區") or []
+    primary_7day_slots = forecasts_7day.get("樹林區") or forecasts_7day.get("板橋區") or []
     for slot in primary_7day_slots:
         # AT is already apparent temperature from the CWA API (MaxAT/MinAT) — do not recalculate
         slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
