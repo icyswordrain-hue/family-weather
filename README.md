@@ -273,3 +273,10 @@ pytest tests/
 | 3 | **2× icon watermark** | Right-column stat icons rendered as `position: absolute` at 40 px with `opacity: 0.18`, text sits on top via `z-index: 1`; uses new `.tc-stat-icon` / `.tc-stat-text` wrapper elements |
 | 4 | **Conditional outdoor / PoP** | Day segments (h < 18 and h ≥ 6) show outdoor grade; overnight segments show PoP (precipitation probability) |
 | 5 | **Alert-style transition card** | `.tc-transition` restyled as a flex card with `border-left`, `box-shadow`, and a structured icon + `CHANGE` label + detail-text layout, matching the lifestyle alert card pattern |
+
+### 2026-03-07 — AT Double-Count Fix (`4052454`)
+
+**File:** `data/weather_processor.py`
+
+CWA's 36-hour API already returns a pre-computed apparent temperature (`AT`). The processor was additionally running the BOM formula (using `T`, `RH`, `WS`) to produce a `feels_like` value and overwriting `AT` with it — effectively double-counting humidity and wind. The formula application is now removed; `AT` from the API is preserved as-is, matching the policy already applied to 7-day segment slots.
+
