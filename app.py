@@ -237,7 +237,7 @@ def refresh():
     if slot == "midday":
         try:
             from data.fetch_cwa import fetch_current_conditions
-            from history.conversation import load_broadcast
+            from history.conversation import get_today_broadcast as load_broadcast
             current = fetch_current_conditions()
             m_broadcast = load_broadcast(date=date_str, slot="morning")
             morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
@@ -333,10 +333,16 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         yield {"type": "log", "message": "Fetching CWA forecasts..."}
         logger.info("Fetching CWA forecasts...")
         forecasts = fetch_all_forecasts()
+        _failed_36h = [loc for loc, v in forecasts.items() if not v]
+        if _failed_36h:
+            yield {"type": "log", "message": f"⚠ 36h forecast unavailable for: {', '.join(_failed_36h)}"}
 
         yield {"type": "log", "message": "Fetching CWA 7-day forecasts..."}
         logger.info("Fetching CWA 7-day forecasts...")
         forecasts_7day = fetch_all_forecasts_7day()
+        _failed_7d = [loc for loc, v in forecasts_7day.items() if not v]
+        if _failed_7d:
+            yield {"type": "log", "message": f"⚠ 7-day forecast unavailable for: {', '.join(_failed_7d)}"}
 
         yield {"type": "log", "message": "Fetching MOENV AQI..."}
         logger.info("Fetching MOENV AQI...")
@@ -347,7 +353,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         return
 
     # Fetch status summary
-    _n_total = len(CWA_FORECAST_LOCATIONS)
+    _n_total = len(config.CWA_FORECAST_LOCATIONS)
     _n_fc_ok = sum(1 for v in forecasts.values() if v)
     _n_7d_ok = sum(1 for v in forecasts_7day.values() if v)
     _aqi_ok  = bool(aqi.get("realtime") or aqi.get("forecast"))

@@ -165,6 +165,14 @@ def get_today_broadcast(date_str: str | None = None) -> Optional[dict]:
     return history_map.get(date_str)
 
 
+def load_broadcast(date_str: str, slot: str = "morning") -> Optional[dict]:
+    """
+    Alias for get_today_broadcast to support legacy midday skip check in app.py.
+    Currently ignore 'slot' as storage schema is date-keyed.
+    """
+    return get_today_broadcast(date_str)
+
+
 def _today_str() -> str:
     return datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
 
