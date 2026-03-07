@@ -1651,6 +1651,23 @@ html.dark .source-claude {
   letter-spacing: 0.05em;
 }
 
+.mobile-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+#mobile-last-updated {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.40);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+#mobile-last-updated.stale-amber { color: #f59e0b; }
+#mobile-last-updated.stale-red   { color: #ef4444; }
+
 /* ── Section Header Card (mobile only) ─────────────────────────────────── */
 .section-header-card {
   display: none;
@@ -1701,8 +1718,9 @@ html.dark .source-claude {
   }
 
   .compact-header {
-    padding-top: 7px;
-    padding-bottom: 7px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: 0.82rem;
   }
 
   /* All views visible — no tab gating on mobile */
@@ -1713,7 +1731,7 @@ html.dark .source-claude {
   /* Main panel: full width, clear bottom for player bar */
   .main-panel {
     padding: 20px 16px;
-    padding-bottom: 62px;
+    padding-bottom: 54px;
     height: auto;
     overflow-y: visible;
   }
@@ -1722,7 +1740,7 @@ html.dark .source-claude {
   .player-bar {
     left: 0;
     right: 0;
-    height: 40px;
+    height: 32px;
     gap: 10px;
     padding: 0 14px;
     cursor: pointer;
@@ -1746,8 +1764,8 @@ html.dark .source-claude {
   .player-sheet {
     left: 0;
     right: 0;
-    height: calc(90vh - 40px);
-    bottom: 40px;
+    height: calc(90vh - 32px);
+    bottom: 32px;
   }
 
   .player-sheet-handle {
@@ -1767,7 +1785,7 @@ html.dark .source-claude {
   .player-sheet-backdrop {
     left: 0;
     right: 0;
-    bottom: 40px;
+    bottom: 32px;
   }
 
   .player-sheet-body {
@@ -1829,7 +1847,7 @@ html.dark .source-claude {
   }
 
   .current-conditions-wrapper {
-    max-height: calc(100dvh - 40px - 56px);
+    max-height: calc(100dvh - 32px - 56px);
   }
 
   .current-hero {
