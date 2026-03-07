@@ -112,3 +112,13 @@ Apple Weather's 7-day list uses large, high-contrast day labels and thick temper
 **Previous state:** `.wk-row-label` was `0.65rem` (desktop) / `0.58rem` (mobile) — too small relative to the 54px day icon. `.wk-range-container` was `6px` tall, appearing hairline-thin against the enlarged icons. `.wk-min-temp`/`.wk-max-temp` were `0.90rem` / `0.82rem`. `.wk-row-day` used `flex: 0 0 auto`, so variable letter-widths ("WED" vs "FRI") caused the temperature bar to start at inconsistent horizontal positions across rows.
 
 **Implemented:** Enlarged day labels to `1rem` / `0.9rem` mobile. Doubled range bar to `12px` height with `6px` border-radius. Temperature values scaled to `1.35rem` / `1.23rem` mobile. Fixed `.wk-row-day` at `flex: 0 0 106px` (desktop) / `flex: 0 0 88px` (mobile) — a constant flex-basis that locks the day section width regardless of day-name character widths, so the icon column and the range bar column start at the same horizontal position on every row.
+
+---
+
+## 12. 36-Hour Segment Row Visual Parity with 7-Day View
+
+The 36h timeline rows showed several visual regressions relative to the 7-day rows they sit above: the temperature range bar was invisible, the left column was cluttered with a redundant time label, text sizes were mismatched, and the right column showed a raw letter grade rather than meaningful icon+text.
+
+**Previous state:** The range bar was gated on `seg.AT != null` — if only `MinAT`/`MaxAT` were populated (which the CWA 36h API can produce) the bar silently disappeared. The center column container (`tc-seg-center`) used `display:flex` but the inner `wk-row-temps` row had no `width:100%`, causing it to collapse to content width so the bar had no room to render. Segment labels were `0.65rem` vs the 7-day's `1rem`. Temperature values were `1.1rem` vs the 7-day's `1.35rem`. The left column showed a `18:00` / `0:00` timestamp beneath every icon — information already communicated by the segment name ("Day 1", "Tonight"). The right column showed `"A Good to go"` (grade letter + label) with no icon, and plain text for precipitation with no icon.
+
+**Implemented:** Fixed bar condition to `(seg.MinAT != null || seg.AT != null)`. Added `.tc-seg-center .wk-row-temps { width: 100% }` so the range bar fills the column. Removed the `.tc-seg-time` element from the left column. Set `.tc-seg-label` to `1rem` and `.tc-seg-temp` to `1.35rem` (matching `.wk-row-label` and `.wk-min-temp`/`.wk-max-temp` respectively; mobile `1.23rem`). Right column now renders `outdoor.webp` brand icon + outdoor label text (grade letter removed); precipitation renders `rain-gear.webp` icon + precip text. `.tc-seg-stat` is now `display:flex` with `gap:4px` and `.brand-icon` sized at `20px`.

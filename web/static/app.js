@@ -577,16 +577,8 @@ function renderOverviewView(data) {
       iconEl.className = 'tc-icon';
       iconEl.innerHTML = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || IMG('cloudy', 'Cloudy');
 
-      const timeEl = document.createElement('div');
-      timeEl.className = 'tc-seg-time';
-      try {
-        const h = new Date(seg.start_time.replace('+08:00', '')).getHours();
-        timeEl.textContent = `${String(h).padStart(2, '0')}:00`;
-      } catch { timeEl.textContent = ''; }
-
       leftEl.appendChild(labelEl);
       leftEl.appendChild(iconEl);
-      leftEl.appendChild(timeEl);
 
       // ── Center: range bar only ─────────────────────────────────────
       const centerEl = document.createElement('div');
@@ -604,7 +596,7 @@ function renderOverviewView(data) {
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
 
-      if (tlGlobalMax > tlGlobalMin && seg.AT != null) {
+      if (tlGlobalMax > tlGlobalMin && (seg.MinAT != null || seg.AT != null)) {
         const span = tlGlobalMax - tlGlobalMin;
         const lo = seg.MinAT ?? seg.AT;
         const hi = seg.MaxAT ?? seg.AT;
@@ -629,17 +621,17 @@ function renderOverviewView(data) {
       const rightEl = document.createElement('div');
       rightEl.className = 'tc-seg-right';
 
-      if (seg.outdoor_grade) {
+      if (seg.outdoor_label) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         const el = document.createElement('div');
-        el.className = `tc-seg-stat tc-seg-grade lvl-${gradeToLvl[seg.outdoor_grade] || 0}`;
-        el.textContent = `${seg.outdoor_grade} ${localiseMetric(seg.outdoor_label) || seg.outdoor_label || ''}`;
+        el.className = `tc-seg-stat lvl-${gradeToLvl[seg.outdoor_grade] || 0}`;
+        el.innerHTML = IMG('outdoor', 'Outdoor') + (localiseMetric(seg.outdoor_label) || seg.outdoor_label);
         rightEl.appendChild(el);
       }
       if (seg.precip_text != null) {
         const el = document.createElement('div');
         el.className = `tc-seg-stat lvl-${seg.precip_level || 0}`;
-        el.textContent = seg.precip_text;
+        el.innerHTML = IMG('rain-gear', 'Rain') + seg.precip_text;
         rightEl.appendChild(el);
       }
 

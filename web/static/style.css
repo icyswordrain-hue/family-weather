@@ -1049,7 +1049,7 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-label {
-  font-size: 0.65rem;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1083,6 +1083,10 @@ html.dark .tc-seg-row.tc-seg-night {
   align-items: center;
 }
 
+.tc-seg-center .wk-row-temps {
+  width: 100%;
+}
+
 /* 1.5× the 7-day bar height (6px → 9px) */
 .tc-seg-center .wk-range-container {
   height: 9px;
@@ -1093,9 +1097,9 @@ html.dark .tc-seg-row.tc-seg-night {
   border-radius: 4px;
 }
 
-/* Larger min/max temp labels for 36h context */
+/* Match 7-day temp label size */
 .tc-seg-temp {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   min-width: 3.2ch;
 }
 
@@ -1109,16 +1113,19 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
 }
 
-/* Outdoor grade line: slightly larger, color from .lvl-* */
-.tc-seg-grade {
-  font-size: 0.95rem;
-  font-weight: 700;
+.tc-seg-stat .brand-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 /* ── Mobile (≤767px) ── */
@@ -1143,8 +1150,7 @@ html.dark .tc-seg-row.tc-seg-night {
   }
 
   .tc-seg-stat  { font-size: 0.78rem; }
-  .tc-seg-grade { font-size: 0.82rem; }
-  .tc-seg-temp  { font-size: 0.95rem; }
+  .tc-seg-temp  { font-size: 1.23rem; }
 }
 
 /* ── Kids audio toggle (#12) ─────────────────────────────────────────────── */
