@@ -75,3 +75,10 @@ No HTML or backend changes. The `#ov-timeline` container keeps its `timeline-gri
 - `.lvl-1` – `.lvl-5` — semantic color classes (`style.css:752`)
 - `.tc-transition` / `.tc-col` — transition arrows between segments
 - `tlGlobalMin` / `tlGlobalMax` — global range computation (`app.js:548–554`)
+
+## UI Refinements (Post-Implementation)
+
+The following refinements were applied to improve clarity of the layout:
+- **Temperature Gauge**: The range bar now expands to fill the full container width (`100%`) per segment, starting at 0%. Meaning all segment range bars originate and end at identical vertical alignments, while inner labels represent the segment's actual local min/max.
+- **Right-side Stats**: Icons for Outdoor Grade and Precipitation are fully opaque (opacity 1.0) and pushed to the far right, enlarged locally to `60px` (1.5x of the default `40px` inside).
+- **Transition Alert**: Formatted as a single contiguous horizontal line (Change indicator + value shift + weather label) rather than awkwardly wrapped text elements.
