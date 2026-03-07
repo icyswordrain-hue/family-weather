@@ -398,6 +398,7 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     result["wind_text"] = wind_ms_to_beaufort(wind_ms)
     result["wind_level"] = _wind_to_level(wind_ms)
     result["wind_dir_text"] = degrees_to_cardinal(current.get("WDIR"))
+    result["beaufort_desc"] = result["wind_text"]  # alias used by _format_history and fallback_narrator
 
     # AQI
     aqi_val = aqi_realtime.get("aqi")

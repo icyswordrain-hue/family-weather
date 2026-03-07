@@ -230,7 +230,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         rain_gear_text = ("不需準備雨具。" if not rain_recent else "請記得攜帶雨具。") if is_zh else ("No precipitation gear expected." if not rain_recent else "Carry an umbrella.")
 
     # 2. Commute (v6: p2_garden_commute contains garden + commute)
-    commute_text = summaries.get("commute") or paragraphs.get("p2_garden_commute")
+    commute_text = summaries.get("commute")
     if not commute_text:
         am = commute.get("morning", {}).get("hazards", [])
         pm = commute.get("evening", {}).get("hazards", [])
@@ -242,7 +242,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             commute_text = "交通狀況良好。" if is_zh else "Traffic conditions look normal."
 
     # 3. HVAC (v6: p4_meal_climate contains meals + climate control)
-    hvac_text = summaries.get("hvac") or paragraphs.get("p4_meal_climate")
+    hvac_text = summaries.get("hvac")
     if not hvac_text:
         hvac_mode = climate.get("mode", "Off")
         dehumidifier = climate.get("dehumidifier")
@@ -283,7 +283,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         hvac_text = " ".join(hvac_parts)
 
     # 4. Meals (v6: p4_meal_climate)
-    meals_text = summaries.get("meals") or paragraphs.get("p4_meal_climate")
+    meals_text = summaries.get("meals")
     if not meals_text:
         meal_mood_data = processed.get("meal_mood", {})
         meal_suggestions = meal_mood_data.get("top_suggestions", []) or meal_mood_data.get("all_suggestions", [])
@@ -312,6 +312,12 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         outdoor_text = "是個適合散步的好日子。" if is_zh else "Good day for a walk."
 
     outdoor_index = outdoor_index or {}
+
+    # Derive best_window (segment name with highest score) and top_activity
+    _segs = outdoor_index.get("segments", {})
+    best_window = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
+    _acts = outdoor_index.get("activities", {})
+    top_activity = max(_acts, key=lambda k: _acts[k]["score"]) if _acts else None
 
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")
@@ -379,13 +385,13 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         },
         "outdoor": {
             "text": outdoor_text,
-            "score": outdoor_index.get("score"),
-            "grade": outdoor_index.get("grade"),
-            "label": outdoor_index.get("label"),
-            "top_activity": outdoor_index.get("top_activity"),
-            "activity_scores": outdoor_index.get("activity_scores", {}),
+            "score": outdoor_index.get("overall_score"),
+            "grade": outdoor_index.get("overall_grade"),
+            "label": outdoor_index.get("overall_label"),
+            "top_activity": top_activity,
+            "activity_scores": outdoor_index.get("activities", {}),
             "parkinsons_safe": outdoor_index.get("parkinsons_safe", True),
-            "best_window": outdoor_index.get("best_window"),
+            "best_window": best_window,
         },
         "alert": _alert,
     }
