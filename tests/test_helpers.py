@@ -17,7 +17,8 @@ class TestSafeFloat:
         assert safe_float("3.14") == pytest.approx(3.14)
 
     def test_negative_string(self):
-        assert safe_float("-99") == -99.0
+        # -99 is a CWA sentinel for missing/uninstalled instrument → None
+        assert safe_float("-99") is None
 
     def test_numeric_int(self):
         assert safe_float(5) == 5.0
@@ -47,7 +48,8 @@ class TestSafeInt:
         assert safe_int("3.9") == 3
 
     def test_negative_string(self):
-        assert safe_int("-99") == -99
+        # -99 is a CWA sentinel for missing/uninstalled instrument → None
+        assert safe_int("-99") is None
 
     def test_numeric_float(self):
         assert safe_int(1.7) == 1

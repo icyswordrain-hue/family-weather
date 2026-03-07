@@ -43,25 +43,30 @@ def test_cardiac_no_morning_segment():
 # ── Menieres Alert ────────────────────────────────────────────────────────────
 
 def test_menieres_returns_dict():
-    alert = _detect_menieres_alert({"PRES": 1005}, [], {})
+    alert = _detect_menieres_alert({"PRES": 1005}, [])
     assert "triggered" in alert
     assert "type" in alert
 
-def test_menieres_triggers_low_pressure():
-    alert = _detect_menieres_alert({"PRES": 1000}, [], {})
-    assert alert["triggered"] is True
+def test_menieres_low_pressure_sets_moderate_severity():
+    # Low pressure alone is moderate risk — does NOT trigger alert
+    alert = _detect_menieres_alert({"PRES": 1000}, [])
+    assert alert["triggered"] is False
+    assert alert["severity"] == "moderate"
 
 def test_menieres_no_trigger_normal():
-    alert = _detect_menieres_alert({"PRES": 1015, "RH": 70}, [], {})
+    alert = _detect_menieres_alert({"PRES": 1015, "RH": 70}, [])
     assert alert["triggered"] is False
 
-def test_menieres_triggers_high_humidity():
-    alert = _detect_menieres_alert({"PRES": 1015, "RH": 90}, [], {})
-    assert alert["triggered"] is True
+def test_menieres_high_humidity_sets_moderate_severity():
+    # High humidity alone is moderate risk — does NOT trigger alert
+    alert = _detect_menieres_alert({"PRES": 1015, "RH": 90}, [])
+    assert alert["triggered"] is False
+    assert alert["severity"] == "moderate"
 
 def test_menieres_triggers_rapid_drop():
-    history = [{"raw_data": {"current": {"PRES": 1015}}}]
-    alert = _detect_menieres_alert({"PRES": 1005}, history, {})
+    # pressure_change_24h needs >= 2 records with top-level PRES key; delta = -10 hPa
+    history = [{"PRES": 1015}, {"PRES": 1005}]
+    alert = _detect_menieres_alert({"PRES": 1005}, history)
     assert alert["triggered"] is True
     assert alert["severity"] == "high"
 

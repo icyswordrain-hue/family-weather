@@ -3,14 +3,14 @@ from data.outdoor_scoring import _grade_score, _score_conditions, OUTDOOR_WEIGHT
 
 # ── _grade_score ──────────────────────────────────────────────────────────────
 
-def test_grade_excellent(): assert _grade_score(85) == ("A", "Excellent")
-def test_grade_good():       assert _grade_score(70) == ("B", "Good")
-def test_grade_boundary_b(): assert _grade_score(65) == ("B", "Good")
-def test_grade_fair():       assert _grade_score(55) == ("C", "Fair")
-def test_grade_poor():       assert _grade_score(40) == ("D", "Poor")
-def test_grade_avoid():      assert _grade_score(10) == ("F", "Avoid")
-def test_grade_zero():       assert _grade_score(0) == ("F", "Avoid")
-def test_grade_perfect():    assert _grade_score(100) == ("A", "Excellent")
+def test_grade_excellent(): assert _grade_score(85) == ("A", "Go out")
+def test_grade_good():       assert _grade_score(70) == ("B", "Good to go")
+def test_grade_boundary_b(): assert _grade_score(65) == ("B", "Good to go")
+def test_grade_fair():       assert _grade_score(55) == ("C", "Manageable")
+def test_grade_poor():       assert _grade_score(40) == ("D", "Think twice")
+def test_grade_avoid():      assert _grade_score(10) == ("F", "Stay in")
+def test_grade_zero():       assert _grade_score(0) == ("F", "Stay in")
+def test_grade_perfect():    assert _grade_score(100) == ("A", "Go out")
 
 # ── _score_conditions — heavy rain ────────────────────────────────────────────
 
