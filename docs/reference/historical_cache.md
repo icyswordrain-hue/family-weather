@@ -404,3 +404,67 @@ deployment note in `docs/deployment.md` for options.
 > periodically uploading the file to GCS and restoring it on container start. The
 > simplest approach for a low-traffic family dashboard is a small Cloud Storage bucket
 > with a startup script that pulls the latest cache file before the pipeline runs.
+
+---
+
+## Forecast Cache (`forecast_cache.json`)
+
+Added 2026-03-07 (commit 4ecb294). Mirrors the station-history fallback pattern for
+CWA forecast data so that a CWA outage does not produce a blank broadcast.
+
+### What it stores
+
+A single JSON file (not JSONL — forecasts are not a time-series, only the latest matters):
+
+```json
+{
+  "cached_at": "2026-03-07T10:09:31+08:00",
+  "36h": {
+    "樹林區": [ { "start_time": "...", "end_time": "...", "AT": 19.0, ... }, ... ],
+    "板橋區": [ ... ]
+  },
+  "7d": {
+    "樹林區": [ { "start_time": "...", "AT": 18.0, "PoP12h": 20, ... }, ... ],
+    "板橋區": [ ... ]
+  }
+}
+```
+
+### Path config
+
+```python
+# config.py
+FORECAST_CACHE_PATH = Path(
+    os.environ.get("FORECAST_CACHE_PATH", os.path.join(LOCAL_DATA_DIR, "forecast_cache.json"))
+)
+```
+
+- LOCAL → `local_data/forecast_cache.json`
+- MODAL → `/data/forecast_cache.json` (persisted on Modal volume `family-weather-data`)
+
+### Write / read strategy
+
+`fetch_all_forecasts(errors)` and `fetch_all_forecasts_7day(errors)`:
+
+1. Read the current cache file once at the start of the function.
+2. For each location in `CWA_FORECAST_LOCATIONS`:
+   - **Success** → store in `result` and `fresh` dict.
+   - **Failure** → if the cache has slots for that location, use them and record
+     `errors[loc] = "(cached YYYY-MM-DDTHH:MM)"`. Otherwise `result[loc] = []` and
+     record the real exception string.
+3. After the loop, if any locations were freshly fetched, call `_write_forecast_cache(key, fresh)`.
+   This does a **read-modify-write** so only the newly-fetched locations overwrite the cache;
+   stale-filled locations are not written back.
+
+### Surfacing to the user
+
+- **Log messages:** `⚠ 36h forecast stale: using cache for 樹林區, 板橋區 (cached 2026-03-07T10:09)`
+- **Status chips:** `_chip_state()` in `app.py` inspects `errors[loc]` — if all non-empty
+  slots have `"(cached..."` values the chip state is `"stale"` (amber), same as CWA chip.
+
+### Private helpers in `fetch_cwa.py`
+
+```python
+_read_forecast_cache() -> dict          # read file or return {}; non-fatal
+_write_forecast_cache(key, data) -> None  # read-modify-write; non-fatal
+```
