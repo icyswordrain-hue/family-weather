@@ -433,7 +433,8 @@ function render(data) {
     const dd = String(d.getDate()).padStart(2, '0');
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
+    const luEl = document.getElementById('rp-last-updated');
+    if (luEl) luEl.innerHTML = `${IMG('last-drip', 'Last drip')} ${T.last_updated}${m}/${dd} ${hh}:${min}`;
   }
 }
 
@@ -450,11 +451,11 @@ function renderCurrentView(data) {
   // Gauge Cards (Restructured)
   renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
   renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '—'}`, `lvl-${data.wind.level}`);
-  renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`);
+  renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`, IMG('canopy-moisture', 'Humidity'));
   const aqiSub = data.aqi.pm25 != null ? `AQI ${data.aqi.val} · PM2.5 ${data.aqi.pm25}` : `AQI ${data.aqi.val}`;
   renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, aqiSub, `lvl-${data.aqi.level}`);
-  renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`);
-  renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`);
+  renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
+  renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
 
   // Solar times
   const solar = data.solar;
@@ -468,10 +469,18 @@ function renderCurrentView(data) {
   }
 }
 
-function renderGauge(id, mainVal, label, subVal = '', valueClass = '') {
+function renderGauge(id, mainVal, label, subVal = '', valueClass = '', icon = '') {
   const el = document.getElementById(id);
   if (!el) return;
   el.innerHTML = '';
+
+  if (icon) {
+    const ic = document.createElement('div');
+    ic.className = 'gauge-icon';
+    ic.innerHTML = icon;
+    el.appendChild(ic);
+  }
+
   const l = document.createElement('div');
   l.className = 'gauge-label';
   l.textContent = label;
@@ -936,7 +945,7 @@ function renderLifestyleView(data) {
     ttl.textContent = T.heads_up_title;
     content.appendChild(ttl);
     const TYPE_ICONS = {
-      Health: IMG('health', 'Health'),
+      Health: IMG('heart-flag', 'Health'),
       Commute: IMG('commute', 'Commute'),
       Air: IMG('air-quality', 'Air Quality'),
       General: IMG('general', 'General'),
@@ -967,7 +976,7 @@ function renderLifestyleView(data) {
     const extras = [];
     if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
     if (data.wardrobe.rain_gear_text) extras.push(mkSub(`☂️ ${data.wardrobe.rain_gear_text}`));
-    add(IMG('wardrobe', 'Wardrobe'), T.wardrobe, data.wardrobe.text, extras);
+    add(IMG('feels-like', 'Feels Like'), T.wardrobe, data.wardrobe.text, extras);
   }
   // 4. Commute
   if (data.commute) {
@@ -1006,7 +1015,13 @@ function renderLifestyleView(data) {
   if (data.hvac) {
     const extras = [];
     if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
-    add(IMG('hvac', 'HVAC'), T.hvac, data.hvac.text, extras);
+    const hvacMode = (data.hvac.mode || '').toLowerCase();
+    const hvacIconName =
+      hvacMode === 'cooling'    ? 'cool-shade'   :
+      hvacMode === 'dehumidify' ? 'drip-warning' :
+      (hvacMode === 'fan' || hvacMode === 'off') ? 'window-advice' :
+      'hvac';
+    add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.text, extras);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {

@@ -961,6 +961,19 @@ html.dark .audio-toggle-btn.active {
   margin: 0;
 }
 
+.gauge-icon .brand-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-block;
+  margin: 0;
+}
+.nav-icon .brand-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  margin: 0;
+}
+
 /* Forecast icon sizing hierarchy: current > 24h > 7-day */
 .tc-icon .brand-icon {
   width: 60px;
