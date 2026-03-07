@@ -145,27 +145,37 @@
             <span data-i18n="nav_dashboard">天氣總覽</span>
           </div>
           <div class="current-conditions-wrapper">
-            <div class="current-top-row">
-              <div class="gauge-card" id="gauge-ground"></div>
-              <div class="current-hero">
-                <div class="hero-main">
+            <div class="current-hero-row">
+              <div class="hero-left">
+                <div class="hero-icon-block">
                   <span id="cur-icon"></span>
-                  <span id="cur-temp">--</span>
                 </div>
-                <div id="cur-weather-text">--</div>
-                <div class="solar-row" id="solar-row">
-                  <span id="solar-sunrise">--:--</span>
-                  <span id="solar-sunset">--:--</span>
+                <div class="hero-text-block">
+                  <span id="cur-temp">--</span>
+                  <div id="cur-weather-text">--</div>
+                  <div class="solar-row" id="solar-row">
+                    <span id="solar-sunrise">--:--</span>
+                    <span id="solar-sunset">--:--</span>
+                  </div>
                 </div>
               </div>
-              <div class="gauge-card" id="gauge-wind"></div>
-            </div>
-
-            <div class="gauges-grid">
-              <div class="gauge-card" id="gauge-hum"></div>
-              <div class="gauge-card" id="gauge-aqi"></div>
-              <div class="gauge-card" id="gauge-uv"></div>
-              <div class="gauge-card" id="gauge-pres"></div>
+              <div class="hero-right-stack">
+                <div class="hero-stat" id="hero-ground"></div>
+                <div class="hero-stat" id="hero-wind"></div>
+                <button class="hero-stat outdoor-toggle" id="hero-outdoor" aria-expanded="false">
+                  <div class="outdoor-toggle-row">
+                    <span class="outdoor-grade-badge" id="outdoor-grade-badge">--</span>
+                    <span id="outdoor-label">--</span>
+                    <span class="outdoor-chevron">&#8964;</span>
+                  </div>
+                  <div class="outdoor-details" id="outdoor-details" hidden>
+                    <div class="outdoor-factor" id="od-hum"></div>
+                    <div class="outdoor-factor" id="od-aqi"></div>
+                    <div class="outdoor-factor" id="od-uv"></div>
+                    <div class="outdoor-factor" id="od-pres"></div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 

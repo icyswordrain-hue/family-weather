@@ -110,7 +110,7 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
     solar = processed.get("solar")
 
     return {
-        "current": _slice_current(current_data, aqi_realtime, solar),
+        "current": _slice_current(current_data, aqi_realtime, solar, outdoor_index),
         "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
         "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, lang=lang),
         "narration": _slice_narration(paragraphs, meta),
@@ -119,9 +119,10 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
 
 # ── View Slices ──────────────────────────────────────────────────────────────
 
-def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict | None = None) -> dict:
+def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict | None = None, outdoor: dict | None = None) -> dict:
     """Current View: Real-time conditions with 5-level insights."""
     aqi_realtime = aqi_realtime or {}
+    outdoor = outdoor or {}
     return {
         "temp": current.get("AT"),
         "obs_time": current.get("obs_time"),
@@ -166,6 +167,13 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict 
             "level": current.get("pres_level", 3)
         },
         "solar": solar,
+        "dew_point": current.get("dew_point_c"),
+        "dew_gap": current.get("dew_gap_c"),
+        "outdoor": {
+            "score": outdoor.get("overall_score"),
+            "grade": outdoor.get("overall_grade"),
+            "label": outdoor.get("overall_label"),
+        },
     }
 
 
