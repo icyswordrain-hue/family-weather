@@ -96,3 +96,59 @@ def test_lifestyle_alert_no_moenv_warning_without_keywords():
     slices = build_slices(broadcast)
     alert_list = slices["lifestyle"]["alert"]
     assert not any(a["type"] == "Air" for a in alert_list)
+
+
+def test_lifestyle_alert_dedup_llm_and_moenv_air_alerts():
+    """When the LLM alert mentions AQI *and* MOENV also injects an Air alert, only one
+    AQI-related entry survives in the final list (no duplicate air quality rows)."""
+    broadcast = {
+        **MINIMAL_BROADCAST,
+        "summaries": {"alert": {"text": "AQI is poor today, limit outdoor exposure.", "level": "WARNING"}},
+        "processed_data": {
+            **MINIMAL_BROADCAST["processed_data"],
+            "aqi_forecast": {"aqi": 160, "warnings": ["空氣品質不良，建議減少戶外活動。"]},
+        },
+    }
+    slices = build_slices(broadcast)
+    alert_list = slices["lifestyle"]["alert"]
+    # Both the LLM General alert (mentions "aqi") and the MOENV Air alert qualify as Air.
+    # After dedup, only one Air-category entry should remain.
+    air_related = [a for a in alert_list if "aqi" in a.get("msg", "").lower() or "空氣" in a.get("msg", "")]
+    assert len(air_related) == 1, f"Expected 1 air-related alert, got {len(air_related)}: {alert_list}"
+
+
+def test_lifestyle_alert_dedup_keeps_critical_over_warning_same_type():
+    """Dedup retains CRITICAL over WARNING when two alerts share the same effective type."""
+    from web.routes import _dedup_alerts
+    alerts = [
+        {"type": "Air", "level": "WARNING", "msg": "AQI elevated."},
+        {"type": "Air", "level": "CRITICAL", "msg": "Hazardous air — stay indoors."},
+    ]
+    result = _dedup_alerts(alerts)
+    assert len(result) == 1
+    assert result[0]["level"] == "CRITICAL"
+
+
+def test_lifestyle_alert_dedup_prefers_specific_type_over_general_on_equal_severity():
+    """When a 'General' LLM alert and a specific-type alert share the same severity and topic,
+    the specific-type entry wins."""
+    from web.routes import _dedup_alerts
+    alerts = [
+        {"type": "General", "level": "WARNING", "msg": "AQI is poor today."},  # reclassified as Air
+        {"type": "Air",     "level": "WARNING", "msg": "空氣品質不良，建議減少戶外活動。"},
+    ]
+    result = _dedup_alerts(alerts)
+    assert len(result) == 1
+    assert result[0]["type"] == "Air"
+
+
+def test_lifestyle_alert_dedup_keeps_distinct_types():
+    """Alerts of different types are all preserved after dedup."""
+    from web.routes import _dedup_alerts
+    alerts = [
+        {"type": "Health",  "level": "CRITICAL", "msg": "Cardiac risk."},
+        {"type": "Commute", "level": "WARNING",  "msg": "Heavy rain on highway."},
+        {"type": "Air",     "level": "WARNING",  "msg": "空氣品質不良。"},
+    ]
+    result = _dedup_alerts(alerts)
+    assert len(result) == 3

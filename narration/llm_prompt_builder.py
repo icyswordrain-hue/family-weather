@@ -102,13 +102,13 @@ Output exact separator ---CARDS--- then a single JSON:
   "outdoor": "Exactly 2 sentences. Outdoor activity for Dad — Parkinson's safety considerations and best time window.",
   "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant and note that sensitive groups should take care. If Unhealthy or above: recommend limiting outdoor exposure and keeping windows closed.",
   "alert": {
-    "text": "1–2 sentences. Summarise today's notable heads-ups, health risks, or weather concerns from P1. If nothing significant to flag, write a single short sentence like 'All clear today.' Do not list absent alert types (e.g. no cardiac risk, no weather alerts).",
+    "text": "1–2 sentences. Summarise today's health risks (cardiac, Ménière's) and commute hazards from P1. Do NOT include air quality — that has its own dedicated card. If nothing significant to flag, leave this as an empty string.",
     "level": "INFO or WARNING or CRITICAL"
   }
 }
 
 All card values must be written in the same language as the narration paragraphs above.
-Level guide: CRITICAL = cardiac or Ménière's health risk mentioned in P1; WARNING = significant weather or safety heads-up; INFO = mild note or clear uneventful day.
+Level guide: CRITICAL = cardiac or Ménière's health risk mentioned in P1; WARNING = significant commute or safety heads-up; INFO = mild health or commute note. Leave text empty for clear uneventful days.
 """
 
 V6_SYSTEM_PROMPT_EN = V6_SYSTEM_PROMPT  # alias — English prompt is unchanged
@@ -181,13 +181,13 @@ P6 — 預報準確度：
   "outdoor": "精確 2 句話。爸爸的戶外活動建議——帕金森氏症安全考量及最佳時間窗口。",
   "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意。若不健康或以上：建議減少戶外活動並關閉窗戶。",
   "alert": {
-    "text": "1–2 句話。摘要 P1 中今天值得注意的提示、健康風險或天氣狀況。若無特別需要提醒的事項，請寫一句簡短的話，如「今天一切正常。」不要列舉不存在的風險類別。",
+    "text": "1–2 句話。摘要 P1 中的健康風險（心臟、梅尼爾氏症）及通勤危險。不要包含空氣品質資訊——那已有專屬卡片。若無特別需要提醒的事項，請留空字串。",
     "level": "INFO 或 WARNING 或 CRITICAL"
   }
 }
 
 所有卡片值必須使用與上方廣播段落相同的語言（繁體中文）撰寫。
-等級說明：CRITICAL = P1 提及的心臟或梅尼爾氏症健康風險；WARNING = 重要天氣或安全提示；INFO = 輕微注意事項或平靜無事的一天。
+等級說明：CRITICAL = P1 提及的心臟或梅尼爾氏症健康風險；WARNING = 重要通勤或安全提示；INFO = 輕微健康或通勤注意事項。平靜無事的一天請留空字串。
 """
 
 # ─────────────────────────────────────────────────────────────────────────────

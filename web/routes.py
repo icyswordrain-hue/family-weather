@@ -208,6 +208,59 @@ def _slice_overview(
     }
 
 
+# ---------------------------------------------------------------------------
+# Alert redundancy / deduplication helpers
+# ---------------------------------------------------------------------------
+
+_ALERT_SEVERITY = {"CRITICAL": 3, "WARNING": 2, "INFO": 1}
+
+# Keywords used to classify a "General" LLM alert into its real category.
+# Checked case-insensitively against the alert message.
+_AIR_CLASSIFY_KEYWORDS    = ("aqi", "air quality", "pm2.5", "pm10", "空氣", "ozone", "particulate")
+_HEALTH_CLASSIFY_KEYWORDS = ("cardiac", "ménière", "menieres", "meniere", "pressure drop", "pressure rise", "心臟", "梅尼爾")
+_COMMUTE_CLASSIFY_KEYWORDS = ("commute", "traffic", "road", "通勤", "路況", "drive", "driving")
+
+
+def _classify_alert_type(alert: dict) -> str:
+    """Return the effective category of an alert, reclassifying 'General' by keyword."""
+    if alert.get("type", "General") != "General":
+        return alert["type"]
+    msg_low = alert.get("msg", "").lower()
+    for kw in _AIR_CLASSIFY_KEYWORDS:
+        if kw in msg_low:
+            return "Air"
+    for kw in _HEALTH_CLASSIFY_KEYWORDS:
+        if kw in msg_low:
+            return "Health"
+    for kw in _COMMUTE_CLASSIFY_KEYWORDS:
+        if kw in msg_low:
+            return "Commute"
+    return "General"
+
+
+def _dedup_alerts(alerts: list[dict]) -> list[dict]:
+    """Deduplicate alerts by effective type, keeping the highest-severity entry per type.
+
+    Prevents the same category (e.g. Air quality) from appearing twice when both
+    the LLM summary path and a direct-injection path (e.g. MOENV warnings) fire
+    for the same condition on the same broadcast.
+    """
+    best: dict[str, dict] = {}
+    for a in alerts:
+        key = _classify_alert_type(a)
+        prev = best.get(key)
+        if prev is None:
+            best[key] = a
+        else:
+            if _ALERT_SEVERITY.get(a.get("level", "INFO"), 0) > _ALERT_SEVERITY.get(prev.get("level", "INFO"), 0):
+                best[key] = a
+            # On equal severity, prefer a more-specific type (not "General")
+            elif (a.get("type") != "General" and prev.get("type") == "General"
+                  and _ALERT_SEVERITY.get(a.get("level", "INFO"), 0) == _ALERT_SEVERITY.get(prev.get("level", "INFO"), 0)):
+                best[key] = a
+    return list(best.values())
+
+
 def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: dict, processed: dict, summaries: dict | None = None, outdoor_index: dict | None = None, lang: str = "en") -> dict:
     """Lifestyle View: Wardrobe, Rain Gear, Commute, Outdoor, Meals, HVAC."""
     if not isinstance(summaries, dict):
@@ -393,7 +446,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "parkinsons_safe": outdoor_index.get("parkinsons_safe", True),
             "best_window": best_window,
         },
-        "alert": _alert,
+        "alert": _dedup_alerts(_alert),
     }
 
 
