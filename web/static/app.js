@@ -457,11 +457,10 @@ function renderCurrentView(data) {
   if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '\u2014');
 
   // Gauge Cards
-  renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
-  renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '\u2014'}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`, IMG('ground', 'Ground'));
+  renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '\u2014'}`, `lvl-${data.wind.level}`, IMG('wind', 'Wind'));
   renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`, IMG('canopy-moisture', 'Humidity'));
-  const aqiSub = data.aqi.pm25 != null ? `AQI ${data.aqi.val} \u00b7 PM2.5 ${data.aqi.pm25}` : `AQI ${data.aqi.val}`;
-  renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, aqiSub, `lvl-${data.aqi.level}`);
+  renderGauge('gauge-aqi', String(data.aqi.val ?? '\u2014'), T.air_quality, '', `lvl-${data.aqi.level}`, IMG('air-quality', 'Air Quality'));
   renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
   renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
 
@@ -507,22 +506,25 @@ function renderGauge(id, mainVal, label, subVal = '', valueClass = '', icon = ''
   if (!el) return;
   el.innerHTML = '';
 
+  // Header row: icon (left) + label (right)
+  const hdr = document.createElement('div');
+  hdr.className = 'gauge-header';
   if (icon) {
     const ic = document.createElement('div');
     ic.className = 'gauge-icon';
     ic.innerHTML = icon;
-    el.appendChild(ic);
+    hdr.appendChild(ic);
   }
-
   const l = document.createElement('div');
   l.className = 'gauge-label';
   l.textContent = label;
+  hdr.appendChild(l);
+  el.appendChild(hdr);
 
   const v = document.createElement('div');
   v.className = `gauge-value ${valueClass}`;
   v.textContent = mainVal;
 
-  el.appendChild(l);
   el.appendChild(v);
 
   if (subVal) {
