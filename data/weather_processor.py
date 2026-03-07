@@ -497,7 +497,13 @@ def _segment_forecast(
         if found[seg_name] is not None:
             continue
 
-        # Search for a slot that covers this day/hour window
+        # Normalize target start/end for comparison (computed once per segment)
+        t_start = day + timedelta(hours=lo)
+        t_end = day + timedelta(hours=hi)
+
+        # Collect ALL slots that fall within this window so we can derive a
+        # temperature range (MinAT/MaxAT) across the full 6-hour period.
+        matching: list[dict] = []
         for slot in slots:
             try:
                 # Strip +08:00 so wall-clock hours are comparable to naive now_dt.
@@ -505,26 +511,27 @@ def _segment_forecast(
                 s_dt = _parse_dt(slot["start_time"]).replace(tzinfo=None)
                 e_dt = _parse_dt(slot["end_time"]).replace(tzinfo=None)
 
-                # Normalize target start/end for comparison
-                t_start = day + timedelta(hours=lo)
-                t_end = day + timedelta(hours=hi)
-
                 # F-D0047-069 returns hourly point-in-time slots where end_time == start_time.
                 # In that case the midpoint interval check (s_dt <= t_mid < e_dt) always fails
                 # because the interval is zero-width.  Fall back to a window check instead:
                 # accept any slot whose timestamp falls within [t_start, t_end).
                 if s_dt == e_dt:
                     if t_start <= s_dt < t_end:
-                        found[seg_name] = dict(slot)
-                        break
+                        matching.append(slot)
                 else:
                     # Period-based slot: use midpoint-overlap check
                     t_mid = t_start + (t_end - t_start) / 2
                     if s_dt <= t_mid < e_dt:
-                        found[seg_name] = dict(slot)
-                        break
+                        matching.append(slot)
             except Exception:
                 continue
+
+        if matching:
+            rep = dict(matching[0])   # first slot remains the representative (unchanged behaviour)
+            at_vals = [s["AT"] for s in matching if s.get("AT") is not None]
+            rep["MinAT"] = min(at_vals) if at_vals else None
+            rep["MaxAT"] = max(at_vals) if at_vals else None
+            found[seg_name] = rep
 
     return cast(dict[str, Optional[dict]], found)
 

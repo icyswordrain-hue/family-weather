@@ -545,6 +545,14 @@ function renderOverviewView(data) {
     const transitionMap = {};
     (data.transitions || []).forEach(t => { if (t.is_transition && t.from_segment) transitionMap[t.from_segment] = t; });
 
+    let tlGlobalMin = Infinity, tlGlobalMax = -Infinity;
+    (data.timeline || []).forEach(seg => {
+      const lo = seg.MinAT ?? seg.AT;
+      const hi = seg.MaxAT ?? seg.AT;
+      if (lo != null) tlGlobalMin = Math.min(tlGlobalMin, lo);
+      if (hi != null) tlGlobalMax = Math.max(tlGlobalMax, hi);
+    });
+
     (data.timeline || []).forEach((seg, idx) => {
       const origSlotName = seg.display_name || 'Forecast';
       const slotName = origSlotName;
@@ -592,8 +600,25 @@ function renderOverviewView(data) {
       if (seg.aqi != null) {
         addRow('AQI', String(seg.aqi), aqiToLevel(seg.aqi));
       }
+      const tlRangeContainer = document.createElement('div');
+      tlRangeContainer.className = 'wk-range-container';
+      const tlRangeBar = document.createElement('div');
+      tlRangeBar.className = 'wk-range-bar';
+      if (tlGlobalMax > tlGlobalMin && seg.AT != null) {
+        const span = tlGlobalMax - tlGlobalMin;
+        const lo = seg.MinAT ?? seg.AT;
+        const hi = seg.MaxAT ?? seg.AT;
+        const leftPct  = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
+        const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
+        tlRangeBar.style.left  = `${leftPct}%`;
+        tlRangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
+        tlRangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
+      }
+      tlRangeContainer.appendChild(tlRangeBar);
+
       card.appendChild(header);
       card.appendChild(icon);
+      card.appendChild(tlRangeContainer);
       card.appendChild(temp);
       card.appendChild(details);
 
@@ -676,13 +701,14 @@ function renderOverviewView(data) {
     const topItems = dayItems;
     const bottomItems = nightItems;
 
-    // Global temperature range for inline range bars
+    // Global temperature range for inline range bars — use real extremes when available
     let globalMin = Infinity, globalMax = -Infinity;
     [...topItems, ...bottomItems].forEach(item => {
-      if (item?.AT != null) {
-        globalMin = Math.min(globalMin, item.AT);
-        globalMax = Math.max(globalMax, item.AT);
-      }
+      if (!item) return;
+      const lo = item.MinAT ?? item.AT;
+      const hi = item.MaxAT ?? item.AT;
+      if (lo != null) globalMin = Math.min(globalMin, lo);
+      if (hi != null) globalMax = Math.max(globalMax, hi);
     });
 
     // Column header row — day name shown once above both card rows
@@ -752,12 +778,15 @@ function renderOverviewView(data) {
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
       if (globalMax > globalMin && item.AT != null) {
-        const rel = ((item.AT - globalMin) / (globalMax - globalMin)) * 100;
-        rangeBar.style.left = `${Math.max(0, rel - 7.5)}%`;
-        rangeBar.style.width = '15%';
-        rangeBar.style.background = item.AT < 20
-          ? 'linear-gradient(90deg,#7da4ff,#a4c2f4)'
-          : 'linear-gradient(90deg,#f39c12,#f1c40f)';
+        const span = globalMax - globalMin;
+        const lo = item.MinAT ?? item.AT;
+        const hi = item.MaxAT ?? item.AT;
+        const leftPct  = Math.max(0, ((lo - globalMin) / span) * 100);
+        const rightPct = Math.min(100, ((hi - globalMin) / span) * 100);
+        const widthPct = Math.max(5, rightPct - leftPct);
+        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.width = `${widthPct}%`;
+        rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       }
       rangeContainer.appendChild(rangeBar);
 

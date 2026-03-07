@@ -208,3 +208,35 @@ git commit -m "style: add CSS for inline temperature range bars"
 - `web/templates/dashboard.html` — removed `.weekly-sparkline-wrap` + `<canvas>`
 - `web/static/app.js` — removed `tempChart` var + 150-line Chart.js block; added global min/max + range bar injection
 - `web/static/style.css` — added `.wk-range-container`, `.wk-range-bar`, dark-mode variant
+
+---
+
+## Extension: Real MaxAT/MinAT Span (2026-03-07)
+
+**Commit 2 — upgrade weekly bars to use actual CWA temperature range.**
+
+The CWA 7-day API (`F-D0047-071`) returns `MaxAT` (最高體感溫度) and `MinAT` (最低體感溫度) per 12-hour slot, but the pipeline was discarding them after deriving the single representative `AT`. Two additive fields are now preserved in each output slot.
+
+**Files changed:**
+- `data/fetch_cwa.py` — added `final_slot["MaxAT"]` and `final_slot["MinAT"]` after the `AT` aggregation (uses existing `_max()` helper)
+- `web/static/app.js` — `globalMin`/`globalMax` now derived from `MinAT ?? AT` / `MaxAT ?? AT`; bar geometry uses real span (`leftPct` + variable `widthPct`); gradient always cold-blue → warm-amber
+
+---
+
+## Extension: Range Bars on 36-Hour Timeline Cards (2026-03-07)
+
+**Commit 3 — same bar pattern applied to the 24/36h `.time-card` elements.**
+
+The 36-hour API (`F-D0047-069`) has no built-in MaxAT/MinAT — it returns hourly point-in-time slots. The range is derived by collecting *all* raw slots whose timestamps fall within a segment's 6-hour window (0–6, 6–12, 12–18, 18–24) and computing min/max AT across them.
+
+**Architecture change in `data/weather_processor.py` `_segment_forecast()` (lines 494–537):**
+- Replaced "find first matching slot and `break`" with "collect all matching slots into `matching` list"
+- Representative slot remains `matching[0]` — existing behaviour unchanged
+- `MinAT = min(at_vals)`, `MaxAT = max(at_vals)` added to the segment dict
+- Single-slot segments (boundary/sparse data) get `MinAT == MaxAT == AT`; bar renders at minimum 5% width
+
+**Frontend (`web/static/app.js`):**
+- Pre-pass over `data.timeline` computes `tlGlobalMin`/`tlGlobalMax` from `MinAT ?? AT` / `MaxAT ?? AT`
+- Each `.time-card` gets `.wk-range-container` + `.wk-range-bar` injected between the icon and temp (reuses existing CSS — no style changes)
+
+**Tests:** 173/173 pass.

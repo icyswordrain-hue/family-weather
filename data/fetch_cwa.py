@@ -620,6 +620,8 @@ def fetch_forecast_7day(location_name: str = "樹林區") -> list[dict]:
                 final_slot["AT"] = _avg(b["MinAT_list"]) or _avg(b["AT_list"])
             else:
                 final_slot["AT"] = _avg(b["MaxAT_list"]) or _avg(b["AT_list"])
+            final_slot["MaxAT"] = _max(b["MaxAT_list"])
+            final_slot["MinAT"] = min(b["MinAT_list"]) if b["MinAT_list"] else None
             final_slot["RH"] = _avg(b["RH_list"])
             final_slot["WS"] = _avg(b["WS_list"])
             final_slot["PoP12h"] = _max(b["PoP12h_list"])
