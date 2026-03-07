@@ -132,3 +132,13 @@ The CWA 36h API delivers hourly point-in-time AT values. `weather_processor.py` 
 **Previous state:** The frontend `renderOverviewView()` re-derived `tlGlobalMin`/`tlGlobalMax` by iterating over timeline segments each render. When the bar position code was later changed to `left:0%, width:100%`, this loop became dead code and the bars lost all proportional meaning. Range bar positioning also showed `min 15° max 15°` for segments where all 6 hourly AT values were flat (e.g., overnight), which is correct data but looked broken alongside the full-width bar.
 
 **Implemented:** `_slice_overview()` in `web/routes.py` now computes `timeline_temp_range = {min, max}` server-side from all segments' `MinAT` (falling back to `AT`) and `MaxAT` (falling back to `AT`), and includes it in the overview slice. The frontend reads `data.timeline_temp_range.min/.max` directly; the local loop is retained as a fallback for old cached broadcasts that pre-date this field. Bar positioning restored to proportional `leftPct`/`rightPct` using this global span. When `lo === hi` (flat overnight segments), the min label is suppressed and a single positioned point is shown.
+
+---
+
+## 14. 36-Hour Range Bar: Full-Width Layout with Consistent Alignment
+
+The 36h timeline has only 3–4 segments (Day 1, Tonight, Day 2, Tomorrow Night). Proportional bar positioning — where `left%` and `width%` reflect each segment's temperature relative to the global 36h span — causes bars to float at different horizontal offsets within the center column. This makes the rows look visually misaligned and the bar ends unpredictable across segments.
+
+**Previous state:** Bar used `leftPct = ((lo - globalMin) / span) * 100` and `rightPct` for positioning. A cool overnight segment might show a bar centered far to the left while a warm afternoon segment's bar would hug the right — making the gauge container edges feel arbitrary. Min temperature was suppressed when `lo === hi` (flat overnight), leaving an asymmetric display with only the max value shown.
+
+**Implemented:** Bar set to `left: 0%; width: 100%` — always fills the center container from edge to edge. The blue→orange gradient still communicates the temperature character of the segment. Min temperature now always rendered when `lo != null`, so both bounds are visible. Removed the unused `span` variable. The 7-day proportional bar is unchanged — with 7 days of data the cross-day comparison the proportional offset provides is meaningful; with 3–4 36h segments it is not.
