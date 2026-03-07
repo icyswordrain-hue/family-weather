@@ -2990,91 +2990,73 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 /* ── 7-Day two-row grid ─────────────────────── */
-.weekly-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(2, auto);
-  gap: 4px;
-  margin-bottom: 0;
+/* ── 7-Day Forecast — Horizontal Row Layout ─────────────────────────────── */
+#ov-weekly-timeline.weekly-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-x: visible;
 }
 
-/* ── 7-Day column header row ─────────────── */
-.wk-header-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 2px;
-}
-
-.wk-col-header {
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  padding: 2px 0;
-}
-
-/* Day name inside cards hidden — header row is active on desktop */
-.wk-day-name {
-  display: none;
-}
-
-/* Condition text */
-.wk-cond {
-  font-size: 0.72rem;
-  color: var(--muted);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-/* ── 7-Day Temperature Sparkline ─────────── */
-.weekly-sparkline-wrap {
-  position: relative;
-  height: 120px;
-  margin-top: 4px;
-  margin-bottom: 1.5rem;
-  background: var(--blue-lt);
-  border-radius: 10px;
-}
-
-.wk-placeholder {
+.wk-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--surface);
   border-radius: 10px;
-  padding: 8px 6px;
+  padding: 10px 14px;
   box-shadow: var(--shadow);
+  min-height: 56px;
+}
+
+.wk-row-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  min-height: 0;
-  border: 1px dashed var(--muted);
-  opacity: 0.5;
+  flex: 0 0 52px;
+  gap: 3px;
 }
 
-.wk-card {
-  background: var(--surface);
-  border-radius: 10px;
-  padding: 15px 9px;
-  box-shadow: var(--shadow);
+.wk-row-night {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-height: 0;
+  flex: 0 0 44px;
 }
 
-.wk-label {
-  font-size: 0.62rem;
+.wk-row-label {
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.wk-row-center {
+  flex: 1;
+  min-width: 0;
+}
+
+.wk-row-temps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wk-min-temp,
+.wk-max-temp {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.90rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 0 0 auto;
+  min-width: 2.8ch;
+}
+
+.wk-row-temps .wk-range-container {
+  flex: 1;
+  margin: 0;
 }
 
 .wk-icon {
@@ -3082,125 +3064,30 @@ html.dark .ps-tab-panel .rp-btn:hover {
   line-height: 1;
 }
 
-.wk-temp {
-  font-family: 'Fira Code', monospace;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
+.wk-row-day .wk-icon .brand-icon {
+  width: 36px;
+  height: 36px;
 }
 
-.wk-rain {
-  font-size: 0.85rem;
-  font-weight: 600;
+.wk-row-night .wk-icon {
+  opacity: 0.70;
 }
 
-/* ── Day/Night card colors ───────────────────
-   Light mode: day = white surface, night = shaded surface
-   Dark mode:  day = dark surface,  night = darker inset
-   ─────────────────────────────────────────── */
-.wk-card.wk-day {
-  background: var(--surface);
-  color: var(--text);
-  border-top: 3px solid var(--blue);
-}
-
-.wk-card.wk-night {
-  background: #D4C9B5;
-  /* Darker earthy tone, distinct from Day */
-  color: var(--text);
-  border-top: 3px solid var(--muted, #7A6E64);
-}
-
-.wk-card.wk-night .wk-temp {
-  color: var(--text);
-}
-
-/* Make night card in dark mode actually darker than the surface */
-html.dark .wk-card.wk-night {
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--text);
-  border-top-color: rgba(255, 255, 255, 0.12);
-}
-
-html.dark .wk-card.wk-night .wk-temp {
-  color: var(--text);
-}
-
-@media (max-width: 900px) {
-  .weekly-grid {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: none;
-  }
-
-  .wk-header-row {
-    display: none;
-  }
-
-  .wk-day-name {
-    display: inline;
-  }
-
-  .wk-icon .brand-icon {
-    width: 38px;
-    height: 38px;
-  }
+.wk-row-night .wk-icon .brand-icon {
+  width: 30px;
+  height: 30px;
 }
 
 @media (max-width: 767px) {
-
-  /* 7-per-row compact weekly view */
-  .weekly-grid {
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
+  .wk-row {
+    padding: 8px 10px;
+    gap: 6px;
+    min-height: 48px;
   }
-
-  .wk-header-row {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
-    margin-bottom: 2px;
-  }
-
-  .wk-col-header {
-    font-size: 0.6rem;
-  }
-
-  .wk-day-name {
-    display: none;
-  }
-
-  .wk-card {
-    padding: 5px 4px;
-    gap: 1px;
-  }
-
-  .wk-icon {
-    font-size: 1.5rem;
-  }
-
-  .wk-icon .brand-icon {
-    width: 42px;
-    height: 42px;
-  }
-
-  .wk-temp {
-    font-size: 1.1rem;
-  }
-
-  .wk-rain {
-    display: none;
-  }
-
-  .wk-cond {
-    display: none;
-  }
-
-  .wk-period {
-    display: none;
-  }
-
-  .weekly-sparkline-wrap {
-    height: 96px;
-  }
+  .wk-row-day  { flex: 0 0 40px; }
+  .wk-row-night { flex: 0 0 34px; }
+  .wk-row-day .wk-icon .brand-icon  { width: 28px; height: 28px; }
+  .wk-row-night .wk-icon .brand-icon { width: 24px; height: 24px; }
+  .wk-min-temp, .wk-max-temp { font-size: 0.82rem; }
+  .wk-row-label { font-size: 0.58rem; }
 }

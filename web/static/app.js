@@ -711,92 +711,100 @@ function renderOverviewView(data) {
       if (hi != null) globalMax = Math.max(globalMax, hi);
     });
 
-    // Column header row — day name shown once above both card rows
+    // Suppress the separate column-header row — day names live inside each row now
     const headerEl = document.getElementById('ov-weekly-header');
-    if (headerEl) {
-      headerEl.innerHTML = '';
-      topItems.forEach(item => {
-        const hdr = document.createElement('div');
-        hdr.className = 'wk-col-header';
-        if (item) {
-          let dt;
-          try { dt = new Date(item.start_time.replace('+08:00', '')); } catch { dt = new Date(); }
-          hdr.textContent = T.days[dt.getDay()];
-        } else {
-          hdr.textContent = '—';
-        }
-        headerEl.appendChild(hdr);
-      });
-    }
+    if (headerEl) headerEl.innerHTML = '';
 
-    [...topItems, ...bottomItems].forEach(item => {
-      const card = document.createElement('div');
+    // Build one horizontal .wk-row per day, pairing day + night slots
+    for (let i = 0; i < 7; i++) {
+      const dayItem   = topItems[i];
+      const nightItem = bottomItems[i];
 
-      // If item is null (placeholder for missing end slot)
-      if (!item) {
-        card.className = 'wk-card wk-night wk-placeholder';
-        const label = document.createElement('div');
-        label.className = 'wk-label';
-        const span = document.createElement('span');
-        span.className = 'wk-day-name';
-        span.textContent = '—';
-        label.appendChild(span);
-        card.appendChild(label);
-        weeklyTimelineEl.appendChild(card);
-        return;
+      const row = document.createElement('div');
+      row.className = 'wk-row';
+
+      // ── Left: day icon + label
+      const daySection = document.createElement('div');
+      daySection.className = 'wk-row-day';
+
+      const dayIconEl = document.createElement('div');
+      dayIconEl.className = 'wk-icon';
+      dayIconEl.innerHTML = dayItem
+        ? (ICONS[dayItem.cloud_cover] || ICONS[dayItem.Wx] || IMG('cloudy', 'Cloudy'))
+        : IMG('cloudy', 'Cloudy');
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'wk-row-label';
+      if (dayItem) {
+        let dt;
+        try { dt = new Date(dayItem.start_time.replace('+08:00', '')); } catch { dt = new Date(); }
+        labelEl.textContent = T.days[dt.getDay()];
+      } else {
+        labelEl.textContent = '—';
       }
+      daySection.appendChild(dayIconEl);
+      daySection.appendChild(labelEl);
 
-      let dt;
-      try { dt = new Date(item.start_time.replace('+08:00', '')); } catch (e) { dt = new Date(); }
-      const isNight = isNightSlot(item);
-      const dayLabel = T.days[dt.getDay()];
-      const periodLabel = isNight ? T.night : T.day;
+      // ── Center: min | range bar | max
+      // Aggregate low/high across day + night for a true daily range
+      let rowLo = null, rowHi = null;
+      [dayItem, nightItem].forEach(it => {
+        if (!it) return;
+        const lo = it.MinAT ?? it.AT;
+        const hi = it.MaxAT ?? it.AT;
+        if (lo != null) rowLo = rowLo == null ? lo : Math.min(rowLo, lo);
+        if (hi != null) rowHi = rowHi == null ? hi : Math.max(rowHi, hi);
+      });
 
-      card.className = `wk-card ${isNight ? 'wk-night' : 'wk-day'}`;
+      const centerSection = document.createElement('div');
+      centerSection.className = 'wk-row-center';
+      const tempsRow = document.createElement('div');
+      tempsRow.className = 'wk-row-temps';
 
-      const label = document.createElement('div');
-      label.className = 'wk-label';
-      const daySpan = document.createElement('span');
-      daySpan.className = 'wk-day-name';
-      daySpan.textContent = dayLabel;
-      label.appendChild(daySpan);
+      const minTempEl = document.createElement('span');
+      minTempEl.className = 'wk-min-temp';
+      minTempEl.textContent = rowLo != null ? `${Math.round(rowLo)}°` : '—';
 
-      const icon = document.createElement('div');
-      icon.className = 'wk-icon';
-      icon.innerHTML = ICONS[item.cloud_cover] || ICONS[item.Wx] || IMG('cloudy', 'Cloudy');
-
-      const cond = document.createElement('div');
-      cond.className = 'wk-cond';
-      cond.textContent = (T.cloudCover && T.cloudCover[item.cloud_cover]) || item.cloud_cover || '—';
-
-      const temp = document.createElement('div');
-      temp.className = 'wk-temp';
-      temp.textContent = `${Math.round(item.AT ?? 0)}°`;
+      const maxTempEl = document.createElement('span');
+      maxTempEl.className = 'wk-max-temp';
+      maxTempEl.textContent = rowHi != null ? `${Math.round(rowHi)}°` : '—';
 
       const rangeContainer = document.createElement('div');
       rangeContainer.className = 'wk-range-container';
       const rangeBar = document.createElement('div');
       rangeBar.className = 'wk-range-bar';
-      if (globalMax > globalMin && item.AT != null) {
-        const span = globalMax - globalMin;
-        const lo = item.MinAT ?? item.AT;
-        const hi = item.MaxAT ?? item.AT;
-        const leftPct  = Math.max(0, ((lo - globalMin) / span) * 100);
-        const rightPct = Math.min(100, ((hi - globalMin) / span) * 100);
-        const widthPct = Math.max(5, rightPct - leftPct);
-        rangeBar.style.left  = `${leftPct}%`;
-        rangeBar.style.width = `${widthPct}%`;
+      if (globalMax > globalMin && rowLo != null && rowHi != null) {
+        const span     = globalMax - globalMin;
+        const leftPct  = Math.max(0, ((rowLo - globalMin) / span) * 100);
+        const rightPct = Math.min(100, ((rowHi - globalMin) / span) * 100);
+        rangeBar.style.left       = `${leftPct}%`;
+        rangeBar.style.width      = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       }
       rangeContainer.appendChild(rangeBar);
+      tempsRow.appendChild(minTempEl);
+      tempsRow.appendChild(rangeContainer);
+      tempsRow.appendChild(maxTempEl);
+      centerSection.appendChild(tempsRow);
 
-      card.appendChild(label);
-      card.appendChild(icon);
-      card.appendChild(cond);
-      card.appendChild(rangeContainer);
-      card.appendChild(temp);
-      weeklyTimelineEl.appendChild(card);
-    });
+      // ── Right: night icon
+      const nightSection = document.createElement('div');
+      nightSection.className = 'wk-row-night';
+      const nightIconEl = document.createElement('div');
+      nightIconEl.className = 'wk-icon';
+      if (nightItem) {
+        nightIconEl.innerHTML = ICONS[nightItem.cloud_cover] || ICONS[nightItem.Wx] || IMG('cloudy', 'Cloudy');
+      } else {
+        nightIconEl.innerHTML = IMG('cloudy', 'Cloudy');
+        nightSection.style.opacity = '0.3';
+      }
+      nightSection.appendChild(nightIconEl);
+
+      row.appendChild(daySection);
+      row.appendChild(centerSection);
+      row.appendChild(nightSection);
+      weeklyTimelineEl.appendChild(row);
+    }
 
   }
 
