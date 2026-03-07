@@ -216,6 +216,29 @@ Locations: 8–10 per category, all within 50km of 24.9955°N 121.4279°E (Shuli
 """
 
 
+def _slim_for_llm(processed_data: dict) -> dict:
+    """Strip verbose MOENV fields to reduce LLM input tokens.
+
+    Removes aqi_forecast.content (~200-300 tok) and aqi_forecast.hourly
+    (~300-450 tok), replacing the latter with a single peak_aqi summary.
+    processed_data itself is never mutated.
+    """
+    slim = {**processed_data}
+    if "aqi_forecast" in slim:
+        af = {**slim["aqi_forecast"]}
+        af.pop("content", None)
+        af.pop("forecast_date", None)
+        hourly = af.pop("hourly", [])
+        if hourly:
+            peak = max(hourly, key=lambda h: h.get("aqi") or 0)
+            af["peak_aqi"] = {
+                "aqi": peak.get("aqi"),
+                "hour": (peak.get("forecast_time") or "")[:13],  # "2026-03-07T14"
+            }
+        slim["aqi_forecast"] = af
+    return slim
+
+
 def build_prompt(
     processed_data: dict,
     history: list[dict],
@@ -230,7 +253,7 @@ def build_prompt(
     today = today_date or datetime.now().strftime("%Y-%m-%d")
 
     history_text = _format_history(history)
-    data_text = json.dumps(processed_data, ensure_ascii=False, indent=2)
+    data_text = json.dumps(_slim_for_llm(processed_data), ensure_ascii=False, indent=2)
 
     regen_note = REGEN_INSTRUCTION if processed_data.get("regenerate_meal_lists") else ""
 
