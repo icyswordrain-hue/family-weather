@@ -419,8 +419,12 @@ def fetch_forecast(location_name: str = "樹林區") -> list[dict]:
         raise RuntimeError(f"Failed to parse CWA forecast for '{location_name}': {exc}") from exc
 
 
-def fetch_all_forecasts() -> dict[str, list[dict]]:
-    """Fetch forecasts for all configured locations and return as a dict."""
+def fetch_all_forecasts(errors: dict | None = None) -> dict[str, list[dict]]:
+    """Fetch forecasts for all configured locations and return as a dict.
+
+    If an ``errors`` dict is provided, failed locations are written into it as
+    ``{location: str(exc)}`` so callers can surface the reason to the user.
+    """
     result = {}
     for loc in CWA_FORECAST_LOCATIONS:
         try:
@@ -428,6 +432,8 @@ def fetch_all_forecasts() -> dict[str, list[dict]]:
         except Exception as exc:
             logger.warning("Could not fetch forecast for %s: %s", loc, exc)
             result[loc] = []
+            if errors is not None:
+                errors[loc] = str(exc)
     return result
 
 
@@ -592,8 +598,12 @@ def fetch_forecast_7day(location_name: str = "樹林區") -> list[dict]:
         raise RuntimeError(f"Failed to parse CWA 7-day forecast for '{location_name}': {exc}") from exc
 
 
-def fetch_all_forecasts_7day() -> dict[str, list[dict]]:
-    """Fetch 7-day forecasts for all configured locations and return as a dict."""
+def fetch_all_forecasts_7day(errors: dict | None = None) -> dict[str, list[dict]]:
+    """Fetch 7-day forecasts for all configured locations and return as a dict.
+
+    If an ``errors`` dict is provided, failed locations are written into it as
+    ``{location: str(exc)}`` so callers can surface the reason to the user.
+    """
     result = {}
     for loc in CWA_FORECAST_LOCATIONS:
         try:
@@ -601,6 +611,8 @@ def fetch_all_forecasts_7day() -> dict[str, list[dict]]:
         except Exception as exc:
             logger.warning("Could not fetch 7-day forecast for %s: %s", loc, exc)
             result[loc] = []
+            if errors is not None:
+                errors[loc] = str(exc)
     return result
 
 

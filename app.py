@@ -332,17 +332,21 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
         yield {"type": "log", "message": "Fetching CWA forecasts..."}
         logger.info("Fetching CWA forecasts...")
-        forecasts = fetch_all_forecasts()
+        _fc_errors: dict = {}
+        forecasts = fetch_all_forecasts(_fc_errors)
         _failed_36h = [loc for loc, v in forecasts.items() if not v]
         if _failed_36h:
-            yield {"type": "log", "message": f"⚠ 36h forecast unavailable for: {', '.join(_failed_36h)}"}
+            parts = [f"{loc} ({_fc_errors.get(loc, '?')})" for loc in _failed_36h]
+            yield {"type": "log", "message": f"⚠ 36h forecast failed: {', '.join(parts)}"}
 
         yield {"type": "log", "message": "Fetching CWA 7-day forecasts..."}
         logger.info("Fetching CWA 7-day forecasts...")
-        forecasts_7day = fetch_all_forecasts_7day()
+        _7d_errors: dict = {}
+        forecasts_7day = fetch_all_forecasts_7day(_7d_errors)
         _failed_7d = [loc for loc, v in forecasts_7day.items() if not v]
         if _failed_7d:
-            yield {"type": "log", "message": f"⚠ 7-day forecast unavailable for: {', '.join(_failed_7d)}"}
+            parts = [f"{loc} ({_7d_errors.get(loc, '?')})" for loc in _failed_7d]
+            yield {"type": "log", "message": f"⚠ 7-day forecast failed: {', '.join(parts)}"}
 
         yield {"type": "log", "message": "Fetching MOENV AQI..."}
         logger.info("Fetching MOENV AQI...")
