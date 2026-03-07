@@ -23,7 +23,7 @@ from config import (
     MOENV_FORECAST_AREA,
     MOENV_STATION_NAME,
     MOENV_TIMEOUT,
-    MOENV_HOURLY_FORECAST_DATASET,
+    AQI_HISTORY_PATH,
 )
 from data.helpers import _safe_float, _safe_int
 
@@ -181,42 +181,92 @@ def fetch_forecast_aqi() -> dict:
         return {"area": MOENV_FORECAST_AREA, "aqi": None, "status": None, "forecast_date": None}
 
 
-def fetch_hourly_aqi() -> list[dict]:
-    """Fetch hourly AQI forecast for Northern area (aqx_p_322)."""
-    url = f"{MOENV_BASE_URL}/{MOENV_HOURLY_FORECAST_DATASET}"
-    params = {"api_key": MOENV_API_KEY, "format": "JSON", "limit": "100"}
+def _cache_aqi_reading(realtime: dict) -> None:
+    """Append one realtime AQI snapshot to the local JSONL history cache.
 
+    The cache is written each pipeline run so fetch_hourly_aqi() can return
+    today's observed readings (no hourly forecast dataset exists in MOENV).
+    Timestamps are normalised to ISO 8601 with seconds so fromisoformat() works
+    across Python versions.
+    """
+    obs_time = realtime.get("publish_time")
+    aqi = realtime.get("aqi")
+    if not obs_time or aqi is None:
+        return
+    # "2026-03-07 10:00" → "2026-03-07T10:00:00"
+    obs_time_iso = str(obs_time).replace(" ", "T")
+    if len(obs_time_iso) == 16:
+        obs_time_iso += ":00"
+    record = {
+        "obs_time": obs_time_iso,
+        "aqi":      aqi,
+        "pm25":     realtime.get("pm25"),
+        "pm10":     realtime.get("pm10"),
+        "o3":       realtime.get("o3"),
+        "status":   realtime.get("status"),
+    }
     try:
-        try:
-            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT)
-            resp.raise_for_status()
-        except requests.exceptions.SSLError:
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            resp = requests.get(url, params=params, timeout=MOENV_TIMEOUT, verify=False)
-            resp.raise_for_status()
-
-        body = json.loads(resp.content)
-        records = body if isinstance(body, list) else body.get("records", [])
-        area_records = [r for r in records if r.get("area") == MOENV_FORECAST_AREA]
-
-        return [
-            {
-                "forecast_time":  r.get("forecastdate"),
-                "aqi":            _safe_int(r.get("aqi")),
-                "major_pollutant": r.get("majorpollutant"),
-            }
-            for r in area_records
-        ]
+        AQI_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with AQI_HISTORY_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
     except Exception as exc:
-        logger.warning("Could not fetch MOENV hourly AQI forecast: %s", exc)
+        logger.warning("Could not cache AQI reading: %s", exc)
+
+
+def fetch_hourly_aqi() -> list[dict]:
+    """Return today's observed AQI readings from the local history cache.
+
+    MOENV has no hourly AQI forecast endpoint — aqx_p_322 (used previously)
+    is a daily per-station concentration dataset, not a forecast, and its area
+    filter never matched.  Instead, each pipeline run caches the realtime
+    Tucheng reading via _cache_aqi_reading(); this function reads back those
+    snapshots for the current Taipei date so _compute_aqi_peak_window() can
+    show today's observed peak.
+    """
+    from datetime import datetime, timezone, timedelta
+    _TAIPEI_TZ = timezone(timedelta(hours=8))
+    today_str = datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+
+    if not AQI_HISTORY_PATH.exists():
         return []
+
+    seen: dict[str, dict] = {}  # deduplicate by obs_time
+    try:
+        with AQI_HISTORY_PATH.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                    obs_time = r.get("obs_time", "")
+                    if obs_time.startswith(today_str) and r.get("aqi") is not None:
+                        seen[obs_time] = {
+                            "forecast_time":   obs_time,
+                            "aqi":             r["aqi"],
+                            "major_pollutant": r.get("status"),
+                        }
+                except Exception:
+                    continue
+    except Exception as exc:
+        logger.warning("Could not read AQI history: %s", exc)
+        return []
+    return sorted(seen.values(), key=lambda x: x["forecast_time"])
 
 
 def fetch_all_aqi() -> dict:
-    """Fetch real-time AQI, 3-day forecast, and hourly forecast."""
-    result = {}
+    """Fetch real-time AQI, 3-day forecast, and today's observed AQI readings."""
+    result: dict = {}
+
+    # Realtime must be cached before fetch_hourly_aqi reads the history file.
+    try:
+        result["realtime"] = fetch_realtime_aqi()
+        _cache_aqi_reading(result["realtime"])
+    except Exception as exc:
+        logger.warning("fetch_all_aqi: realtime failed: %s", exc)
+        result["realtime"] = {}
+
     for key, fn, empty in [
-        ("realtime",        fetch_realtime_aqi, {}),
         ("forecast",        fetch_forecast_aqi, {}),
         ("hourly_forecast", fetch_hourly_aqi,   []),
     ]:

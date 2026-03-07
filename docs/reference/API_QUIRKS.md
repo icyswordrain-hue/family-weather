@@ -120,3 +120,13 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
 
 6. **aqx_p_136 Dataset Fields**
    - Expected as "Special Environmental Warnings", it actually returns observation metrics like `{"itemname": "RH", "concentration": "100", "siteid": "64", "monitordate": "..."}`. Handled dynamically by extracting `itemname`/`concentration` as `title`/`content`.
+
+7. **No Hourly AQI Forecast Dataset Exists**
+   - `AQF_P_01` is the **only** AQF dataset in MOENV's catalogue (confirmed via OpenAPI spec at `data.moenv.gov.tw/swagger/openapi.yaml`). It provides a 3-day daily regional forecast — not sub-daily.
+   - `aqx_p_322` was previously used as `MOENV_HOURLY_FORECAST_DATASET` under the assumption it was a hourly forecast. It is not: fields are `siteid, sitename, county, itemid, itemname, itemengname, itemunit, monitordate, concentration` — a per-pollutant daily average by station. It has no `area` field and no `aqi` field, so `fetch_hourly_aqi()`'s `area == "北部"` filter always produced an empty list.
+   - **Resolution:** `fetch_hourly_aqi()` now reads from `local_data/aqi_history.jsonl` (Modal: `/data/aqi_history.jsonl`), populated by `_cache_aqi_reading()` on each pipeline run. This accumulates today's observed Tucheng AQI snapshots (3×/day) so `_compute_aqi_peak_window()` can show the day's observed peak on the air quality card.
+   - `MOENV_HOURLY_FORECAST_DATASET` constant remains in `config.py` for reference but is no longer imported by `fetch_moenv.py`.
+
+8. **AQF_P_01 `content` Field is a Shared Narrative, Not Per-Date**
+   - All records for a given `publishtime` share the **same** `content` blob — a multi-paragraph 7-day outlook. The text covers all forecast dates in a single narrative. Do not assume `content` is scoped to the specific `forecastdate` of the record.
+   - The `warnings` field (first paragraph of `content`) is surfaced as a lifestyle alert only when AQI ≥ 150 **and** the paragraph contains explicit advisory keywords (`不良`, `不健康`, `有害`, `建議減少`, `建議室內`, `避免戶外`). This prevents generic weather synopses from appearing as WARNING-level alerts.

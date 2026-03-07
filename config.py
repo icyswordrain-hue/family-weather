@@ -25,6 +25,10 @@ STATION_HISTORY_PATH = Path(
 )
 STATION_HISTORY_DAYS = int(os.environ.get("STATION_HISTORY_DAYS", 7))
 
+AQI_HISTORY_PATH = Path(
+    os.environ.get("AQI_HISTORY_PATH", os.path.join(LOCAL_DATA_DIR, "aqi_history.jsonl"))
+)
+
 FORECAST_CACHE_PATH = Path(
     os.environ.get("FORECAST_CACHE_PATH", os.path.join(LOCAL_DATA_DIR, "forecast_cache.json"))
 )
