@@ -363,7 +363,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initPlayerSheet();
   initSheetSettings();
   initRefreshButton();
-  initOutdoorExpand();
   updateClock();
   setInterval(updateClock, 1000);
 
@@ -441,23 +440,6 @@ function render(data) {
 }
 
 // ── View 1: Dashboard (Merged Current + Overview) ──────────────────────────
-function _renderHeroStat(id, label, value, sub, valueClass) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = '<span class="hs-label">' + label + '</span>' +
-    '<span class="hs-value ' + (valueClass || '') + '">' + value + '</span>' +
-    (sub ? '<span class="hs-sub">' + sub + '</span>' : '');
-}
-
-function _renderOutdoorFactor(id, label, value, text, sub, valueClass) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = '<span class="of-label">' + label + '</span>' +
-    '<span class="of-value ' + (valueClass || '') + '">' + value + '</span>' +
-    '<span class="of-text">' + text + '</span>' +
-    (sub ? '<span class="of-sub">' + sub + '</span>' : '');
-}
-
 function renderCurrentView(data) {
   if (!data) return;
   setText('cur-temp', Math.round(data.temp) + '\u00b0');
@@ -467,26 +449,14 @@ function renderCurrentView(data) {
   const mobileLoc = document.getElementById('mobile-location');
   if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '\u2014');
 
-  // Hero stat rows: ground + wind
-  _renderHeroStat('hero-ground', T.ground, localiseMetric(data.ground_state), '', 'lvl-' + data.ground_level);
-  _renderHeroStat('hero-wind', T.wind, localiseMetric(data.wind.text), data.wind.val + ' m/s ' + (data.wind.dir || '\u2014'), 'lvl-' + data.wind.level);
-
-  // Outdoor score button
-  const od = data.outdoor || {};
-  const badge = document.getElementById('outdoor-grade-badge');
-  if (badge) {
-    badge.textContent = od.grade || '\u2014';
-    badge.className = 'outdoor-grade-badge oi-grade-' + (od.grade || 'F');
-  }
-  setText('outdoor-label', od.label ? localiseMetric(od.label) : '\u2014');
-
-  // Outdoor expand factor rows
-  const dewSub = data.dew_point != null ? '\u9732\u9ede ' + data.dew_point.toFixed(1) + '\u00b0' : '';
-  _renderOutdoorFactor('od-hum', T.humidity, data.hum.val + '%', localiseMetric(data.hum.text), dewSub, 'lvl-' + data.hum.level);
-  const aqiSub = data.aqi.pm25 != null ? 'PM2.5 ' + data.aqi.pm25 : '';
-  _renderOutdoorFactor('od-aqi', T.air_quality, 'AQI ' + data.aqi.val, localiseMetric(data.aqi.text), aqiSub, 'lvl-' + data.aqi.level);
-  _renderOutdoorFactor('od-uv', T.uv, String(data.uv.val || 0), localiseMetric(data.uv.text), '', 'lvl-' + data.uv.level);
-  _renderOutdoorFactor('od-pres', T.pressure, Math.round(data.pres.val) + ' hPa', localiseMetric(data.pres.text), '', 'lvl-' + data.pres.level);
+  // Gauge Cards
+  renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`);
+  renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '\u2014'}`, `lvl-${data.wind.level}`);
+  renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`, IMG('canopy-moisture', 'Humidity'));
+  const aqiSub = data.aqi.pm25 != null ? `AQI ${data.aqi.val} \u00b7 PM2.5 ${data.aqi.pm25}` : `AQI ${data.aqi.val}`;
+  renderGauge('gauge-aqi', localiseMetric(data.aqi.text), T.air_quality, aqiSub, `lvl-${data.aqi.level}`);
+  renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
+  renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
 
   // Solar times
   const solar = data.solar;
@@ -1530,16 +1500,6 @@ function showError(msg) {
   document.getElementById('loading-screen').classList.add('hidden');
   document.getElementById('error-screen').classList.remove('hidden');
   document.getElementById('main-content').classList.add('hidden');
-}
-
-function initOutdoorExpand() {
-  const btn = document.getElementById('hero-outdoor');
-  if (!btn) return;
-  btn.addEventListener('click', function () {
-    const expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!expanded));
-    document.getElementById('outdoor-details').hidden = expanded;
-  });
 }
 
 function initRefreshButton() {
