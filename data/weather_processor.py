@@ -197,20 +197,14 @@ def process(
     logger.debug("Step 4 - Enriching segments")
     for seg_name, seg in segmented.items():
         if seg:
-            # Use actual air temperature (T) as BOM formula input.
             # AT from the 36-hour API is CWA's pre-computed apparent temperature —
-            # applying the formula to it would double-count humidity/wind.
+            # keep it as-is. Applying the BOM formula on top would double-count humidity/wind.
             ta = seg.get("T") if seg.get("T") is not None else seg.get("AT")
             rh = seg.get("RH")
-            ws = seg.get("WS")
             dew_point = _calculate_dew_point(ta, rh)
             dew_gap   = _calculate_dew_gap(ta, dew_point)
-            feels_like = (
-                _calculate_apparent_temp_from_dew(ta, dew_point, ws)
-                or _calculate_apparent_temp(ta, rh, ws)
-            )
-            if feels_like is not None:
-                seg["AT"] = feels_like
+            # AT is CWA's pre-computed apparent temperature — do not recalculate.
+            # (Same policy as the 7-day slots; applying BOM on top would double-count.)
             seg["dew_point"]        = dew_point
             seg["dew_gap"]          = dew_gap
             seg["saturation_label"] = _saturation_label(dew_gap) if dew_gap is not None else None
