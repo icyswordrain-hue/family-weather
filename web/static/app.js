@@ -433,8 +433,7 @@ function render(data) {
     const dd = String(d.getDate()).padStart(2, '0');
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    const luEl = document.getElementById('rp-last-updated');
-    if (luEl) luEl.innerHTML = `${IMG('last-drip', 'Last drip')} ${T.last_updated}${m}/${dd} ${hh}:${min}`;
+    setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
   }
 }
 
