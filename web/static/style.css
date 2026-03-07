@@ -912,9 +912,9 @@ input:focus-visible {
 /* ── Weekly inline temperature range bars ──────────────────────────────────── */
 .wk-range-container {
   width: 100%;
-  height: 6px;
+  height: 12px;
   background: rgba(127, 140, 160, 0.15);
-  border-radius: 3px;
+  border-radius: 6px;
   margin: 0.3rem 0;
   position: relative;
   overflow: hidden;
@@ -922,7 +922,7 @@ input:focus-visible {
 .wk-range-bar {
   position: absolute;
   height: 100%;
-  border-radius: 3px;
+  border-radius: 6px;
   top: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -1006,6 +1006,145 @@ html.dark .tc-transition {
   background: rgba(255, 200, 0, 0.1);
   color: #f9ca24;
   border-color: rgba(255, 200, 0, 0.25);
+}
+
+/* ── 36h Forecast — Horizontal Segment Rows ─────────────────────────────── */
+
+/* Override 4-column grid to vertical stack */
+#ov-timeline.timeline-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-x: visible;
+  margin-bottom: 2rem;
+}
+
+.tc-seg-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow);
+  min-height: 168px;
+  border-left: 4px solid var(--blue);
+}
+
+.tc-seg-row.tc-seg-night {
+  border-left-color: var(--muted);
+}
+
+html.dark .tc-seg-row.tc-seg-night {
+  border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Left column ── */
+.tc-seg-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 90px;
+  gap: 4px;
+}
+
+.tc-seg-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Override tc-icon's default 0.5rem vertical margin */
+.tc-seg-left .tc-icon {
+  margin: 0;
+}
+
+/* 72px icon — overrides .tc-icon .brand-icon { 64px } */
+.tc-seg-left .tc-icon .brand-icon {
+  width: 72px;
+  height: 72px;
+}
+
+.tc-seg-time {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Center column: range bar only ── */
+.tc-seg-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* 1.5× the 7-day bar height (6px → 9px) */
+.tc-seg-center .wk-range-container {
+  height: 9px;
+  margin: 0;
+}
+
+.tc-seg-center .wk-range-bar {
+  border-radius: 4px;
+}
+
+/* Larger min/max temp labels for 36h context */
+.tc-seg-temp {
+  font-size: 1.1rem;
+  min-width: 3.2ch;
+}
+
+/* ── Right column ── */
+.tc-seg-right {
+  flex: 0 0 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tc-seg-stat {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Outdoor grade line: slightly larger, color from .lvl-* */
+.tc-seg-grade {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* ── Mobile (≤767px) ── */
+@media (max-width: 767px) {
+  .tc-seg-row {
+    padding: 10px 12px;
+    gap: 8px;
+    min-height: 128px;
+  }
+
+  .tc-seg-left {
+    flex: 0 0 72px;
+  }
+
+  .tc-seg-left .tc-icon .brand-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .tc-seg-right {
+    flex: 0 0 82px;
+  }
+
+  .tc-seg-stat  { font-size: 0.78rem; }
+  .tc-seg-grade { font-size: 0.82rem; }
+  .tc-seg-temp  { font-size: 0.95rem; }
 }
 
 /* ── Kids audio toggle (#12) ─────────────────────────────────────────────── */
@@ -3025,7 +3164,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-row-label {
-  font-size: 0.65rem;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -3089,5 +3228,5 @@ html.dark .ps-tab-panel .rp-btn:hover {
   .wk-row-day .wk-icon .brand-icon  { width: 42px; height: 42px; }
   .wk-row-night .wk-icon .brand-icon { width: 34px; height: 34px; }
   .wk-min-temp, .wk-max-temp { font-size: 0.82rem; }
-  .wk-row-label { font-size: 0.58rem; }
+  .wk-row-label { font-size: 0.9rem; }
 }

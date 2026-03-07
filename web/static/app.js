@@ -555,79 +555,105 @@ function renderOverviewView(data) {
 
     (data.timeline || []).forEach((seg, idx) => {
       const origSlotName = seg.display_name || 'Forecast';
-      const slotName = origSlotName;
-      const card = document.createElement('div');
-      // Determine if it is a night segment for styling
-      const isNightSegment = () => {
+      const isNight = (() => {
         try {
-          if (!seg.start_time) return false;
           const h = new Date(seg.start_time.replace('+08:00', '')).getHours();
           return h >= 18 || h < 6;
         } catch { return false; }
-      };
-      card.className = `time-card wk-card ${isNightSegment() ? 'wk-night' : 'wk-day'}`;
-      const header = document.createElement('div');
-      header.className = 'tc-header';
-      header.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
-      const icon = document.createElement('div');
-      icon.className = 'tc-icon';
-      icon.innerHTML = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || IMG('cloudy', 'Cloudy');
-      const temp = document.createElement('div');
-      temp.className = 'tc-temp';
-      temp.textContent = `${Math.round(seg.AT ?? seg.T ?? 0)}°`;
-      const details = document.createElement('div');
-      details.className = 'tc-details';
+      })();
 
-      const addRow = (label, val, lvl) => {
-        const row = document.createElement('div');
-        row.className = 'tc-row';
-        const l = document.createElement('span');
-        l.className = 'tc-label';
-        l.textContent = label;
-        const v = document.createElement('span');
-        v.className = `tc-val lvl-${lvl}`;
-        v.textContent = val;
-        row.appendChild(l);
-        row.appendChild(v);
-        details.appendChild(row);
-      };
+      const row = document.createElement('div');
+      row.className = `tc-seg-row${isNight ? ' tc-seg-night' : ''}`;
 
-      if (seg.outdoor_grade) {
-        const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
-        const outdoorDisplay = localiseMetric(seg.outdoor_label) || seg.outdoor_grade;
-        addRow(T.outdoor, outdoorDisplay, gradeToLvl[seg.outdoor_grade] || 0);
-      }
-      if (seg.aqi != null) {
-        addRow('AQI', String(seg.aqi), aqiToLevel(seg.aqi));
-      }
-      const tlRangeContainer = document.createElement('div');
-      tlRangeContainer.className = 'wk-range-container';
-      const tlRangeBar = document.createElement('div');
-      tlRangeBar.className = 'wk-range-bar';
+      // ── Left: label + icon + time ──────────────────────────────────
+      const leftEl = document.createElement('div');
+      leftEl.className = 'tc-seg-left';
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'tc-seg-label';
+      labelEl.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
+
+      const iconEl = document.createElement('div');
+      iconEl.className = 'tc-icon';
+      iconEl.innerHTML = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || IMG('cloudy', 'Cloudy');
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'tc-seg-time';
+      try {
+        const h = new Date(seg.start_time.replace('+08:00', '')).getHours();
+        timeEl.textContent = `${String(h).padStart(2, '0')}:00`;
+      } catch { timeEl.textContent = ''; }
+
+      leftEl.appendChild(labelEl);
+      leftEl.appendChild(iconEl);
+      leftEl.appendChild(timeEl);
+
+      // ── Center: range bar only ─────────────────────────────────────
+      const centerEl = document.createElement('div');
+      centerEl.className = 'tc-seg-center';
+
+      const tempsRow = document.createElement('div');
+      tempsRow.className = 'wk-row-temps';
+
+      const minTempEl = document.createElement('span');
+      minTempEl.className = 'wk-min-temp tc-seg-temp';
+      const maxTempEl = document.createElement('span');
+      maxTempEl.className = 'wk-max-temp tc-seg-temp';
+      const rangeContainer = document.createElement('div');
+      rangeContainer.className = 'wk-range-container tc-seg-bar';
+      const rangeBar = document.createElement('div');
+      rangeBar.className = 'wk-range-bar';
+
       if (tlGlobalMax > tlGlobalMin && seg.AT != null) {
         const span = tlGlobalMax - tlGlobalMin;
         const lo = seg.MinAT ?? seg.AT;
         const hi = seg.MaxAT ?? seg.AT;
+        minTempEl.textContent = `${Math.round(lo)}°`;
+        maxTempEl.textContent = `${Math.round(hi)}°`;
         const leftPct  = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
         const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
-        tlRangeBar.style.left  = `${leftPct}%`;
-        tlRangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
-        tlRangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
+        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
+        rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
+      } else {
+        minTempEl.textContent = '—';
+        maxTempEl.textContent = '—';
       }
-      tlRangeContainer.appendChild(tlRangeBar);
+      rangeContainer.appendChild(rangeBar);
+      tempsRow.appendChild(minTempEl);
+      tempsRow.appendChild(rangeContainer);
+      tempsRow.appendChild(maxTempEl);
+      centerEl.appendChild(tempsRow);
 
-      card.appendChild(header);
-      card.appendChild(icon);
-      card.appendChild(tlRangeContainer);
-      card.appendChild(temp);
-      card.appendChild(details);
+      // ── Right: outdoor grade + Poisson precip text ─────────────────
+      const rightEl = document.createElement('div');
+      rightEl.className = 'tc-seg-right';
 
+      if (seg.outdoor_grade) {
+        const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
+        const el = document.createElement('div');
+        el.className = `tc-seg-stat tc-seg-grade lvl-${gradeToLvl[seg.outdoor_grade] || 0}`;
+        el.textContent = `${seg.outdoor_grade} ${localiseMetric(seg.outdoor_label) || seg.outdoor_label || ''}`;
+        rightEl.appendChild(el);
+      }
+      if (seg.precip_text != null) {
+        const el = document.createElement('div');
+        el.className = `tc-seg-stat lvl-${seg.precip_level || 0}`;
+        el.textContent = seg.precip_text;
+        rightEl.appendChild(el);
+      }
+
+      row.appendChild(leftEl);
+      row.appendChild(centerEl);
+      row.appendChild(rightEl);
+
+      // ── Wrap + transitions (unchanged logic) ───────────────────────
       const col = document.createElement('div');
       col.className = 'tc-col';
-      col.appendChild(card);
+      col.appendChild(row);
 
       const nextSeg = data.timeline[idx + 1];
-      const transition = nextSeg ? transitionMap[slotName] : null;
+      const transition = nextSeg ? transitionMap[origSlotName] : null;
       if (transition && transition.is_transition) {
         const locTrans = (txt) => (T.transitions && T.transitions[txt]) ? T.transitions[txt] : txt;
         const parts = [];
