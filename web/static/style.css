@@ -502,7 +502,7 @@ input:focus-visible {
   height: 4.5rem;
   width: auto;
   max-width: 100%;
-  opacity: 0.60;
+  opacity: 0.90;
   z-index: 0;
   pointer-events: none;
   border-radius: 0;
@@ -1732,6 +1732,7 @@ html.dark .source-claude {
 /* ── Section Header Card (mobile only) ─────────────────────────────────── */
 .section-header-card {
   display: none;
+  position: relative;
   align-items: center;
   gap: 8px;
   padding: 28px 0 10px;
@@ -1778,16 +1779,13 @@ html.dark .source-claude {
     display: flex;
   }
 
-  /* Section slab: inline icon to the left of heading text, like gauge-header icons */
+  /* Section slab: abs-positioned behind heading text, mirroring desktop heading-slab */
   .section-slab {
-    position: static;
-    transform: none;
-    width: 2rem;
-    height: 2rem;
+    height: 4.5rem;
+    width: 100%;
+    opacity: 0.90;
     object-fit: cover;
-    object-position: left center;
-    opacity: 0.8;
-    border-radius: 4px;
+    border-radius: 0;
   }
 
   .compact-header {
