@@ -1087,6 +1087,11 @@ function initPlayerBar() {
       pill.classList.toggle('active', parseFloat(pill.dataset.speed) === s);
     });
     localStorage.setItem('playerSpeed', String(s));
+    if (audio.duration) {
+      duration.textContent = `${formatTime(audio.currentTime / speed)} / ${formatTime(audio.duration / speed)}`;
+      const sheetDur = document.getElementById('ps-duration');
+      if (sheetDur) sheetDur.textContent = `${formatTime(audio.currentTime / speed)} / ${formatTime(audio.duration / speed)}`;
+    }
   }
 
   applySpeed(speed);
@@ -1127,19 +1132,19 @@ function initPlayerBar() {
     if (!audio.duration) return;
     const pct = `${(audio.currentTime / audio.duration) * 100}%`;
     progress.style.width = pct;
-    duration.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    duration.textContent = `${formatTime(audio.currentTime / speed)} / ${formatTime(audio.duration / speed)}`;
     // Sync sheet controls
     const sheetBar = document.getElementById('ps-progress-bar');
     if (sheetBar) sheetBar.style.width = pct;
     const sheetDur = document.getElementById('ps-duration');
-    if (sheetDur) sheetDur.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    if (sheetDur) sheetDur.textContent = `${formatTime(audio.currentTime / speed)} / ${formatTime(audio.duration / speed)}`;
   });
 
   audio.addEventListener('loadedmetadata', () => {
     audio.playbackRate = speed;  // browsers reset playbackRate on src change
-    duration.textContent = `0:00 / ${formatTime(audio.duration)}`;
+    duration.textContent = `0:00 / ${formatTime(audio.duration / speed)}`;
     const sheetDur = document.getElementById('ps-duration');
-    if (sheetDur) sheetDur.textContent = `0:00 / ${formatTime(audio.duration)}`;
+    if (sheetDur) sheetDur.textContent = `0:00 / ${formatTime(audio.duration / speed)}`;
   });
 
   playBtn.addEventListener('click', (e) => {
