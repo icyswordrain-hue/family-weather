@@ -502,7 +502,7 @@ input:focus-visible {
   height: 4.5rem;
   width: auto;
   max-width: 100%;
-  opacity: 0.30;
+  opacity: 0.60;
   z-index: 0;
   pointer-events: none;
   border-radius: 0;
@@ -521,7 +521,7 @@ input:focus-visible {
   height: 2rem;
   width: auto;
   max-width: 100%;
-  opacity: 0.15;
+  opacity: 0.30;
   z-index: 0;
   pointer-events: none;
 }
@@ -556,7 +556,7 @@ input:focus-visible {
 
 .current-side-stack .gauge-card {
   flex: 1;
-  min-height: 55px;
+  min-height: 61px;
 }
 
 /* Outdoor trigger card: clickable, shows expand cue */
@@ -599,7 +599,7 @@ input:focus-visible {
 }
 
 .current-top-row .current-hero {
-  min-height: 200px;
+  min-height: 220px;
 }
 
 .current-hero {
@@ -622,18 +622,18 @@ input:focus-visible {
 }
 
 #cur-icon {
-  font-size: 3rem;
-  width: 8rem;
+  font-size: 3.3rem;
+  width: 8.8rem;
 }
 
 #cur-temp {
-  font-size: 3.6rem;
+  font-size: 3.96rem;
   font-weight: 800;
   color: var(--text);
 }
 
 #cur-weather-text {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: var(--muted);
   font-weight: 600;
 }
@@ -666,7 +666,7 @@ input:focus-visible {
   gap: 1rem;
   margin-top: 1rem;
   /* Smooth reveal via max-height transition */
-  max-height: 200px;
+  max-height: 220px;
   overflow: hidden;
   opacity: 1;
   transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.3s ease;
@@ -689,7 +689,7 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 120px;
+  min-height: 132px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -700,7 +700,7 @@ input:focus-visible {
 }
 
 .gauge-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--muted);
   font-weight: 500;
   margin-bottom: 0.5rem;
@@ -711,14 +711,14 @@ input:focus-visible {
 .gauge-value {
   font-family: 'Fira Code', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
 .gauge-sub {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--muted);
   margin-top: 0.4rem;
   font-weight: 500;
@@ -736,12 +736,12 @@ input:focus-visible {
 
 .gauge-header .gauge-label {
   margin-bottom: 0;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .gauge-header .gauge-icon .brand-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 
 /* Level Colors (5-Level Scale) */
@@ -823,7 +823,7 @@ input:focus-visible {
 
 .timeline-scroll .time-card {
   flex: 0 0 160px;
-  min-height: 180px;
+  min-height: 198px;
   scroll-snap-align: start;
 }
 
@@ -849,7 +849,7 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 200px;
+  min-height: 220px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -860,7 +860,7 @@ input:focus-visible {
 }
 
 .tc-header {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--muted);
   font-weight: 700;
   text-transform: uppercase;
@@ -876,7 +876,7 @@ input:focus-visible {
 .tc-temp {
   font-family: 'Fira Code', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 1.8rem;
+  font-size: 1.98rem;
   font-weight: 800;
   color: var(--text);
   margin-bottom: 1rem;
@@ -899,13 +899,13 @@ input:focus-visible {
 }
 
 .tc-label {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--muted);
   font-weight: 500;
 }
 
 .tc-val {
-  font-size: 1.1rem;
+  font-size: 1.18rem;
   font-weight: 700;
 }
 
@@ -1052,7 +1052,7 @@ html.dark .audio-toggle-btn.active {
 .ls-card {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 1.1rem;
   box-shadow: var(--shadow);
   display: flex;
   gap: 0.75rem;
@@ -1062,8 +1062,8 @@ html.dark .audio-toggle-btn.active {
 .ls-icon {
   font-size: 1.5rem;
   background: var(--blue-lt);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -1110,17 +1110,17 @@ html.dark .audio-toggle-btn.active {
 
 /* Forecast icon sizing hierarchy: current > 24h > 7-day */
 .tc-icon .brand-icon {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
 }
 
 .wk-icon .brand-icon {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
 }
 
 .ls-title {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 400;
   margin-bottom: 0.4rem;
   font-family: 'Noto Serif TC', serif;
@@ -1128,7 +1128,7 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-text {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--text);
   line-height: 1.45;
   white-space: pre-line;
@@ -1886,25 +1886,30 @@ html.dark .source-claude {
   }
 
   .current-top-row .current-hero {
-    min-height: 90px;
+    min-height: 113px;
   }
 
   .current-side-stack .gauge-card {
-    padding: 0.4rem 0.3rem;
-    min-height: 45px;
+    padding: 0.5rem 0.4rem;
+    min-height: 56px;
   }
 
   .current-side-stack .gauge-label {
-    font-size: 0.78rem;
+    font-size: 0.9rem;
     letter-spacing: 0.02em;
   }
 
   .current-side-stack .gauge-value {
-    font-size: 1.15rem;
+    font-size: 1.35rem;
   }
 
   .current-side-stack .gauge-sub {
-    font-size: 0.78rem;
+    font-size: 0.9rem;
+  }
+
+  .current-side-stack .gauge-header .gauge-icon .brand-icon {
+    width: 30px;
+    height: 30px;
   }
 
   .current-conditions-wrapper {
@@ -1912,7 +1917,7 @@ html.dark .source-claude {
   }
 
   .current-hero {
-    padding: 0.4rem 0.3rem;
+    padding: 0.5rem 0.4rem;
   }
 
   .hero-main {
@@ -1920,41 +1925,41 @@ html.dark .source-claude {
   }
 
   #cur-icon {
-    font-size: 2rem;
-    width: 3.5rem;
+    font-size: 2.5rem;
+    width: 4.4rem;
   }
 
   #cur-temp {
-    font-size: 2.2rem;
+    font-size: 2.75rem;
   }
 
   #cur-weather-text {
-    font-size: 0.85rem;
+    font-size: 1.05rem;
   }
 
   /* Gauges expand panel: 4 per row, compact sizing */
   .gauges-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 0.4rem;
-    max-height: 140px;
+    max-height: 175px;
   }
 
   .gauges-grid .gauge-card {
-    padding: 0.5rem 0.35rem;
-    min-height: 70px;
+    padding: 0.63rem 0.44rem;
+    min-height: 88px;
   }
 
   .gauges-grid .gauge-label {
-    font-size: 0.75rem;
+    font-size: 0.88rem;
     letter-spacing: 0.02em;
   }
 
   .gauges-grid .gauge-value {
-    font-size: 1.1rem;
+    font-size: 1.28rem;
   }
 
   .gauges-grid .gauge-sub {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
   }
 
   /* Lifestyle: 1 column */
@@ -1969,12 +1974,12 @@ html.dark .source-claude {
   }
 
   .time-card {
-    padding: 0.75rem 0.4rem;
+    padding: 0.94rem 0.5rem;
     min-height: 0;
   }
 
   .tc-header {
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     margin-bottom: 0.2rem;
     white-space: nowrap;
     overflow: hidden;
@@ -1987,12 +1992,12 @@ html.dark .source-claude {
   }
 
   .tc-icon .brand-icon {
-    width: 44px;
-    height: 44px;
+    width: 54px;
+    height: 54px;
   }
 
   .tc-temp {
-    font-size: 1rem;
+    font-size: 1.25rem;
     margin-bottom: 0.3rem;
   }
 
@@ -2007,11 +2012,24 @@ html.dark .source-claude {
   }
 
   .tc-label {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
   }
 
   .tc-val {
-    font-size: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .ls-card {
+    padding: 1.25rem;
+  }
+
+  .ls-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .heading-slab {
+    width: 100%;
   }
 }
 
@@ -2990,7 +3008,7 @@ html.dark .ps-tab-panel .rp-btn:hover {
 .wk-card {
   background: var(--surface);
   border-radius: 10px;
-  padding: 14px 8px;
+  padding: 15px 9px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
@@ -3102,21 +3120,21 @@ html.dark .wk-card.wk-night .wk-temp {
   }
 
   .wk-card {
-    padding: 4px 3px;
+    padding: 5px 4px;
     gap: 1px;
   }
 
   .wk-icon {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 
   .wk-icon .brand-icon {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
   }
 
   .wk-temp {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
   }
 
   .wk-rain {

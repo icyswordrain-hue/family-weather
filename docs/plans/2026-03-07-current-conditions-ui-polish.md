@@ -200,3 +200,95 @@ At 4.5rem height, the 4:1 aspect-ratio slab image is ~72px tall × ~288px wide �
 
 ### Side-stack card order
 `#gauge-wind` → `#gauge-ground` → `#gauge-outdoor` (trigger/expand)
+
+---
+
+## Round 4 — Card Height Scale, Denser Text, Slab Polish
+
+**Commit:** TBD
+
+### Requests
+1. **Mobile:** all card heights ×1.25
+2. **Desktop:** all card heights ×1.1
+3. Scale text and icons proportionally to maintain density (75–90% small cards, 70–85% large cards)
+4. H1 slab fills full width on mobile
+5. Slab opacity ×2
+
+### Changes
+
+**Global slab (style.css):**
+| Property | Before | After |
+|----------|--------|-------|
+| `.heading-slab` opacity | 0.30 | 0.60 |
+| `.section-slab` opacity | 0.15 | 0.30 |
+| `.heading-slab` width (mobile) | auto | 100% |
+
+**Desktop card heights (×1.1):**
+| Selector | Before | After |
+|----------|--------|-------|
+| `.current-top-row .current-hero` min-height | 200px | 220px |
+| `.current-side-stack .gauge-card` min-height | 55px | 61px |
+| `.gauge-card` (full-size) min-height | 120px | 132px |
+| `.gauges-grid` max-height | 200px | 220px |
+| `.timeline-scroll .time-card` min-height | 180px | 198px |
+| `.time-card` min-height | 200px | 220px |
+| `.wk-card` padding | 14px 8px | 15px 9px |
+| `.ls-card` padding | 1rem | 1.1rem |
+
+**Desktop text + icons (×1.05–1.08):**
+| Selector | Property | Before | After |
+|----------|----------|--------|-------|
+| `.gauge-label` | font-size | 0.85rem | 0.9rem |
+| `.gauge-value` | font-size | 1.4rem | 1.5rem |
+| `.gauge-sub` | font-size | 0.9rem | 0.95rem |
+| `.gauge-header .gauge-label` | font-size | 0.75rem | 0.8rem |
+| `.gauge-header .gauge-icon .brand-icon` | w/h | 26px | 28px |
+| `#cur-icon` | font-size / width | 3rem / 8rem | 3.3rem / 8.8rem |
+| `#cur-temp` | font-size | 3.6rem | 3.96rem |
+| `#cur-weather-text` | font-size | 1.3rem | 1.4rem |
+| `.tc-header` | font-size | 0.85rem | 0.9rem |
+| `.tc-icon .brand-icon` | w/h | 60px | 64px |
+| `.tc-temp` | font-size | 1.8rem | 1.98rem |
+| `.tc-label` | font-size | 0.75rem | 0.8rem |
+| `.tc-val` | font-size | 1.1rem | 1.18rem |
+| `.wk-icon .brand-icon` | w/h | 52px | 56px |
+| `.ls-icon` | w/h | 40px | 44px |
+| `.ls-title` | font-size | 1.05rem | 1.1rem |
+| `.ls-text` | font-size | 0.78rem | 0.82rem |
+
+**Mobile card heights (×1.25, inside `@media (max-width: 767px)`):**
+| Selector | Before | After |
+|----------|--------|-------|
+| `.current-top-row .current-hero` min-height | 90px | 113px |
+| `.current-hero` padding | 0.4rem 0.3rem | 0.5rem 0.4rem |
+| `.current-side-stack .gauge-card` min-height | 45px | 56px |
+| `.current-side-stack .gauge-card` padding | 0.4rem 0.3rem | 0.5rem 0.4rem |
+| `.gauges-grid .gauge-card` min-height | 70px | 88px |
+| `.gauges-grid .gauge-card` padding | 0.5rem 0.35rem | 0.63rem 0.44rem |
+| `.gauges-grid` max-height | 140px | 175px |
+| `.time-card` padding | 0.75rem 0.4rem | 0.94rem 0.5rem |
+| `.wk-card` padding | 4px 3px | 5px 4px |
+| `.ls-card` padding (new mobile rule) | 1rem | 1.25rem |
+
+**Mobile text + icons (×1.15–1.2):**
+| Selector | Property | Before | After |
+|----------|----------|--------|-------|
+| `.current-side-stack .gauge-label` | font-size | 0.78rem | 0.9rem |
+| `.current-side-stack .gauge-value` | font-size | 1.15rem | 1.35rem |
+| `.current-side-stack .gauge-sub` | font-size | 0.78rem | 0.9rem |
+| `.current-side-stack .gauge-header .brand-icon` | w/h | 26px | 30px |
+| `.gauges-grid .gauge-label` | font-size | 0.75rem | 0.88rem |
+| `.gauges-grid .gauge-value` | font-size | 1.1rem | 1.28rem |
+| `.gauges-grid .gauge-sub` | font-size | 0.72rem | 0.85rem |
+| `#cur-icon` | font-size / width | 2rem / 3.5rem | 2.5rem / 4.4rem |
+| `#cur-temp` | font-size | 2.2rem | 2.75rem |
+| `#cur-weather-text` | font-size | 0.85rem | 1.05rem |
+| `.tc-header` | font-size | 0.62rem | 0.72rem |
+| `.tc-icon .brand-icon` | w/h | 44px | 54px |
+| `.tc-temp` | font-size | 1rem | 1.25rem |
+| `.tc-label` | font-size | 0.55rem | 0.65rem |
+| `.tc-val` | font-size | 0.75rem | 0.88rem |
+| `.wk-icon` | font-size | 1.2rem | 1.5rem |
+| `.wk-icon .brand-icon` | w/h | 34px | 42px |
+| `.wk-temp` | font-size | 0.9rem | 1.1rem |
+| `.ls-icon` | w/h | 40px | 50px |
