@@ -291,7 +291,7 @@ const TRANSLATIONS = {
     slots: {
       'Morning': '早上',
       'Afternoon': '下午',
-      'Evening': '傍晚',
+      'Evening': '晚上',
       'Overnight': '深夜',
       'Forecast': '預報'
     },
@@ -609,7 +609,7 @@ function renderOverviewView(data) {
         const span = tlGlobalMax - tlGlobalMin;
         const leftPct = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
         const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
-        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.left = `${leftPct}%`;
         rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       } else {
