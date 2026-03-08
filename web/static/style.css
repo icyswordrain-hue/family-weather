@@ -1410,6 +1410,34 @@ html[lang="zh-TW"] .rp-text {
   font-size: 1.1rem;
 }
 
+/* Insight bar — replaces ad-hoc badge+sub combos on lifestyle cards */
+.ls-insight {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  padding: 0.3rem 0.55rem;
+  background: var(--hover);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.ls-insight .brand-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-block;
+  margin: 0;
+}
+
+/* zh-TW bump */
+html[lang="zh-TW"] .ls-insight {
+  font-size: 0.95rem;
+}
+
 .ls-badge.hvac-heating {
   background: var(--tint-heat);
   color: #c0392b;

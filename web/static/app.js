@@ -905,6 +905,17 @@ function renderLifestyleView(data) {
     d.textContent = text;
     return d;
   };
+  const mkInsight = (iconHtml, textHtml) => {
+    const d = document.createElement('div');
+    d.className = 'ls-insight';
+    const ic = document.createElement('span');
+    ic.innerHTML = iconHtml;
+    const txt = document.createElement('span');
+    txt.innerHTML = textHtml;
+    d.appendChild(ic);
+    d.appendChild(txt);
+    return d;
+  };
 
   // 1. Heads Up alert card (top position; only rendered when alerts exist)
   if (data.alert && data.alert.length > 0) {
@@ -954,70 +965,81 @@ function renderLifestyleView(data) {
   // 2. Wardrobe (includes rain gear as sub-line)
   if (data.wardrobe) {
     const extras = [];
-    if (data.wardrobe.feels_like != null) extras.push(mkSub(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`));
-    if (data.wardrobe.rain_gear_text) extras.push(mkSub(`☂️ ${data.wardrobe.rain_gear_text}`));
+    const parts = [];
+    if (data.wardrobe.feels_like != null) parts.push(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`);
+    if (data.wardrobe.rain_gear_text) parts.push(`☂️ ${data.wardrobe.rain_gear_text}`);
+    if (parts.length > 0) extras.push(mkInsight(IMG('feels-like', 'Feels Like'), parts.join(' · ')));
     add(IMG('feels-like', 'Feels Like'), T.wardrobe, data.wardrobe.text, extras);
   }
   // 4. Commute
   if (data.commute) {
     const extras = [];
+    let hazardText = getLang() === 'zh-TW' ? '通勤順暢' : 'Commute clear';
     if (data.commute.hazards && data.commute.hazards.length > 0) {
-      const ul = document.createElement('ul');
-      ul.className = 'ls-hazards';
-      data.commute.hazards.forEach(h => {
-        const li = document.createElement('li');
-        li.textContent = h;
-        ul.appendChild(li);
-      });
-      extras.push(ul);
+      hazardText = data.commute.hazards[0];
     }
+    extras.push(mkInsight(IMG('commute', 'Commute'), hazardText));
     add(IMG('commute', 'Commute'), T.commute, data.commute.text, extras);
   }
   // 5. Garden Health
-  if (data.garden && data.garden.text) add(IMG('garden', 'Garden'), T.garden, data.garden.text);
+  if (data.garden && data.garden.text) {
+    const insightText = getLang() === 'zh-TW' ? '依天氣調整澆水頻率' : 'Adjust watering to weather';
+    add(IMG('garden', 'Garden'), T.garden, data.garden.text, [mkInsight(IMG('last-drip', 'Water'), insightText)]);
+  }
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
     const extras = [];
-    if (data.outdoor.grade) extras.push(mkBadge(`oi-grade-${data.outdoor.grade}`, localiseMetric(data.outdoor.label || '')));
-    if (data.outdoor.top_activity) extras.push(mkSub(`${T.best_label}: ${data.outdoor.best_window || ''} · ${T.top_label}: ${data.outdoor.top_activity}`));
+    const parts = [];
+    if (data.outdoor.grade) {
+      parts.push(`${getLang() === 'zh-TW' ? '等級' : 'Grade'} ${data.outdoor.grade}`);
+    }
+    if (data.outdoor.best_window || data.outdoor.top_activity) {
+      const bestLabel = (T.slots && T.slots[data.outdoor.best_window]) ? T.slots[data.outdoor.best_window] : (data.outdoor.best_window || '');
+      parts.push(`${getLang() === 'zh-TW' ? '最佳:' : 'Best:'} ${bestLabel} · ${getLang() === 'zh-TW' ? '推薦:' : 'Top:'} ${data.outdoor.top_activity || ''}`);
+    }
+    if (parts.length > 0) extras.push(mkInsight(IMG('outdoor', 'Outdoor'), parts.join(' · ')));
     if (data.air_quality && data.air_quality.aqi != null && data.air_quality.aqi > 100) {
-      extras.push(mkSub(`${T.outdoor_aqi_warn}${data.air_quality.aqi}`));
+      extras.push(mkInsight(IMG('air-quality', 'AQI Warn'), `${T.outdoor_aqi_warn}${data.air_quality.aqi}`));
     }
     add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.text, extras);
   }
   // 7. Meals
   if (data.meals && data.meals.text) {
     const extras = [];
-    if (data.meals.mood) extras.push(mkBadge('mood-badge', data.meals.mood));
+    if (data.meals.mood) extras.push(mkInsight(IMG('meals', 'Meals'), localiseMetric(data.meals.mood)));
     add(IMG('meals', 'Meals'), T.meals, data.meals.text, extras);
   }
   // 8. HVAC Advice
   if (data.hvac) {
     const extras = [];
-    if (data.hvac.mode) extras.push(mkBadge(`hvac-${data.hvac.mode.toLowerCase()}`, data.hvac.mode));
     const hvacMode = (data.hvac.mode || '').toLowerCase();
     const hvacIconName =
       hvacMode === 'cooling' ? 'cool-shade' :
         hvacMode === 'dehumidify' ? 'drip-warning' :
           (hvacMode === 'fan' || hvacMode === 'off') ? 'window-advice' :
             'hvac';
+    if (data.hvac.mode) extras.push(mkInsight(IMG(hvacIconName, 'HVAC'), localiseMetric(data.hvac.mode)));
     add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.text, extras);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {
     const extras = [];
+    const parts = [];
     if (data.air_quality.aqi != null) {
-      const lvl = aqiToLevel(data.air_quality.aqi);
-      const statusText = data.air_quality.status || String(data.air_quality.aqi);
-      extras.push(mkBadge(`lvl-${lvl}`, statusText));
+      const statusText = data.air_quality.status ? ` (${data.air_quality.status})` : '';
+      parts.push(`AQI ${data.air_quality.aqi}${statusText}`);
     }
     if (data.air_quality.pm25 != null) {
-      const pm25Parts = [`PM2.5 ${data.air_quality.pm25}`];
-      if (data.air_quality.pm10 != null) pm25Parts.push(`PM10 ${data.air_quality.pm10}`);
-      extras.push(mkSub(pm25Parts.join(' · ') + ' µg/m³'));
+      parts.push(`PM2.5 ${data.air_quality.pm25}`);
+      if (data.air_quality.pm10 != null) parts.push(`PM10 ${data.air_quality.pm10}`);
+    }
+    if (parts.length > 0) {
+      let textLine = parts.join(' · ');
+      if (data.air_quality.pm25 != null) textLine += ' µg/m³';
+      extras.push(mkInsight(IMG('air-quality', 'Air Quality'), textLine));
     }
     if (data.air_quality.peak_window) {
-      extras.push(mkSub(`⚠ ${data.air_quality.peak_window}`));
+      extras.push(mkInsight(IMG('heads-up', 'AQI Peak'), `⚠ ${data.air_quality.peak_window}`));
     }
     add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
