@@ -101,3 +101,22 @@ localisePrecipText(seg.precip_text),
 ```
 
 **Effect:** Day and night icons are the same size. Night icons remain slightly dimmed (opacity 0.70).
+
+---
+
+## Fix 5 — 36h Evening slot translation (`app.js` ~294)
+
+**Commit:** `27db699`
+
+**Problem:** In the 36-hour forecast timeline, the 'Evening' slot was incorrectly translated as '傍晚'.
+
+**Fix:** Updated the translation map for `'Evening'` in `app.js`.
+
+```js
+// Before
+'Evening': '傍晚',
+// After
+'Evening': '晚上',
+```
+
+**Effect:** The 36-hour view now displays '晚上' during evening segments.
