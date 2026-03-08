@@ -120,3 +120,20 @@ localisePrecipText(seg.precip_text),
 ```
 
 **Effect:** The 36-hour view now displays '晚上' during evening segments.
+
+---
+
+## Fix 6 — Temperature Gauge Color Consistency (`app.js` ~540)
+
+**Commit:** Pending
+
+**Problem:** The linear gradient on temperature range bars was statically applied as `linear-gradient(90deg,#7da4ff,#f0932b)` scaling to internal bar widths. This meant the lowest bound of a day's min/max was always rendered blue, and the highest max bound of the day was always orange, overriding absolute global warm or cold evaluations.
+
+**Fix:** Calculate left/right gradient bounds relative to the previously-computed `globalMin` and `globalMax`. Dynamic RGB colors are calculated and injected via:
+```js
+const getTempColor = (t, min, max) => {
+  /* interpolates between blue and orange using global range percentage */
+}
+```
+
+**Effect:** Color ranges along temperature progress bars will accurately represent globally anchored cold and warm bounds dynamically.

@@ -538,6 +538,15 @@ function renderGauge(id, mainVal, label, subVal = '', valueClass = '', icon = ''
 function renderOverviewView(data) {
   if (!data) return;
 
+  const getTempColor = (t, min, max) => {
+    if (max === min) return 'rgb(125,164,255)';
+    const pct = Math.max(0, Math.min(1, (t - min) / (max - min)));
+    const r = Math.round(125 + pct * (240 - 125));
+    const g = Math.round(164 + pct * (147 - 164));
+    const b = Math.round(255 + pct * (43 - 255));
+    return `rgb(${r},${g},${b})`;
+  };
+
   // Full 7-day gauge — shared scale for both the 36h and 7-day range bars
   let weekGlobalMin = Infinity, weekGlobalMax = -Infinity;
   (data.weekly_timeline || []).forEach(item => {
@@ -611,7 +620,9 @@ function renderOverviewView(data) {
         const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
         rangeBar.style.left = `${leftPct}%`;
         rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
-        rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
+        const cLeft = getTempColor(lo, tlGlobalMin, tlGlobalMax);
+        const cRight = getTempColor(hi, tlGlobalMin, tlGlobalMax);
+        rangeBar.style.background = `linear-gradient(90deg, ${cLeft}, ${cRight})`;
       } else {
         minTempEl.textContent = '';
         maxTempEl.textContent = '—';
@@ -818,7 +829,9 @@ function renderOverviewView(data) {
         const rightPct = Math.min(100, ((rowHi - globalMin) / span) * 100);
         rangeBar.style.left = `${leftPct}%`;
         rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
-        rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
+        const cLeft = getTempColor(rowLo, globalMin, globalMax);
+        const cRight = getTempColor(rowHi, globalMin, globalMax);
+        rangeBar.style.background = `linear-gradient(90deg, ${cLeft}, ${cRight})`;
       }
       rangeContainer.appendChild(rangeBar);
       tempsRow.appendChild(minTempEl);
