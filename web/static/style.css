@@ -1204,6 +1204,11 @@ html.dark .tc-seg-row.tc-seg-night {
     font-size: 0.78rem;
   }
 
+  .tc-seg-stat .tc-stat-icon .brand-icon {
+    width: 30px;
+    height: 30px;
+  }
+
   .tc-seg-temp {
     font-size: 1.23rem;
   }
@@ -3280,8 +3285,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
 }
 
 .wk-row-night .wk-icon .brand-icon {
-  width: 45px;
-  height: 45px;
+  width: 54px;
+  height: 54px;
 }
 
 @media (max-width: 767px) {
@@ -3305,8 +3310,8 @@ html.dark .ps-tab-panel .rp-btn:hover {
   }
 
   .wk-row-night .wk-icon .brand-icon {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
   }
 
   .wk-min-temp,
