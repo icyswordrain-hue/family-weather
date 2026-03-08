@@ -606,8 +606,11 @@ function renderOverviewView(data) {
         const hi = seg.MaxAT ?? seg.AT;
         minTempEl.textContent = lo != null ? `${Math.round(lo)}°` : '';
         maxTempEl.textContent = `${Math.round(hi)}°`;
-        rangeBar.style.left  = '0%';
-        rangeBar.style.width = '100%';
+        const span = tlGlobalMax - tlGlobalMin;
+        const leftPct = Math.max(0, ((lo - tlGlobalMin) / span) * 100);
+        const rightPct = Math.min(100, ((hi - tlGlobalMin) / span) * 100);
+        rangeBar.style.left  = `${leftPct}%`;
+        rangeBar.style.width = `${Math.max(5, rightPct - leftPct)}%`;
         rangeBar.style.background = 'linear-gradient(90deg,#7da4ff,#f0932b)';
       } else {
         minTempEl.textContent = '';
@@ -645,7 +648,7 @@ function renderOverviewView(data) {
       }
       if (isNight && seg.precip_text != null) {
         rightEl.appendChild(mkStat('rain-gear', 'Rain',
-          seg.precip_text,
+          localisePrecipText(seg.precip_text),
           `lvl-${seg.precip_level || 0}`));
       }
 
