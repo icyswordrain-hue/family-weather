@@ -153,6 +153,18 @@ const ICONS = {
   '17': IMG('rainy', 'Rainy'), '18': IMG('rainy', 'Rainy'), '19': IMG('rainy', 'Rainy'), '20': IMG('rainy', 'Rainy'),
 };
 
+function getWeatherIcon(weatherKey, alt, isNight) {
+  if (isNight) {
+    if (['sunny', 'Sunny/Clear', '1', 'Sunny'].includes(weatherKey)) {
+      return IMG('clear-night', alt);
+    }
+    if (['partly-cloudy', 'Mixed Clouds', '2', '3'].includes(weatherKey)) {
+      return IMG('partly-cloudy-night', alt);
+    }
+  }
+  return ICONS[weatherKey] || IMG('cloudy', 'Cloudy');
+}
+
 // ── Translations ───────────────────────────────────────────────────────────
 const TRANSLATIONS = {
   en: {
@@ -450,7 +462,9 @@ function renderCurrentView(data) {
   if (!data) return;
   setText('cur-temp', Math.round(data.temp) + '\u00b0');
   setText('cur-weather-text', localiseWeatherText(data.weather_text || '\u2014'));
-  document.getElementById('cur-icon').innerHTML = ICONS[data.weather_code] || ICONS[data.weather_text] || IMG('partly-cloudy', 'Weather');
+  const h = new Date().getHours();
+  const isCurrentNight = (h >= 18 || h < 6);
+  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.weather_code || data.weather_text, localiseWeatherText(data.weather_text || '\u2014'), isCurrentNight);
   setText('rp-location', localiseLocation(data.location || '\u2014'));
   const mobileLoc = document.getElementById('mobile-location');
   if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '\u2014');
@@ -589,7 +603,7 @@ function renderOverviewView(data) {
 
       const iconEl = document.createElement('div');
       iconEl.className = 'tc-icon';
-      iconEl.innerHTML = ICONS[seg.cloud_cover] || ICONS[seg.Wx] || IMG('cloudy', 'Cloudy');
+      iconEl.innerHTML = getWeatherIcon(seg.cloud_cover || seg.Wx, 'Weather', isNight);
 
       leftEl.appendChild(labelEl);
       leftEl.appendChild(iconEl);
@@ -780,7 +794,7 @@ function renderOverviewView(data) {
       const dayIconEl = document.createElement('div');
       dayIconEl.className = 'wk-icon';
       dayIconEl.innerHTML = dayItem
-        ? (ICONS[dayItem.cloud_cover] || ICONS[dayItem.Wx] || IMG('cloudy', 'Cloudy'))
+        ? getWeatherIcon(dayItem.cloud_cover || dayItem.Wx, 'Weather', false)
         : IMG('cloudy', 'Cloudy');
 
       const labelEl = document.createElement('div');
@@ -845,7 +859,7 @@ function renderOverviewView(data) {
       const nightIconEl = document.createElement('div');
       nightIconEl.className = 'wk-icon';
       if (nightItem) {
-        nightIconEl.innerHTML = ICONS[nightItem.cloud_cover] || ICONS[nightItem.Wx] || IMG('cloudy', 'Cloudy');
+        nightIconEl.innerHTML = getWeatherIcon(nightItem.cloud_cover || nightItem.Wx, 'Weather', true);
       } else {
         nightIconEl.innerHTML = IMG('cloudy', 'Cloudy');
         nightSection.style.opacity = '0.3';
