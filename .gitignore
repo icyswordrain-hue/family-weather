@@ -19,9 +19,13 @@ verify_*.py
 # Audio output
 *.mp3
 
-# Broadcast history & local data store
+# Broadcast history & local data store (runtime — audio, weather history, cache)
 local_data/
 history/*.json
+
+# Runtime state files
+lifecycle.json
+station.txt
 
 # Server log
 server.log
