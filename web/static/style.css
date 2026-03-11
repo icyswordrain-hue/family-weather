@@ -1132,13 +1132,15 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-center .wk-range-bar {
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-/* Match 7-day temp label size */
+/* Match 7-day temp label style */
 .tc-seg-temp {
+  font-family: 'Fira Code', monospace;
   font-size: 1.35rem;
-  min-width: 3.2ch;
+  font-weight: 700;
+  min-width: 2.8ch;
 }
 
 /* ── Right column ── */
