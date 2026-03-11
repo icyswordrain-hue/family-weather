@@ -203,7 +203,7 @@ After the ---CARDS--- JSON, add a separator ---REGEN--- on its own line, then ou
     "cold": ["dish1 pinyin", ...]
   },
   "locations": {
-    "Nice": [{"name":"...","activity":"...","surface":"...","parkinsons":"good|ok|avoid","lat":0.0,"lng":0.0,"notes":"..."}],
+    "Nice": [{"name":"...","activity":"...","surface":"...","lat":0.0,"lng":0.0,"notes":"..."}],
     "Warm": [...],
     "Cloudy & Breezy": [...],
     "Stay In": [...]
@@ -212,7 +212,7 @@ After the ---CARDS--- JSON, add a separator ---REGEN--- on its own line, then ou
 
 Meals: 10–12 common Taiwanese dishes per category. Pinyin only, no Chinese characters. Mix home-cooked staples, night market classics, and regional specialties. No dish repeated across categories.
 
-Locations: 8–10 per category, all within 50km of 24.9955°N 121.4279°E (Shulin/Banqiao border). Include parks, trails, riverside paths, cultural sites, temples, museums, and indoor venues as appropriate. Each entry needs: name (pinyin), suggested activity, surface type (paved/gravel/dirt/indoor), parkinsons suitability ("good" = flat and accessible, "ok" = manageable with care, "avoid" = uneven or steep), approximate lat/lng, and brief notes on accessibility, shade, seating, and Parkinson's-relevant safety considerations.
+Locations: 8–10 per category, all within 50km of 24.9955°N 121.4279°E (Shulin/Banqiao border). Include parks, trails, riverside paths, cultural sites, temples, museums, and indoor venues as appropriate. Each entry needs: name (pinyin), suggested activity, surface type (paved/gravel/dirt/indoor), approximate lat/lng, and brief notes on terrain difficulty, shade availability, seating, and general accessibility.
 """
 
 

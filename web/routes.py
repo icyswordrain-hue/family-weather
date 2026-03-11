@@ -466,7 +466,6 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "label": outdoor_index.get("overall_label"),
             "top_activity": top_activity,
             "activity_scores": outdoor_index.get("activities", {}),
-            "parkinsons_safe": outdoor_index.get("parkinsons_safe", True),
             "best_window": best_window,
         },
         "alert": _dedup_alerts(_alert),

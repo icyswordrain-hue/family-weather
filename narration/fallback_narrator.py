@@ -125,14 +125,9 @@ def build_narration(
         loc_name = loc.get("name", "")
         activity = loc.get("activity", "")
         notes = loc.get("notes", "")
-        parkinsons = loc.get("parkinsons", "")
-        parts = [f"Today's outdoor pick: {loc_name}."]
+        parts = [f"Today's outdoor pick for Dad: {loc_name}."]
         if activity:
             parts.append(f"Activity: {activity}.")
-        if parkinsons == "good":
-            parts.append("Parkinson's friendly — flat, accessible terrain.")
-        elif parkinsons == "ok":
-            parts.append("Manageable for Parkinson's with a cane or companion.")
         if notes:
             parts.append(notes)
         lines.append(" ".join(parts))
@@ -534,7 +529,6 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
     # ── Outdoor (2 sentences) ─────────────────────────────────────────────────
     grade = outdoor_index.get("grade", "")
     best_window = outdoor_index.get("best_window", "")
-    parkinsons_safe = outdoor_index.get("parkinsons_safe", True)
     top_activity = outdoor_index.get("top_activity", "")
     pick = next((l for l in top_locations if l.get("name") not in recent_locations), top_locations[0] if top_locations else None)
 
@@ -550,11 +544,10 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
         if pick:
             loc_name = pick.get("name", "")
             activity = pick.get("activity", top_activity or "散步")
-            pk_note = "地形平坦，適合帕金森氏症患者。" if parkinsons_safe else "請有人陪同出行，注意步道狀況。"
             window_note = f"最佳時段：{best_window}。" if best_window else ""
-            outdoor_s2 = f"推薦前往{loc_name}進行{activity}，{pk_note}{window_note}"
+            outdoor_s2 = f"推薦帶爸爸前往{loc_name}進行{activity}。{window_note}"
         elif best_window:
-            outdoor_s2 = f"最佳外出時段為{best_window}，注意帕金森氏症患者的安全。"
+            outdoor_s2 = f"最佳外出時段為{best_window}，選擇平坦易行的路線。"
         else:
             outdoor_s2 = "外出時請以安全為優先，選擇平坦易行的路線。"
     else:
@@ -569,13 +562,12 @@ def _build_fallback_cards(processed: dict, history: list[dict] | None, lang: str
         if pick:
             loc_name = pick.get("name", "")
             activity = pick.get("activity", top_activity or "walking")
-            pk_note = "flat, accessible terrain — Parkinson's friendly." if parkinsons_safe else "go with a companion and watch the terrain."
             window_note = f" Best window: {best_window}." if best_window else ""
-            outdoor_s2 = f"{loc_name} is a good pick for {activity} — {pk_note}{window_note}"
+            outdoor_s2 = f"{loc_name} is a good pick for {activity} with Dad.{window_note}"
         elif best_window:
-            outdoor_s2 = f"If heading out, {best_window} is the best window — keep it short and safe."
+            outdoor_s2 = f"If heading out with Dad, {best_window} is the best window — keep it short and easy."
         else:
-            outdoor_s2 = "Stick to flat, familiar routes if heading out, and take it easy."
+            outdoor_s2 = "Stick to flat, familiar routes if heading out with Dad, and take it easy."
     outdoor_text = f"{verdict} {outdoor_s2}"
 
     # ── Air Quality Forecast (1 sentence) ────────────────────────────────────

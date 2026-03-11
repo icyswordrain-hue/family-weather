@@ -12,4 +12,4 @@ def test_location_has_required_fields():
         for loc in locs:
             assert "name" in loc
             assert "activity" in loc
-            assert "parkinsons" in loc
+            assert "surface" in loc
