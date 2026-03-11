@@ -27,6 +27,7 @@ def _upload_to_gcs(audio_bytes: bytes, gcs_path: str) -> str:
     from google.cloud import storage
     blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(gcs_path)
     blob.upload_from_string(audio_bytes, content_type="audio/mpeg")
+    log.info("TTS uploaded to GCS: %s (%d bytes) → %s", gcs_path, len(audio_bytes), blob.public_url)
     return blob.public_url
 
 
