@@ -386,16 +386,19 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
 
     outdoor_index = outdoor_index or {}
 
-    # Derive best_window (segment name with highest score) and top_activity
+    # Derive best_window and top_activity, preferring broadcast-time pinned values
+    # so the insight row stays consistent with the LLM card text.
     _segs = outdoor_index.get("segments", {})
-    best_window = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
+    _computed_bw = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
+    best_window = summaries.get("_best_window") or _computed_bw
     _acts = outdoor_index.get("activities", {})
     if _acts:
         _max_score = max(v["score"] for v in _acts.values())
         _tied = [k for k, v in _acts.items() if v["score"] == _max_score]
-        top_activity = "photography" if ("photography" in _tied and _max_score >= 80) else _tied[0]
+        _computed_ta = "photography" if ("photography" in _tied and _max_score >= 80) else _tied[0]
     else:
-        top_activity = None
+        _computed_ta = None
+    top_activity = summaries.get("_top_activity") or _computed_ta
 
     # Meal mood category
     meal_mood = processed.get("meal_mood", {}).get("mood")

@@ -540,6 +540,24 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
     # 5.5 Synthesize TTS (LOCAL: eager; MODAL morning: eager; others: on-demand)
     summaries = parsed.get("cards", {})
+
+    # Pin broadcast-time top_activity + best_window so the insight row and LLM
+    # card text always reference the same point-in-time outdoor conditions.
+    _oi = processed.get("outdoor_index", {})
+    _segs = _oi.get("segments", {})
+    _bw = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
+    _acts = _oi.get("activities", {})
+    if _acts:
+        _mx = max(v["score"] for v in _acts.values())
+        _tied = [k for k, v in _acts.items() if v["score"] == _mx]
+        _ta: str | None = "photography" if ("photography" in _tied and _mx >= 80) else _tied[0]
+    else:
+        _ta = None
+    if _bw is not None:
+        summaries["_best_window"] = _bw
+    if _ta is not None:
+        summaries["_top_activity"] = _ta
+
     if RUN_MODE == "LOCAL" or (RUN_MODE == "MODAL" and slot == "morning"):
         yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
         try:

@@ -1037,9 +1037,9 @@ function renderLifestyleView(data) {
     if (data.outdoor.grade) {
       parts.push(`${getLang() === 'zh-TW' ? '等級' : 'Grade'} ${data.outdoor.grade}`);
     }
-    if (data.outdoor.best_window || data.outdoor.top_activity) {
+    if (data.outdoor.best_window) {
       const bestLabel = (T.slots && T.slots[data.outdoor.best_window]) ? T.slots[data.outdoor.best_window] : (data.outdoor.best_window || '');
-      parts.push(`${getLang() === 'zh-TW' ? '最佳:' : 'Best:'} ${bestLabel} · ${getLang() === 'zh-TW' ? '推薦:' : 'Top:'} ${data.outdoor.top_activity || ''}`);
+      parts.push(`${getLang() === 'zh-TW' ? '最佳:' : 'Best:'} ${bestLabel}`);
     }
     if (parts.length > 0) extras.push(mkInsight(IMG('outdoor', 'Outdoor'), parts.join(' · ')));
     if (data.air_quality && data.air_quality.aqi != null && data.air_quality.aqi > 100) {
