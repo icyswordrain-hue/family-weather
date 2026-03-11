@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -225,7 +226,7 @@ def _slim_for_llm(processed_data: dict) -> dict:
     """
     slim = {**processed_data}
     if "aqi_forecast" in slim:
-        af = {**slim["aqi_forecast"]}
+        af: dict[str, Any] = dict(slim["aqi_forecast"])
         af.pop("content", None)
         af.pop("forecast_date", None)
         hourly = af.pop("hourly", [])
@@ -355,16 +356,16 @@ def parse_narration_response(raw_response: str) -> dict:
         try:
             result["metadata"] = json.loads(metadata_text)
         except json.JSONDecodeError:
-            logger.warning("Failed to parse ---METADATA--- JSON: %s", metadata_text[:200])
+            logger.warning("Failed to parse ---METADATA--- JSON: %s", metadata_text[:200])  # type: ignore
 
         if cards_text:
             try:
                 raw = cards_text.strip("` \n")
                 if raw.startswith("json"):
-                    raw = raw[4:].strip()
+                    raw = raw[4:].strip()  # type: ignore
                 result["cards"] = json.loads(raw)
             except json.JSONDecodeError:
-                logger.warning("Failed to parse ---CARDS--- JSON: %s", cards_text[:200])
+                logger.warning("Failed to parse ---CARDS--- JSON: %s", cards_text[:200])  # type: ignore
 
         if regen_text:
             try:
