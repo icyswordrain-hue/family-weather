@@ -3099,6 +3099,43 @@ html.dark .chat-msg-assistant {
   color: var(--sidebar-text, #c8d6e8);
 }
 
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 14px 10px;
+  flex-shrink: 0;
+}
+
+.chat-suggestion-chip {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 140, 133, 0.35);
+  background: var(--blue-lt, #E9F0EF);
+  color: var(--blue, #5B8C85);
+  font-size: 0.8rem;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chat-suggestion-chip:hover {
+  background: var(--blue, #5B8C85);
+  color: #fff;
+  border-color: transparent;
+}
+
+html.dark .chat-suggestion-chip {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.65);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+html.dark .chat-suggestion-chip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
 .chat-input-row {
   display: flex;
   gap: 8px;

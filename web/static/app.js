@@ -420,6 +420,7 @@ async function fetchBroadcast(silent = false) {
     if (broadcastData.error) throw new Error(broadcastData.error);
     // Reset chat history when new broadcast arrives (context snapshot changes)
     if (typeof window._chatResetHistory === 'function') window._chatResetHistory();
+    if (typeof window._renderSuggestions === 'function') window._renderSuggestions();
     addLog(T.data_ok);
     render(broadcastData);
     saveBroadcastCache(broadcastData);
@@ -1386,11 +1387,60 @@ function initSheetSettings() {
   });
 }
 
+// ── Chat suggestion chips ─────────────────────────────────────────────────
+function _buildSuggestions(lang) {
+  const pd = broadcastData?.processed_data || {};
+  const summaries = broadcastData?.summaries || {};
+  const current = pd.current || {};
+  const outdoor = pd.outdoor_index || {};
+  const aqi = pd.aqi_forecast || {};
+  const segments = pd.forecast_segments || {};
+  const isZH = lang === 'zh-TW';
+
+  // Category 1: Outdoor / Health
+  let chip1;
+  const cardiacOn = pd.cardiac_alert?.triggered;
+  const menOn     = pd.menieres_alert?.triggered;
+  const grade     = outdoor.overall_grade;
+  if (cardiacOn || menOn) {
+    chip1 = isZH ? '今天適合戶外運動嗎？' : 'Is it safe to exercise outside?';
+  } else if (grade && ['C', 'D', 'F'].includes(grade)) {
+    chip1 = isZH ? '今天適合待在室內嗎？' : 'Should I stay indoors today?';
+  } else if (summaries._best_window) {
+    chip1 = isZH ? '今天什麼時候最適合外出？' : "When's the best time to go out?";
+  } else {
+    chip1 = isZH ? '今天適合做什麼戶外活動？' : "What's good to do outside today?";
+  }
+
+  // Category 2: Weather / Practical
+  let chip2;
+  const aqiVal = aqi.aqi || current.AQI || current.aqi || 0;
+  const maxPoP = Math.max(0, ...Object.values(segments).map(s => s.PoP6h || 0));
+  const at     = current.AT ?? current.apparent_temp_c ?? null;
+  const wind   = current.WDSD ?? null;
+  if (aqiVal >= 150) {
+    chip2 = isZH ? '今天空氣品質有多差？' : 'How bad is the air quality?';
+  } else if (maxPoP >= 60) {
+    chip2 = isZH ? '今天需要帶傘嗎？' : 'Will I need an umbrella today?';
+  } else if (at !== null && at >= 32) {
+    chip2 = isZH ? '今天最熱會到幾度？' : 'How hot will it get today?';
+  } else if (at !== null && at <= 16) {
+    chip2 = isZH ? '今天有多冷？' : 'How cold is it today?';
+  } else if (wind !== null && wind >= 6) {
+    chip2 = isZH ? '今天風大嗎？' : 'How windy is it?';
+  } else {
+    chip2 = isZH ? '今天應該怎麼穿？' : 'What should I wear today?';
+  }
+
+  return [chip1, chip2];
+}
+
 // ── Chat ────────────────────────────────────────────────────────────────────
 function initChat() {
   const form = document.getElementById('chat-form');
   const input = document.getElementById('chat-input');
   const messagesEl = document.getElementById('chat-messages');
+  const suggestionsEl = document.getElementById('chat-suggestions');
   const send = document.getElementById('chat-send');
   if (!form || !input || !messagesEl) return;
 
@@ -1401,9 +1451,26 @@ function initChat() {
   }
   updatePlaceholder();
 
-  // Re-apply placeholder on language change
+  function _renderSuggestions() {
+    if (!suggestionsEl) return;
+    if (chatHistory.length > 0) { suggestionsEl.hidden = true; return; }
+    const chips = _buildSuggestions(getLang());
+    suggestionsEl.innerHTML = '';
+    chips.forEach(text => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chat-suggestion-chip';
+      btn.textContent = text;
+      btn.addEventListener('click', () => { input.value = text; input.focus(); });
+      suggestionsEl.appendChild(btn);
+    });
+    suggestionsEl.hidden = false;
+  }
+  window._renderSuggestions = _renderSuggestions;
+
+  // Re-apply placeholder and chips on language change
   document.querySelectorAll('input[name="language"], input[name="language-sheet"]').forEach(r => {
-    r.addEventListener('change', updatePlaceholder);
+    r.addEventListener('change', () => { updatePlaceholder(); _renderSuggestions(); });
   });
 
   function appendMsg(role, text) {
@@ -1439,6 +1506,7 @@ function initChat() {
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
+    if (suggestionsEl) suggestionsEl.hidden = true;
     if (send) send.disabled = true;
 
     appendMsg('user', text);
@@ -1476,7 +1544,10 @@ function initChat() {
   window._chatResetHistory = () => {
     chatHistory = [];
     messagesEl.innerHTML = '';
+    _renderSuggestions();
   };
+
+  _renderSuggestions();
 }
 
 // ── Navigation (desktop + mobile dispatch) ─────────────────────────────────
