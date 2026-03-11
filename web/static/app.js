@@ -154,21 +154,22 @@ const ICONS = {
 };
 
 function getWeatherIcon(weatherKey, alt, isNight) {
+  const key = weatherKey != null ? String(weatherKey) : '';
   if (isNight) {
-    if (['sunny', 'Sunny/Clear', '1', 'Sunny'].includes(weatherKey)) {
+    if (['sunny', 'Sunny/Clear', '1', 'Sunny'].includes(key)) {
       return IMG('clear-night', alt);
     }
-    if (['partly-cloudy', 'Mixed Clouds', 'Fair', '2', '3'].includes(weatherKey)) {
+    if (['partly-cloudy', 'Mixed Clouds', 'Fair', '2', '3'].includes(key)) {
       return IMG('partly-cloudy-night', alt);
     }
-    if (['cloudy', 'Overcast', '4', '5', '6', '7'].includes(weatherKey)) {
+    if (['cloudy', 'Overcast', '4', '5', '6', '7'].includes(key)) {
       return IMG('cloudy-night', alt);
     }
-    if (['rainy', 'Rain', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].includes(weatherKey)) {
+    if (['rainy', 'Rain', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].includes(key)) {
       return IMG('rainy-night', alt);
     }
   }
-  return ICONS[weatherKey] || IMG('cloudy', 'Cloudy');
+  return ICONS[key] || IMG('cloudy', 'Cloudy');
 }
 
 // ── Translations ───────────────────────────────────────────────────────────
