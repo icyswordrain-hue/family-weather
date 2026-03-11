@@ -431,7 +431,10 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     processed = process(current, forecasts, aqi, history, forecasts_7day, station_history=station_history)
 
     # 3b. Meal/Location Database Regen (14-day cycle)
-    should_regen = check_regen_cycle(history, date_str, REGEN_CYCLE_DAYS)
+    # Use a wider window than HISTORY_DAYS (LLM context) so the check can find
+    # regen events that predate the prompt-history window.
+    regen_history = load_history(days=REGEN_CYCLE_DAYS + 1)
+    should_regen = check_regen_cycle(regen_history, date_str, REGEN_CYCLE_DAYS)
 
     if should_regen:
         yield {"type": "log", "message": f"Triggering periodic database regeneration ({REGEN_CYCLE_DAYS}-day cycle)..."}
