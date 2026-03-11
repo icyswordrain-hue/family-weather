@@ -1,9 +1,9 @@
 # Overnight Icons
 
-**Goal:** Show clear-night / partly-cloudy-night icons for evening and overnight
-slots instead of the daytime sunny/partly-cloudy icons.
+**Goal:** Show condition-appropriate night icons for evening and overnight
+slots instead of daytime icons.
 
-**Status:** Implemented (commit `b48ea06`)
+**Status:** Fully implemented (commits `b48ea06`, `0a8714c`)
 
 ---
 
@@ -11,44 +11,45 @@ slots instead of the daytime sunny/partly-cloudy icons.
 
 ### `web/static/app.js`
 
-Added `getWeatherIcon(weatherKey, alt, isNight)` after the `ICONS` map (line 156).
-Returns `clear-night.webp` or `partly-cloudy-night.webp` when `isNight=true` and
-the condition key maps to clear or partly cloudy; otherwise falls back to
-`ICONS[key] || IMG('cloudy', 'Cloudy')`.
+`getWeatherIcon(weatherKey, alt, isNight)` after the `ICONS` map (line 156).
+Returns a night-specific icon when `isNight=true`; falls back to
+`ICONS[key] || IMG('cloudy', 'Cloudy')` for unknown keys.
+
+| Condition keys | Night icon |
+|----------------|-----------|
+| `sunny`, `Sunny/Clear`, `1`, `Sunny` | `clear-night.webp` |
+| `partly-cloudy`, `Mixed Clouds`, `2`, `3` | `partly-cloudy-night.webp` |
+| `cloudy`, `Overcast`, `4`–`7` | `cloudy-night.webp` |
+| `rainy`, `8`–`20` | `rainy-night.webp` |
 
 Applied in three places:
 
 | Location | `isNight` source |
 |----------|-----------------|
 | `renderCurrentView` — `#cur-icon` (line 467) | `new Date().getHours() >= 18 \|\| h < 6` |
-| `renderOverviewView` — 24h timeline slot icon (line 606) | existing `isNight` variable from slot start time |
-| `renderOverviewView` — 7-day weekly night column (line 862) | hardcoded `true` (column is always night) |
+| `renderOverviewView` — 24h timeline slot icon (line 606) | slot start time |
+| `renderOverviewView` — 7-day weekly night column (line 862) | hardcoded `true` |
 
 ### `web/static/brand-icons/`
 
-- `clear-night.webp` — crescent moon + stars on dark blue background (placeholder)
-- `partly-cloudy-night.webp` — crescent moon + soft cloud (placeholder)
+All four generated via Nano Banana Pro using `vase-icon.webp` as style reference
+(fine-line sketch, cream background `#F3F7F8`):
 
-Both are 200×200 RGBA WebP generated via Pillow. Replace with final brand-style
-art when available.
-
-> **Note:** The original plan referenced `.png` and Nano Banana Pro for asset
-> generation. Assets were generated programmatically as placeholders instead;
-> `.png` references were corrected to use `IMG()` (→ `.webp`).
+| File | Subject | Primary color |
+|------|---------|--------------|
+| `clear-night.webp` | Crescent moon + stars | Navy Blue `#1C3E75` |
+| `partly-cloudy-night.webp` | Crescent moon behind soft cloud | Navy Blue `#1C3E75` |
+| `cloudy-night.webp` | Overcast clouds, moonlight glow behind | Dusty Plum `#9B5D77` |
+| `rainy-night.webp` | Dark rain cloud with falling drops | Navy Blue `#1C3E75` |
 
 ---
 
 ## Verification
 
 ```bash
-# Start local server
 ./run_local.ps1
 
-# At 6pm–6am: hero icon should show crescent moon (clear conditions)
-# In 24h timeline: evening/overnight rows should show night icons
-# In 7-day grid: right (night) column should show night icons
-
-# Confirm no .png references remain in the helper
-grep "clear-night\|partly-cloudy-night" web/static/app.js
-# Expected: both lines use IMG() with no .png suffix
+# At 6pm–6am: hero icon shows night variant for each condition
+# In 24h timeline: evening/overnight slots show night icons
+# In 7-day grid: right (night) column shows night icons
 ```
