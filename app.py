@@ -41,6 +41,7 @@ from backend.pipeline import (
 )
 
 _regen_cache = {}
+_broadcast_cache: dict[str, dict] = {}  # keyed by date; populated by /api/broadcast in CLOUD mode
 
 def _persist_regen(payload: dict) -> None:
     regen = payload.get("regen")
@@ -142,6 +143,71 @@ def tts_on_demand():
     url    = synthesise_with_cache(script, lang, date, slot)
     return jsonify({"url": url})
 
+def _get_broadcast_for_chat(date_str: str) -> dict | None:
+    """Return today's broadcast dict for the chat context.
+
+    In CLOUD mode the Flask process doesn't have local history, so we check
+    the in-memory cache first (populated by /api/broadcast) then fall back to
+    a direct HTTP request to Modal's broadcast endpoint.
+    """
+    if RUN_MODE == "CLOUD":
+        if date_str in _broadcast_cache:
+            return _broadcast_cache[date_str]
+        modal_url = os.environ.get("MODAL_BROADCAST_URL")
+        if not modal_url:
+            return None
+        try:
+            resp = requests.get(modal_url, params={"date": date_str}, timeout=15)
+            data = resp.json()
+            if data and not data.get("error"):
+                _broadcast_cache[date_str] = data
+                return data
+        except Exception as exc:
+            logger.warning("Chat broadcast fetch failed: %s", exc)
+        return None
+    # LOCAL or MODAL — history is on-disk
+    return get_today_broadcast(date_str)
+
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    """Answer a weather question using today's broadcast as context (Haiku 4.5)."""
+    body = request.get_json(silent=True) or {}
+    user_message = (body.get("message") or "").strip()
+    if not user_message or len(user_message) > 500:
+        return jsonify({"error": "Invalid message", "code": "bad_request"}), 400
+
+    date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+    lang = body.get("lang", "en")
+    prior_turns = (body.get("messages") or [])[-config.CHAT_HISTORY_MAX_TURNS:]
+
+    broadcast = _get_broadcast_for_chat(date_str)
+    if not broadcast:
+        return jsonify({"error": f"No broadcast available for {date_str}", "code": "no_broadcast"}), 503
+
+    from narration.chat_context import build_chat_context
+    from narration.claude_client import _get_client
+
+    system_prompt = build_chat_context(broadcast, date_str, lang)
+    messages = [*prior_turns, {"role": "user", "content": user_message}]
+
+    try:
+        client = _get_client()
+        response = client.messages.create(
+            model=config.CLAUDE_CHAT_MODEL,
+            max_tokens=config.CLAUDE_CHAT_MAX_TOKENS,
+            system=system_prompt,
+            messages=messages,
+            timeout=15.0,
+        )
+        reply = response.content[0].text.strip()
+        turn = len(prior_turns) // 2 + 1
+        return jsonify({"reply": reply, "turn": turn})
+    except Exception as exc:
+        logger.error("Chat failed: %s", exc)
+        return jsonify({"error": str(exc), "code": "upstream_error"}), 503
+
+
 @app.route("/api/warmup")
 def warmup():
     return jsonify({"status": "warm"}), 200
@@ -175,9 +241,16 @@ def get_broadcast():
         modal_url = os.environ.get("MODAL_BROADCAST_URL")
         if not modal_url:
             return jsonify({"error": "MODAL_BROADCAST_URL not configured"}), 500
-        
+
         try:
             resp = requests.get(modal_url, params={"date": date_str, "lang": lang})
+            # Cache parsed broadcast so /api/chat can access context without a second hop
+            try:
+                data = resp.json()
+                if data and not data.get("error"):
+                    _broadcast_cache[date_str] = data
+            except Exception:
+                pass
             return (resp.text, resp.status_code, resp.headers.items())
         except Exception as e:
             logger.error("Failed to proxy broadcast to Modal: %s", e)

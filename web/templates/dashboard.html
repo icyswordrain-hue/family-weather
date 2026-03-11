@@ -206,6 +206,11 @@
         </div>
         <span class="player-duration" id="player-duration">--:-- / --:--</span>
         <button class="player-speed-btn" id="player-speed-btn" aria-label="Playback speed">1.2×</button>
+        <button class="player-chat-btn" id="player-chat-btn" aria-label="Ask weather question">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
         <button class="player-sheet-toggle" id="player-sheet-toggle" aria-label="Show transcript">
           <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -222,6 +227,7 @@
           <div class="player-sheet-tabs">
             <button class="ps-tab active" data-tab="narration" data-i18n="tab_narration">Narration</button>
             <button class="ps-tab" data-tab="settings" data-i18n="tab_settings">Settings</button>
+            <button class="ps-tab" data-tab="chat" data-i18n="tab_chat">Ask</button>
           </div>
           <button class="player-sheet-close" id="player-sheet-close" aria-label="Close">✕</button>
         </div>
@@ -267,6 +273,18 @@
               </svg>
               <span data-i18n="refresh_btn">重新整理</span>
             </button>
+          </div>
+          <!-- Chat tab -->
+          <div class="ps-tab-panel" id="ps-panel-chat" hidden>
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite"></div>
+            <form class="chat-input-row" id="chat-form" autocomplete="off">
+              <input class="chat-input" id="chat-input" type="text" maxlength="500" autocomplete="off" spellcheck="true" />
+              <button class="chat-send" type="submit" id="chat-send" aria-label="Send">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </form>
           </div>
         </div>
       </div>

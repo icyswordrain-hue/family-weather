@@ -229,6 +229,10 @@ const TRANSLATIONS = {
     refresh_btn: 'Refresh',
     tab_narration: 'Narration',
     tab_settings: 'Settings',
+    tab_chat: 'Ask',
+    chat_placeholder: 'Ask about today\'s weather…',
+    chat_thinking: 'Thinking…',
+    chat_error: 'Unable to answer right now.',
     log_requesting: 'Requesting narration via: ',
     log_title: 'System Log',
     log_step_prefix: 'Step: ',
@@ -290,6 +294,10 @@ const TRANSLATIONS = {
     refresh_btn: '重新整理',
     tab_narration: '解說',
     tab_settings: '設定',
+    tab_chat: '問問',
+    chat_placeholder: '問問今天的天氣…',
+    chat_thinking: '思考中…',
+    chat_error: '目前無法回答，請稍後再試。',
     log_requesting: '請求廣播（提供者）：',
     log_title: '系統記錄',
     log_step_prefix: '步驟：',
@@ -379,6 +387,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initPlayerBar();
   initPlayerSheet();
   initSheetSettings();
+  initChat();
   initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
@@ -408,6 +417,8 @@ async function fetchBroadcast(silent = false) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
+    // Reset chat history when new broadcast arrives (context snapshot changes)
+    if (typeof window._chatResetHistory === 'function') window._chatResetHistory();
     addLog(T.data_ok);
     render(broadcastData);
     saveBroadcastCache(broadcastData);
@@ -1372,6 +1383,99 @@ function initSheetSettings() {
       if (sheetRadio) sheetRadio.checked = true;
     }
   });
+}
+
+// ── Chat ────────────────────────────────────────────────────────────────────
+function initChat() {
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('chat-input');
+  const messagesEl = document.getElementById('chat-messages');
+  const send = document.getElementById('chat-send');
+  if (!form || !input || !messagesEl) return;
+
+  let chatHistory = [];  // [{role, content}] — client-owned rolling window
+
+  function updatePlaceholder() {
+    input.placeholder = T.chat_placeholder || 'Ask about today\'s weather…';
+  }
+  updatePlaceholder();
+
+  // Re-apply placeholder on language change
+  document.querySelectorAll('input[name="language"], input[name="language-sheet"]').forEach(r => {
+    r.addEventListener('change', updatePlaceholder);
+  });
+
+  function appendMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = `chat-msg chat-msg-${role}`;
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function switchToChat() {
+    // Open the sheet and activate the chat tab
+    const sheet = document.getElementById('player-sheet');
+    if (sheet && !sheet.classList.contains('open')) {
+      document.getElementById('player-sheet-toggle')?.click();
+    }
+    document.querySelector('.ps-tab[data-tab="chat"]')?.click();
+  }
+
+  // Player bar "Ask" button — opens sheet on chat tab
+  const chatBtn = document.getElementById('player-chat-btn');
+  if (chatBtn) {
+    chatBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      switchToChat();
+      setTimeout(() => input.focus(), 320);  // after sheet open transition
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    if (send) send.disabled = true;
+
+    appendMsg('user', text);
+    const thinking = appendMsg('assistant', T.chat_thinking || '…');
+
+    const body = { message: text, messages: chatHistory.slice(-6), lang: getLang() };
+    if (broadcastData?.date) body.date = broadcastData.date;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.reply) {
+        thinking.textContent = data.reply;
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
+      } else {
+        thinking.textContent = data.error || T.chat_error || 'Error';
+        thinking.classList.add('chat-msg-error');
+      }
+    } catch (_err) {
+      thinking.textContent = T.chat_error || 'Unable to answer right now.';
+      thinking.classList.add('chat-msg-error');
+    } finally {
+      if (send) send.disabled = false;
+      input.focus();
+    }
+  });
+
+  // Exposed hook: reset history + clear UI when broadcast refreshes
+  window._chatResetHistory = () => {
+    chatHistory = [];
+    messagesEl.innerHTML = '';
+  };
 }
 
 // ── Navigation (desktop + mobile dispatch) ─────────────────────────────────
