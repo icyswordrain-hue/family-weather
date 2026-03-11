@@ -158,13 +158,13 @@ function getWeatherIcon(weatherKey, alt, isNight) {
     if (['sunny', 'Sunny/Clear', '1', 'Sunny'].includes(weatherKey)) {
       return IMG('clear-night', alt);
     }
-    if (['partly-cloudy', 'Mixed Clouds', '2', '3'].includes(weatherKey)) {
+    if (['partly-cloudy', 'Mixed Clouds', 'Fair', '2', '3'].includes(weatherKey)) {
       return IMG('partly-cloudy-night', alt);
     }
     if (['cloudy', 'Overcast', '4', '5', '6', '7'].includes(weatherKey)) {
       return IMG('cloudy-night', alt);
     }
-    if (['rainy', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].includes(weatherKey)) {
+    if (['rainy', 'Rain', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'].includes(weatherKey)) {
       return IMG('rainy-night', alt);
     }
   }
