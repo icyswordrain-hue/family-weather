@@ -36,3 +36,6 @@ regen.json
 .pytest_cache/
 
 "github-actions-key.json"
+
+# Deployment docs contain sensitive keys — keep local only
+docs/deployment/
