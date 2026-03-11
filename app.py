@@ -430,8 +430,8 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     )
     yield {"type": "log", "message": "Narration generated."}
 
-    # 5. Extract paragraphs and metadata using v6 parser
-    yield {"type": "log", "message": "Parsing narration structure & metadata (v6)..."}
+    # 5. Extract paragraphs and metadata using v7 parser
+    yield {"type": "log", "message": "Parsing narration structure & metadata (v7)..."}
     parsed = parse_narration_response(narration_text)
     paragraphs = parsed["paragraphs"]
     metadata = parsed["metadata"]

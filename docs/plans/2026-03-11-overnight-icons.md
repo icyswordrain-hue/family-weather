@@ -1,83 +1,54 @@
-# Overnight Icons Implementation Plan
+# Overnight Icons
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+**Goal:** Show clear-night / partly-cloudy-night icons for evening and overnight
+slots instead of the daytime sunny/partly-cloudy icons.
 
-**Goal:** Generate clear evening/overnight weather assets and dynamically link them in the frontend so "sunny" doesn't appear at night.
-
-**Architecture:** 
-The application currently uses a static `ICONS` mapping which does not account for time-of-day variations (e.g., showing a sun icon at 3 AM). 
-1. We will use the Nano Banana Pro image generation tool to create two new icons: `clear-night.png` and `partly-cloudy-night.png`. (We will save them as png/webp similar to existing icons in `web/static/brand-icons/`).
-2. We will update `web/static/app.js` to replace direct `ICONS[key]` lookups with a dynamic helper `getWeatherIcon(key, alt, isNight)`. This helper will return the night-specific icon if `isNight` is true and the condition is clear or partly cloudy.
-
-**Tech Stack:** JavaScript, Nano Banana Pro (Image Generation)
+**Status:** Implemented (commit `b48ea06`)
 
 ---
 
-### Task 1: Generate Night Assets
+## What Was Built
 
-**Files:**
-- Create: `web/static/brand-icons/clear-night.png`
-- Create: `web/static/brand-icons/partly-cloudy-night.png`
+### `web/static/app.js`
 
-**Step 1: Generate clear night icon**
-Use the `nano-banana-pro` image generation skill or generation tool to create a clear night sky icon (e.g., a stylized crescent moon with stars) that matches the existing 3D/glassmorphic brand style.
+Added `getWeatherIcon(weatherKey, alt, isNight)` after the `ICONS` map (line 156).
+Returns `clear-night.webp` or `partly-cloudy-night.webp` when `isNight=true` and
+the condition key maps to clear or partly cloudy; otherwise falls back to
+`ICONS[key] || IMG('cloudy', 'Cloudy')`.
 
-**Step 2: Generate partly cloudy night icon**
-Generate a partly cloudy night icon (e.g., a crescent moon partially obscured by a soft cloud). 
+Applied in three places:
 
-### Task 2: Modify Frontend Icon Logic
+| Location | `isNight` source |
+|----------|-----------------|
+| `renderCurrentView` — `#cur-icon` (line 467) | `new Date().getHours() >= 18 \|\| h < 6` |
+| `renderOverviewView` — 24h timeline slot icon (line 606) | existing `isNight` variable from slot start time |
+| `renderOverviewView` — 7-day weekly night column (line 862) | hardcoded `true` (column is always night) |
 
-**Files:**
-- Modify: `web/static/app.js`
+### `web/static/brand-icons/`
 
-**Step 1: Update the Icon Lookup Logic**
-In `app.js`, add a helper function after the `ICONS` definition:
+- `clear-night.webp` — crescent moon + stars on dark blue background (placeholder)
+- `partly-cloudy-night.webp` — crescent moon + soft cloud (placeholder)
 
-```javascript
-function getWeatherIcon(weatherKey, alt, isNight) {
-  if (isNight) {
-    if (['sunny', 'Sunny/Clear', '1', 'Sunny'].includes(weatherKey)) {
-      return `<img src="/static/brand-icons/clear-night.png" class="brand-icon" alt="${alt}" />`;
-    }
-    if (['partly-cloudy', 'Mixed Clouds', '2', '3'].includes(weatherKey)) {
-      return `<img src="/static/brand-icons/partly-cloudy-night.png" class="brand-icon" alt="${alt}" />`;
-    }
-  }
-  return ICONS[weatherKey] || IMG('cloudy', 'Cloudy');
-}
-```
+Both are 200×200 RGBA WebP generated via Pillow. Replace with final brand-style
+art when available.
 
-**Step 2: Apply to renderCurrentView**
+> **Note:** The original plan referenced `.png` and Nano Banana Pro for asset
+> generation. Assets were generated programmatically as placeholders instead;
+> `.png` references were corrected to use `IMG()` (→ `.webp`).
 
-Modify the current view icon mapping to determine if it is currently night time.
+---
 
-```javascript
-  const h = new Date().getHours();
-  const isCurrentNight = (h >= 18 || h < 6);
-  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.weather_code || data.weather_text, localiseWeatherText(data.weather_text || '\u2014'), isCurrentNight);
-```
+## Verification
 
-**Step 3: Apply to renderOverviewView Contexts**
-
-In `app.js` `renderOverviewView`, modify the `iconEl.innerHTML` rendering in the timeline:
-```javascript
-      iconEl.innerHTML = getWeatherIcon(seg.cloud_cover || seg.Wx, 'Weather', isNight);
-```
-
-And in the 7-day timeline `isNightSlot`, modify the night icon rendering:
-```javascript
-      const nightIconEl = document.createElement('div');
-      nightIconEl.className = 'wk-icon';
-      nightIconEl.innerHTML = nightItem
-        ? getWeatherIcon(nightItem.cloud_cover || nightItem.Wx, 'Weather', true)
-        : IMG('cloudy', 'Cloudy');
-```
-
-**Step 4: Verify UI**
-Launch the local server (`.\run_local.ps1`) and observe the current forecast dashboard. Verify that nighttime slots in the timeline showcase the newly generated icons.
-
-**Step 5: Commit**
 ```bash
-git add web/static/brand-icons/clear-night.png web/static/brand-icons/partly-cloudy-night.png web/static/app.js
-git commit -m "feat: add night weather icons for evening/overnight slots"
+# Start local server
+./run_local.ps1
+
+# At 6pm–6am: hero icon should show crescent moon (clear conditions)
+# In 24h timeline: evening/overnight rows should show night icons
+# In 7-day grid: right (night) column should show night icons
+
+# Confirm no .png references remain in the helper
+grep "clear-night\|partly-cloudy-night" web/static/app.js
+# Expected: both lines use IMG() with no .png suffix
 ```
