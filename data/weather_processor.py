@@ -23,12 +23,16 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional, cast
 
+# pyre-ignore[21]
 from config import MEAL_FALLBACK_DISH, AQI_ALERT_THRESHOLD, LOCATION_LAT, LOCATION_LON
+# pyre-ignore[21]
 from data.solar import get_solar_times
 
 logger = logging.getLogger(__name__)
 
+# pyre-ignore[21]
 from data.location_loader import OUTDOOR_LOCATIONS
+# pyre-ignore[21]
 from data.scales import (
     BEAUFORT_SCALE_5, UV_SCALE, PRES_SCALE_5, VIS_SCALE_5,
     _val_to_scale, _wind_to_level, _aqi_to_level, wind_ms_to_beaufort, _beaufort_index,
@@ -36,8 +40,11 @@ from data.scales import (
     wx_to_pop, dew_gap_to_hum,
     pop_to_safe_minutes, safe_minutes_to_level, _wx_to_rain_risk,
 )
+# pyre-ignore[21]
 from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_heads_ups
+# pyre-ignore[21]
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
+# pyre-ignore[21]
 from data.outdoor_scoring import _compute_outdoor_index, _classify_outdoor_mood, _extract_recent_locations
 
 AQI_STATUS_MAP = {
@@ -64,7 +71,7 @@ def extract_aqi_summary(content: str, lang: str = "zh_TW") -> str:
                 return f"明日北部空氣品質{AQI_STATUS_MAP[status_zh]['zh_TW']}等級。"
                 
     # Fallback to a truncated version of the raw content if regex fails
-    return content[:100] + "..." if len(content) > 100 else content
+    return content[0:100] + "..." if len(content) > 100 else content
 
 # ── Time segment boundaries (local hour, 24h) ────────────────────────────────
 SEGMENTS = {
@@ -80,23 +87,39 @@ def _calculate_apparent_temp(ta: float | None, rh: float | None, ws: float | Non
     """Calculates apparent temperature (AT) using the Australian Bureau of Meteorology formula."""
     if ta is None or rh is None:
         return ta
-    e = (rh / 100) * 6.105 * (2.71828 ** (17.27 * ta / (237.7 + ta)))
-    return round(ta + 0.33 * e - 0.7 * (ws or 0) - 4.0, 1)
+    # pyre-ignore[6]
+    ta_f = float(ta)
+    # pyre-ignore[6]
+    rh_f = float(rh)
+    ws_f = float(ws) if ws is not None else 0.0
+    e = (rh_f / 100) * 6.105 * (2.71828 ** (17.27 * ta_f / (237.7 + ta_f)))
+    # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
+    return round(ta_f + 0.33 * e - 0.7 * ws_f - 4.0, 1)
 
 def _calculate_dew_point(temp_c: float | None, rh: float | None) -> float | None:
     """Magnus formula dew point approximation. Accurate to ±0.35°C."""
     import math
     if temp_c is None or rh is None or rh <= 0:
         return None
+    # pyre-ignore[6]
+    tc_f = float(temp_c)
+    # pyre-ignore[6]
+    rh_f = float(rh)
     a, b = 17.27, 237.7
-    gamma = (a * temp_c / (b + temp_c)) + math.log(rh / 100)
+    gamma = (a * tc_f / (b + tc_f)) + math.log(rh_f / 100)
+    # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
     return round((b * gamma) / (a - gamma), 1)
 
 def _calculate_dew_gap(temp_c: float | None, dew_point_c: float | None) -> float | None:
     """Degrees between air temperature and dew point. Smaller = clammier."""
     if temp_c is None or dew_point_c is None:
         return None
-    return round(temp_c - dew_point_c, 1)
+    # pyre-ignore[9]
+    tc_f: float = temp_c
+    # pyre-ignore[9]
+    dp_f: float = dew_point_c
+    # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
+    return round(tc_f - dp_f, 1)
 
 def _saturation_label(dew_gap_c: float) -> str:
     """Snake-case comfort label from dew gap, for LLM context and internal logic."""
@@ -113,8 +136,14 @@ def _calculate_apparent_temp_from_dew(
     import math
     if temp_c is None or dew_point_c is None:
         return None
-    e = 6.105 * math.exp((17.27 * dew_point_c) / (237.7 + dew_point_c))
-    return round(temp_c + (0.33 * e) - (0.70 * (wind_ms or 0)) - 4.00, 1)
+    # pyre-ignore[6]
+    tc_f = float(temp_c)
+    # pyre-ignore[6]
+    dp_f = float(dew_point_c)
+    ws_f = float(wind_ms) if wind_ms is not None else 0.0
+    e = 6.105 * math.exp((17.27 * dp_f) / (237.7 + dp_f))
+    # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
+    return round(tc_f + (0.33 * e) - (0.70 * ws_f) - 4.00, 1)
 
 def _parse_dt(dt_str: str) -> datetime:
     # AI AGENT NOTE: Timezone Stripping — read before editing.
@@ -464,7 +493,7 @@ def _segment_forecast(
 
     # 2. Build target window sequence (next 4 segments)
     target_sequence = []
-    current_seg_idx = start_idx
+    current_seg_idx = int(start_idx)
     target_day = now_dt.replace(hour=0, minute=0, second=0, microsecond=0)
     
     for i in range(5):
@@ -843,23 +872,31 @@ def _climate_control(segmented: dict, aqi: dict) -> dict:
     if seg is None:
         return _empty
 
-    temp = seg.get("T") if seg.get("T") is not None else seg.get("AT")
-    dew_point = seg.get("dew_point")
-    dew_gap = seg.get("dew_gap")
+    seg_dict = cast(dict, seg)
+    temp = seg_dict.get("T") if seg_dict.get("T") is not None else seg_dict.get("AT")
+    dew_point = seg_dict.get("dew_point")
+    dew_gap = seg_dict.get("dew_gap")
 
     if temp is None or dew_point is None or dew_gap is None:
         return _empty
 
+    # pyre-ignore[6]
+    t_f = float(temp)
+    # pyre-ignore[6]
+    dp_f = float(dew_point)
+    # pyre-ignore[6]
+    gap_f = float(dew_gap)
+
     advice = _hvac_dew_point_advice(
-        outdoor_temp_c=temp,
-        outdoor_dew_point_c=dew_point,
-        outdoor_dew_gap_c=dew_gap,
+        outdoor_temp_c=t_f,
+        outdoor_dew_point_c=dp_f,
+        outdoor_dew_gap_c=gap_f,
     )
 
     # Primary mode drives P4 inclusion and the front-end badge
-    if temp >= 26:
+    if t_f >= 26:
         mode = "cooling"
-    elif dew_point >= 21:
+    elif dp_f >= 21:
         mode = "dehumidify"
     elif advice.windows == "open":
         mode = "fan"        # mild ventilation — P4 climate section skipped per prompt gate
