@@ -852,18 +852,31 @@ def _hvac_dew_point_advice(
     return advice
 
 
+_COOLING_TEMP_C  = 26   # afternoon temp ≥ this → cooling
+_HUMID_DEW_PT_C  = 21   # afternoon dew point ≥ this → dehumidify
+_HEATING_TEMP_C  = 16   # coldest-segment temp < this → heating recommended
+_HEAT_OPT_TEMP_C = 18   # coldest-segment temp < this (and ≥ 16) → heating optional
+
+
 def _climate_control(segmented: dict, aqi: dict) -> dict:
     """
     Dew point-aware climate control recommendations.
 
-    Uses the Afternoon segment (hottest/most humid part of the day) as the
-    representative sample for daily HVAC planning. Falls back to the first
-    available segment if Afternoon is missing.
+    Uses the Afternoon segment (hottest/most humid) for cooling/dehumidify
+    decisions, and the Overnight/Morning segment (coldest) for heating decisions.
     """
+    # Hot-side representative: Afternoon → Morning → Evening → Overnight
     seg: dict | None = None
     for name in ("Afternoon", "Morning", "Evening", "Overnight"):
         if segmented.get(name):
             seg = segmented[name]
+            break
+
+    # Cold-side representative: Overnight → Morning → Evening → Afternoon
+    cold_seg: dict | None = None
+    for name in ("Overnight", "Morning", "Evening", "Afternoon"):
+        if segmented.get(name):
+            cold_seg = segmented[name]
             break
 
     _empty = {"mode": "Off", "dehumidifier": None, "ac_mode": None, "windows": None,
@@ -887,17 +900,36 @@ def _climate_control(segmented: dict, aqi: dict) -> dict:
     # pyre-ignore[6]
     gap_f = float(dew_gap)
 
+    # Coldest-segment temperature for heating assessment
+    cold_t: float | None = None
+    if cold_seg is not None:
+        cold_seg_dict = cast(dict, cold_seg)
+        _ct = cold_seg_dict.get("T") if cold_seg_dict.get("T") is not None else cold_seg_dict.get("AT")
+        if _ct is not None:
+            cold_t = float(_ct)  # pyre-ignore[6]
+
     advice = _hvac_dew_point_advice(
         outdoor_temp_c=t_f,
         outdoor_dew_point_c=dp_f,
         outdoor_dew_gap_c=gap_f,
     )
 
-    # Primary mode drives P4 inclusion and the front-end badge
-    if t_f >= 26:
+    # Primary mode drives P4 inclusion and the front-end badge.
+    # Cooling/dehumidify assessed from afternoon peak; heating from overnight trough.
+    if t_f >= _COOLING_TEMP_C:
         mode = "cooling"
-    elif dp_f >= 21:
+    elif dp_f >= _HUMID_DEW_PT_C:
         mode = "dehumidify"
+    elif cold_t is not None and cold_t < _HEATING_TEMP_C:
+        mode = "heating"
+        advice.reasons.append(
+            f"coldest segment {cold_t}°C — heating recommended"
+        )
+    elif cold_t is not None and cold_t < _HEAT_OPT_TEMP_C:
+        mode = "heating_optional"
+        advice.reasons.append(
+            f"coldest segment {cold_t}°C — heating optional"
+        )
     elif advice.windows == "open":
         mode = "fan"        # mild ventilation — P4 climate section skipped per prompt gate
     else:

@@ -324,7 +324,8 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         if is_zh:
             ac_suffix = "（乾燥模式）" if ac_mode == "dry" else ""
             mode_zh = {"Off": "關閉", "fan": "電風扇", "cooling": f"冷氣{ac_suffix}",
-                       "heating": "暖氣", "dehumidify": "除濕機"}.get(hvac_mode, hvac_mode)
+                       "heating": "暖氣", "heating_optional": "暖氣（選用）",
+                       "dehumidify": "除濕機"}.get(hvac_mode, hvac_mode)
             hvac_parts = [f"建議：{mode_zh}。"]
             if dehumidifier in ("strongly_recommended", "recommended"):
                 hvac_parts.append("建議開啟除濕機。")
@@ -339,7 +340,8 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         else:
             ac_suffix = " (dry mode)" if ac_mode == "dry" else ""
             mode_en = {"Off": "off", "fan": "fan only", "cooling": f"AC{ac_suffix}",
-                       "heating": "heating", "dehumidify": "dehumidifier"}.get(hvac_mode, hvac_mode)
+                       "heating": "heating", "heating_optional": "heating (optional)",
+                       "dehumidify": "dehumidifier"}.get(hvac_mode, hvac_mode)
             hvac_parts = [f"System: {mode_en}."]
             if dehumidifier in ("strongly_recommended", "recommended"):
                 hvac_parts.append("Dehumidifier recommended.")

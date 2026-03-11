@@ -267,7 +267,10 @@ def build_prompt(
         top_activity = "unknown"
     outdoor_grade = processed_data.get("outdoor_index", {}).get("overall_grade", "unknown")
 
-    climate_mode = processed_data.get("climate_control", {}).get("mode", "Off")
+    climate_ctrl = processed_data.get("climate_control", {})
+    climate_mode = climate_ctrl.get("mode", "Off")
+    climate_reason = (climate_ctrl.get("dew_reasons") or [""])[0]
+    climate_hint = climate_mode + (f" ({climate_reason})" if climate_reason else "")
 
     am_hazards = processed_data.get("commute", {}).get("morning", {}).get("hazards", [])
     pm_hazards = processed_data.get("commute", {}).get("evening", {}).get("hazards", [])
@@ -284,7 +287,7 @@ DATA:
 HINTS:
 - Top outdoor activity by score: {top_activity}
 - Outdoor grade: {outdoor_grade}
-- HVAC mode to recommend: {climate_mode}
+- HVAC mode to recommend: {climate_hint}
 - Commute hazards: {commute_hints}
 Generate today's broadcast."""
 

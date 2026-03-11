@@ -1047,10 +1047,11 @@ function renderLifestyleView(data) {
     const extras = [];
     const hvacMode = (data.hvac.mode || '').toLowerCase();
     const hvacIconName =
-      hvacMode === 'cooling' ? 'cool-shade' :
-        hvacMode === 'dehumidify' ? 'drip-warning' :
-          (hvacMode === 'fan' || hvacMode === 'off') ? 'window-advice' :
-            'hvac';
+      hvacMode === 'cooling'          ? 'cool-shade'    :
+      hvacMode === 'dehumidify'       ? 'drip-warning'  :
+      hvacMode === 'heating'          ? 'hvac'          :
+      hvacMode === 'heating_optional' ? 'hvac'          :
+      'window-advice';
     if (data.hvac.mode) extras.push(mkInsight(IMG(hvacIconName, 'HVAC'), localiseMetric(data.hvac.mode)));
     add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.text, extras);
   }
