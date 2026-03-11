@@ -28,10 +28,10 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SYSTEM PROMPT — v6 (~800 words)
+# SYSTEM PROMPT — v7
 # ─────────────────────────────────────────────────────────────────────────────
 
-V6_SYSTEM_PROMPT = """\
+V7_SYSTEM_PROMPT = """\
 You are a warm, concise broadcaster for a family near Shulin/Banqiao, Taiwan. Use ONLY the provided JSON weather data; never invent numbers. Output a plain-text script for a TTS engine.
 
 RULES:
@@ -107,9 +107,9 @@ All card values must be written in the same language as the narration paragraphs
 Level guide: CRITICAL = cardiac or Ménière's health risk mentioned in P1; WARNING = significant commute or safety heads-up; INFO = mild health or commute note. Leave text empty for clear uneventful days.
 """
 
-V6_SYSTEM_PROMPT_EN = V6_SYSTEM_PROMPT  # alias — English prompt is unchanged
+V7_SYSTEM_PROMPT_EN = V7_SYSTEM_PROMPT  # alias — English prompt is unchanged
 
-V6_SYSTEM_PROMPT_ZH = """\
+V7_SYSTEM_PROMPT_ZH = """\
 你是一個親切、簡潔的家庭廣播員，服務台灣樹林/板橋交界處的一家人。只使用提供的 JSON 天氣數據，絕對不要自行填補數字。輸出為 TTS 引擎使用的純文字廣播稿。
 
 規則：
@@ -297,8 +297,8 @@ def build_system_prompt(lang: str = 'en') -> str:
     Supported: 'en' (default), 'zh-TW'. Unknown codes fall back to English.
     """
     if lang == 'zh-TW':
-        return V6_SYSTEM_PROMPT_ZH
-    return V6_SYSTEM_PROMPT_EN
+        return V7_SYSTEM_PROMPT_ZH
+    return V7_SYSTEM_PROMPT_EN
 
 
 def parse_narration_response(raw_response: str) -> dict:

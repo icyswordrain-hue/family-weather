@@ -300,7 +300,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     if not rain_gear_text:
         rain_gear_text = ("不需準備雨具。" if not rain_recent else "請記得攜帶雨具。") if is_zh else ("No precipitation gear expected." if not rain_recent else "Carry an umbrella.")
 
-    # 2. Commute (v6: p2_garden_commute contains garden + commute)
+    # 2. Commute (v7: p2_garden_commute contains garden + commute)
     commute_text = summaries.get("commute")
     if not commute_text:
         am = commute.get("morning", {}).get("hazards", [])
@@ -312,7 +312,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         else:
             commute_text = "交通狀況良好。" if is_zh else "Traffic conditions look normal."
 
-    # 3. HVAC (v6: p4_meal_climate contains meals + climate control)
+    # 3. HVAC (v7: p4_hvac_air)
     hvac_text = summaries.get("hvac")
     if not hvac_text:
         hvac_mode = climate.get("mode", "Off")
@@ -353,7 +353,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
                 hvac_parts.append("Air purifier recommended.")
         hvac_text = " ".join(hvac_parts)
 
-    # 4. Meals (v6: p4_meal_climate)
+    # 4. Meals (v7: p3_outdoor_meal)
     meals_text = summaries.get("meals")
     if not meals_text:
         meal_mood_data = processed.get("meal_mood", {})
@@ -366,7 +366,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         else:
             meals_text = "無特別推薦。" if is_zh else "No specific suggestions."
 
-    # 5. Garden (v6: first sentence of p2_garden_commute) & Outdoor (v6: p3_outdoor)
+    # 5. Garden (v7: first sentence of p2_garden_commute) & Outdoor (v7: p3_outdoor_meal)
     garden_text = summaries.get("garden")
     outdoor_text = summaries.get("outdoor") or paragraphs.get("p3_outdoor")
 
