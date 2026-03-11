@@ -25,6 +25,7 @@ from config import RUN_MODE
 import config
 from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS, CST
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts, fetch_all_forecasts_7day
+from data.helpers import _dew_point as _calc_dew_point  # pyre-ignore[21]
 from data.station_history import load_recent_station_history
 from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
@@ -294,21 +295,38 @@ def _aqi_category(aqi: int) -> str:
     return "very_unhealthy"
 
 def _conditions_changed(current: dict, morning: dict) -> tuple[bool, list[str]]:
+    """
+    Lightweight check: does the live current reading differ enough from the
+    morning broadcast to warrant a full midday pipeline run?
+
+    `current`  — raw dict from fetch_current_conditions() (CWA keys: AT, RH, RAIN …)
+    `morning`  — processed_data["current"] from the morning broadcast (enriched keys)
+    """
     reasons = []
-    c_temp = current.get("temp", 0)
-    m_temp = morning.get("temp", 0)
+
+    # Temperature — CWA raw key is AT (apparent temp)
+    c_temp = current.get("AT") or 0
+    m_temp = morning.get("AT") or 0
     if abs(c_temp - m_temp) >= 3:
         reasons.append(f"temp {m_temp}→{c_temp}°C")
-    if (current.get("precip_mm", 0) > 0) != (morning.get("precip_mm", 0) > 0):
+
+    # Precipitation — CWA raw key is RAIN
+    if (current.get("RAIN", 0) > 0) != (morning.get("RAIN", 0) > 0):
         reasons.append("rain status changed")
-    if set(current.get("alerts", [])) != set(morning.get("alerts", [])):
-        reasons.append("alert state changed")
-    if _aqi_category(current.get("aqi", 0)) != _aqi_category(morning.get("aqi", 0)):
-        reasons.append("AQI category crossed boundary")
-    if current.get("score_label") != morning.get("score_label"):
-        reasons.append(f"outdoor score {morning.get('score_label')}→{current.get('score_label')}")
-    if abs(current.get("dew_point", 0) - morning.get("dew_point", 0)) >= 3:
+
+    # Dew point — not pre-computed on the raw station dict; derive inline
+    c_dp: float | None = (
+        _calc_dew_point(current["AT"], current["RH"])
+        if current.get("AT") is not None and current.get("RH") is not None
+        else None
+    )
+    m_dp: float | None = morning.get("dew_point")
+    if c_dp is not None and m_dp is not None and abs(c_dp - m_dp) >= 3:
         reasons.append("dew point shift ≥3°C")
+
+    # AQI, alerts, and outdoor score_label require a full pipeline run;
+    # they are not available from the raw CWA station fetch.
+
     return bool(reasons), reasons
 
 def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "zh-TW", slot: str = "midday"):

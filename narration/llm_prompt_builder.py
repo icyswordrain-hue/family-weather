@@ -67,7 +67,7 @@ One sentence: plain advice on AC/heater/dehumidifier mode (e.g., "dehumidify for
 One sentence: AQI advisory and window guidance (AQI level, main pollutant if moderate or above, open/close windows).
 
 P5 — Forecast & Accuracy (4 sentences max):
-Forecast (up to 3 sentences): One opening sentence naming the overall pattern. Cover only the 1 key transition — skip stable stretches. Close with one bottom-line sentence.
+Forecast (up to 3 sentences): One opening sentence naming the overall pattern. The `transitions` array in the data flags segments where significant change occurs (is_transition: true) — use the first such entry as your 1 key transition; skip stable stretches. Close with one bottom-line sentence.
 Accuracy (1 sentence): Compare yesterday's forecast to actual. If 3 days of history available, note trend (e.g., "2 of 3 days close"). Use grades: spot on / close / off.
 
 ---METADATA---
