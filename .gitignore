@@ -39,3 +39,6 @@ regen.json
 
 # Deployment docs contain sensitive keys — keep local only
 docs/deployment/
+
+# Local Claude editor config — embeds GCP project ID in allowed-commands list
+.claude/
