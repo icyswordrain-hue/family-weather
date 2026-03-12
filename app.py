@@ -139,8 +139,24 @@ def tts_on_demand():
     lang   = data.get("lang", "zh-TW")
     date   = data.get("date", datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d"))
     slot   = data.get("slot", "midday")
+
+    if RUN_MODE == "CLOUD":
+        modal_tts_url = os.environ.get("MODAL_TTS_URL")
+        if not modal_tts_url:
+            return jsonify({"error": "MODAL_TTS_URL not configured"}), 500
+        try:
+            resp = requests.post(
+                modal_tts_url,
+                json={"script": script, "lang": lang, "date": date, "slot": slot},
+                timeout=60,
+            )
+            return jsonify(resp.json())
+        except Exception as exc:
+            logger.error("TTS proxy to Modal failed: %s", exc)
+            return jsonify({"error": str(exc)}), 502
+
     from narration.tts_client import synthesise_with_cache
-    url    = synthesise_with_cache(script, lang, date, slot)
+    url = synthesise_with_cache(script, lang, date, slot)
     return jsonify({"url": url})
 
 def _get_broadcast_for_chat(date_str: str) -> dict | None:
