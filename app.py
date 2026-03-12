@@ -259,7 +259,7 @@ def get_broadcast():
             return jsonify({"error": "MODAL_BROADCAST_URL not configured"}), 500
 
         try:
-            resp = requests.get(modal_url, params={"date": date_str, "lang": lang})
+            resp = requests.get(modal_url, params={"date": date_str, "lang": lang}, timeout=30)
             # Cache parsed broadcast so /api/chat can access context without a second hop
             try:
                 data = resp.json()
@@ -327,9 +327,9 @@ def refresh():
     if slot == "midday":
         try:
             from data.fetch_cwa import fetch_current_conditions
-            from history.conversation import get_today_broadcast as load_broadcast
+            from history.conversation import load_broadcast
             current = fetch_current_conditions()
-            m_broadcast = load_broadcast(date=date_str, slot="morning")
+            m_broadcast = load_broadcast(date_str, slot="morning")
             morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
             if morning:
                 changed, reasons = _conditions_changed(current, morning)

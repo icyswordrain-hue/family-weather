@@ -76,7 +76,7 @@ def refresh(payload: dict = None):
 
 @app.function(image=image, secrets=secrets, volumes={"/data": volume})
 @modal.fastapi_endpoint()
-def broadcast(date: str = None):
+def broadcast(date: str = None, lang: str = "en"):
     import sys
     os.environ["RUN_MODE"] = "MODAL"
     _bootstrap_gcp_credentials()
@@ -90,7 +90,7 @@ def broadcast(date: str = None):
     if not cached:
         return {"error": f"No broadcast found for {date_str}"}, 404
 
-    slices = build_slices(cached)
+    slices = build_slices(cached, lang=lang)
     return {**cached, "slices": slices}
 
 
