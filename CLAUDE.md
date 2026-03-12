@@ -102,10 +102,6 @@ Each location key is updated independently — a failure for one location does n
 
 Chat is stateless: the client sends the last 6 turns in `messages[]`; `chat_context.py` prepends a fresh context snapshot on every call.
 
-**Player-sheet tabs:** The Narration / Settings / Ask tabs inside `#player-sheet` are visible on **both** desktop and mobile — do NOT add `display: none` for `.player-sheet-tabs` at `≥768px`. Hiding them on desktop made the sheet permanently stuck on the chat panel after the Ask button was used.
-
-**Chat panel padding:** `#ps-panel-chat` sets `padding: 0` to override the inherited `.ps-tab-panel { padding: 14px 16px }`. The `.chat-messages` and `.chat-input-row` elements carry their own padding; the outer padding must not be re-added or it double-pads the layout.
-
 Brand icons: WebP only in `web/static/brand-icons/`. Use the `IMG(name, alt)` helper in `app.js`; do NOT add PNGs.
 
 ## Test Notes
