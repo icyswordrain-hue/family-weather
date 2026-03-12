@@ -1415,7 +1415,7 @@ function _buildSuggestions(lang) {
   // Category 2: Weather / Practical
   let chip2;
   const aqiVal = aqi.aqi || current.AQI || current.aqi || 0;
-  const maxPoP = Math.max(0, ...Object.values(segments).map(s => s.PoP6h || 0));
+  const maxPoP = Math.max(0, ...Object.values(segments).map(s => s?.PoP6h || 0));
   const at     = current.AT ?? current.apparent_temp_c ?? null;
   const wind   = current.WDSD ?? null;
   if (aqiVal >= 150) {
