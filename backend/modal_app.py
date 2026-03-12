@@ -81,6 +81,7 @@ def broadcast(date: str = None, lang: str = "en"):
     os.environ["RUN_MODE"] = "MODAL"
     _bootstrap_gcp_credentials()
     sys.path.insert(0, "/app")
+    volume.reload()  # pick up data committed by refresh()
     from history.conversation import get_today_broadcast
     from web.routes import build_slices
 
