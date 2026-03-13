@@ -804,6 +804,7 @@ function renderOverviewView(data) {
     for (let i = 0; i < 7; i++) {
       const dayItem = topItems[i];
       const nightItem = bottomItems[i];
+      if (!dayItem && !nightItem) continue;
 
       const row = document.createElement('div');
       row.className = 'wk-row';
@@ -1092,6 +1093,9 @@ function renderLifestyleView(data) {
     }
     if (data.air_quality.peak_window) {
       extras.push(mkInsight(IMG('heads-up', 'AQI Peak'), `⚠ ${data.air_quality.peak_window}`));
+    }
+    if (data.air_quality.purifier_advice) {
+      extras.push(mkInsight(IMG('air-quality', 'Air Purifier'), data.air_quality.purifier_advice));
     }
     add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
