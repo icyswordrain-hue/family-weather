@@ -1,5 +1,5 @@
 """tests/test_outdoor_scoring.py — Unit tests for data/outdoor_scoring.py (TS3)."""
-from data.outdoor_scoring import _grade_score, _score_conditions, OUTDOOR_WEIGHTS_GENERAL
+from data.outdoor_scoring import _grade_score, _score_conditions, OUTDOOR_WEIGHTS_GENERAL, OUTDOOR_WEIGHTS_BY_ACTIVITY
 
 # ── _grade_score ──────────────────────────────────────────────────────────────
 
@@ -60,3 +60,35 @@ def test_score_empty_conditions_is_100():
     assert score == 100
     assert blockers == []
     assert cautions == []
+
+# ── kite_flying activity ───────────────────────────────────────────────────────
+
+KITE_WEIGHTS = {**OUTDOOR_WEIGHTS_GENERAL, **OUTDOOR_WEIGHTS_BY_ACTIVITY["kite_flying"]}
+
+CALM_DAY = {
+    "rain": 0, "pop": 5, "at": 22.0, "rh": 60.0,
+    "ws": 0.5,  # Beaufort 0 — dead calm
+    "aqi": 35, "uvi": 4, "ground_wet": False, "vis": 25.0,
+}
+
+BREEZY_DAY = {
+    "rain": 0, "pop": 5, "at": 22.0, "rh": 60.0,
+    "ws": 5.0,  # Beaufort 3 — gentle/moderate breeze, ideal for kites
+    "aqi": 35, "uvi": 4, "ground_wet": False, "vis": 25.0,
+}
+
+def test_kite_calm_wind_penalized():
+    """Beaufort 0 triggers calm_wind caution and drops score significantly."""
+    score, _, cautions = _score_conditions(CALM_DAY, KITE_WEIGHTS)
+    assert "calm_wind" in cautions
+    assert score < 75
+
+def test_kite_ideal_wind_high_score():
+    """Beaufort 3 (5 m/s) is ideal kite wind — should score ≥80."""
+    score, _, cautions = _score_conditions(BREEZY_DAY, KITE_WEIGHTS)
+    assert "calm_wind" not in cautions
+    assert score >= 80
+
+def test_kite_wind_low_zero_in_general():
+    """wind_low has no penalty in general weights (only kite_flying overrides it)."""
+    assert OUTDOOR_WEIGHTS_GENERAL["wind_low"] == 0

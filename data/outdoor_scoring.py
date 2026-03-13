@@ -20,7 +20,7 @@ OUTDOOR_WEIGHTS_GENERAL = {
     "rain_active": -50, "rain_light": -25,
     "pop_high": -25, "pop_mid": -12,
     "dew_gap_clammy": -8, "dew_gap_humid": -4,
-    "wind_strong": -35, "wind_moderate": -10,
+    "wind_low": 0, "wind_strong": -35, "wind_moderate": -10,
     "aqi_unhealthy": -40, "aqi_sensitive": -15,
     "uvi_extreme": -15, "uvi_very_high": -8,
     "wet_ground": -8,
@@ -63,6 +63,13 @@ OUTDOOR_WEIGHTS_BY_ACTIVITY: dict[str, dict] = {
         "solar_extreme": -30, "solar_high": -15,
         "wet_ground": 0, "vis_very_poor": -50, "vis_poor": -25,
     },
+    "kite_flying": {
+        "wind_low": -40,      # Beaufort 0-2: too calm to fly
+        "wind_moderate": 0,   # Beaufort 5-6: good kite wind, override general -10
+        "wind_strong": -30,   # Beaufort 7+: dangerous but slightly less than general -35
+        "rain_light": -15,    # Wet lines manageable but annoying
+        "wet_ground": -5,     # Slight penalty for wet grass
+    },
 }
 
 def _grade_score(score: int) -> tuple[str, str]:
@@ -98,6 +105,7 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
         ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and 2 <= v < 5,   "dew_gap_humid",  "caution", "humid"),
         ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) >= 7, "wind_strong", "blocker", "strong_wind"),
         ("ws", c.get("ws"), lambda v: v is not None and 5 <= _beaufort_index(v) < 7, "wind_moderate", "caution", "moderate_wind"),
+        ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) < 3, "wind_low", "caution", "calm_wind"),
         ("aqi", c.get("aqi"), lambda v: v is not None and v > cfg.OUTDOOR_AQI_UNHEALTHY, "aqi_unhealthy", "blocker", "poor_air"),
         ("aqi", c.get("aqi"), lambda v: v is not None and cfg.OUTDOOR_AQI_SENSITIVE < v <= cfg.OUTDOOR_AQI_UNHEALTHY, "aqi_sensitive", "caution", "moderate_air"),
         ("uvi", c.get("uvi"), lambda v: v is not None and v >= cfg.OUTDOOR_UVI_EXTREME, "uvi_extreme", "caution", "extreme_uv"),

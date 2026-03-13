@@ -321,38 +321,49 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         windows = climate.get("windows")
         aqi_val = current.get("aqi", 0)
 
+        dew_reason = (climate.get("dew_reasons") or [""])[0]
         if is_zh:
-            ac_suffix = "（乾燥模式）" if ac_mode == "dry" else ""
-            mode_zh = {"Off": "關閉", "fan": "電風扇", "cooling": f"冷氣{ac_suffix}",
-                       "heating": "暖氣", "heating_optional": "暖氣（選用）",
-                       "dehumidify": "除濕機"}.get(hvac_mode, hvac_mode)
-            hvac_parts = [f"建議：{mode_zh}。"]
+            ac_suffix = "（乾燥模式）" if ac_mode == "dry" else "（冷氣模式）" if hvac_mode == "cooling" else ""
+            action_zh = {
+                "Off": "今天不需要開空調。",
+                "fan": "開電風扇即可。",
+                "cooling": f"請開冷氣{ac_suffix}。",
+                "heating": "請開暖氣。",
+                "heating_optional": "視需要可開暖氣。",
+                "dehumidify": "請開除濕機。",
+            }.get(hvac_mode, f"建議設為{hvac_mode}模式。")
+            if dew_reason:
+                action_zh = action_zh.rstrip("。") + f"——{dew_reason}。"
+            hvac_parts = [action_zh]
             if dehumidifier in ("strongly_recommended", "recommended"):
-                hvac_parts.append("建議開啟除濕機。")
+                hvac_parts.append("建議同時開啟除濕機。")
             elif dehumidifier == "consider":
                 hvac_parts.append("視情況考慮開除濕機。")
             if windows == "open":
                 hvac_parts.append("適合開窗通風。")
             elif windows == "close":
                 hvac_parts.append("建議關閉窗戶。")
-            elif not dehumidifier and not windows and int(aqi_val or 0) > 100:
-                hvac_parts.append("建議開啟空氣清淨機。")
         else:
-            ac_suffix = " (dry mode)" if ac_mode == "dry" else ""
-            mode_en = {"Off": "off", "fan": "fan only", "cooling": f"AC{ac_suffix}",
-                       "heating": "heating", "heating_optional": "heating (optional)",
-                       "dehumidify": "dehumidifier"}.get(hvac_mode, hvac_mode)
-            hvac_parts = [f"System: {mode_en}."]
+            ac_mode_label = "dry" if ac_mode == "dry" else "cool"
+            action_en = {
+                "Off": "No HVAC needed today.",
+                "fan": "Use the fan only.",
+                "cooling": f"Run the AC in {ac_mode_label} mode.",
+                "heating": "Turn on the heater.",
+                "heating_optional": "Heating is optional today.",
+                "dehumidify": "Run the dehumidifier.",
+            }.get(hvac_mode, f"Set HVAC to {hvac_mode}.")
+            if dew_reason:
+                action_en = action_en.rstrip(".") + f" — {dew_reason}."
+            hvac_parts = [action_en]
             if dehumidifier in ("strongly_recommended", "recommended"):
-                hvac_parts.append("Dehumidifier recommended.")
+                hvac_parts.append("Also run the dehumidifier.")
             elif dehumidifier == "consider":
-                hvac_parts.append("Consider the dehumidifier.")
+                hvac_parts.append("Consider running the dehumidifier too.")
             if windows == "open":
                 hvac_parts.append("Open windows to ventilate.")
             elif windows == "close":
                 hvac_parts.append("Keep windows closed.")
-            elif not dehumidifier and not windows and int(aqi_val or 0) > 100:
-                hvac_parts.append("Air purifier recommended.")
         hvac_text = " ".join(hvac_parts)
 
     # 4. Meals (v7: p3_outdoor_meal)
@@ -435,6 +446,18 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     hourly_aqi = aqi_forecast.get("hourly", [])
     peak_window = _compute_aqi_peak_window(hourly_aqi)
 
+    # Action tip: air purifier / close windows based on AQI severity
+    aqi_num_raw = aqi_forecast.get("aqi")
+    aqi_num = int(aqi_num_raw) if isinstance(aqi_num_raw, (int, float)) else 0
+    if aqi_num >= 150:
+        purifier_advice = "關閉窗戶並開啟空氣清淨機。" if is_zh else "Close windows and run the air purifier."
+    elif aqi_num >= 100:
+        purifier_advice = "建議關窗，可考慮開啟空氣清淨機。" if is_zh else "Consider closing windows and running the air purifier."
+    elif aqi_num >= 51:
+        purifier_advice = "敏感族群可考慮開啟空氣清淨機。" if is_zh else "Sensitive groups: consider running the air purifier indoors."
+    else:
+        purifier_advice = None
+
     return {
         "wardrobe": {
             "text": wardrobe_text,
@@ -452,6 +475,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
             "peak_window": peak_window,
             "pm25": processed.get("current", {}).get("pm25"),
             "pm10": processed.get("current", {}).get("pm10"),
+            "purifier_advice": purifier_advice,
         },
         "hvac": {
             "text": hvac_text,
