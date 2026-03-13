@@ -102,7 +102,7 @@ Each location key is updated independently — a failure for one location does n
 
 Chat is stateless: the client sends the last 6 turns in `messages[]`; `chat_context.py` prepends a fresh context snapshot on every call.
 
-Brand icons: WebP only in `web/static/brand-icons/`. Use the `IMG(name, alt)` helper in `app.js`; do NOT add PNGs.
+Brand icons: WebP only in `web/static/brand-icons/`. Use the `IMG(name, alt)` helper in `app.js`; do NOT add PNGs. All icons must be 1:1 square (512×512 recommended) — the CSS forces equal `width`/`height` on most contexts, so non-square images will be distorted. `sunrise-square.webp` and `sunset-square.webp` (1024×1024) are used for the solar row in the dashboard canopy. The landscape `sunrise.webp` / `sunset.webp` (1380×752) remain in the directory but are no longer referenced. The `*-slab.webp` files (512×128 4:1) are intentional exceptions — they use `height` fixed + `width: auto` in CSS so aspect ratio is preserved.
 
 ## Test Notes
 
