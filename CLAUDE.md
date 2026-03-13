@@ -46,8 +46,8 @@ data/
   outdoor_scoring.py Rule-engine outdoor grade A–F (0–100 score)
 narration/
   llm_prompt_builder.py  Builds v7 prompts for Claude/Gemini
-  claude_client.py   Anthropic primary (Sonnet 4.6) → Haiku 4.5 fallback
-  gemini_client.py   Gemini primary; Gemini → Claude fallback chain in pipeline.py
+  claude_client.py   Sonnet 4.6 → Haiku 4.5 internal fallback
+  gemini_client.py   Gemini Pro Exp → Gemini Flash internal fallback
   chat_context.py    ~650-token system prompt for /api/chat (Haiku 4.5, 300 max tokens)
   tts_client.py      Google Cloud TTS or Edge TTS fallback
 history/
@@ -75,7 +75,7 @@ web/
 
 **`_detect_menieres_alert()`:** Only a ≥6 hPa 24h swing sets `triggered=True`. Low pressure + high humidity gives `severity="moderate"` but NOT `triggered=True`.
 
-**Narration provider chain:** `pipeline.py` calls Gemini first, falls back to Claude. `claude_client.py` internally tries Sonnet 4.6, falls back to Haiku 4.5. Do not route chat (`/api/chat`) through `generate_narration()` — call `_get_client().messages.create()` directly.
+**Narration provider:** Controlled by `NARRATION_PROVIDER` env var (default `"CLAUDE"`). `generate_narration_with_fallback()` in `pipeline.py` calls exactly one provider — there is NO cross-provider waterfall. Each provider has its own internal fallback: `claude_client.py` tries Sonnet 4.6 → Haiku 4.5; `gemini_client.py` tries Pro Exp → Flash. Both fall back to the template narrator on total failure. Do not route chat (`/api/chat`) through `generate_narration()` — call `_get_client().messages.create()` directly.
 
 **Timestamps:** All timestamps are naive Taipei wall-clock time (UTC+8). No UTC conversion. Segment logic (morning/afternoon/evening/overnight) depends on the server running in Asia/Taipei.
 
