@@ -643,7 +643,7 @@ input:focus-visible {
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.4rem;
-  font-size: 0.95rem;
+  font-size: 1.43rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -655,8 +655,8 @@ input:focus-visible {
 }
 
 .solar-row .brand-icon {
-  width: 28px;
-  height: 28px;
+  width: 42px;
+  height: 42px;
   border-radius: 4px;
 }
 
@@ -1154,14 +1154,14 @@ html.dark .tc-seg-row.tc-seg-night {
 
 .tc-seg-stat {
   display: flex;
+  flex-direction: column-reverse;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  justify-content: center;
+  gap: 4px;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--muted);
-  white-space: nowrap;
-  min-height: 40px;
+  text-align: center;
 }
 
 /* Icon sits at far right, full opacity, 1.5× size */
@@ -1205,6 +1205,7 @@ html.dark .tc-seg-row.tc-seg-night {
 
   .tc-seg-stat {
     font-size: 0.78rem;
+    gap: 3px;
   }
 
   .tc-seg-stat .tc-stat-icon .brand-icon {
@@ -2232,8 +2233,8 @@ html.dark .source-claude {
   }
 
   .solar-row .brand-icon {
-    width: 36px;
-    height: 36px;
+    width: 54px;
+    height: 54px;
   }
 
   /* Gauges expand panel: 4 per row, compact sizing */
