@@ -238,6 +238,7 @@ const TRANSLATIONS = {
     log_title: 'System Log',
     log_step_prefix: 'Step: ',
     log_runtime_error: 'Runtime Error: ',
+    no_7day: '7-day forecast unavailable',
   },
   'zh-TW': {
     loading: '正在獲取天氣…',
@@ -303,6 +304,7 @@ const TRANSLATIONS = {
     log_title: '系統記錄',
     log_step_prefix: '步驟：',
     log_runtime_error: '執行錯誤：',
+    no_7day: '七日預報暫不可用',
     metrics: {
       'Near Saturated': '接近飽和', 'Clammy': '悶濕',
       'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
@@ -891,6 +893,9 @@ function renderOverviewView(data) {
       weeklyTimelineEl.appendChild(row);
     }
 
+  } else if (weeklyTimelineEl) {
+    weeklyTimelineEl.className = 'timeline-scroll';
+    weeklyTimelineEl.innerHTML = `<p class="forecast-placeholder">${T.no_7day}</p>`;
   }
 
 }

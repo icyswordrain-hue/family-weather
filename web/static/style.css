@@ -397,6 +397,13 @@ input:focus-visible {
   animation: fadeIn 0.4s ease-out 0.2s both;
 }
 
+.forecast-placeholder {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
 .section-title {
   font-size: 1.4rem;
   color: var(--text);
