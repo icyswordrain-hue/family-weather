@@ -643,7 +643,7 @@ input:focus-visible {
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.4rem;
-  font-size: 1.43rem;
+  font-size: 0.76rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -655,8 +655,8 @@ input:focus-visible {
 }
 
 .solar-row .brand-icon {
-  width: 42px;
-  height: 42px;
+  width: 22px;
+  height: 22px;
   border-radius: 4px;
 }
 
@@ -2233,8 +2233,8 @@ html.dark .source-claude {
   }
 
   .solar-row .brand-icon {
-    width: 54px;
-    height: 54px;
+    width: 29px;
+    height: 29px;
   }
 
   /* Gauges expand panel: 4 per row, compact sizing */
