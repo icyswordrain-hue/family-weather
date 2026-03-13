@@ -115,3 +115,61 @@ Added `"heating_optional"` to both the zh and en fallback mode label maps
 | `dehumidify` | afternoon dew point ≥ 21°C | Muggy without being hot |
 | `fan` | window advice = open | Mild, ventilation sufficient |
 | `Off` | otherwise | Comfortable, no action needed |
+
+---
+
+## Follow-up: Explicit AC Advice + Air Quality Action Tips (2026-03-13)
+
+### Gaps addressed
+
+Two UX gaps remained after the initial implementation:
+
+1. **HVAC fallback text was terse** — `"System: AC."` gave no action or context.
+   The LLM hint only passed `mode + one dew_reason`, missing `ac_mode`
+   (dry/cool), `dehumidifier` severity, and `windows`, so the LLM card
+   couldn't incorporate all relevant advice.
+
+2. **Air quality card had no action item** — users saw AQI numbers but no
+   explicit "close windows" or "run air purifier" guidance.
+
+### Files changed
+
+#### `narration/llm_prompt_builder.py`
+
+Expanded `climate_hint` to include all sub-fields from `climate_control`:
+
+```
+cooling (temp 30°C — AC cool mode appropriate) [cool mode] dehumidifier: consider windows: close
+```
+
+Updated card instructions:
+
+- `hvac`: 1–2 sentences; require dehumidifier mention and window guidance if present in HINTS.
+- `air_quality`: now asks the LLM to recommend an air purifier for Moderate+ AQI (EN + ZH).
+
+#### `web/routes.py`
+
+Fallback HVAC text rewritten with action verbs and `dew_reasons[0]` context:
+
+| Before | After |
+|--------|-------|
+| `System: AC.` | `Run the AC in cool mode — temp 30°C.` |
+| `System: heating.` | `Turn on the heater — coldest segment 13°C.` |
+| `建議：除濕機。` | `請開除濕機。——露點偏高。` |
+
+Also removed the stale `aqi_val > 100 → air purifier` branch from the HVAC
+fallback (air quality now has its own dedicated `purifier_advice` field).
+
+Added `purifier_advice` to the `air_quality` slice payload:
+
+| AQI | English | Chinese |
+|-----|---------|---------|
+| ≥ 150 | Close windows and run the air purifier. | 關閉窗戶並開啟空氣清淨機。 |
+| 100–149 | Consider closing windows and running the air purifier. | 建議關窗，可考慮開啟空氣清淨機。 |
+| 51–99 | Sensitive groups: consider running the air purifier indoors. | 敏感族群可考慮開啟空氣清淨機。 |
+| ≤ 50 | `null` (no chip shown) | — |
+
+#### `web/static/app.js`
+
+Air quality card renders `purifier_advice` as an insight chip (same
+`air-quality` icon) beneath the AQI peak window chip when present.
