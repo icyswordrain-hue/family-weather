@@ -22,6 +22,10 @@ Both desktop (60px icon) and mobile (30px icon) use the same stacked layout — 
 
 Outdoor labels ("Go out", "Manageable", …) go through `localiseMetric()` → `T.metrics[text]` (zh-TW mapping at `app.js:311`). Precip text ("All clear", "Stay in", "~N min") goes through `localisePrecipText()` (`app.js:130`). Both are called inside `renderOverviewView()`, which `applyLanguage()` triggers on every toggle. **Tags update immediately — no regeneration or new mapping needed.**
 
+### 4. Solar Row Resize (Follow-up)
+
+Reverted the ×1.5 scale; instead reduced to 80% of original: `0.76rem` text, `22px` icon (desktop), `29px` icon (mobile).
+
 ## Files Modified
 
 - `web/static/style.css`

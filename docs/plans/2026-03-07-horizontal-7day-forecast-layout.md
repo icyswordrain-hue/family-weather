@@ -50,3 +50,23 @@ The previous 7×2 grid required two visual scans to compare day and night for th
 ## Removed Classes
 
 `.weekly-grid` (grid), `.wk-header-row`, `.wk-col-header`, `.wk-day-name`, `.wk-cond`, `.wk-card`, `.wk-card.wk-day`, `.wk-card.wk-night`, `.wk-placeholder`, `.wk-label`, `.wk-temp`, `.wk-rain`, `.wk-period`, `.weekly-sparkline-wrap`
+
+---
+
+## Follow-up Fixes (2026-03-13)
+
+### Missing `weekly_timeline` placeholder
+
+When `data.weekly_timeline` is null/absent, `#ov-weekly-timeline` was left empty. Added an `else` branch that renders `<p class="forecast-placeholder">` with `T.no_7day` ("7-day forecast unavailable" / "七日預報暫不可用"), which respects the language toggle. `.forecast-placeholder` CSS added to `style.css`.
+
+### Ghost row on daytime broadcasts
+
+The CWA API returns 14 slots. Daytime broadcasts drop both "Today Day" and "Tonight", leaving only 6 real day + 6 real night slots. The `while` padding loops then add a 7th `null`/`null` entry, which rendered as a ghost row (`—` label, fallback icons, empty range bar).
+
+**Fix (`app.js` inside the `for i < 7` loop):**
+
+```js
+if (!dayItem && !nightItem) continue;
+```
+
+Daytime broadcasts now show 6 clean rows. Nighttime broadcasts are unaffected — the 7th row always has a real day item (only its night side is null, shown at 0.3 opacity).
