@@ -105,7 +105,7 @@ GEMINI_MAX_TOKENS_REGEN = 1800  # regen: adds ~1000 tokens of meal/location JSON
 # ── Anthropic Claude ──────────────────────────────────────────────────────
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
-CLAUDE_REGEN_MODEL = os.environ.get("CLAUDE_REGEN_MODEL", "claude-opus-4-6")
+CLAUDE_REGEN_MODEL = os.environ.get("CLAUDE_REGEN_MODEL", "claude-sonnet-4-6")
 CLAUDE_MAX_TOKENS = 1400        # ~450 narration + ~700 metadata JSON + safety margin
 CLAUDE_MAX_TOKENS_REGEN = 1800  # regen: adds ~1000 tokens of meal/location JSON
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
@@ -115,7 +115,7 @@ CHAT_HISTORY_MAX_TURNS = int(os.environ.get("CHAT_HISTORY_MAX_TURNS", "6"))
 
 # ── Pipeline Behaviour ────────────────────────────────────────────────────────
 HISTORY_DAYS = int(os.environ.get("HISTORY_DAYS", 3))
-REGEN_CYCLE_DAYS = int(os.environ.get("REGEN_CYCLE_DAYS", 30))
+REGEN_CYCLE_DAYS = int(os.environ.get("REGEN_CYCLE_DAYS", 60))
 ROTATION_PERCENT = float(os.environ.get("ROTATION_PERCENT", 0.35))   # fraction of items per mood to retire each regen
 BENCH_COOLOFF_CYCLES = int(os.environ.get("BENCH_COOLOFF_CYCLES", 2))  # regen cycles before benched items can return
 DEDUP_WINDOW_DAYS = int(os.environ.get("DEDUP_WINDOW_DAYS", 7))       # days of history to check for repeat suggestions
