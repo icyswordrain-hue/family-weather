@@ -77,3 +77,38 @@ No changes to collapse/expand CSS — `.ls-tagline` is always rendered, not hidd
 - **i18n**: Taglines come from the LLM in the correct language; no TRANSLATIONS object changes needed.
 - **Alert cards unaffected**: built via a separate code path (`ls-alert-card`), no `add()` call.
 - **Insight bars unchanged**: already always-visible; tagline adds an action layer above the metric layer.
+
+---
+
+## Update: Tagline/Details Swap Layout (2026-03-14)
+
+### Problem
+
+The tagline and full details text competed visually — similar sizing made the card feel dense when expanded. Users scanning collapsed cards wanted a bolder at-a-glance summary; users reading expanded details needed quieter secondary text.
+
+### Solution
+
+**Swap layout** — collapsed cards show a prominent tagline; expanding hides the tagline and reveals downsized detail text.
+
+```
+Collapsed:  [icon]  Title                         ▾
+                    Bold tagline (1.05rem, 600)       ← visible
+
+Expanded:   [icon]  Title                         ▴
+                    Smaller details (0.75rem)          ← tagline hidden
+                    [insight bars]
+```
+
+### CSS Changes (`web/static/style.css`)
+
+| Rule | Before | After |
+|---|---|---|
+| `.ls-tagline` font-size | 0.88rem | 1.05rem |
+| `.ls-tagline` font-weight | 500 | 600 |
+| `.ls-tagline` margin-bottom | 0.35rem | removed |
+| `.ls-card.expanded .ls-tagline` | — | `display: none` (new) |
+| `.ls-text` font-size | 0.82rem | 0.75rem |
+| `zh-TW .ls-tagline` font-size | 1.05rem | 1.2rem |
+| `zh-TW .ls-text` font-size | 1.05rem | 0.95rem |
+
+No JS changes — pure CSS swap via existing `.expanded` class toggle.

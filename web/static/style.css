@@ -1393,7 +1393,7 @@ html.dark .audio-toggle-btn.active {
 .ls-card.expanded .ls-chevron::before { content: '▴'; }
 
 .ls-text {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   color: var(--text);
   line-height: 1.45;
   white-space: pre-line;
@@ -1402,12 +1402,12 @@ html.dark .audio-toggle-btn.active {
 .ls-card:not(.expanded) .ls-text { display: none; }
 
 .ls-tagline {
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   color: var(--text);
-  font-weight: 500;
-  margin-bottom: 0.35rem;
+  font-weight: 600;
   line-height: 1.35;
 }
+.ls-card.expanded .ls-tagline { display: none; }
 
 
 .ls-expand-all-btn {
@@ -1449,11 +1449,11 @@ html[lang="zh-TW"] .ls-title {
 }
 
 html[lang="zh-TW"] .ls-tagline {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
 }
 
 html[lang="zh-TW"] .ls-text {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   line-height: 1.6;
 }
 
