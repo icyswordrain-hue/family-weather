@@ -23,8 +23,16 @@ def build_chat_context(broadcast: dict, date: str, lang: str = "en") -> str:
         Plain-text system prompt for client.messages.create(system=...).
     """
     pd = broadcast.get("processed_data", {})
-    summaries = broadcast.get("summaries", {})
-    metadata = broadcast.get("metadata", {})
+
+    # Handle v2 schema (language-specific fields nested under langs)
+    if broadcast.get("schema_version") == 2:
+        _langs = broadcast.get("langs", {})
+        _ld = _langs.get(lang) or next(iter(_langs.values()), {})
+        summaries = _ld.get("summaries", {})
+        metadata = _ld.get("metadata", {})
+    else:
+        summaries = broadcast.get("summaries", {})
+        metadata = broadcast.get("metadata", {})
 
     # ── Current conditions ─────────────────────────────────────────────────
     current = pd.get("current", {})

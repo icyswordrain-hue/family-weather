@@ -97,9 +97,74 @@ def broadcast(date: str = None, lang: str = "en"):
     if not cached:
         return {"error": f"No broadcast found for {date_str}"}, 404
 
-    slices = build_slices(cached, lang=lang)
-    return {**cached, "slices": slices}
+    # Flatten v2 language-specific data for frontend compatibility
+    from history.conversation import get_lang_data
+    ld = get_lang_data(cached, lang)
+    slices = build_slices({
+        "paragraphs": ld.get("paragraphs", {}),
+        "metadata": ld.get("metadata", {}),
+        "processed_data": cached.get("processed_data", {}),
+        "summaries": ld.get("summaries", {}),
+    }, lang=lang)
+    return {
+        **cached,
+        "narration_text": ld.get("narration_text", ""),
+        "paragraphs": ld.get("paragraphs", {}),
+        "metadata": ld.get("metadata", {}),
+        "audio_urls": ld.get("audio_urls", {}),
+        "summaries": ld.get("summaries", {}),
+        "slices": slices,
+    }
 
 
+@app.function(image=image, secrets=secrets, volumes={"/data": volume}, timeout=120)
+@modal.fastapi_endpoint(method="POST")
+def tts(payload: dict = None):
+    """Re-synthesize TTS audio for both languages from the current broadcast."""
+    import sys
+    os.environ["RUN_MODE"] = "MODAL"
+    _bootstrap_gcp_credentials()
+    sys.path.insert(0, "/app")
+    volume.reload()
+
+    from history.conversation import get_today_broadcast, get_lang_data, save_day
+    from narration.tts_client import synthesise_with_cache
+
+    body = payload or {}
+    date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+
+    broadcast_data = get_today_broadcast(date_str)
+    if not broadcast_data:
+        return {"error": f"No broadcast found for {date_str}"}, 404
+
+    updated_langs = dict(broadcast_data.get("langs", {}))
+    tts_ts = datetime.now(_TAIPEI_TZ).isoformat()
+
+    for _lang in ["zh-TW", "en"]:
+        ld = get_lang_data(broadcast_data, _lang)
+        text = ld.get("narration_text", "")
+        if not text:
+            continue
+        try:
+            url = synthesise_with_cache(text, _lang, date_str, "manual")
+            if _lang in updated_langs:
+                updated_langs[_lang] = {**updated_langs[_lang], "audio_urls": {"full_audio_url": url}}
+        except Exception:
+            pass
+
+    save_day(
+        date_str=date_str,
+        raw_data=broadcast_data.get("raw_data", {}),
+        processed_data=broadcast_data.get("processed_data", {}),
+        langs=updated_langs,
+        tts_generated_at=tts_ts,
+    )
+
+    try:
+        volume.commit()
+    except Exception:
+        pass
+
+    return {"status": "ok", "tts_generated_at": tts_ts}
 
 

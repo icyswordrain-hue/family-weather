@@ -228,6 +228,8 @@ const TRANSLATIONS = {
     theme_label: 'Theme',
     system_controls: 'System Controls',
     refresh_btn: 'Refresh',
+    tts_btn: 'Re-synthesize Audio',
+    audio_from: 'Audio from ',
     tab_narration: 'Narration',
     tab_settings: 'Settings',
     tab_chat: 'Ask',
@@ -304,6 +306,8 @@ const TRANSLATIONS = {
     theme_label: '外觀主題',
     system_controls: '系統控制',
     refresh_btn: '重新整理',
+    tts_btn: '重新合成語音',
+    audio_from: '語音來自 ',
     tab_narration: '解說',
     tab_settings: '設定',
     tab_chat: '問問',
@@ -468,6 +472,24 @@ async function fetchBroadcast(silent = false) {
 }
 
 // ── Render Dispatch ────────────────────────────────────────────────────────
+function _updateAudioAgeBadge(generatedAt, ttsGeneratedAt) {
+  const badge = document.getElementById('player-audio-age');
+  if (!badge) return;
+  if (!ttsGeneratedAt || !generatedAt) { badge.hidden = true; return; }
+  const genMs = new Date(generatedAt).getTime();
+  const ttsMs = new Date(ttsGeneratedAt).getTime();
+  // Show badge if TTS is more than 10 minutes older than narration
+  if (Math.abs(genMs - ttsMs) > 10 * 60_000) {
+    const d = new Date(ttsGeneratedAt);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    badge.textContent = `${T.audio_from}${hh}:${min}`;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+}
+
 function render(data) {
   const slices = data.slices || {};
 
@@ -504,6 +526,9 @@ function render(data) {
       mobileUpdEl.classList.toggle('stale-red', ageH >= 4);
     }
   }
+
+  // Audio age badge — show when TTS is from a different time than narration
+  _updateAudioAgeBadge(ts, data.tts_generated_at);
 }
 
 // ── View 1: Dashboard (Merged Current + Overview) ──────────────────────────
@@ -1360,6 +1385,37 @@ function initSheetSettings() {
     sheetRefresh.addEventListener('click', () => {
       document.getElementById('player-sheet-close')?.click();
       document.getElementById('refresh-btn')?.click();
+    });
+  }
+
+  // Sheet TTS re-synthesize button
+  const sheetTts = document.getElementById('sheet-tts-btn');
+  if (sheetTts) {
+    sheetTts.addEventListener('click', async () => {
+      sheetTts.disabled = true;
+      sheetTts.classList.add('loading');
+      try {
+        const resp = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lang: getLang() })
+        });
+        const result = await resp.json();
+        if (result.status === 'ok' && result.audio_urls?.full_audio_url) {
+          const audio = document.getElementById('player-audio');
+          if (audio) audio.src = result.audio_urls.full_audio_url;
+          if (broadcastData) {
+            broadcastData.audio_urls = result.audio_urls;
+            broadcastData.tts_generated_at = result.tts_generated_at;
+          }
+          _updateAudioAgeBadge(broadcastData?.generated_at, result.tts_generated_at);
+        }
+      } catch (e) {
+        console.error('TTS re-synthesis failed:', e);
+      } finally {
+        sheetTts.disabled = false;
+        sheetTts.classList.remove('loading');
+      }
     });
   }
 

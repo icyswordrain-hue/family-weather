@@ -546,7 +546,13 @@ def _format_history(history: list[dict]) -> str:
         lines.append(f"[{date}]")
 
         # Prior forecast for P5 accuracy comparison
-        paras = day.get("paragraphs", {})
+        # Handle v2 schema (langs dict) and v1 (flat paragraphs)
+        if day.get("schema_version") == 2:
+            _langs = day.get("langs", {})
+            _ld = _langs.get("zh-TW") or next(iter(_langs.values()), {})
+            paras = _ld.get("paragraphs", {})
+        else:
+            paras = day.get("paragraphs", {})
         forecast_key = (
             "p5_forecast_accuracy" if "p5_forecast_accuracy" in paras
             else "p5_forecast" if "p5_forecast" in paras

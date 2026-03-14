@@ -1,26 +1,23 @@
 """
 conversation.py — Read and write conversation history JSON in Cloud Storage.
 
-History format (one file, keyed by date):
+History format v2 (one file, keyed by date):
 {
   "YYYY-MM-DD": {
     "generated_at": "ISO-8601 datetime",
+    "schema_version": 2,
     "raw_data": { ... },
     "processed_data": { ... },
-    "narration_text": "...",
-    "paragraphs": {
-      "p1_current": "...",
-      ...
-      "p7_accountability": "..."
-    },
-    "metadata": {
-      "meals_suggested": ["dish1", "dish2"],
-      "gardening_tip_topic": "...",
-      "location_suggested": "...",
-      "activity_suggested": "..."
-    },
-    "audio_urls": {
-      "full_audio_url": "..."
+    "tts_generated_at": "ISO-8601 datetime or null",
+    "langs": {
+      "en": {
+        "narration_text": "...",
+        "paragraphs": { "p1_current": "...", ... },
+        "metadata": { ... },
+        "summaries": { ... },
+        "audio_urls": { "full_audio_url": "..." }
+      },
+      "zh-TW": { ... }
     }
   }
 }
@@ -49,12 +46,60 @@ logger = logging.getLogger(__name__)
 _TAIPEI_TZ = timezone(timedelta(hours=8))
 
 
+# ── Schema Migration ─────────────────────────────────────────────────────────
+
+def _normalize_broadcast(entry: dict) -> dict:
+    """Ensure a broadcast entry is in v2 (langs) format.
+
+    V1 entries have flat narration_text/paragraphs/metadata/audio_urls/summaries.
+    V2 entries nest these under langs[lang].
+    """
+    if not entry or entry.get("schema_version") == 2:
+        return entry
+
+    # V1 → V2 migration: assume old entries are zh-TW (the historical default)
+    lang_data = {
+        "narration_text": entry.get("narration_text", ""),
+        "paragraphs": entry.get("paragraphs", {}),
+        "metadata": entry.get("metadata", {}),
+        "summaries": entry.get("summaries", {}),
+        "audio_urls": entry.get("audio_urls", {}),
+    }
+    return {
+        "generated_at": entry.get("generated_at"),
+        "schema_version": 2,
+        "raw_data": entry.get("raw_data", {}),
+        "processed_data": entry.get("processed_data", {}),
+        "tts_generated_at": entry.get("generated_at"),  # assume TTS was generated at same time
+        "langs": {"zh-TW": lang_data},
+    }
+
+
+def get_lang_data(broadcast: dict, lang: str) -> dict:
+    """Extract language-specific sub-dict from a v2 broadcast.
+
+    Falls back to any available language if the requested one is missing.
+    """
+    if not broadcast:
+        return {}
+    langs = broadcast.get("langs", {})
+    if lang in langs:
+        return langs[lang]
+    # Fallback: return whichever language exists
+    if langs:
+        return next(iter(langs.values()))
+    return {}
+
+
+# ── Load / Save ──────────────────────────────────────────────────────────────
+
 def load_history(days: int = 3) -> list[dict]:
     """
     Load the conversation history JSON from GCS and return the last N days.
 
     Returns a list of day dicts (oldest first), each being the value from
     the top-level date key. Returns [] if the history file does not exist.
+    All entries are normalized to v2 schema.
     """
     history_map = _load_history_map()
     if not history_map:
@@ -63,7 +108,7 @@ def load_history(days: int = 3) -> list[dict]:
     # Sort dates and return the last N
     sorted_dates = sorted(history_map.keys())
     recent_dates = sorted_dates[-days:] if len(sorted_dates) >= days else sorted_dates
-    return [history_map[d] for d in recent_dates]
+    return [_normalize_broadcast(history_map[d]) for d in recent_dates]
 
 
 def _load_history_map() -> dict[str, dict]:
@@ -89,16 +134,18 @@ def save_day(
     date_str: str,
     raw_data: dict,
     processed_data: dict,
-    narration_text: str,
-    paragraphs: dict[str, str],
-    metadata: dict,
-    audio_urls: dict[str, str],
-    summaries: dict | None = None,
+    langs: dict[str, dict],
+    tts_generated_at: str | None = None,
 ) -> None:
     """
-    Save today's broadcast record to the GCS history JSON.
+    Save today's broadcast record (v2 schema) to the history JSON.
     Merges with existing history (keeps all previous days).
     Prunes entries older than 30 days to keep file size small.
+
+    Args:
+        langs: {"en": {"narration_text":..., "paragraphs":..., "metadata":...,
+                        "summaries":..., "audio_urls":...}, "zh-TW": {...}}
+        tts_generated_at: ISO-8601 timestamp of last TTS synthesis (or None).
     """
     # Load existing history
     try:
@@ -108,7 +155,7 @@ def save_day(
             client = storage.Client()
             bucket = client.bucket(GCS_BUCKET_NAME)
             blob = bucket.blob(GCS_HISTORY_KEY)
-            
+
             try:
                 raw = blob.download_as_text(encoding="utf-8")
                 history_map: dict[str, dict] = json.loads(raw)
@@ -125,20 +172,16 @@ def save_day(
                 bucket = client.bucket(GCS_BUCKET_NAME)
                 blob = bucket.blob(GCS_HISTORY_KEY)
             except Exception:
-                # If we still can't get a blob, we might have to just log it 
-                # but for simplicity of this fix we'll let it be handled later or just define it as None
                 blob = None
 
-    # Build today's entry
+    # Build today's entry (v2 schema)
     history_map[date_str] = {
         "generated_at": datetime.now(_TAIPEI_TZ).isoformat(),
+        "schema_version": 2,
         "raw_data": raw_data,
         "processed_data": processed_data,
-        "narration_text": narration_text,
-        "paragraphs": paragraphs,
-        "metadata": metadata,
-        "audio_urls": audio_urls,
-        "summaries": summaries or {},
+        "tts_generated_at": tts_generated_at,
+        "langs": langs,
     }
 
     # Prune entries older than 30 days
@@ -161,16 +204,19 @@ def get_today_broadcast(date_str: str | None = None) -> Optional[dict]:
     """
     Return today's already-generated broadcast record, or None if not found.
     Used by the dashboard API to serve cached results without regenerating.
+    Always returns v2-normalized entries.
     """
     date_str = date_str or _today_str()
     history_map = _load_history_map()
-    return history_map.get(date_str)
+    entry = history_map.get(date_str)
+    return _normalize_broadcast(entry) if entry else None
 
 
 def load_broadcast(date_str: str, slot: str = "morning") -> Optional[dict]:
     """
     Alias for get_today_broadcast to support legacy midday skip check in app.py.
     Currently ignore 'slot' as storage schema is date-keyed.
+    Always returns v2-normalized entries.
     """
     return get_today_broadcast(date_str)
 

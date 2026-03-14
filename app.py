@@ -238,9 +238,78 @@ def get_broadcast():
             return jsonify({"error": str(exc)}), 500
         return jsonify(result)
 
-    # Attach slices for the dashboard
-    slices = build_slices(cached, lang=lang)
-    return jsonify({**cached, "slices": slices})
+    # Flatten v2 language-specific data for frontend compatibility
+    from history.conversation import get_lang_data
+    ld = get_lang_data(cached, lang)
+    slices = build_slices({
+        "paragraphs": ld.get("paragraphs", {}),
+        "metadata": ld.get("metadata", {}),
+        "processed_data": cached.get("processed_data", {}),
+        "summaries": ld.get("summaries", {}),
+    }, lang=lang)
+    return jsonify({
+        **cached,
+        "narration_text": ld.get("narration_text", ""),
+        "paragraphs": ld.get("paragraphs", {}),
+        "metadata": ld.get("metadata", {}),
+        "audio_urls": ld.get("audio_urls", {}),
+        "summaries": ld.get("summaries", {}),
+        "slices": slices,
+    })
+
+
+@app.route("/api/tts", methods=["POST"])
+def regenerate_tts():
+    """Re-synthesize TTS audio for both languages from the current broadcast narration."""
+    body = request.get_json(silent=True) or {}
+    date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
+
+    if RUN_MODE == "CLOUD":
+        modal_url = os.environ.get("MODAL_TTS_URL")
+        if not modal_url:
+            return jsonify({"error": "MODAL_TTS_URL not configured"}), 500
+        try:
+            resp = requests.post(modal_url, json={"date": date_str}, timeout=120)
+            return (resp.text, resp.status_code, resp.headers.items())
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    broadcast = get_today_broadcast(date_str)
+    if not broadcast:
+        return jsonify({"error": "No broadcast found"}), 404
+
+    from history.conversation import get_lang_data
+    updated_langs = dict(broadcast.get("langs", {}))
+    tts_ts = datetime.now(_TAIPEI_TZ).isoformat()
+
+    for _lang in ["zh-TW", "en"]:
+        ld = get_lang_data(broadcast, _lang)
+        text = ld.get("narration_text", "")
+        if not text:
+            continue
+        try:
+            url = synthesise_with_cache(text, _lang, date_str, "manual")
+            if _lang in updated_langs:
+                updated_langs[_lang] = {**updated_langs[_lang], "audio_urls": {"full_audio_url": url}}
+        except Exception as exc:
+            logger.warning("TTS re-synthesis failed for %s: %s", _lang, exc)
+
+    save_day(
+        date_str=date_str,
+        raw_data=broadcast.get("raw_data", {}),
+        processed_data=broadcast.get("processed_data", {}),
+        langs=updated_langs,
+        tts_generated_at=tts_ts,
+    )
+
+    # Return updated audio URLs for the requested lang
+    req_lang = body.get("lang", "zh-TW")
+    resp_ld = updated_langs.get(req_lang, next(iter(updated_langs.values()), {}))
+    return jsonify({
+        "status": "ok",
+        "tts_generated_at": tts_ts,
+        "audio_urls": resp_ld.get("audio_urls", {}),
+    })
 
 
 @app.route("/api/audio/<path:filename>")
@@ -530,82 +599,108 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         except Exception as _e:
             logger.warning("Condition-change check failed (%s), generating new narration", _e)
 
-    if _skip_narration and _prev_broadcast:
-        # Reuse narration, paragraphs, metadata, summaries, and audio from previous broadcast
-        narration_text = _prev_broadcast.get("narration_text", "")
-        _prev_source = _prev_broadcast.get("metadata", {}).get("narration_source", "unknown")
-        narration_source = f"{_prev_source}_reuse"
-        paragraphs = _prev_broadcast.get("paragraphs", {})
-        metadata = dict(_prev_broadcast.get("metadata", {}))
-        summaries = dict(_prev_broadcast.get("summaries", {}))
-        audio_urls = dict(_prev_broadcast.get("audio_urls", {}))
-        regen_data = None
-        metadata["narration_source"] = narration_source
+    # 4. Generate narration for both languages
+    from history.conversation import get_lang_data
+    _LANGS = ["zh-TW", "en"]
+    langs_data: dict[str, dict] = {}
+    regen_data = None
+    tts_generated_at = None
+
+    # Compute best_window / top_activity once (language-independent)
+    _oi = processed.get("outdoor_index", {})
+    _segs = _oi.get("segments", {})
+    _bw = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
+    _acts = _oi.get("activities", {})
+    if _acts:
+        _mx = max(v["score"] for v in _acts.values())
+        _tied = [k for k, v in _acts.items() if v["score"] == _mx]
+        _ta: str | None = "photography" if ("photography" in _tied and _mx >= 80) else _tied[0]
     else:
-        # 4. Generate narration
+        _ta = None
+
+    if _skip_narration and _prev_broadcast:
+        # Reuse both languages from previous broadcast
+        for _lang in _LANGS:
+            _prev_ld = get_lang_data(_prev_broadcast, _lang)
+            if not _prev_ld:
+                continue
+            _prev_src = _prev_ld.get("metadata", {}).get("narration_source", "unknown")
+            _reuse_meta = dict(_prev_ld.get("metadata", {}))
+            _reuse_meta["narration_source"] = f"{_prev_src}_reuse"
+            langs_data[_lang] = {
+                "narration_text": _prev_ld.get("narration_text", ""),
+                "paragraphs": _prev_ld.get("paragraphs", {}),
+                "metadata": _reuse_meta,
+                "summaries": dict(_prev_ld.get("summaries", {})),
+                "audio_urls": dict(_prev_ld.get("audio_urls", {})),
+            }
+        tts_generated_at = _prev_broadcast.get("tts_generated_at")
+    else:
         narration_provider = (provider_override or config.NARRATION_PROVIDER).upper()
-        yield {"type": "log", "message": f"Building narration via {narration_provider}..."}
-        logger.info("Building narration via %s...", narration_provider)
 
-        narration_text, narration_source = generate_narration_with_fallback(
-            narration_provider, processed, history, date_str, lang=lang
-        )
-        yield {"type": "log", "message": "Narration generated."}
+        for _lang in _LANGS:
+            yield {"type": "log", "message": f"Building {_lang} narration via {narration_provider}..."}
+            logger.info("Building %s narration via %s...", _lang, narration_provider)
 
-        # 5. Extract paragraphs and metadata using v7 parser
-        yield {"type": "log", "message": "Parsing narration structure & metadata (v7)..."}
-        parsed = parse_narration_response(narration_text)
-        paragraphs = parsed["paragraphs"]
-        metadata = parsed["metadata"]
-        regen_data = parsed["regen"]
+            _nar_text, _nar_source = generate_narration_with_fallback(
+                narration_provider, processed, history, date_str, lang=_lang
+            )
 
-        # Diagnostic: warn if metadata extraction failed
-        if not metadata:
-            yield {"type": "log", "message": "⚠ No ---METADATA--- block found in LLM response. Lifestyle cards will use fallbacks."}
-        else:
-            _card_keys = [k for k, v in parsed.get("cards", {}).items() if v and k != "alert"]
-            yield {"type": "log", "message": f"Metadata OK: {len(_card_keys)} card fields populated."}
+            _parsed = parse_narration_response(_nar_text)
+            _paragraphs = _parsed["paragraphs"]
+            _metadata = _parsed["metadata"]
 
-        # Reconstruct "clean" narration text from parsed paragraphs to sync with TTS
-        # This removes any LLM preamble or leftover markers like "P1:"
-        narration_text = "\n\n".join(paragraphs.values())
+            # Capture regen data from the first language parse only
+            if regen_data is None:
+                regen_data = _parsed["regen"]
 
-        metadata["narration_source"] = narration_source
-        metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
-        if processed.get("regenerate_meal_lists"):
-            metadata["regen"] = True
+            if not _metadata:
+                yield {"type": "log", "message": f"\u26a0 No ---METADATA--- in {_lang} LLM response."}
+            else:
+                _ck = [k for k, v in _parsed.get("cards", {}).items() if v and k != "alert"]
+                yield {"type": "log", "message": f"{_lang} metadata OK: {len(_ck)} card fields."}
 
-        # 5.5 Synthesize TTS (LOCAL: eager; MODAL morning: eager; others: on-demand)
-        summaries = parsed.get("cards", {})
+            # Clean narration text
+            _nar_text = "\n\n".join(_paragraphs.values())
 
-        # Pin broadcast-time top_activity + best_window so the insight row and LLM
-        # card text always reference the same point-in-time outdoor conditions.
-        _oi = processed.get("outdoor_index", {})
-        _segs = _oi.get("segments", {})
-        _bw = max(_segs, key=lambda k: _segs[k]["score"]) if _segs else None
-        _acts = _oi.get("activities", {})
-        if _acts:
-            _mx = max(v["score"] for v in _acts.values())
-            _tied = [k for k, v in _acts.items() if v["score"] == _mx]
-            _ta: str | None = "photography" if ("photography" in _tied and _mx >= 80) else _tied[0]
-        else:
-            _ta = None
-        if _bw is not None:
-            summaries["_best_window"] = _bw
-        if _ta is not None:
-            summaries["_top_activity"] = _ta
-            metadata["activity_suggested"] = _ta
+            _metadata["narration_source"] = _nar_source
+            _metadata["narration_model"] = config.GEMINI_PRO_MODEL if _nar_source == "gemini" else (config.CLAUDE_MODEL if _nar_source == "claude" else "Template")
+            if processed.get("regenerate_meal_lists"):
+                _metadata["regen"] = True
 
-        yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
-        try:
-            full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
-        except Exception as exc:
-            logger.warning("TTS failed \u2014 skipping audio.", exc_info=True)
-            yield {"type": "log", "message": f"TTS failed: {exc}"}
-            full_audio_url = None
-        audio_urls = {"full_audio_url": full_audio_url}
+            _summaries = _parsed.get("cards", {})
 
-    # 7. Save
+            # Pin best_window / top_activity into summaries
+            if _bw is not None:
+                _summaries["_best_window"] = _bw
+            if _ta is not None:
+                _summaries["_top_activity"] = _ta
+                _metadata["activity_suggested"] = _ta
+
+            # TTS: morning slot only
+            _audio_urls: dict[str, str | None] = {}
+            if slot == "morning":
+                yield {"type": "log", "message": f"Synthesising {_lang} TTS audio\u2026"}
+                try:
+                    _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, slot)
+                except Exception as _exc:
+                    logger.warning("TTS failed for %s \u2014 skipping audio.", _lang, exc_info=True)
+                    yield {"type": "log", "message": f"TTS failed ({_lang}): {_exc}"}
+                    _audio_url = None
+                _audio_urls = {"full_audio_url": _audio_url}
+                tts_generated_at = datetime.now(_TAIPEI_TZ).isoformat()
+
+            langs_data[_lang] = {
+                "narration_text": _nar_text,
+                "paragraphs": _paragraphs,
+                "metadata": _metadata,
+                "summaries": _summaries,
+                "audio_urls": _audio_urls,
+            }
+
+        yield {"type": "log", "message": "Narration generated for all languages."}
+
+    # 7. Save (v2 schema)
     yield {"type": "log", "message": "Saving broadcast to history..."}
     logger.info("Saving to conversation history...")
     save_day(
@@ -617,19 +712,17 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
             "aqi":            aqi,
         },
         processed_data=processed,
-        narration_text=narration_text,
-        paragraphs=paragraphs,
-        metadata=metadata,
-        audio_urls=audio_urls,
-        summaries=summaries,
+        langs=langs_data,
+        tts_generated_at=tts_generated_at,
     )
 
-    # Track suggestion frequency for catalog rotation
+    # Track suggestion frequency for catalog rotation (use primary language metadata)
+    _primary_meta = langs_data.get("zh-TW", langs_data.get("en", {})).get("metadata", {})
     try:
         from data.catalog_manager import record_suggestion
-        _suggested_meal = metadata.get("meals_suggested", [None])[0] if isinstance(metadata.get("meals_suggested"), list) else metadata.get("meals_suggested")
-        _suggested_loc = metadata.get("locations_suggested", [None])[0] if isinstance(metadata.get("locations_suggested"), list) else metadata.get("locations_suggested")
-        _suggested_act = metadata.get("activity_suggested")
+        _suggested_meal = _primary_meta.get("meals_suggested", [None])[0] if isinstance(_primary_meta.get("meals_suggested"), list) else _primary_meta.get("meals_suggested")
+        _suggested_loc = _primary_meta.get("locations_suggested", [None])[0] if isinstance(_primary_meta.get("locations_suggested"), list) else _primary_meta.get("locations_suggested")
+        _suggested_act = _primary_meta.get("activity_suggested")
         if _suggested_meal or _suggested_loc or _suggested_act:
             record_suggestion(_suggested_meal, _suggested_loc, _suggested_act)
     except Exception:
@@ -658,25 +751,27 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     except Exception as exc:
         logger.warning("Audio cleanup failed: %s", exc)
 
-    # 8. Result
+    # 8. Result — flatten the requested lang for frontend compatibility
+    _resp_ld = langs_data.get(lang, langs_data.get("zh-TW", {}))
     result = {
         "date": date_str,
         "generated_at": datetime.now(_TAIPEI_TZ).isoformat(),
-        "narration_source": narration_source,
-        "narration_text": narration_text,
-        "paragraphs": paragraphs,
-        "metadata": metadata,
-        "audio_urls": audio_urls,
+        "tts_generated_at": tts_generated_at,
+        "narration_source": _resp_ld.get("metadata", {}).get("narration_source", ""),
+        "narration_text": _resp_ld.get("narration_text", ""),
+        "paragraphs": _resp_ld.get("paragraphs", {}),
+        "metadata": _resp_ld.get("metadata", {}),
+        "audio_urls": _resp_ld.get("audio_urls", {}),
         "processed_data": processed,
         "regen": regen_data,
         "slices": build_slices({
-            "paragraphs": paragraphs,
-            "metadata": metadata,
+            "paragraphs": _resp_ld.get("paragraphs", {}),
+            "metadata": _resp_ld.get("metadata", {}),
             "processed_data": processed,
-            "summaries": summaries,
+            "summaries": _resp_ld.get("summaries", {}),
         }, lang=lang),
     }
-    
+
     yield {"type": "log", "message": "Pipeline complete."}
     yield {"type": "result", "payload": result}
 
