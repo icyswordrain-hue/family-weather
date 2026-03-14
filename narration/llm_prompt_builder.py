@@ -73,46 +73,32 @@ Accuracy (1 sentence): Compare yesterday's forecast to actual. If 3 days of hist
 ---METADATA---
 Output exact separator ---METADATA--- then a single JSON:
 {
-  "wardrobe": "1-sentence",
+  "wardrobe": "1-sentence wardrobe advice based on apparent temperature",
+  "wardrobe_tagline": "≤8 words imperative covering wardrobe + rain gear. e.g. 'Light jacket; bring an umbrella.'",
   "rain_gear": true or false,
-  "commute_am": "1-sentence",
-  "commute_pm": "1-sentence",
-  "meal": "single dish name in pinyin, or null if P4 meal section was skipped",
+  "rain_gear_text": "1 sentence — whether to carry umbrella, raincoat, or boots",
+  "commute_am": "1-sentence morning commute summary",
+  "commute_pm": "1-sentence evening commute summary",
+  "commute_tagline": "≤8 words key commute condition. e.g. 'Rain delays — allow extra 15 min.'",
+  "meal": "single dish name in pinyin, or null if P3 meal section was skipped",
+  "meals_text": "1 sentence meal suggestion matching the weather mood",
+  "meals_tagline": "≤8 words food + weather mood. e.g. 'Hot soup weather — try beef noodles.'",
   "outdoor": "1-sentence Dad outing summary, or null if P3 was skipped",
+  "outdoor_tagline": "≤8 words activity + best time. e.g. 'Great for photography — head out before noon.'",
   "garden": "3-5 word gardening tip topic for history tracking",
+  "garden_text": "2 sentences — garden tasks and soil or plant care advice",
+  "garden_tagline": "≤8 words garden task. e.g. 'Skip watering — rain does the job.'",
   "climate": "1-sentence climate control summary, or null if skipped",
+  "hvac_tagline": "≤8 words climate action. e.g. 'Run AC on dry mode today.'",
+  "air_quality_summary": "1 sentence AQI advisory for tomorrow (Good: reassure; Moderate: name pollutant + sensitive groups; Unhealthy: limit outdoor exposure)",
+  "air_quality_tagline": "≤8 words air status. e.g. 'Clean air — no precautions needed.'",
+  "alert_text": "1-2 sentences health risks (cardiac, Ménière's) and commute hazards. Empty string if nothing to flag. Do NOT include air quality.",
+  "alert_level": "INFO or WARNING or CRITICAL. CRITICAL = cardiac/Ménière's; WARNING = safety heads-up; INFO = mild note. Leave alert_text empty for uneventful days.",
   "cardiac_alert": true or false,
   "menieres_alert": true or false,
   "forecast_oneliner": "the bottom-line takeaway from P5",
   "accuracy_grade": "spot on / close / off / first broadcast"
 }
-
----CARDS---
-Output exact separator ---CARDS--- then a single JSON:
-{
-  "wardrobe": "Exactly 1 sentence. What to wear based on apparent temperature only. Do not mention rain or rain gear — that is covered by the rain_gear card.",
-  "wardrobe_tagline": "≤8 words. Imperative. Cover what to wear AND rain gear in one phrase. e.g. 'Light jacket; bring an umbrella.' or 'T-shirt weather, no rain gear needed.'",
-  "rain_gear": "Exactly 1 sentence. Whether to carry umbrella, raincoat, or boots.",
-  "commute": "Exactly 2 sentences. Morning and evening commute road conditions. Must incorporate the exact commute hazards provided in the HINTS.",
-  "commute_tagline": "≤8 words. Key commute condition. e.g. 'Rain delays — allow extra 15 min.' or 'Clear roads, normal commute.'",
-  "meals": "Exactly 1 sentence. Meal suggestion matching the weather mood.",
-  "meals_tagline": "≤8 words. Food suggestion matching weather mood. e.g. 'Hot soup weather — try beef noodles.' or 'Cold noodles and iced tea today.'",
-  "hvac": "1–2 sentences. Air conditioning, heating, or ventilation recommendation. Must use the exact HVAC mode from HINTS. If dehumidifier is recommended in HINTS, say to run the dehumidifier. If windows=open in HINTS, mention opening windows for ventilation; if windows=close, mention keeping windows closed.",
-  "hvac_tagline": "≤8 words. Climate action. e.g. 'Run AC on dry mode today.' or 'Open windows — no AC needed.'",
-  "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
-  "garden_tagline": "≤8 words. Garden task. e.g. 'Skip watering — rain does the job.' or 'Water in the evening, soil is dry.'",
-  "outdoor": "Exactly 2 sentences. You MUST use the exact top outdoor activity provided in the HINTS section. Best time window and any weather caution. Must reflect the provided outdoor grade from the HINTS.",
-  "outdoor_tagline": "≤8 words. Activity + best time. e.g. 'Great for photography — head out before noon.' or 'Stay in today, rain all day.'",
-  "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant, note that sensitive groups should take care, and suggest running an air purifier indoors. If Unhealthy or above: recommend limiting outdoor exposure, keeping windows closed, and running an air purifier.",
-  "air_quality_tagline": "≤8 words. Air status tomorrow. e.g. 'Clean air — no precautions needed.' or 'Poor air — limit outdoor time.'",
-  "alert": {
-    "text": "1–2 sentences. Summarise today's health risks (cardiac, Ménière's) and commute hazards from P1. Do NOT include air quality — that has its own dedicated card. If nothing significant to flag, leave this as an empty string.",
-    "level": "INFO or WARNING or CRITICAL"
-  }
-}
-
-All card values must be written in the same language as the narration paragraphs above.
-Level guide: CRITICAL = cardiac or Ménière's health risk mentioned in P1; WARNING = significant commute or safety heads-up; INFO = mild health or commute note. Leave text empty for clear uneventful days.
 """
 
 V7_SYSTEM_PROMPT_EN = V7_SYSTEM_PROMPT  # alias — English prompt is unchanged
@@ -157,48 +143,34 @@ P5 — 預報與準確度（最多 4 句）：
 準確度（1 句）：對比昨天預報與實際天氣。若有 3 天歷史則說明趨勢（如「三天中兩天接近」）。使用：準確／接近／偏離。
 
 ---METADATA---
-輸出 ---METADATA--- 後接 JSON：
+輸出 ---METADATA--- 後接 JSON（鍵名保持英文，值用繁體中文）：
 {
-  "wardrobe": "1句話",
+  "wardrobe": "1句話穿著建議",
+  "wardrobe_tagline": "≤8字命令式，涵蓋穿著與雨具。例如：「輕薄外套，記得帶傘。」",
   "rain_gear": true 或 false,
-  "commute_am": "1句話",
-  "commute_pm": "1句話",
-  "meal": "單一菜名拼音，若跳過 P4 則為 null",
+  "rain_gear_text": "1句話——是否需要雨傘、雨衣或雨靴",
+  "commute_am": "1句話早上通勤摘要",
+  "commute_pm": "1句話傍晚通勤摘要",
+  "commute_tagline": "≤8字通勤關鍵狀況。例如：「雨天延誤，多留15分鐘。」",
+  "meal": "單一菜名，若跳過則為 null",
+  "meals_text": "1句話符合天氣心情的餐食建議",
+  "meals_tagline": "≤8字餐食推薦。例如：「適合來碗熱牛肉麵。」",
   "outdoor": "1句話爸爸外出摘要，若跳過 P3 則為 null",
+  "outdoor_tagline": "≤8字活動＋最佳時段。例如：「適合攝影，午前出發最佳。」",
   "garden": "3-5 字的花園主題用以歷史追蹤",
+  "garden_text": "2句話——花園工作和土壤或植物護理建議",
+  "garden_tagline": "≤8字花園任務。例如：「今天有雨，免澆水。」",
   "climate": "1句話空調摘要，若跳過則為 null",
+  "hvac_tagline": "≤8字空調行動。例如：「開除濕模式即可。」",
+  "air_quality_summary": "1句話明日 AQI 建議（良好：令人放心；普通：指出主要污染物；不健康：建議減少戶外活動）",
+  "air_quality_tagline": "≤8字明日空氣狀況。例如：「空氣清新，無需防護。」",
+  "alert_text": "1-2句話健康風險（心臟、梅尼爾氏症）及通勤危險摘要。不含空氣品質。若無事項則留空字串。",
+  "alert_level": "INFO 或 WARNING 或 CRITICAL。CRITICAL=心臟或梅尼爾氏症；WARNING=安全提示；INFO=輕微注意。",
   "cardiac_alert": true 或 false,
   "menieres_alert": true 或 false,
   "forecast_oneliner": "字串",
   "accuracy_grade": "字串"
 }
-
----CARDS---
-輸出 ---CARDS--- 後接 JSON：
-{
-  "wardrobe": "精確 1 句話。根據體感溫度說明穿著建議。不要提及雨具或降雨，那屬於 rain_gear 卡片。",
-  "wardrobe_tagline": "≤8 個中文字或詞。命令式。同時涵蓋穿著與雨具建議。例如：「輕薄外套，記得帶傘。」或「短袖天氣，不需雨具。」",
-  "rain_gear": "精確 1 句話。是否需要攜帶雨傘、雨衣或雨靴。",
-  "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。必須整合 HINTS 中提供的通勤危險提示。",
-  "commute_tagline": "≤8 個中文字或詞。通勤關鍵狀況。例如：「雨天延誤，多留15分鐘。」或「路況順暢，正常出發。」",
-  "meals": "精確 1 句話。符合天氣心情的餐食建議。",
-  "meals_tagline": "≤8 個中文字或詞。符合天氣的餐食推薦。例如：「適合來碗熱牛肉麵。」或「清爽涼麵最對味。」",
-  "hvac": "1–2 句話。空調、暖氣、除濕或通風建議。必須使用 HINTS 中的空調模式。若 HINTS 建議除濕機，請說明需要開除濕機。若 windows=open，請說明開窗通風；若 windows=close，請說明關閉窗戶。",
-  "hvac_tagline": "≤8 個中文字或詞。空調行動。例如：「開除濕模式即可。」或「開窗通風，不需空調。」",
-  "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
-  "garden_tagline": "≤8 個中文字或詞。花園任務。例如：「今天有雨，免澆水。」或「傍晚澆水，土壤偏乾。」",
-  "outdoor": "精確 2 句話。必須使用 HINTS 中提供的精確最佳戶外活動。最佳時間窗口及天氣注意事項。必須反映 HINTS 中提供的戶外等級。",
-  "outdoor_tagline": "≤8 個中文字或詞。活動＋最佳時段。例如：「適合攝影，午前出發最佳。」或「整天有雨，建議待在室內。」",
-  "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意，建議可考慮在室內開啟空氣清淨機。若不健康或以上：建議減少戶外活動、關閉窗戶並開啟空氣清淨機。",
-  "air_quality_tagline": "≤8 個中文字或詞。明日空氣狀況。例如：「空氣清新，無需防護。」或「空氣不佳，減少戶外活動。」",
-  "alert": {
-    "text": "1–2 句話。摘要 P1 中的健康風險（心臟、梅尼爾氏症）及通勤危險。不要包含空氣品質資訊——那已有專屬卡片。若無特別需要提醒的事項，請留空字串。",
-    "level": "INFO 或 WARNING 或 CRITICAL"
-  }
-}
-
-所有卡片值必須使用與上方廣播段落相同的語言（繁體中文）撰寫。
-等級說明：CRITICAL = P1 提及的心臟或梅尼爾氏症健康風險；WARNING = 重要通勤或安全提示；INFO = 輕微健康或通勤注意事項。平靜無事的一天請留空字串。
 """
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -208,7 +180,7 @@ P5 — 預報與準確度（最多 4 句）：
 REGEN_INSTRUCTION = """
 
 SPECIAL TASK — Database Refresh (runs every 14 days):
-After the ---CARDS--- JSON, add a separator ---REGEN--- on its own line, then output a single JSON object with two keys:
+After the ---METADATA--- JSON, add a separator ---REGEN--- on its own line, then output a single JSON object with two keys:
 
 {
   "meals": {
@@ -368,33 +340,27 @@ def parse_narration_response(raw_response: str) -> dict:
     paragraphs = [p.strip() for p in narration_text.split("\n\n") if p.strip()]
     _assign_paragraphs(paragraphs, result)
 
-    # ── Parse metadata + optional cards + optional regen ─────────────────
+    # ── Parse metadata + optional regen ──────────────────────────────────
     if len(parts) > 1:
         remainder = parts[1].strip()
 
-        # Split off ---CARDS--- first (if present)
-        cards_parts = remainder.split("---CARDS---", 1)
-        metadata_text = cards_parts[0].strip()
-        cards_and_regen = cards_parts[1].strip() if len(cards_parts) > 1 else ""
-
-        # Then split cards from ---REGEN---
-        regen_parts = cards_and_regen.split("---REGEN---", 1)
-        cards_text = regen_parts[0].strip()
+        # Split off ---REGEN--- (if present)
+        regen_parts = remainder.split("---REGEN---", 1)
+        metadata_text = regen_parts[0].strip()
         regen_text = regen_parts[1].strip() if len(regen_parts) > 1 else ""
+
+        # Handle legacy responses that still contain ---CARDS---
+        cards_parts = metadata_text.split("---CARDS---", 1)
+        metadata_text = cards_parts[0].strip()
 
         try:
             result["metadata"] = json.loads(metadata_text)
         except json.JSONDecodeError:
             logger.warning("Failed to parse ---METADATA--- JSON: %s", metadata_text[:200])  # type: ignore
 
-        if cards_text:
-            try:
-                raw = cards_text.strip("` \n")
-                if raw.startswith("json"):
-                    raw = raw[4:].strip()  # type: ignore
-                result["cards"] = json.loads(raw)
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse ---CARDS--- JSON: %s", cards_text[:200])  # type: ignore
+        # Derive cards from metadata fields
+        meta = result["metadata"]
+        result["cards"] = _derive_cards_from_metadata(meta if isinstance(meta, dict) else {})
 
         if regen_text:
             try:
@@ -403,6 +369,38 @@ def parse_narration_response(raw_response: str) -> dict:
                 logger.warning("Failed to parse ---REGEN--- JSON")
 
     return result
+
+
+def _derive_cards_from_metadata(meta: dict | None) -> dict:
+    """Build the cards dict from expanded METADATA fields.
+
+    This replaces the former ---CARDS--- LLM output block, deriving
+    card text and taglines from metadata instead.
+    """
+    if not meta:
+        return {}
+
+    return {
+        "wardrobe": meta.get("wardrobe", ""),
+        "wardrobe_tagline": meta.get("wardrobe_tagline", ""),
+        "rain_gear": meta.get("rain_gear_text", ""),
+        "commute": f"{meta.get('commute_am', '')} {meta.get('commute_pm', '')}".strip(),
+        "commute_tagline": meta.get("commute_tagline", ""),
+        "meals": meta.get("meals_text", ""),
+        "meals_tagline": meta.get("meals_tagline", ""),
+        "hvac": meta.get("climate", ""),
+        "hvac_tagline": meta.get("hvac_tagline", ""),
+        "garden": meta.get("garden_text", ""),
+        "garden_tagline": meta.get("garden_tagline", ""),
+        "outdoor": meta.get("outdoor", ""),
+        "outdoor_tagline": meta.get("outdoor_tagline", ""),
+        "air_quality": meta.get("air_quality_summary", ""),
+        "air_quality_tagline": meta.get("air_quality_tagline", ""),
+        "alert": {
+            "text": meta.get("alert_text", ""),
+            "level": meta.get("alert_level", "INFO"),
+        },
+    }
 
 
 def _assign_paragraphs(paragraphs: list[str], result: dict) -> None:

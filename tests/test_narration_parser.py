@@ -1,48 +1,45 @@
-"""tests/test_narration_parser.py — Tests for parse_narration_response() ---CARDS--- extraction
-and for ---CARDS--- presence in the EN/ZH system prompts.
+"""tests/test_narration_parser.py — Tests for parse_narration_response() card derivation
+from expanded ---METADATA--- fields and system prompt structure.
 """
 import pytest
 from narration.llm_prompt_builder import (
     parse_narration_response,
-    V6_SYSTEM_PROMPT_EN,
-    V6_SYSTEM_PROMPT_ZH,
+    V7_SYSTEM_PROMPT_EN,
+    V7_SYSTEM_PROMPT_ZH,
 )
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 MOCK_METADATA = (
-    '{"wardrobe": "light jacket", "rain_gear": false, "commute_am": "clear",'
-    ' "commute_pm": "clear", "meal": null, "outdoor": null, "garden": "watering",'
-    ' "climate": null, "cardiac_alert": false, "menieres_alert": false,'
+    '{"wardrobe": "light jacket", "wardrobe_tagline": "Light jacket; no rain gear needed.",'
+    ' "rain_gear": false, "rain_gear_text": "No rain expected. Leave the umbrella at home.",'
+    ' "commute_am": "Morning drive looks clear.", "commute_pm": "Evening should be smooth.",'
+    ' "commute_tagline": "Clear roads, normal commute.",'
+    ' "meal": null, "meals_text": "A warm soup suits the cool evening.",'
+    ' "meals_tagline": "Warm soup for a cool evening.",'
+    ' "outdoor": "Conditions are excellent for a walk.", "outdoor_tagline": "Great for walking — head out mid-morning.",'
+    ' "garden": "watering", "garden_text": "Check soil moisture in the morning. Tomatoes may need watering.",'
+    ' "garden_tagline": "Check soil; water tomatoes.",'
+    ' "climate": "No HVAC needed today.", "hvac_tagline": "Open windows — no AC needed.",'
+    ' "air_quality_summary": "Tomorrow air looks clean — no precautions needed.",'
+    ' "air_quality_tagline": "Clean air — no precautions.",'
+    ' "alert_text": "A pleasant day overall.", "alert_level": "INFO",'
+    ' "cardiac_alert": false, "menieres_alert": false,'
     ' "forecast_oneliner": "warm day", "accuracy_grade": "spot on"}'
-)
-
-MOCK_CARDS = (
-    '{"wardrobe": "Wear a light jacket. Temps will be mild.",'
-    ' "rain_gear": "No rain expected. Leave the umbrella at home.",'
-    ' "commute": "Morning drive looks clear. Evening should be smooth.",'
-    ' "meals": "A warm soup suits the cool evening. Keep lunch light.",'
-    ' "hvac": "No HVAC needed today. Open a window for fresh air.",'
-    ' "garden": "Check soil moisture in the morning. Tomatoes may need watering.'
-    ' Avoid pruning in afternoon heat. Mulch retains moisture well.",'
-    ' "outdoor": "Conditions are excellent for a walk. Choose flat routes for Dad.'
-    ' Mid-morning is the best window. Bring water and sunscreen.",'
-    ' "alert": {"text": "A pleasant day overall.", "level": "INFO"}}'
 )
 
 MOCK_RESPONSE = f"""P1 conditions paragraph.
 
 P2 garden and commute paragraph.
 
-P5 forecast paragraph.
+P3 outdoor and meal paragraph.
 
-P6 accuracy paragraph.
+P4 hvac and air quality paragraph.
+
+P5 forecast paragraph.
 
 ---METADATA---
 {MOCK_METADATA}
-
----CARDS---
-{MOCK_CARDS}
 """
 
 MOCK_RESPONSE_WITH_REGEN = (
@@ -53,13 +50,13 @@ MOCK_RESPONSE_WITH_REGEN = (
 
 # ── parse_narration_response() tests ─────────────────────────────────────────
 
-def test_parse_extracts_cards():
+def test_parse_derives_cards_from_metadata():
     result = parse_narration_response(MOCK_RESPONSE)
     cards = result.get("cards", {})
     assert "wardrobe" in cards
     assert "outdoor" in cards
     assert "alert" in cards
-    assert len(cards["wardrobe"].split(".")) >= 2
+    assert cards["wardrobe"] == "light jacket"
 
 
 def test_parse_cards_alert_is_dict():
@@ -99,24 +96,58 @@ def test_parse_paragraphs_still_assigned():
     assert "p2_garden_commute" in paragraphs
 
 
+def test_commute_card_combines_am_pm():
+    result = parse_narration_response(MOCK_RESPONSE)
+    commute = result["cards"]["commute"]
+    assert "Morning" in commute
+    assert "Evening" in commute
+
+
+def test_taglines_populated_from_metadata():
+    result = parse_narration_response(MOCK_RESPONSE)
+    cards = result["cards"]
+    assert cards["wardrobe_tagline"] == "Light jacket; no rain gear needed."
+    assert cards["commute_tagline"] == "Clear roads, normal commute."
+    assert cards["meals_tagline"] == "Warm soup for a cool evening."
+
+
 # ── System prompt tests ───────────────────────────────────────────────────────
 
-_CARD_KEYS = ["wardrobe", "rain_gear", "commute", "meals", "hvac", "garden", "outdoor", "alert"]
+_METADATA_KEYS = [
+    "wardrobe", "wardrobe_tagline", "rain_gear", "rain_gear_text",
+    "commute_am", "commute_pm", "commute_tagline",
+    "meal", "meals_text", "meals_tagline",
+    "outdoor", "outdoor_tagline",
+    "garden", "garden_text", "garden_tagline",
+    "climate", "hvac_tagline",
+    "air_quality_summary", "air_quality_tagline",
+    "alert_text", "alert_level",
+    "cardiac_alert", "menieres_alert",
+    "forecast_oneliner", "accuracy_grade",
+]
 
 
-def test_en_system_prompt_contains_cards_separator():
-    assert "---CARDS---" in V6_SYSTEM_PROMPT_EN
+def test_en_system_prompt_contains_metadata_separator():
+    assert "---METADATA---" in V7_SYSTEM_PROMPT_EN
 
 
-def test_en_system_prompt_contains_all_card_keys():
-    for key in _CARD_KEYS:
-        assert f'"{key}"' in V6_SYSTEM_PROMPT_EN, f"Missing key '{key}' in EN prompt"
+def test_en_system_prompt_no_cards_separator():
+    assert "---CARDS---" not in V7_SYSTEM_PROMPT_EN
 
 
-def test_zh_system_prompt_contains_cards_separator():
-    assert "---CARDS---" in V6_SYSTEM_PROMPT_ZH
+def test_en_system_prompt_contains_all_metadata_keys():
+    for key in _METADATA_KEYS:
+        assert f'"{key}"' in V7_SYSTEM_PROMPT_EN, f"Missing key '{key}' in EN prompt"
 
 
-def test_zh_system_prompt_contains_all_card_keys():
-    for key in _CARD_KEYS:
-        assert f'"{key}"' in V6_SYSTEM_PROMPT_ZH, f"Missing key '{key}' in ZH prompt"
+def test_zh_system_prompt_contains_metadata_separator():
+    assert "---METADATA---" in V7_SYSTEM_PROMPT_ZH
+
+
+def test_zh_system_prompt_no_cards_separator():
+    assert "---CARDS---" not in V7_SYSTEM_PROMPT_ZH
+
+
+def test_zh_system_prompt_contains_all_metadata_keys():
+    for key in _METADATA_KEYS:
+        assert f'"{key}"' in V7_SYSTEM_PROMPT_ZH, f"Missing key '{key}' in ZH prompt"

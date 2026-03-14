@@ -1,4 +1,4 @@
-"""tests/test_fallback_narrator.py — Unit tests for the fallback narrator CARDS output."""
+"""tests/test_fallback_narrator.py — Unit tests for the fallback narrator metadata-derived cards."""
 from narration.fallback_narrator import build_narration
 from narration.llm_prompt_builder import parse_narration_response
 
@@ -27,14 +27,15 @@ MINIMAL_PROCESSED = {
 }
 
 
-def test_fallback_produces_cards_block():
-    """build_narration must include a parseable ---CARDS--- JSON block."""
+def test_fallback_no_cards_block():
+    """build_narration should NOT include a ---CARDS--- block (cards are derived from metadata)."""
     text = build_narration(MINIMAL_PROCESSED, date_str="2026-02-28")
-    assert "---CARDS---" in text
+    assert "---CARDS---" not in text
+    assert "---METADATA---" in text
 
 
 def test_cards_have_all_required_keys():
-    """Parsed cards must have wardrobe, rain_gear, commute, meals, hvac, garden, outdoor, alert."""
+    """Parsed cards (derived from metadata) must have wardrobe, rain_gear, commute, meals, hvac, garden, outdoor, alert."""
     text = build_narration(MINIMAL_PROCESSED, date_str="2026-02-28")
     parsed = parse_narration_response(text)
     cards = parsed["cards"]
@@ -85,3 +86,19 @@ def test_zh_cards_use_chinese():
     # Chinese characters appear in at least one card
     all_text = " ".join(str(v) for v in parsed["cards"].values() if isinstance(v, str))
     assert any('\u4e00' <= c <= '\u9fff' for c in all_text), "Expected Chinese characters in ZH cards"
+
+
+def test_metadata_has_expanded_card_fields():
+    """Metadata should include the expanded card fields (taglines, text, etc.)."""
+    text = build_narration(MINIMAL_PROCESSED, date_str="2026-02-28")
+    parsed = parse_narration_response(text)
+    meta = parsed["metadata"]
+    assert "wardrobe_tagline" in meta
+    assert "rain_gear_text" in meta
+    assert "commute_tagline" in meta
+    assert "meals_text" in meta
+    assert "garden_text" in meta
+    assert "hvac_tagline" in meta
+    assert "air_quality_summary" in meta
+    assert "alert_text" in meta
+    assert "alert_level" in meta
