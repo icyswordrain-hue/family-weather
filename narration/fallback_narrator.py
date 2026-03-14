@@ -1,7 +1,7 @@
 """
 narration/fallback_narrator.py — Builds a plain-text weather broadcast from processed data
-without using any LLM. Appends ---METADATA--- and ---CARDS--- sections so the output
-is parseable by parse_narration_response(), matching the LLM response format.
+without using any LLM. Appends ---METADATA--- section (with expanded card fields) so the
+output is parseable by parse_narration_response(), matching the LLM response format.
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ def build_narration(
     """
     Generate a structured weather broadcast from processed data.
 
-    Appends ---METADATA--- and ---CARDS--- JSON sections so that
-    parse_narration_response() can populate lifestyle card summaries,
+    Appends ---METADATA--- JSON section (with expanded card fields) so that
+    parse_narration_response() can derive lifestyle card summaries,
     matching the LLM output format.
 
     Args:
@@ -241,17 +241,49 @@ def build_narration(
 
     narration_text = "\n\n".join(lines)
 
-    # ── Structured sections (matches LLM output format) ───────────────────────
+    # ── Structured section (matches LLM output format) ────────────────────────
     metadata = _build_fallback_metadata(processed, history)
     cards = _build_fallback_cards(processed, history, lang)
+
+    # Merge card data into metadata as expanded fields
+    # (parse_narration_response derives cards from these metadata fields)
+    metadata["rain_gear_text"] = cards.get("rain_gear", "")
+    metadata["wardrobe_tagline"] = _truncate_tagline(cards.get("wardrobe", ""))
+    metadata["commute_tagline"] = _truncate_tagline(cards.get("commute", ""))
+    metadata["meals_text"] = cards.get("meals", "")
+    metadata["meals_tagline"] = _truncate_tagline(cards.get("meals", ""))
+    metadata["outdoor_tagline"] = _truncate_tagline(cards.get("outdoor", ""))
+    metadata["garden_text"] = cards.get("garden", "")
+    metadata["garden_tagline"] = _truncate_tagline(cards.get("garden", ""))
+    metadata["hvac_tagline"] = _truncate_tagline(cards.get("hvac", ""))
+    metadata["air_quality_summary"] = cards.get("air_quality", "")
+    metadata["air_quality_tagline"] = _truncate_tagline(cards.get("air_quality", ""))
+    alert = cards.get("alert", {})
+    if isinstance(alert, dict):
+        metadata["alert_text"] = alert.get("text", "")
+        metadata["alert_level"] = alert.get("level", "INFO")
+    else:
+        metadata["alert_text"] = ""
+        metadata["alert_level"] = "INFO"
 
     return (
         narration_text
         + "\n\n---METADATA---\n"
         + json.dumps(metadata, ensure_ascii=False)
-        + "\n\n---CARDS---\n"
-        + json.dumps(cards, ensure_ascii=False)
     )
+
+
+def _truncate_tagline(text: str, max_words: int = 8) -> str:
+    """Truncate text to at most max_words for use as a card tagline."""
+    if not text:
+        return ""
+    # For Chinese text (no spaces between words), just truncate to ~16 chars
+    if any('\u4e00' <= c <= '\u9fff' for c in text[:5]):
+        return text[:16].rstrip("，。、；") + ("" if len(text) <= 16 else "")
+    words = text.split()
+    if len(words) <= max_words:
+        return text.rstrip(".")
+    return " ".join(words[:max_words]).rstrip(".,;—") + "."
 
 
 def _build_fallback_metadata(processed: dict, history: list[dict] | None) -> dict:

@@ -69,9 +69,12 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
         audio = _render_edge_tts(text, lang)
         return _upload_to_gcs(audio, gcs_path)
 
-    # LOCAL mode
+    # LOCAL mode — match MODAL: cache check + date subdirectory
+    local_path = Path(LOCAL_DATA_DIR) / gcs_path  # local_data/audio/{date}/...
+    if local_path.exists():
+        log.info("TTS cache hit (local): %s", local_path)
+        return f"/api/audio/{rel_path}"
     audio = _render_edge_tts(text, lang)
-    out = Path("local_data/audio") / Path(gcs_path).name
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(audio)
-    return f"/local_assets/audio/{out.name}"
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    local_path.write_bytes(audio)
+    return f"/api/audio/{rel_path}"

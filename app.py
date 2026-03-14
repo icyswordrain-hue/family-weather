@@ -324,22 +324,6 @@ def refresh():
 
     slot = classify_run_slot(body)
 
-    if slot == "midday":
-        try:
-            from data.fetch_cwa import fetch_current_conditions
-            from history.conversation import load_broadcast
-            current = fetch_current_conditions()
-            m_broadcast = load_broadcast(date_str, slot="morning")
-            morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
-            if morning:
-                changed, reasons = _conditions_changed(current, morning)
-                if not changed:
-                    logger.info("Midday skip: conditions unchanged")
-                    return jsonify({"status": "skipped", "broadcast": m_broadcast}), 200
-                logger.info(f"Midday proceeding: {reasons}")
-        except Exception as e:
-            logger.warning(f"Midday skip check failed ({e}), running full pipeline")
-
     if RUN_MODE == "CLOUD":
         # Proxy to Modal
         modal_url = os.environ.get("MODAL_REFRESH_URL")
@@ -428,6 +412,26 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     _refresh_counter += 1
     yield {"type": "log", "message": f"Starting pipeline for {date_str} (refresh #{_refresh_counter})"}
     logger.info("Starting pipeline for %s (refresh #%d)", date_str, _refresh_counter)
+
+    # 0. Midday skip check — runs inside the pipeline so it uses the correct
+    #    storage backend (local file in LOCAL/MODAL, GCS in CLOUD).
+    if slot == "midday":
+        try:
+            from history.conversation import load_broadcast
+            current_obs = fetch_current_conditions()
+            m_broadcast = load_broadcast(date_str, slot="morning")
+            morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
+            if morning:
+                changed, reasons = _conditions_changed(current_obs, morning)
+                if not changed:
+                    logger.info("Midday skip: conditions unchanged")
+                    yield {"type": "log", "message": "Midday skip: conditions unchanged since morning"}
+                    yield {"type": "result", "payload": {"status": "skipped", "broadcast": m_broadcast}}
+                    return
+                logger.info("Midday proceeding: %s", reasons)
+                yield {"type": "log", "message": f"Midday proceeding: {', '.join(reasons)}"}
+        except Exception as e:
+            logger.warning("Midday skip check failed (%s), running full pipeline", e)
 
     # 1. Fetch raw data
     try:
