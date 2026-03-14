@@ -1383,6 +1383,37 @@ html.dark .audio-toggle-btn.active {
   white-space: pre-line;
 }
 
+.ls-card:not(.expanded) .ls-text { display: none; }
+
+.ls-details-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ls-details-toggle:hover { color: var(--text); }
+
+.ls-expand-all-btn {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  align-self: center;
+}
+.ls-expand-all-btn:hover { color: var(--text); border-color: var(--text); }
+
 .ls-sub {
   font-size: 0.75rem;
   color: var(--muted);
@@ -1422,6 +1453,11 @@ html[lang="zh-TW"] .ls-badge {
 
 html[lang="zh-TW"] .ls-alert-msg {
   font-size: 1.05rem;
+}
+
+html[lang="zh-TW"] .ls-details-toggle,
+html[lang="zh-TW"] .ls-expand-all-btn {
+  font-size: 0.9rem;
 }
 
 html[lang="zh-TW"] .nav-item {

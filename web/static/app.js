@@ -239,6 +239,10 @@ const TRANSLATIONS = {
     log_step_prefix: 'Step: ',
     log_runtime_error: 'Runtime Error: ',
     no_7day: '7-day forecast unavailable',
+    ls_details_show: 'Details ▾',
+    ls_details_hide: 'Hide ▴',
+    ls_expand_all: 'Expand All',
+    ls_collapse_all: 'Collapse All',
     metrics: {
       // Air quality purifier advice (zh-TW → en, for when broadcast was generated in zh-TW)
       '關閉窗戶並開啟空氣清淨機。': 'Close windows and run the air purifier.',
@@ -311,6 +315,10 @@ const TRANSLATIONS = {
     log_step_prefix: '步驟：',
     log_runtime_error: '執行錯誤：',
     no_7day: '七日預報暫不可用',
+    ls_details_show: '詳細 ▾',
+    ls_details_hide: '收起 ▴',
+    ls_expand_all: '全展開',
+    ls_collapse_all: '全收合',
     metrics: {
       'Near Saturated': '接近飽和', 'Clammy': '悶濕',
       'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
@@ -931,11 +939,34 @@ function translateAQIText(status) {
 }
 
 // ── View 3: Lifestyle ──────────────────────────────────────────────────────
+function updateExpandAllBtn() {
+  const btn = document.getElementById('ls-expand-all-btn');
+  if (!btn) return;
+  const cards = document.querySelectorAll('#lifestyle-grid .ls-card');
+  const allExpanded = cards.length > 0 && [...cards].every(c => c.classList.contains('expanded'));
+  btn.textContent = allExpanded ? (T.ls_collapse_all || 'Collapse All') : (T.ls_expand_all || 'Expand All');
+}
+
 function renderLifestyleView(data) {
   if (!data) return;
   const grid = document.getElementById('lifestyle-grid');
   if (!grid) return;
   grid.innerHTML = '';
+
+  // Wire expand-all button (re-wired each render to capture fresh card refs)
+  const expandAllBtn = document.getElementById('ls-expand-all-btn');
+  if (expandAllBtn) {
+    expandAllBtn.onclick = () => {
+      const cards = document.querySelectorAll('#lifestyle-grid .ls-card');
+      const allExpanded = cards.length > 0 && [...cards].every(c => c.classList.contains('expanded'));
+      cards.forEach(card => {
+        card.classList.toggle('expanded', !allExpanded);
+        const tog = card.querySelector('.ls-details-toggle');
+        if (tog) tog.textContent = !allExpanded ? (T.ls_details_hide || 'Hide ▴') : (T.ls_details_show || 'Details ▾');
+      });
+      updateExpandAllBtn();
+    };
+  }
 
   const add = (icon, title, text, extraNodes = []) => {
     const card = document.createElement('div');
@@ -954,6 +985,15 @@ function renderLifestyleView(data) {
     content.appendChild(t);
     content.appendChild(txt);
     extraNodes.forEach(n => content.appendChild(n));
+    const toggle = document.createElement('button');
+    toggle.className = 'ls-details-toggle';
+    toggle.textContent = T.ls_details_show || 'Details ▾';
+    toggle.addEventListener('click', () => {
+      const expanded = card.classList.toggle('expanded');
+      toggle.textContent = expanded ? (T.ls_details_hide || 'Hide ▴') : (T.ls_details_show || 'Details ▾');
+      updateExpandAllBtn();
+    });
+    content.appendChild(toggle);
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);
@@ -1099,6 +1139,7 @@ function renderLifestyleView(data) {
     }
     add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
+  updateExpandAllBtn();
 }
 
 // ── System Theme ───────────────────────────────────────────────────────────
