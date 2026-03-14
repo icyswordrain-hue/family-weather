@@ -38,10 +38,10 @@ def test_local_tts_is_eager(
     mock_tts.assert_called_once()
 
 
-# ── CLOUD mode: TTS should remain None ────────────────────────────────────────
+# ── CLOUD mode: TTS is now also eager (no more on-demand) ─────────────────────
 
 @patch("app.RUN_MODE", "CLOUD")
-@patch("app.synthesise_with_cache")
+@patch("app.synthesise_with_cache", return_value="/api/audio/test.mp3")
 @patch("app.build_slices", return_value={})
 @patch("app.save_day")
 @patch("app.parse_narration_response", return_value={
@@ -55,15 +55,15 @@ def test_local_tts_is_eager(
 @patch("app.fetch_current_conditions", return_value={})
 @patch("app.load_history", return_value=[])
 @patch("app.check_regen_cycle", return_value=False)
-def test_cloud_tts_is_deferred(
+def test_cloud_tts_is_eager(
     mock_regen, mock_hist, mock_cur, mock_fc, mock_7d, mock_aqi,
     mock_proc, mock_narr, mock_parse, mock_save, mock_slices, mock_tts
 ):
     import app
     result = _collect_result(app._pipeline_steps("2026-03-01", lang="en"))
     assert result is not None
-    assert result["audio_urls"]["full_audio_url"] is None
-    mock_tts.assert_not_called()
+    assert result["audio_urls"]["full_audio_url"] == "/api/audio/test.mp3"
+    mock_tts.assert_called_once()
 
 
 # Task 2 — transcript invariant (unit-level; JS tested manually)

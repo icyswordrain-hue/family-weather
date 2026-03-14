@@ -107,27 +107,3 @@ def audio(filename: str):
     return Response(audio_path.read_bytes(), media_type="audio/mpeg")
 
 
-@app.function(image=image, secrets=secrets, volumes={"/data": volume}, timeout=60)
-@modal.fastapi_endpoint(method="POST")
-def tts(payload: dict = None):
-    """On-demand TTS synthesis. Writes to Modal volume and returns /api/audio/... URL."""
-    import sys
-    _bootstrap_gcp_credentials()
-    os.environ["RUN_MODE"] = "MODAL"
-    sys.path.insert(0, "/app")
-
-    body = payload or {}
-    script = body.get("script", "")
-    lang   = body.get("lang", "zh-TW")
-    date   = body.get("date", datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d"))
-    slot   = body.get("slot", "midday")
-
-    from narration.tts_client import synthesise_with_cache
-    url = synthesise_with_cache(script, lang, date, slot)
-
-    try:
-        volume.commit()
-    except Exception:
-        pass
-
-    return {"url": url}

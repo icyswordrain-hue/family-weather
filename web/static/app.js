@@ -1243,42 +1243,7 @@ function initPlayerBar() {
   window._playerBarSetAudio = function (audioUrl, paragraphs, meta) {
     const audio = document.getElementById('player-audio');
 
-    if (!audioUrl) {
-      const date = broadcastData?.date || '';
-      const slot = broadcastData?.slot || 'midday';
-      const lang = getLang();
-      const script = paragraphs.map(p => p.text).join('\n\n');
-
-      const playBtn = document.getElementById('player-play-btn');
-
-      const newBtn = playBtn.cloneNode(true);
-      playBtn.parentNode.replaceChild(newBtn, playBtn);
-
-      newBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (newBtn.classList.contains('fetching')) return;
-
-        if (!audio.src || audio.src === location.href) {
-          newBtn.classList.add('fetching');
-          try {
-            const res = await fetch('/api/tts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ script, lang, date, slot }),
-            });
-            const { url } = await res.json();
-            audio.src = url;
-            audio.play();
-          } catch (err) {
-            console.error("TTS fetch failed", err);
-          } finally {
-            newBtn.classList.remove('fetching');
-          }
-        } else {
-          audio.paused ? audio.play() : audio.pause();
-        }
-      });
-    } else {
+    if (audioUrl) {
       audio.src = audioUrl;
     }
 

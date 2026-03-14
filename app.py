@@ -41,7 +41,6 @@ from backend.pipeline import (
     generate_narration_with_fallback,
 )
 
-_regen_cache = {}
 _broadcast_cache: dict[str, dict] = {}  # keyed by date; populated by /api/broadcast in CLOUD mode
 _chat_context_cache: dict[str, tuple[str, float]] = {}  # keyed by "date:lang"; (prompt, timestamp)
 
@@ -63,31 +62,6 @@ def _persist_regen(payload: dict) -> None:
         p.write_text(
             json.dumps(regen, ensure_ascii=False, indent=2)
         )
-
-def _restore_regen_from_gcs() -> None:
-    """Call on container startup before first request."""
-    if RUN_MODE == "MODAL":
-        from pathlib import Path
-        p = Path(f"{LOCAL_DATA_DIR}/regen.json")
-        if p.exists():
-            try:
-                _regen_cache.update(json.loads(p.read_text(encoding="utf-8")))
-                logger.info("regen.json restored from Modal volume")
-            except Exception as e:
-                logger.warning("Could not restore regen from volume: %s", e)
-        return
-    if RUN_MODE != "CLOUD":
-        return
-    try:
-        from google.cloud import storage
-        blob = storage.Client().bucket(config.GCS_BUCKET_NAME).blob(config.GCS_REGEN_PATH)
-        if blob.exists():
-            _regen_cache.update(json.loads(blob.download_as_text()))
-            logger.info("regen.json restored from GCS")
-    except Exception as e:
-        logger.warning(f"Could not restore regen from GCS: {e}")
-
-_restore_regen_from_gcs()
 
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(
@@ -134,32 +108,6 @@ def health():
     """Health check endpoint required by Cloud Run."""
     return jsonify({"status": "ok", "timestamp": datetime.now(_TAIPEI_TZ).isoformat()})
 
-@app.route("/api/tts", methods=["POST"])
-def tts_on_demand():
-    data   = request.json or {}
-    script = data["script"]
-    lang   = data.get("lang", "zh-TW")
-    date   = data.get("date", datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d"))
-    slot   = data.get("slot", "midday")
-
-    if RUN_MODE == "CLOUD":
-        modal_tts_url = os.environ.get("MODAL_TTS_URL")
-        if not modal_tts_url:
-            return jsonify({"error": "MODAL_TTS_URL not configured"}), 500
-        try:
-            resp = requests.post(
-                modal_tts_url,
-                json={"script": script, "lang": lang, "date": date, "slot": slot},
-                timeout=60,
-            )
-            return jsonify(resp.json())
-        except Exception as exc:
-            logger.error("TTS proxy to Modal failed: %s", exc)
-            return jsonify({"error": str(exc)}), 502
-
-    from narration.tts_client import synthesise_with_cache
-    url = synthesise_with_cache(script, lang, date, slot)
-    return jsonify({"url": url})
 
 def _get_broadcast_for_chat(date_str: str) -> dict | None:
     """Return today's broadcast dict for the chat context.
@@ -531,7 +479,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     logger.info("Processing data...")
     processed = process(current, forecasts, aqi, history, forecasts_7day, station_history=station_history)
 
-    # 3b. Meal/Location Database Regen (14-day cycle)
+    # 3b. Meal/Location Database Regen (REGEN_CYCLE_DAYS-day cycle)
     # Use a wider window than HISTORY_DAYS (LLM context) so the check can find
     # regen events that predate the prompt-history window.
     regen_history = load_history(days=REGEN_CYCLE_DAYS + 1)
@@ -610,17 +558,13 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     if _ta is not None:
         summaries["_top_activity"] = _ta
 
-    if RUN_MODE == "LOCAL" or (RUN_MODE == "MODAL" and slot == "morning"):
-        yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
-        try:
-            full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
-        except Exception as exc:
-            logger.warning("TTS failed (%s) \u2014 player will fall back to on-demand.", exc)
-            full_audio_url = None
-        audio_urls = {"full_audio_url": full_audio_url}
-    else:
-        yield {"type": "log", "message": "Audio briefing TTS (deferred to on-demand)..."}
-        audio_urls = {"full_audio_url": None}
+    yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
+    try:
+        full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
+    except Exception as exc:
+        logger.warning("TTS failed (%s) \u2014 skipping audio.", exc)
+        full_audio_url = None
+    audio_urls = {"full_audio_url": full_audio_url}
 
     # 7. Save
     yield {"type": "log", "message": "Saving broadcast to history..."}
