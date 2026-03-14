@@ -582,14 +582,12 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         _persist_regen({"regen": {**regen_data, "updated_at": datetime.now(_TAIPEI_TZ).isoformat()}})
 
     # 7.5 Cleanup stale audio files (monthly snapshots + 30-day rolling window)
-    if RUN_MODE in ("MODAL", "LOCAL"):
-        _data = "/data" if RUN_MODE == "MODAL" else LOCAL_DATA_DIR
-        try:
-            removed = cleanup_old_audio(Path(_data) / "audio")
-            if removed:
-                yield {"type": "log", "message": f"Cleaned up {removed} old audio file(s)."}
-        except Exception as exc:
-            logger.warning("Audio cleanup failed: %s", exc)
+    try:
+        removed = cleanup_old_audio()
+        if removed:
+            yield {"type": "log", "message": f"Cleaned up {removed} old audio file(s)."}
+    except Exception as exc:
+        logger.warning("Audio cleanup failed: %s", exc)
 
     # 8. Result
     result = {

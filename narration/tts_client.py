@@ -86,11 +86,70 @@ def _render_tts(text: str, lang: str) -> bytes:
     return _render_edge_tts(text, lang)
 
 
-def cleanup_old_audio(audio_root: Path, keep_days: int = 30) -> int:
-    """Remove stale TTS audio. Keep last 30 days + 1 file per language on each 1st-of-month."""
+def _extract_lang_from_filename(name: str) -> str:
+    """Extract language from '{slot}_{lang}_{hash}.mp3' → e.g. 'zh-TW' or 'en'."""
+    stem = name.rsplit(".", 1)[0]  # drop .mp3
+    parts = stem.rsplit("_", 1)    # ["{slot}_{lang}", "{hash}"]
+    return parts[0].split("_", 1)[1] if len(parts) == 2 else "unknown"
+
+
+def cleanup_old_audio(keep_days: int = 30) -> int:
+    """Remove stale TTS audio from GCS (or local disk).
+    Keep last 30 days + 1 blob per language on each 1st-of-month."""
+    run_mode = os.environ.get("RUN_MODE", RUN_MODE)
+    cutoff = date.today() - timedelta(days=keep_days)
+
+    if run_mode in ("MODAL", "CLOUD"):
+        return _cleanup_gcs(cutoff)
+
+    from config import LOCAL_DATA_DIR
+    return _cleanup_local(Path(LOCAL_DATA_DIR) / "audio", cutoff)
+
+
+def _cleanup_gcs(cutoff: date) -> int:
+    """Delete stale audio blobs from GCS bucket."""
+    from google.cloud import storage
+    bucket = storage.Client().bucket(GCS_BUCKET_NAME)
+    prefix = GCS_AUDIO_PREFIX + "/"
+    by_date: dict[str, list] = {}
+    for blob in bucket.list_blobs(prefix=prefix):
+        # blob.name = "audio/2026-03-14/morning_zh-TW_abc123.mp3"
+        parts = blob.name[len(prefix):].split("/", 1)
+        if len(parts) != 2 or not parts[1].endswith(".mp3"):
+            continue
+        m = re.fullmatch(r"\d{4}-\d{2}-\d{2}", parts[0])
+        if not m:
+            continue
+        by_date.setdefault(parts[0], []).append(blob)
+
+    removed = 0
+    for date_str, blobs in sorted(by_date.items()):
+        dir_date = date.fromisoformat(date_str)
+        if dir_date >= cutoff:
+            continue
+        if dir_date.day == 1:
+            by_lang: dict[str, list] = {}
+            for b in blobs:
+                lang = _extract_lang_from_filename(b.name.rsplit("/", 1)[-1])
+                by_lang.setdefault(lang, []).append(b)
+            for lang, lang_blobs in by_lang.items():
+                lang_blobs.sort(key=lambda b: b.updated, reverse=True)
+                for b in lang_blobs[1:]:
+                    b.delete()
+                    removed += 1
+        else:
+            for b in blobs:
+                b.delete()
+                removed += 1
+    if removed:
+        log.info("Audio cleanup (GCS): removed %d stale blob(s)", removed)
+    return removed
+
+
+def _cleanup_local(audio_root: Path, cutoff: date) -> int:
+    """Delete stale audio files from local disk."""
     if not audio_root.is_dir():
         return 0
-    cutoff = date.today() - timedelta(days=keep_days)
     removed = 0
     for entry in sorted(audio_root.iterdir()):
         if not entry.is_dir():
@@ -100,18 +159,15 @@ def cleanup_old_audio(audio_root: Path, keep_days: int = 30) -> int:
             continue
         dir_date = date.fromisoformat(entry.name)
         if dir_date >= cutoff:
-            continue  # within rolling window — keep everything
+            continue
         mp3s = list(entry.glob("*.mp3"))
         if not mp3s:
             entry.rmdir()
             continue
         if dir_date.day == 1:
-            # Monthly snapshot — keep newest file per language
             by_lang: dict[str, list[Path]] = {}
             for f in mp3s:
-                # filename: {slot}_{lang}_{hash}.mp3  e.g. morning_zh-TW_abc123.mp3
-                parts = f.stem.rsplit("_", 1)  # ["{slot}_{lang}", "{hash}"]
-                lang = parts[0].split("_", 1)[1] if len(parts) == 2 else "unknown"
+                lang = _extract_lang_from_filename(f.name)
                 by_lang.setdefault(lang, []).append(f)
             for lang, files in by_lang.items():
                 files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
@@ -119,7 +175,6 @@ def cleanup_old_audio(audio_root: Path, keep_days: int = 30) -> int:
                     f.unlink()
                     removed += 1
         else:
-            # Not 1st-of-month and older than cutoff — delete all
             for f in mp3s:
                 f.unlink()
                 removed += 1
@@ -128,7 +183,7 @@ def cleanup_old_audio(audio_root: Path, keep_days: int = 30) -> int:
             except OSError:
                 pass
     if removed:
-        log.info("Audio cleanup: removed %d stale file(s) from %s", removed, audio_root)
+        log.info("Audio cleanup (local): removed %d stale file(s)", removed)
     return removed
 
 
