@@ -98,8 +98,8 @@ LOCATION_LON = 121.4279
 TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 
 # ── Google Gemini ─────────────────────────────────────────────────────────
-GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-2.0-pro-exp")
-GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.0-flash")
+GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-2.5-pro")
+GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.5-flash")
 GEMINI_MAX_TOKENS = 1200        # ~600 narration + ~500 expanded metadata (cards derived from metadata)
 GEMINI_MAX_TOKENS_REGEN = 1500  # regen: adds ~1000 tokens of meal/location JSON
 # ── Anthropic Claude ──────────────────────────────────────────────────────

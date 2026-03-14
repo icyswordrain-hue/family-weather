@@ -45,7 +45,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             )
 
     # Use a fresh client with a long timeout to avoid ReadTimeout
-    client = genai.Client(api_key=GEMINI_API_KEY, http_options={'timeout': 300})
+    client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=300_000))
 
     # 1. Primary Attempt: GEMINI_PRO
     try:
