@@ -7,7 +7,7 @@ Generates two clips:
   2. Kids clip (P1 apparent temp + cloud cover only, ≤ 15s) — for the kids view
 """
 
-import hashlib, io, asyncio, logging
+import hashlib, io, asyncio, logging, os
 from pathlib import Path
 from config import (RUN_MODE, GCS_BUCKET_NAME, GCS_AUDIO_PREFIX,
                      TTS_PROVIDER, TTS_VOICE_EN, TTS_VOICE_ZH, TTS_SPEAKING_RATE)
@@ -56,12 +56,26 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 buf.write(chunk["data"])
-    asyncio.run(_collect())
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        # Inside an existing event loop (e.g. Modal/FastAPI) — run in a new thread
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            pool.submit(asyncio.run, _collect()).result()
+    else:
+        asyncio.run(_collect())
     return buf.getvalue()
 
 
 def _render_tts(text: str, lang: str) -> bytes:
-    if TTS_PROVIDER == "GOOGLE":
+    # Check at call time — in Modal, GCP creds are bootstrapped after config import
+    provider = TTS_PROVIDER
+    if provider == "EDGE" and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+        provider = "GOOGLE"
+    if provider == "GOOGLE":
         try:
             return _render_google_tts(text, lang)
         except Exception:
