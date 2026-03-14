@@ -1,10 +1,9 @@
-"""meal_classifier.py — Weather-based meal mood classification."""
+"""meal_classifier.py — Weather-based meal mood classification using flat meals.json catalogue."""
 
-import random
+import json
+import os
 from typing import Optional
 
-# These would ideally be in config but are currently in weather_processor.py or config
-# For now, we'll assume they are accessible or provide fallbacks
 try:
     from config import (
         MEAL_FALLBACK_DISH,
@@ -16,12 +15,24 @@ except ImportError:
     CLIMATE_TEMP_HOT = 30
     CLIMATE_RH_HOT = 70
 
+_MEALS_PATH = os.path.join(os.path.dirname(__file__), "meals.json")
+_ALL_MEALS: list[dict] = []
+
+
+def _load_meals() -> list[dict]:
+    global _ALL_MEALS
+    if not _ALL_MEALS:
+        with open(_MEALS_PATH, "r", encoding="utf-8") as f:
+            _ALL_MEALS = json.load(f)
+    return _ALL_MEALS
+
+
 def _classify_meal_mood(segmented: dict[str, Optional[dict]]) -> dict:
     """
     Classify the day into one of four meal moods using daytime segments.
     Uses Afternoon as the primary driver, with Morning as secondary.
+    Returns all matching meals from the flat catalogue for the detected mood.
     """
-    # Gather daytime apparent temperatures and humidity
     ats = []
     rhs = []
     is_rainy = False
@@ -41,42 +52,18 @@ def _classify_meal_mood(segmented: dict[str, Optional[dict]]) -> dict:
 
     if avg_at >= CLIMATE_TEMP_HOT and avg_rh >= CLIMATE_RH_HOT:
         mood = "Hot & Humid"
-        suggestions = [
-            "涼麵 (liáng miàn, cold sesame noodles)",
-            "愛玉冰 (ài yù bīng)",
-            "涼拌小黃瓜 (marinated cucumber)",
-            "竹筍湯 (bamboo shoot soup)",
-            "豆花 (dòuhuā) with shaved ice",
-        ]
     elif avg_at >= 22 and avg_rh < CLIMATE_RH_HOT:
         mood = "Warm & Pleasant"
-        suggestions = [
-            "滷肉飯 (lǔ ròu fàn)",
-            "蚵仔煎 (ô-á-tsian)",
-            "鹹酥雞 (yán sū jī)",
-            "便當 (biàndāng) with assorted sides",
-            "水餃 (shuǐ jiǎo)",
-            "炒米粉 (chǎo mǐ fěn)",
-        ]
     elif avg_at >= 15 or is_rainy:
         mood = "Cool & Damp"
-        suggestions = [
-            "牛肉麵 (niú ròu miàn)",
-            "麻油雞 (má yóu jī)",
-            "藥燉排骨 (herbal pork rib soup)",
-            "火鍋 (huǒ guō)",
-            "鹹粥 (savory congee)",
-            "四神湯 (sì shén tāng)",
-        ]
     else:
         mood = "Cold"
-        suggestions = [
-            "薑母鴨 (jiāng mǔ yā)",
-            "羊肉爐 (yáng ròu lú)",
-            "麻辣鍋 (málà hot pot)",
-            "燒酒雞 (shāo jiǔ jī)",
-            "花生豬腳湯 (peanut pig trotter soup)",
-        ]
+
+    all_meals = _load_meals()
+    mood_meals = [m for m in all_meals if mood in m.get("moods", [])]
+
+    # Backward-compatible flat string list for existing code + tests
+    suggestions = [m["name"] for m in mood_meals]
 
     return {
         "mood": mood,
@@ -84,7 +71,9 @@ def _classify_meal_mood(segmented: dict[str, Optional[dict]]) -> dict:
         "avg_rh": round(float(avg_rh), 1),
         "is_rainy": is_rainy,
         "all_suggestions": suggestions,
+        "all_meals_detail": mood_meals,
     }
+
 
 def _extract_recent_meals(history: list[dict], days: int = 3) -> list[str]:
     """Extract meal suggestions from the last N days of history."""

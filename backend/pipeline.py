@@ -109,7 +109,13 @@ def generate_narration_with_fallback(
                 logger.error("Claude client is None (likely import failure or missing key)")
                 raise RuntimeError("Claude client not available")
             logger.info("Calling Claude client...")
-            text = generate_claude(messages, lang=lang, max_tokens=CLAUDE_MAX_TOKENS_REGEN if is_regen else None)
+            from config import CLAUDE_REGEN_MODEL
+            text = generate_claude(
+                messages,
+                lang=lang,
+                max_tokens=CLAUDE_MAX_TOKENS_REGEN if is_regen else None,
+                model_override=CLAUDE_REGEN_MODEL if is_regen else None,
+            )
             logger.info("Claude narration successful.")
             result = text, "claude"
         else:

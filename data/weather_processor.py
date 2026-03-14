@@ -272,13 +272,14 @@ def process(
     meal_mood = _classify_meal_mood(segmented)
     recent_meals = _extract_recent_meals(history, days=3)
 
-    # Filter meal suggestions to avoid recent repeats
+    # Filter meal suggestions to avoid recent repeats; pass full pool to LLM for Opus selection
     filtered_meals = [s for s in meal_mood.get("all_suggestions", []) if not any(r in s for r in recent_meals)]
-    
-    # Spec: Pick ONE dish for the day
     pool = filtered_meals if filtered_meals else meal_mood.get("all_suggestions", [MEAL_FALLBACK_DISH])
-    dish = random.choice(pool) if pool else MEAL_FALLBACK_DISH
-    meal_mood["top_suggestions"] = [dish]
+    meal_mood["top_suggestions"] = pool if pool else [MEAL_FALLBACK_DISH]
+
+    # Also filter the rich detail list to match
+    filtered_detail = [m for m in meal_mood.get("all_meals_detail", []) if m["name"] in meal_mood["top_suggestions"]]
+    meal_mood["top_meals_detail"] = filtered_detail
 
     # ── 8. Climate control & cardiac safety ───────────────────────────────────
     climate_recs = _climate_control(segmented, aqi)
@@ -314,13 +315,14 @@ def process(
     location_rec = _classify_outdoor_mood(segmented, aqi, outdoor_index)
     recent_locations = _extract_recent_locations(history, days=3)
 
-    # Filter locations to avoid recently suggested spots
+    # Filter locations to avoid recently suggested spots; pass full pool to LLM for Opus selection
     filtered_locations = [
         loc for loc in location_rec.get("all_locations", [])
         if loc["name"] not in recent_locations
     ]
-    location_rec["top_locations"] = (filtered_locations if filtered_locations
-                                     else location_rec.get("all_locations", []))
+    location_rec["top_locations"] = (
+        filtered_locations if filtered_locations else location_rec.get("all_locations", [])
+    )
 
     aqi_forecast["hourly"] = aqi.get("hourly_forecast", [])
     aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")

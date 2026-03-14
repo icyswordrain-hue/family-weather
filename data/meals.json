@@ -1,0 +1,602 @@
+[
+  {
+    "name": "涼麵 (liáng miàn)",
+    "moods": ["Hot & Humid"],
+    "description": "Cold sesame or soy-sauce noodles served at room temperature — cooling and satisfying on sweltering days",
+    "tags": ["noodles", "cold", "light"]
+  },
+  {
+    "name": "愛玉冰 (ài yù bīng)",
+    "moods": ["Hot & Humid"],
+    "description": "Chilled fig-jelly dessert in lemon syrup — a quintessential summer refresher",
+    "tags": ["dessert", "cold", "sweet"]
+  },
+  {
+    "name": "涼拌小黃瓜 (liáng bàn xiǎo huáng guā)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Marinated cucumber with garlic, sesame and chilli — crisp and cooling as a side dish",
+    "tags": ["vegetable", "cold", "light"]
+  },
+  {
+    "name": "竹筍湯 (zhú sǔn tāng)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Light pork and bamboo shoot broth — refreshing and mildly sweet; best in summer when shoots are fresh",
+    "tags": ["soup", "light", "seasonal"]
+  },
+  {
+    "name": "豆花 (dòu huā)",
+    "moods": ["Hot & Humid"],
+    "description": "Silken tofu pudding with shaved ice and sweet syrup — a classic Taiwanese cooling dessert",
+    "tags": ["dessert", "cold", "sweet"]
+  },
+  {
+    "name": "仙草凍 (xiān cǎo dòng)",
+    "moods": ["Hot & Humid"],
+    "description": "Grass jelly cubes in cold sugar water — bitter-sweet and deeply cooling",
+    "tags": ["dessert", "cold", "herbal"]
+  },
+  {
+    "name": "剉冰 (cuò bīng)",
+    "moods": ["Hot & Humid"],
+    "description": "Shaved ice piled with red bean, taro balls, or fresh mango — the definitive Taiwanese summer treat",
+    "tags": ["dessert", "cold", "sweet"]
+  },
+  {
+    "name": "綠豆湯 (lǜ dòu tāng)",
+    "moods": ["Hot & Humid"],
+    "description": "Chilled mung bean sweet soup — traditional cooling food believed to clear heat",
+    "tags": ["soup", "cold", "sweet", "herbal"]
+  },
+  {
+    "name": "冷豆腐 (lěng dòu fǔ)",
+    "moods": ["Hot & Humid"],
+    "description": "Cold silken tofu topped with soy sauce, sesame oil, and bonito flakes — minimal effort, maximum cool",
+    "tags": ["tofu", "cold", "light"]
+  },
+  {
+    "name": "鮮蝦粥 (xiān xiā zhōu)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Light fresh shrimp congee seasoned with ginger and scallion — easy on the stomach on hot mornings",
+    "tags": ["congee", "light", "seafood"]
+  },
+  {
+    "name": "絲瓜蛤蜊 (sī guā gé lì)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Luffa gourd simmered with clams in clear broth — sweet, light, and hydrating",
+    "tags": ["seafood", "vegetable", "soup", "light"]
+  },
+  {
+    "name": "麻醬麵 (má jiàng miàn)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Noodles tossed in rich sesame paste with cucumber strips — served at room temperature",
+    "tags": ["noodles", "cold", "sesame"]
+  },
+  {
+    "name": "冬瓜排骨湯 (dōng guā pái gǔ tāng)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Winter melon and pork rib soup — subtly sweet, clearing and hydrating in humid heat",
+    "tags": ["soup", "pork", "light"]
+  },
+  {
+    "name": "滷味 (lǔ wèi)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Chilled braised snacks — tofu, duck wings, seaweed — eaten cold from a night-market stall",
+    "tags": ["snack", "cold", "braised"]
+  },
+  {
+    "name": "日式海苔飯糰 (rì shì hǎi tái fàn tuán)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Japanese-style seaweed rice ball with tuna or umeboshi — portable and light for sticky-weather days",
+    "tags": ["rice", "light", "portable"]
+  },
+  {
+    "name": "薑黃飯配炒青菜 (jiāng huáng fàn pèi chǎo qīng cài)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Turmeric rice served alongside stir-fried greens — vibrant, aromatic, and easy to digest",
+    "tags": ["rice", "vegetable", "light"]
+  },
+  {
+    "name": "清蒸海鮮 (qīng zhēng hǎi xiān)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Whole fish or prawns steamed with ginger and scallion — clean flavour, no heavy sauce",
+    "tags": ["seafood", "steamed", "light"]
+  },
+  {
+    "name": "米苔目湯 (mǐ tái mù tāng)",
+    "moods": ["Hot & Humid"],
+    "description": "Slippery rice-flour noodles in a mild pork bone broth — cooling in texture and light on the body",
+    "tags": ["noodles", "light", "soup"]
+  },
+  {
+    "name": "蛤蜊湯 (gé lì tāng)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Steamed clam broth with ginger and basil — mineral-rich, clear, and refreshing",
+    "tags": ["seafood", "soup", "light"]
+  },
+  {
+    "name": "拌麵 (bàn miàn)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Scallion oil or black sesame noodles served at room temperature — simple, fragrant, satisfying",
+    "tags": ["noodles", "quick", "light"]
+  },
+  {
+    "name": "滷肉飯 (lǔ ròu fàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Slow-braised minced pork belly over white rice — the soul of Taiwanese comfort food",
+    "tags": ["rice", "pork", "comfort"]
+  },
+  {
+    "name": "蚵仔煎 (ô-á-tsian)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Crispy oyster omelette with sweet potato starch and egg — a night-market staple for pleasant evenings",
+    "tags": ["seafood", "egg", "street food"]
+  },
+  {
+    "name": "鹹酥雞 (yán sū jī)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Crispy fried popcorn chicken with basil — the iconic Taiwanese fried snack best enjoyed outdoors",
+    "tags": ["chicken", "fried", "street food"]
+  },
+  {
+    "name": "便當 (biàn dāng)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Bento box with rice, braised pork, pickled vegetables, and seasonal sides — hearty midday fuel",
+    "tags": ["rice", "pork", "balanced"]
+  },
+  {
+    "name": "水餃 (shuǐ jiǎo)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Boiled pork and cabbage dumplings with black vinegar — satisfying and versatile across mild to cool days",
+    "tags": ["dumplings", "pork", "comfort"]
+  },
+  {
+    "name": "炒米粉 (chǎo mǐ fěn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Stir-fried rice vermicelli with pork, cabbage, and shiitake — a classic Taiwanese quick lunch",
+    "tags": ["noodles", "stir-fry", "pork"]
+  },
+  {
+    "name": "蛋炒飯 (dàn chǎo fàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Egg fried rice with scallions — quick, fragrant, and endlessly satisfying",
+    "tags": ["rice", "egg", "quick"]
+  },
+  {
+    "name": "台式炒麵 (tái shì chǎo miàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Taiwanese wok-fried wheat noodles with pork, bean sprouts, and soy sauce — earthy and robust",
+    "tags": ["noodles", "stir-fry", "pork"]
+  },
+  {
+    "name": "三杯雞 (sān bēi jī)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Chicken braised in equal parts sesame oil, soy sauce, and rice wine with fresh basil — fragrant and intense",
+    "tags": ["chicken", "braised", "aromatic"]
+  },
+  {
+    "name": "刈包 (guà bāo)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Soft steamed bun stuffed with braised pork belly, pickled mustard, and peanut powder — the Taiwanese hamburger",
+    "tags": ["bun", "pork", "street food"]
+  },
+  {
+    "name": "豬血糕 (zhū xiě gāo)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Steamed pork blood cake skewered and coated in peanut flour and coriander — a uniquely Taiwanese snack",
+    "tags": ["snack", "pork", "street food"]
+  },
+  {
+    "name": "大腸包小腸 (dà cháng bāo xiǎo cháng)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Grilled pork sausage wrapped in sticky glutinous rice sausage — savoury, sweet, and filling",
+    "tags": ["sausage", "rice", "street food"]
+  },
+  {
+    "name": "肉圓 (bá-wán)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Steamed or fried translucent dumpling filled with pork and bamboo — gelatinous and saucy",
+    "tags": ["dumpling", "pork", "street food"]
+  },
+  {
+    "name": "碗粿 (bán guě)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Steamed rice-flour pudding topped with minced pork and dried shrimp — mild, comforting, old-school",
+    "tags": ["rice", "pork", "comfort"]
+  },
+  {
+    "name": "客家小炒 (kè jiā xiǎo chǎo)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Hakka dry-wok stir-fry with dried squid, pork belly, tofu, and garlic — bold and savoury",
+    "tags": ["stir-fry", "pork", "seafood", "hakka"]
+  },
+  {
+    "name": "排骨飯 (pái gǔ fàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Crispy fried pork rib over rice with pickled vegetables — a popular lunch box favourite",
+    "tags": ["rice", "pork", "fried"]
+  },
+  {
+    "name": "雞腿便當 (jī tuǐ biàn dāng)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Braised or fried chicken leg bento with rice and sides — a classic Taiwanese railway meal",
+    "tags": ["chicken", "rice", "bento"]
+  },
+  {
+    "name": "油飯 (yóu fàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Glutinous rice stir-fried with pork, mushrooms, and dried shrimp — sticky, rich, and deeply savoury",
+    "tags": ["rice", "pork", "glutinous"]
+  },
+  {
+    "name": "擔仔麵 (dàn zǎi miàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Tainan-style shrimp-broth noodle bowl with minced pork and a single shrimp — small but magnificent",
+    "tags": ["noodles", "seafood", "southern"]
+  },
+  {
+    "name": "鍋貼 (guō tiē)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Pan-fried potsticker dumplings with a crispy skirt — satisfying in mild and cool-damp weather alike",
+    "tags": ["dumplings", "pork", "fried"]
+  },
+  {
+    "name": "台南牛肉湯 (tái nán niú ròu tāng)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Tainan-style raw-sliced beef poured over with scalding broth — silky, mineral, extraordinary",
+    "tags": ["soup", "beef", "southern"]
+  },
+  {
+    "name": "爌肉飯 (kuǎn ròu fàn)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Slow-braised pork knuckle slice over rice with pickled greens — rich, fatty, deeply comforting",
+    "tags": ["rice", "pork", "braised", "comfort"]
+  },
+  {
+    "name": "蚵仔麵線 (ô-á-mī-suànn)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Thick oyster vermicelli in starchy dark broth with intestines and coriander — quintessential street food",
+    "tags": ["noodles", "seafood", "street food"]
+  },
+  {
+    "name": "鴨肉飯 (yā ròu fàn)",
+    "moods": ["Warm & Pleasant"],
+    "description": "Sliced braised duck over rice with ginger broth on the side — lean and fragrant",
+    "tags": ["rice", "duck", "light"]
+  },
+  {
+    "name": "豆漿油條 (dòu jiāng yóu tiáo)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Warm soy milk with a crunchy fried breadstick — the definitive Taiwanese breakfast on a mild morning",
+    "tags": ["breakfast", "soy", "comfort"]
+  },
+  {
+    "name": "虱目魚粥 (shī mù yú zhōu)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Milkfish congee with ginger, sesame oil, and spring onion — silky and restorative",
+    "tags": ["congee", "fish", "comfort"]
+  },
+  {
+    "name": "牛肉麵 (niú ròu miàn)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Slow-braised beef shank in rich soy or clear broth with thick wheat noodles — Taiwan's national dish",
+    "tags": ["noodles", "beef", "braised", "comfort"]
+  },
+  {
+    "name": "麻油雞 (má yóu jī)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Chicken braised in toasted sesame oil and rice wine with old ginger — warming and aromatic",
+    "tags": ["chicken", "sesame", "warming", "restorative"]
+  },
+  {
+    "name": "藥燉排骨 (yào dùn pái gǔ)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Pork ribs slow-simmered with Chinese herbal medicine — deeply nourishing on damp, cold days",
+    "tags": ["pork", "herbal", "soup", "restorative"]
+  },
+  {
+    "name": "火鍋 (huǒ guō)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Communal hot pot with clear or spicy broth — ultimate comfort for grey, rainy days",
+    "tags": ["hot pot", "comfort", "communal"]
+  },
+  {
+    "name": "鹹粥 (xián zhōu)",
+    "moods": ["Cool & Damp"],
+    "description": "Savoury rice porridge with minced pork, dried shrimp, and peanuts — light yet warming on rainy mornings",
+    "tags": ["congee", "pork", "light"]
+  },
+  {
+    "name": "四神湯 (sì shén tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Pork intestine soup with four Chinese herbs (lotus seeds, yam, poria, euryale) — a gentle digestive tonic",
+    "tags": ["soup", "pork", "herbal", "restorative"]
+  },
+  {
+    "name": "肉骨茶 (ròu gǔ chá)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Bak kut teh — pork ribs simmered in aromatic herbal broth with garlic and white pepper",
+    "tags": ["pork", "herbal", "soup", "warming"]
+  },
+  {
+    "name": "花生湯 (huā shēng tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Warm peanut sweet soup with tender whole peanuts — a comforting Taiwanese classic on overcast afternoons",
+    "tags": ["soup", "sweet", "warm", "comfort"]
+  },
+  {
+    "name": "米粉湯 (mǐ fěn tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Fine rice noodles in pork bone broth with cabbage and fried shallots — a simple, satisfying bowl",
+    "tags": ["noodles", "pork", "light", "soup"]
+  },
+  {
+    "name": "台式泡菜鍋 (tái shì pào cài guō)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Taiwanese kimchi-style hot pot with pork belly and tofu — tangy, spicy, and deeply warming",
+    "tags": ["hot pot", "pork", "spicy", "warming"]
+  },
+  {
+    "name": "烏龍麵 (wū lóng miàn)",
+    "moods": ["Cool & Damp"],
+    "description": "Thick udon noodles in pork dashi broth with fish cake and spring onion — a hearty rainy-day bowl",
+    "tags": ["noodles", "soup", "comfort"]
+  },
+  {
+    "name": "當歸鴨 (dāng guī yā)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Duck braised with angelica root and Chinese herbs — rich, earthy, and deeply warming",
+    "tags": ["duck", "herbal", "braised", "restorative"]
+  },
+  {
+    "name": "紅豆湯 (hóng dòu tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Warm red bean sweet soup with glutinous rice balls — comforting on a damp, grey afternoon",
+    "tags": ["soup", "sweet", "warm", "dessert"]
+  },
+  {
+    "name": "芋頭排骨湯 (yù tóu pái gǔ tāng)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Taro and pork rib soup with ginger — creamy taro melts into the broth, deeply soothing",
+    "tags": ["soup", "pork", "taro", "comfort"]
+  },
+  {
+    "name": "蚵仔湯 (ô-á-tāng)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Oyster broth with ginger and basil — mineral-sweet and warming without being heavy",
+    "tags": ["seafood", "soup", "light"]
+  },
+  {
+    "name": "薑汁地瓜湯 (jiāng zhī dì guā tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Sweet potato soup spiced with fresh ginger juice — warming, sweet, and energising on damp days",
+    "tags": ["soup", "sweet", "ginger", "warm"]
+  },
+  {
+    "name": "客家粄條 (kè jiā bǎn tiáo)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Hakka flat rice noodles in clear pork broth with dried shrimp and preserved turnip",
+    "tags": ["noodles", "pork", "hakka", "soup"]
+  },
+  {
+    "name": "台灣滷味麵 (tái wān lǔ wèi miàn)",
+    "moods": ["Cool & Damp"],
+    "description": "Noodles with a variety of braised toppings — eggs, tofu, bamboo — in a rich master stock",
+    "tags": ["noodles", "braised", "comfort"]
+  },
+  {
+    "name": "酸辣湯 (suān là tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Hot and sour soup with tofu, wood-ear mushroom, and egg — bracing and clearing on wet days",
+    "tags": ["soup", "spicy", "sour", "warming"]
+  },
+  {
+    "name": "豬肝湯 (zhū gān tāng)",
+    "moods": ["Cool & Damp"],
+    "description": "Thinly sliced pork liver in ginger-sesame broth — tender, iron-rich, and restorative",
+    "tags": ["soup", "pork", "restorative"]
+  },
+  {
+    "name": "紅燒豆腐 (hóng shāo dòu fǔ)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Braised tofu in savoury soy and chilli sauce — satisfying protein on overcast days",
+    "tags": ["tofu", "braised", "comfort"]
+  },
+  {
+    "name": "麵線糊 (mī-suànn-kô)",
+    "moods": ["Cool & Damp"],
+    "description": "Thick vermicelli stew with oysters, pork intestine, and coriander — comforting and deeply savoury",
+    "tags": ["noodles", "seafood", "stew", "comfort"]
+  },
+  {
+    "name": "台式薑燒豬肉飯 (tái shì jiāng shāo zhū ròu fàn)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Ginger-glazed pork slices over rice with shredded cabbage — Japanese-influenced, popular in tea shops",
+    "tags": ["rice", "pork", "ginger"]
+  },
+  {
+    "name": "鮮魚湯 (xiān yú tāng)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Fresh seasonal fish simmered in clear ginger broth — clean, delicate, and nourishing",
+    "tags": ["fish", "soup", "light"]
+  },
+  {
+    "name": "薑母鴨 (jiāng mǔ yā)",
+    "moods": ["Cold"],
+    "description": "Duck stewed in aged ginger and sesame oil — a warming ritual reserved for the coldest winter nights",
+    "tags": ["duck", "ginger", "warming", "winter"]
+  },
+  {
+    "name": "羊肉爐 (yáng ròu lú)",
+    "moods": ["Cold"],
+    "description": "Lamb hot pot with Chinese herbs and bean curd — rich and deeply warming, perfect below 12°C",
+    "tags": ["lamb", "hot pot", "herbal", "winter"]
+  },
+  {
+    "name": "麻辣鍋 (má là guō)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Sichuan numbing-spicy hot pot with beef, tripe, and vegetables — fiery and deeply warming",
+    "tags": ["hot pot", "spicy", "beef", "winter"]
+  },
+  {
+    "name": "燒酒雞 (shāo jiǔ jī)",
+    "moods": ["Cold"],
+    "description": "Whole chicken simmered in rice wine with Chinese herbs — deeply warming and nourishing in cold weather",
+    "tags": ["chicken", "wine", "herbal", "warming"]
+  },
+  {
+    "name": "花生豬腳湯 (huā shēng zhū jiǎo tāng)",
+    "moods": ["Cold"],
+    "description": "Peanut and pig trotter soup slow-cooked until gelatinous — rich collagen broth, ideal for cold days",
+    "tags": ["soup", "pork", "peanut", "warming"]
+  },
+  {
+    "name": "薑汁豬腳 (jiāng zhī zhū jiǎo)",
+    "moods": ["Cold"],
+    "description": "Braised pig's trotter with ginger and vinegar — sticky, warming, and traditionally eaten in winter",
+    "tags": ["pork", "ginger", "braised", "warming"]
+  },
+  {
+    "name": "紅燒獅子頭 (hóng shāo shī zi tóu)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Large pork meatballs braised in soy sauce with cabbage — tender, rich, and deeply warming",
+    "tags": ["pork", "braised", "comfort", "warming"]
+  },
+  {
+    "name": "東坡肉 (dōng pō ròu)",
+    "moods": ["Cold"],
+    "description": "Hangzhou-style slow-braised pork belly in soy, wine, and sugar — lacquered, meltingly tender",
+    "tags": ["pork", "braised", "rich", "winter"]
+  },
+  {
+    "name": "高麗菜豬肉鍋 (gāo lì cài zhū ròu guō)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Napa cabbage and pork belly stew — simple, clean, and warming; a family winter staple",
+    "tags": ["pork", "cabbage", "stew", "comfort"]
+  },
+  {
+    "name": "砂鍋魚頭 (shā guō yú tóu)",
+    "moods": ["Cold"],
+    "description": "Fish head in clay pot with tofu, napa cabbage, and chilli — rich fish stock, warming and hearty",
+    "tags": ["fish", "clay pot", "warming", "winter"]
+  },
+  {
+    "name": "烤地瓜 (kǎo dì guā)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Whole baked sweet potato from a roadside cart — caramelised skin, steaming interior, perfect winter snack",
+    "tags": ["snack", "sweet potato", "warm", "street food"]
+  },
+  {
+    "name": "薑茶湯圓 (jiāng chá tāng yuán)",
+    "moods": ["Cold"],
+    "description": "Glutinous rice balls in spiced ginger broth — sweet, chewy, and intensely warming on frigid days",
+    "tags": ["dessert", "glutinous", "ginger", "winter"]
+  },
+  {
+    "name": "花雕雞 (huā diāo jī)",
+    "moods": ["Cold"],
+    "description": "Whole chicken braised in Shaoxing Huadiao wine — fragrant, amber-coloured, and warming",
+    "tags": ["chicken", "wine", "braised", "warming"]
+  },
+  {
+    "name": "牛腩煲 (niú nǎn bāo)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Braised beef brisket and tendon stew in clay pot — rich, gelatinous, satisfying on cold nights",
+    "tags": ["beef", "clay pot", "braised", "warming"]
+  },
+  {
+    "name": "紅燒豬腳 (hóng shāo zhū jiǎo)",
+    "moods": ["Cold"],
+    "description": "Red-braised pig trotter in soy, five spice, and rock sugar — sticky, collagen-rich winter comfort food",
+    "tags": ["pork", "braised", "warming", "winter"]
+  },
+  {
+    "name": "台式雞湯 (tái shì jī tāng)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Taiwanese ginger-scallion chicken broth with rice wine — clear, golden, deeply restorative",
+    "tags": ["chicken", "soup", "ginger", "restorative"]
+  },
+  {
+    "name": "沙茶牛肉鍋 (shā chá niú ròu guō)",
+    "moods": ["Cold", "Cool & Damp"],
+    "description": "Shacha (satay) beef hot pot with Chinese spinach — rich, smoky sauce, deeply satisfying",
+    "tags": ["beef", "hot pot", "shacha", "warming"]
+  },
+  {
+    "name": "芋泥鴨 (yù ní yā)",
+    "moods": ["Cold"],
+    "description": "Braised duck with creamy taro mash — earthy, rich, and perfect for a cold winter dinner",
+    "tags": ["duck", "taro", "braised", "winter"]
+  },
+  {
+    "name": "豆腐煮魚 (dòu fǔ zhǔ yú)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Silken tofu simmered with fresh fish and ginger — light yet warming, easy on the stomach",
+    "tags": ["fish", "tofu", "soup", "light"]
+  },
+  {
+    "name": "麻油腰花 (má yóu yāo huā)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Pork kidney stir-fried in sesame oil and old ginger — intensely warming and thought to nourish the kidneys",
+    "tags": ["pork", "sesame", "stir-fry", "restorative"]
+  },
+  {
+    "name": "三鮮湯 (sān xiān tāng)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Three-fresh soup with shrimp, squid, and fish cake in clear broth — light, briny, perfect in heat",
+    "tags": ["seafood", "soup", "light"]
+  },
+  {
+    "name": "蔥爆牛肉 (cōng bào niú ròu)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Scallion-bursted beef stir-fry with soy and oyster sauce — fragrant, quick, and robust",
+    "tags": ["beef", "stir-fry", "scallion"]
+  },
+  {
+    "name": "瓜仔肉飯 (guā zǐ ròu fàn)",
+    "moods": ["Warm & Pleasant", "Hot & Humid"],
+    "description": "Braised pork with pickled cucumber over rice — light, tangy, and summer-friendly comfort food",
+    "tags": ["rice", "pork", "pickled", "light"]
+  },
+  {
+    "name": "芹菜豬肉水餃 (qín cài zhū ròu shuǐ jiǎo)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Celery and pork boiled dumplings — fragrant, hearty, welcome across mild and drizzly days",
+    "tags": ["dumplings", "pork", "celery", "comfort"]
+  },
+  {
+    "name": "筒仔米糕 (tǒng zǎi mǐ gāo)",
+    "moods": ["Warm & Pleasant", "Cool & Damp"],
+    "description": "Sticky glutinous rice with braised pork steamed in a bamboo cylinder — dense, savoury, and old-school",
+    "tags": ["rice", "pork", "glutinous", "comfort"]
+  },
+  {
+    "name": "蒸蛋 (zhēng dàn)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Silky steamed egg custard with soy and sesame — gentle, light, and easy to eat in warm weather",
+    "tags": ["egg", "steamed", "light"]
+  },
+  {
+    "name": "鳳梨苦瓜雞湯 (fèng lí kǔ guā jī tāng)",
+    "moods": ["Hot & Humid", "Warm & Pleasant"],
+    "description": "Pineapple and bitter melon chicken soup — tangy-sweet and cooling, a classic summer detox broth",
+    "tags": ["soup", "chicken", "light", "cooling"]
+  },
+  {
+    "name": "起司豬排飯 (qǐ sī zhū pái fàn)",
+    "moods": ["Cool & Damp", "Warm & Pleasant"],
+    "description": "Japanese-style cheese pork cutlet over rice — crispy, melty, satisfying on grey days",
+    "tags": ["rice", "pork", "fried", "comfort"]
+  },
+  {
+    "name": "薑母茶配點心 (jiāng mǔ chá pèi diǎn xīn)",
+    "moods": ["Cool & Damp", "Cold"],
+    "description": "Aged ginger mother tea paired with sweet snacks — deeply warming tonic for chilly or damp days",
+    "tags": ["tea", "ginger", "warming", "snack"]
+  },
+  {
+    "name": "茄子豬肉煲 (qié zi zhū ròu bāo)",
+    "moods": ["Cool & Damp"],
+    "description": "Eggplant and pork in clay pot with soy and oyster sauce — silky, rich, and warming on overcast days",
+    "tags": ["clay pot", "pork", "vegetable", "comfort"]
+  }
+]

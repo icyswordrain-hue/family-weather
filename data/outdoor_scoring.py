@@ -224,21 +224,23 @@ def _compute_outdoor_index(current: dict, segmented: dict, aqi_val: int | None, 
     }
 
 def _classify_outdoor_mood(segmented: dict, aqi: dict, outdoor_index: dict) -> dict:
-    """Pick location categories base on weather mood."""
-    # Determine mood
-    mood = "Stay In"
+    """Pick locations from flat catalogue filtered by weather mood tag."""
     score = outdoor_index.get("overall_score", 0)
-    
-    # Simple mood logic
-    if score >= 75: mood = "Nice"
-    elif score >= 55: mood = "Warm"
-    elif score >= 35: mood = "Cloudy & Breezy"
-    
-    all_locs = OUTDOOR_LOCATIONS.get(mood, [])
+
+    if score >= 75:
+        mood = "Nice"
+    elif score >= 55:
+        mood = "Warm"
+    elif score >= 35:
+        mood = "Cloudy & Breezy"
+    else:
+        mood = "Stay In"
+
+    all_locs = [loc for loc in OUTDOOR_LOCATIONS if mood in loc.get("moods", [])]
     return {
         "mood": mood,
         "all_locations": all_locs,
-        "top_locations": all_locs[:3]
+        "top_locations": all_locs[:3],
     }
 
 def _extract_recent_locations(history: list[dict], days: int = 3) -> list[str]:

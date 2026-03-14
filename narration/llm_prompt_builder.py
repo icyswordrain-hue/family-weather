@@ -60,7 +60,7 @@ P2 — Garden & Commute (4 sentences max):
 Start with a gardening tip based on history (or seasonal if no history). Pivot to the commute (Sanxia/Shulin). Cover AT, precip_text, wind, and hazards. Combine morning and evening legs into one summary.
 
 P3 — Outdoor & Meal (4 sentences max):
-Recommend an outdoor activity for Dad (or indoor if weather is poor). Name a time (e.g., "mid-morning") and ONE location from top_locations (pinyin). Note surface comfort and any weather-related caution. Add ONE pinyin dish from top_suggestions matching the weather mood.
+Recommend an outdoor activity for Dad (or indoor if weather is poor). Choose ONE location from top_locations that best fits the weather conditions — favour surface type, shade, and accessibility; name the time (e.g., "mid-morning") and the location (pinyin). Note surface comfort and any weather-related caution. Choose ONE dish from top_suggestions that best matches today's weather mood and write its name in pinyin — favour warming dishes when cool and damp, cooling dishes when hot and humid.
 
 P4 — HVAC & Air Quality (2 sentences max):
 One sentence: plain advice on AC/heater/dehumidifier mode (e.g., "dehumidify for six hours this afternoon").
@@ -138,8 +138,8 @@ P2 — 花園與通勤（最多 4 句）：
 提供昨日銜接的小撇步（或當季建議）。摘要通勤路段（三峽/樹林）的體感、降雨與路況風險。早晨與傍晚合併為一段。
 
 P3 — 戶外活動與餐食（最多 4 句）：
-為爸爸推薦戶外活動（天氣不佳則建議室內）。指定時間段，從 top_locations 挑選一處地點（中文名），描述地面舒適度與天氣注意事項。
-從 top_suggestions 挑選一道符合天氣心情的菜名。
+為爸爸推薦戶外活動（天氣不佳則建議室內）。從 top_locations 中挑選一處最符合今日天氣的地點（優先考量地面狀況、遮蔭與無障礙），指定出門時段並說明地面舒適度與天氣注意事項。
+從 top_suggestions 中挑選一道最符合今日天氣心情的菜名（中文）——天涼潮濕時優先選暖食，悶熱時優先選清涼食物。
 
 P4 — 空調與空氣品質（最多 2 句）：
 一句話：平實建議空調模式（如「下午開六小時除濕」）。

@@ -1,170 +1,902 @@
-{
-    "Nice": [
-        {
-            "name": "Dahan River Bikeway (Yingge section)",
-            "activity": "cycling / walking",
-            "surface": "paved",
-            "lat": 24.907,
-            "lng": 121.349,
-            "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
-        },
-        {
-            "name": "Jiaoban Mountain Trail (Sanxia)",
-            "activity": "hiking",
-            "surface": "dirt + stone steps",
-            "lat": 24.937,
-            "lng": 121.373,
-            "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
-        },
-        {
-            "name": "Bitan Scenic Area (Xindian)",
-            "activity": "walking / paddleboat",
-            "surface": "paved promenade",
-            "lat": 24.956,
-            "lng": 121.541,
-            "notes": "Suspension bridge, shaded banks, gentle terrain"
-        },
-        {
-            "name": "Banqiao 435 Art Zone Garden",
-            "activity": "strolling / tai chi",
-            "surface": "paved",
-            "lat": 25.011,
-            "lng": 121.465,
-            "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
-        },
-        {
-            "name": "Tucheng Chenfu Road Riverside Park",
-            "activity": "walking / stretching",
-            "surface": "paved",
-            "lat": 24.974,
-            "lng": 121.427,
-            "notes": "10-min drive from Shulin, very flat, often breezy"
-        },
-        {
-            "name": "Longmen Camping Meadow (Sanxia)",
-            "activity": "walking / picnic",
-            "surface": "grass + packed dirt",
-            "lat": 24.863,
-            "lng": 121.371,
-            "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
-        }
-    ],
-    "Warm": [
-        {
-            "name": "Shulin Riverside Greenway",
-            "activity": "cycling / jogging",
-            "surface": "paved",
-            "lat": 24.987,
-            "lng": 121.428,
-            "notes": "Local favourite ??5km flat loop, shaded sections, water stations"
-        },
-        {
-            "name": "Yingge Ceramics Museum Park",
-            "activity": "strolling",
-            "surface": "paved",
-            "lat": 24.906,
-            "lng": 121.345,
-            "notes": "Outdoor sculpture garden, paved paths, interesting for all ages"
-        },
-        {
-            "name": "Sanxia Old Street & Zushi Temple",
-            "activity": "walking / culture",
-            "surface": "cobblestone + paved",
-            "lat": 24.942,
-            "lng": 121.369,
-            "notes": "Best in morning before crowds; cobblestones can be tricky ??bring a cane"
-        },
-        {
-            "name": "Zhonghe Yuantong Mountain Trail",
-            "activity": "hiking",
-            "surface": "dirt + stone steps",
-            "lat": 24.996,
-            "lng": 121.496,
-            "notes": "Shaded climb ~3km, cooler than valley floor, good workout"
-        },
-        {
-            "name": "Banqiao Lin Family Garden",
-            "activity": "strolling / tai chi",
-            "surface": "paved garden paths",
-            "lat": 25.014,
-            "lng": 121.462,
-            "notes": "Historic garden, very flat, shaded by large banyan trees"
-        },
-        {
-            "name": "Tamsui Old Street & Waterfront",
-            "activity": "walking / boat",
-            "surface": "paved",
-            "lat": 25.17,
-            "lng": 121.432,
-            "notes": "Worth the 50km drive ??waterfront promenade, sunset views"
-        }
-    ],
-    "Cloudy & Breezy": [
-        {
-            "name": "Banqiao Station Underground Mall Walk",
-            "activity": "indoor walking",
-            "surface": "indoor tile",
-            "lat": 25.014,
-            "lng": 121.463,
-            "notes": "Covered, climate-controlled, no wind; good fallback on breezy days"
-        },
-        {
-            "name": "Sanxia Dasi Bikeway (lower section)",
-            "activity": "cycling / e-bike",
-            "surface": "paved",
-            "lat": 24.924,
-            "lng": 121.358,
-            "notes": "Flat, riverside section sheltered by tree line; wind-protected"
-        },
-        {
-            "name": "Tucheng Sports Center Indoor Track",
-            "activity": "indoor walking",
-            "surface": "rubberised track",
-            "lat": 24.978,
-            "lng": 121.431,
-            "notes": "Fully covered 200m indoor track, climate-controlled, very accessible"
-        },
-        {
-            "name": "Xinzhuang Lihui Park",
-            "activity": "tai chi / stretching",
-            "surface": "paved",
-            "lat": 25.034,
-            "lng": 121.445,
-            "notes": "Large sheltered pavilions, community tai chi groups in morning"
-        },
-        {
-            "name": "Shulin Community Center Courtyard",
-            "activity": "light exercise",
-            "surface": "paved",
-            "lat": 24.994,
-            "lng": 121.432,
-            "notes": "Covered walkway, easy access, good for overcast days"
-        }
-    ],
-    "Stay In": [
-        {
-            "name": "Banqiao Far Eastern Department Store Sky Garden",
-            "activity": "indoor stroll",
-            "surface": "indoor tile + outdoor terrace",
-            "lat": 25.011,
-            "lng": 121.464,
-            "notes": "Rooftop garden accessible by elevator; protected terrace on drizzly days"
-        },
-        {
-            "name": "Fuzhong Library Garden (Banciao)",
-            "activity": "reading / light walk",
-            "surface": "paved",
-            "lat": 25.01,
-            "lng": 121.46,
-            "notes": "Quiet library garden courtyard, sheltered veranda, good AQI days only"
-        },
-        {
-            "name": "Sanxia Visitor Center & Museum",
-            "activity": "indoor culture",
-            "surface": "indoor tile",
-            "lat": 24.94,
-            "lng": 121.368,
-            "notes": "Fully indoor, free entry, interesting local history exhibits"
-        }
-    ]
-}
+[
+  {
+    "name": "Dahan River Bikeway (Yingge section)",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 24.907,
+    "lng": 121.349,
+    "notes": "Flat riverside trail, well-shaded, easy parking at Yingge end"
+  },
+  {
+    "name": "Jiaoban Mountain Trail (Sanxia)",
+    "moods": ["Nice"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 24.937,
+    "lng": 121.373,
+    "notes": "Short loop ~2.5km, good views of Sanxia valley; use trekking poles"
+  },
+  {
+    "name": "Bitan Scenic Area (Xindian)",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / paddleboat",
+    "surface": "paved promenade",
+    "lat": 24.956,
+    "lng": 121.541,
+    "notes": "Suspension bridge, shaded banks, gentle terrain"
+  },
+  {
+    "name": "Banqiao 435 Art Zone Garden",
+    "moods": ["Nice", "Warm"],
+    "activity": "strolling / tai chi",
+    "surface": "paved",
+    "lat": 25.011,
+    "lng": 121.465,
+    "notes": "Sculpture garden, flat, benches frequent; accessible toilets"
+  },
+  {
+    "name": "Tucheng Chenfu Road Riverside Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 24.974,
+    "lng": 121.427,
+    "notes": "10-min drive from Shulin, very flat, often breezy"
+  },
+  {
+    "name": "Longmen Camping Meadow (Sanxia)",
+    "moods": ["Nice"],
+    "activity": "walking / picnic",
+    "surface": "grass + packed dirt",
+    "lat": 24.863,
+    "lng": 121.371,
+    "notes": "Open meadow by Sanxia River, beautiful on clear days; uneven ground"
+  },
+  {
+    "name": "Shulin Riverside Greenway",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / jogging",
+    "surface": "paved",
+    "lat": 24.987,
+    "lng": 121.428,
+    "notes": "Local favourite ~5km flat loop, shaded sections, water stations"
+  },
+  {
+    "name": "Yingge Ceramics Museum Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "strolling",
+    "surface": "paved",
+    "lat": 24.906,
+    "lng": 121.345,
+    "notes": "Outdoor sculpture garden, paved paths, interesting for all ages"
+  },
+  {
+    "name": "Sanxia Old Street & Zushi Temple",
+    "moods": ["Warm"],
+    "activity": "walking / culture",
+    "surface": "cobblestone + paved",
+    "lat": 24.942,
+    "lng": 121.369,
+    "notes": "Best in morning before crowds; cobblestones can be tricky — bring a cane"
+  },
+  {
+    "name": "Zhonghe Yuantong Mountain Trail",
+    "moods": ["Nice", "Warm"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 24.996,
+    "lng": 121.496,
+    "notes": "Shaded climb ~3km, cooler than valley floor, good workout"
+  },
+  {
+    "name": "Banqiao Lin Family Garden",
+    "moods": ["Nice", "Warm"],
+    "activity": "strolling / tai chi",
+    "surface": "paved garden paths",
+    "lat": 25.014,
+    "lng": 121.462,
+    "notes": "Historic garden, very flat, shaded by large banyan trees"
+  },
+  {
+    "name": "Tamsui Old Street & Waterfront",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / boat",
+    "surface": "paved",
+    "lat": 25.17,
+    "lng": 121.432,
+    "notes": "Worth the 50km drive — waterfront promenade, sunset views"
+  },
+  {
+    "name": "Banqiao Station Underground Mall Walk",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor walking",
+    "surface": "indoor tile",
+    "lat": 25.014,
+    "lng": 121.463,
+    "notes": "Covered, climate-controlled, no wind; good fallback on breezy days"
+  },
+  {
+    "name": "Sanxia Dasi Bikeway (lower section)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "cycling / e-bike",
+    "surface": "paved",
+    "lat": 24.924,
+    "lng": 121.358,
+    "notes": "Flat, riverside section sheltered by tree line; wind-protected"
+  },
+  {
+    "name": "Tucheng Sports Center Indoor Track",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor walking",
+    "surface": "rubberised track",
+    "lat": 24.978,
+    "lng": 121.431,
+    "notes": "Fully covered 200m indoor track, climate-controlled, very accessible"
+  },
+  {
+    "name": "Xinzhuang Lihui Park",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "tai chi / stretching",
+    "surface": "paved",
+    "lat": 25.034,
+    "lng": 121.445,
+    "notes": "Large sheltered pavilions, community tai chi groups in morning"
+  },
+  {
+    "name": "Shulin Community Center Courtyard",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "light exercise",
+    "surface": "paved",
+    "lat": 24.994,
+    "lng": 121.432,
+    "notes": "Covered walkway, easy access, good for overcast days"
+  },
+  {
+    "name": "Banqiao Far Eastern Department Store Sky Garden",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor stroll",
+    "surface": "indoor tile + outdoor terrace",
+    "lat": 25.011,
+    "lng": 121.464,
+    "notes": "Rooftop garden accessible by elevator; protected terrace on drizzly days"
+  },
+  {
+    "name": "Fuzhong Library Garden (Banciao)",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "reading / light walk",
+    "surface": "paved",
+    "lat": 25.01,
+    "lng": 121.46,
+    "notes": "Quiet library garden courtyard, sheltered veranda, good AQI days only"
+  },
+  {
+    "name": "Sanxia Visitor Center & Museum",
+    "moods": ["Stay In"],
+    "activity": "indoor culture",
+    "surface": "indoor tile",
+    "lat": 24.94,
+    "lng": 121.368,
+    "notes": "Fully indoor, free entry, interesting local history exhibits"
+  },
+  {
+    "name": "Wuliaojian Mountain Trail (Shulin)",
+    "moods": ["Nice"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 24.967,
+    "lng": 121.404,
+    "notes": "Rugged 5km loop with ridgeline views; steep sections, bring poles and water"
+  },
+  {
+    "name": "Mianhua Mountain Trail (Sanxia)",
+    "moods": ["Nice"],
+    "activity": "hiking",
+    "surface": "dirt + wooden boardwalk",
+    "lat": 24.922,
+    "lng": 121.356,
+    "notes": "Gentle forested climb, popular with early morning tai chi walkers"
+  },
+  {
+    "name": "Pingxi Shifen Waterfall Trail",
+    "moods": ["Nice"],
+    "activity": "hiking / photography",
+    "surface": "paved + stone steps",
+    "lat": 25.028,
+    "lng": 121.763,
+    "notes": "Impressive waterfall 60km from Shulin; best on sunny clear days, slippery when wet"
+  },
+  {
+    "name": "Jiufen Old Street & Teahouses",
+    "moods": ["Nice"],
+    "activity": "walking / culture / photography",
+    "surface": "stone steps + paved",
+    "lat": 25.108,
+    "lng": 121.844,
+    "notes": "Scenic hillside village 65km away; misty on overcast days, stunning on clear ones"
+  },
+  {
+    "name": "Tamsui Fisherman's Wharf Promenade",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / photography",
+    "surface": "paved boardwalk",
+    "lat": 25.183,
+    "lng": 121.414,
+    "notes": "Suspension bridge, sunset views over river mouth; breezy — bring a light jacket"
+  },
+  {
+    "name": "Guandu Nature Park (Beitou)",
+    "moods": ["Nice", "Warm"],
+    "activity": "birdwatching / walking",
+    "surface": "paved + boardwalk",
+    "lat": 25.131,
+    "lng": 121.458,
+    "notes": "Wetland habitat, excellent for birdwatching at low tide; flat, accessible paths"
+  },
+  {
+    "name": "Linkou Kite Flying Park (Linkou Plateau)",
+    "moods": ["Nice"],
+    "activity": "kite flying / picnic",
+    "surface": "grass",
+    "lat": 25.082,
+    "lng": 121.352,
+    "notes": "Open plateau with reliable wind for kite flying; exposed, bring sun protection"
+  },
+  {
+    "name": "Shisizhang Waterfall Trail (Sanxia)",
+    "moods": ["Nice"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 24.895,
+    "lng": 121.385,
+    "notes": "Cascading 14-tier waterfall trail; slippery after rain, excellent on dry clear days"
+  },
+  {
+    "name": "Daan Forest Park (Taipei)",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / cycling / tai chi",
+    "surface": "paved + grass",
+    "lat": 25.033,
+    "lng": 121.535,
+    "notes": "Large urban park with lake, cycling paths, and shaded walking trails; accessible by MRT"
+  },
+  {
+    "name": "Chiang Kai-shek Memorial Hall Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "strolling / photography",
+    "surface": "paved",
+    "lat": 25.036,
+    "lng": 121.521,
+    "notes": "Grand plaza and formal gardens; very exposed at midday in summer, pleasant in mild weather"
+  },
+  {
+    "name": "Maokong Gondola + Tea Trail (Wenshan)",
+    "moods": ["Nice"],
+    "activity": "gondola / light hiking / photography",
+    "surface": "gondola + paved mountain paths",
+    "lat": 24.956,
+    "lng": 121.587,
+    "notes": "Aerial gondola with mountain views; tea plantation walks above the city; avoid on foggy days"
+  },
+  {
+    "name": "Bihu Park (Neihu)",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / cycling",
+    "surface": "paved",
+    "lat": 25.068,
+    "lng": 121.601,
+    "notes": "Lakeside park with cycling loop, shaded paths, and egret-watching spots"
+  },
+  {
+    "name": "Xinhai Wetlands Nature Park (Wenshan)",
+    "moods": ["Nice"],
+    "activity": "birdwatching / walking",
+    "surface": "dirt + boardwalk",
+    "lat": 24.990,
+    "lng": 121.553,
+    "notes": "Urban wetland reserve, excellent bird species on clear mornings; bring binoculars"
+  },
+  {
+    "name": "Bali Left Bank Rivermouth Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 25.164,
+    "lng": 121.406,
+    "notes": "Flat riverside cycling path opposite Tamsui; scenic river views, free bike rental nearby"
+  },
+  {
+    "name": "Tianmu Dadao Riverside Trail (Shilin)",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / jogging",
+    "surface": "paved",
+    "lat": 25.102,
+    "lng": 121.532,
+    "notes": "Tree-lined riverside walk through Tianmu; popular with expat community, well-maintained"
+  },
+  {
+    "name": "Wulai Waterfall & Hot Spring (Wulai)",
+    "moods": ["Warm"],
+    "activity": "walking / hot spring",
+    "surface": "paved",
+    "lat": 24.867,
+    "lng": 121.554,
+    "notes": "Riverside hot spring village 40km south; waterfall viewpoint accessible by cable car"
+  },
+  {
+    "name": "Sanxia Chengfu Riverside Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 24.940,
+    "lng": 121.372,
+    "notes": "Quiet riverside path beside Sanxia River, less crowded than main bikeway"
+  },
+  {
+    "name": "Tucheng Sacred Heart Campus Forest Walk",
+    "moods": ["Warm"],
+    "activity": "walking",
+    "surface": "dirt + paved",
+    "lat": 24.977,
+    "lng": 121.437,
+    "notes": "Wooded campus perimeter with mature trees, good shade, peaceful on weekdays"
+  },
+  {
+    "name": "Shulin Daguan Road Canal Greenway",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / cycling",
+    "surface": "paved",
+    "lat": 24.992,
+    "lng": 121.435,
+    "notes": "Tree-shaded canal-side path through residential Shulin, very local and quiet"
+  },
+  {
+    "name": "Neihu Technology Park Riverside Walk",
+    "moods": ["Warm"],
+    "activity": "walking / jogging",
+    "surface": "paved",
+    "lat": 25.063,
+    "lng": 121.579,
+    "notes": "Flat riverside greenway beside the Jilong River, good for a brisk midday walk"
+  },
+  {
+    "name": "Sanchong Zhongyang Riverside Park",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 25.070,
+    "lng": 121.488,
+    "notes": "Wide riverside park on Danshui River, open and flat; some wind shelter near tree line"
+  },
+  {
+    "name": "Chunhe Arts Village (Shulin)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "strolling / culture",
+    "surface": "paved",
+    "lat": 24.989,
+    "lng": 121.427,
+    "notes": "Small repurposed industrial arts space with open courtyard; interesting weekend markets"
+  },
+  {
+    "name": "Banqiao Fuzhong Greenway",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking",
+    "surface": "paved",
+    "lat": 25.008,
+    "lng": 121.459,
+    "notes": "Tree-lined urban greenway connecting MRT Fuzhong to Xinpu; sheltered by mature trees"
+  },
+  {
+    "name": "Zhonghe Jingmei Riverside Greenway",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / jogging",
+    "surface": "paved",
+    "lat": 24.999,
+    "lng": 121.504,
+    "notes": "Smooth riverside bike path, flat, connects to Xindian bikeway network"
+  },
+  {
+    "name": "Xinzhuang Guangming Road Park Strip",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 25.038,
+    "lng": 121.438,
+    "notes": "Linear park along Guangming Road with exercise stations and benches"
+  },
+  {
+    "name": "Luzhou Zhengyi Road Canal Walk",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking",
+    "surface": "paved",
+    "lat": 25.085,
+    "lng": 121.476,
+    "notes": "Quiet canal-side promenade with shade trees; popular with local elderly for morning walks"
+  },
+  {
+    "name": "Zhuwei Fisherman's Wharf (Tamsui)",
+    "moods": ["Warm"],
+    "activity": "walking / seafood",
+    "surface": "paved boardwalk",
+    "lat": 25.168,
+    "lng": 121.421,
+    "notes": "Small fishing harbour with fresh seafood stalls; more local feel than the main Tamsui waterfront"
+  },
+  {
+    "name": "Jinzhong Mountain Trail (Xindian)",
+    "moods": ["Nice", "Warm"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 24.953,
+    "lng": 121.533,
+    "notes": "Light hike through pine forest with Xindian reservoir views; ~3km, suitable for all fitness levels"
+  },
+  {
+    "name": "Tucheng Zhengde Trail",
+    "moods": ["Warm"],
+    "activity": "hiking / walking",
+    "surface": "dirt + paved",
+    "lat": 24.975,
+    "lng": 121.423,
+    "notes": "Low-elevation trail through Tucheng hills, shaded, moderate gradient, about 4km return"
+  },
+  {
+    "name": "Gongliao Fulong Beach & Bikeway",
+    "moods": ["Nice"],
+    "activity": "cycling / swimming / photography",
+    "surface": "paved bikeway + sand beach",
+    "lat": 25.016,
+    "lng": 121.946,
+    "notes": "Northeast coast 90km away — pristine beach and riverside cycling; best on clear sunny days"
+  },
+  {
+    "name": "Yingge Old Street Covered Arcade",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "strolling / ceramics shopping",
+    "surface": "paved arcade",
+    "lat": 24.908,
+    "lng": 121.347,
+    "notes": "Covered arcade strip with ceramics galleries; naturally sheltered from drizzle"
+  },
+  {
+    "name": "Shulin Train Station Square (Sheltered Canopy Walk)",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "light walking",
+    "surface": "paved + covered canopy",
+    "lat": 24.994,
+    "lng": 121.435,
+    "notes": "Covered pedestrian area around station; all-weather walkable, connects to nearby shops"
+  },
+  {
+    "name": "Zhonghe Cultural Center Indoor Garden",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "light walking / reading",
+    "surface": "indoor tile + semi-outdoor patio",
+    "lat": 24.995,
+    "lng": 121.499,
+    "notes": "Cultural center with sheltered courtyard garden; indoor galleries open daily"
+  },
+  {
+    "name": "Banqiao Jinhua Market Covered Arcade",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "market walk / light shopping",
+    "surface": "covered paved arcade",
+    "lat": 25.013,
+    "lng": 121.460,
+    "notes": "Traditional covered market arcade, busy mornings; keep dry while browsing local produce"
+  },
+  {
+    "name": "Chunhe Library Courtyard (Shulin)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "reading / light walk",
+    "surface": "paved courtyard",
+    "lat": 24.991,
+    "lng": 121.429,
+    "notes": "Quiet library courtyard with benches; semi-sheltered, peaceful for a slow morning"
+  },
+  {
+    "name": "Banqiao MRT Station Concourse Walk",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor walking",
+    "surface": "indoor tile",
+    "lat": 25.015,
+    "lng": 121.464,
+    "notes": "Extended underground concourse linking Banqiao HSR and metro stations; fully weatherproof"
+  },
+  {
+    "name": "Xinzhuang Sports Center Indoor Court",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor sports / walking",
+    "surface": "rubberised court + tile",
+    "lat": 25.036,
+    "lng": 121.440,
+    "notes": "Multi-purpose indoor sports hall with badminton courts; warm and dry on rainy days"
+  },
+  {
+    "name": "Luzhou Gongzheng Park (Covered Pavilions)",
+    "moods": ["Cloudy & Breezy"],
+    "activity": "tai chi / light exercise",
+    "surface": "paved",
+    "lat": 25.087,
+    "lng": 121.478,
+    "notes": "Park with large covered pavilions used by elderly for morning exercises; wind-sheltered"
+  },
+  {
+    "name": "Zhonghe Nanshan Park (Covered Pavilions)",
+    "moods": ["Cloudy & Breezy"],
+    "activity": "tai chi / stretching",
+    "surface": "paved",
+    "lat": 24.997,
+    "lng": 121.495,
+    "notes": "Hillside park with covered rest pavilions; good wind shelter, popular with retirees"
+  },
+  {
+    "name": "Tucheng Huacheng Road Covered Commercial Strip",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "light walking / shopping",
+    "surface": "covered paved arcade",
+    "lat": 24.976,
+    "lng": 121.430,
+    "notes": "Low-rise covered shopping strip; all-weather walkable, cafes and noodle shops"
+  },
+  {
+    "name": "Wugu Industrial Park Walking Path (Low Wind Corridor)",
+    "moods": ["Cloudy & Breezy"],
+    "activity": "walking",
+    "surface": "paved",
+    "lat": 25.072,
+    "lng": 121.466,
+    "notes": "Sheltered walking path along industrial canal; buildings block prevailing wind effectively"
+  },
+  {
+    "name": "Yonghe Xiyuan Road Covered Market Walk",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "market walk",
+    "surface": "covered paved arcade",
+    "lat": 25.010,
+    "lng": 121.508,
+    "notes": "Traditional covered market; good for a slow browse and breakfast on drizzly mornings"
+  },
+  {
+    "name": "Banqiao New City Hall Arcade",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor walking",
+    "surface": "indoor tile",
+    "lat": 25.010,
+    "lng": 121.462,
+    "notes": "Modern civic complex with covered ground floor arcades; free entry, accessible"
+  },
+  {
+    "name": "New Taipei City Museum of Art (Banciao)",
+    "moods": ["Stay In"],
+    "activity": "indoor culture",
+    "surface": "indoor tile",
+    "lat": 25.009,
+    "lng": 121.457,
+    "notes": "Contemporary art museum, air-conditioned, interesting rotating exhibitions"
+  },
+  {
+    "name": "Yingge Ceramics Museum (Indoor Galleries)",
+    "moods": ["Stay In"],
+    "activity": "indoor culture / ceramics",
+    "surface": "indoor tile",
+    "lat": 24.906,
+    "lng": 121.346,
+    "notes": "World-class ceramics collection, interactive exhibits, fully air-conditioned; café on-site"
+  },
+  {
+    "name": "New Taipei City Hakka Museum (Sanxia)",
+    "moods": ["Stay In"],
+    "activity": "indoor culture",
+    "surface": "indoor tile",
+    "lat": 24.940,
+    "lng": 121.367,
+    "notes": "Excellent Hakka cultural exhibits, bilingual displays, free entry; near Zushi Temple"
+  },
+  {
+    "name": "Shulin Xiulin District Library",
+    "moods": ["Stay In"],
+    "activity": "reading / quiet study",
+    "surface": "indoor carpet + tile",
+    "lat": 24.993,
+    "lng": 121.431,
+    "notes": "Clean, quiet public library; air-conditioned, good newspapers, perfect for rainy days"
+  },
+  {
+    "name": "Tucheng Sports Center Indoor Pool",
+    "moods": ["Stay In"],
+    "activity": "indoor swimming",
+    "surface": "indoor pool deck",
+    "lat": 24.977,
+    "lng": 121.430,
+    "notes": "50m indoor lap pool, member access required; cool escape on sweltering days too"
+  },
+  {
+    "name": "Banciao Cultural Center Exhibition Hall",
+    "moods": ["Stay In"],
+    "activity": "indoor culture",
+    "surface": "indoor tile",
+    "lat": 25.013,
+    "lng": 121.466,
+    "notes": "Multi-hall exhibition centre with rotating local and national art shows; free admission"
+  },
+  {
+    "name": "Banqiao Mega City Mall (Indoor Walks)",
+    "moods": ["Stay In"],
+    "activity": "indoor walking / shopping",
+    "surface": "indoor tile",
+    "lat": 25.016,
+    "lng": 121.465,
+    "notes": "Large air-conditioned mall, good for extended rainy-day walks between food courts"
+  },
+  {
+    "name": "Xindian Big City Mall",
+    "moods": ["Stay In"],
+    "activity": "indoor walking / shopping",
+    "surface": "indoor tile",
+    "lat": 24.955,
+    "lng": 121.541,
+    "notes": "Riverside mall near Xindian MRT station; good food court, full indoor circuit"
+  },
+  {
+    "name": "Miramar Entertainment Park (Neihu)",
+    "moods": ["Stay In"],
+    "activity": "indoor shopping / Ferris wheel",
+    "surface": "indoor tile",
+    "lat": 25.083,
+    "lng": 121.568,
+    "notes": "Indoor mall with a giant Ferris wheel; the wheel operates rain or shine (glass cabin)"
+  },
+  {
+    "name": "Xinzhuang Cultural Arts Center",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor culture / light walk",
+    "surface": "indoor tile + courtyard",
+    "lat": 25.037,
+    "lng": 121.442,
+    "notes": "Arts centre with semi-outdoor sculpture court and indoor gallery; pleasant even on overcast days"
+  },
+  {
+    "name": "Taipei Main Station Underground Mall",
+    "moods": ["Stay In"],
+    "activity": "indoor walking",
+    "surface": "indoor tile",
+    "lat": 25.048,
+    "lng": 121.517,
+    "notes": "Massive underground pedestrian network; stay dry while exploring dozens of shops and restaurants"
+  },
+  {
+    "name": "Gongguan Commercial District (Cafes & Bookshops)",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "reading / cafe culture",
+    "surface": "paved + indoor",
+    "lat": 25.014,
+    "lng": 121.535,
+    "notes": "Student-heavy area near NTU with covered arcades and cosy independent cafes; good rainy-day destination"
+  },
+  {
+    "name": "Shulin Sanhe Temple Covered Walkway",
+    "moods": ["Cloudy & Breezy"],
+    "activity": "light walk / temple visit",
+    "surface": "covered paved",
+    "lat": 24.993,
+    "lng": 121.433,
+    "notes": "Covered colonnade around local temple; sheltered from wind and light rain, peaceful morning stroll"
+  },
+  {
+    "name": "Dahan River Bikeway (Tucheng section)",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 24.975,
+    "lng": 121.422,
+    "notes": "Quiet upstream section of the Dahan bikeway; fewer cyclists, good bird-watching spots"
+  },
+  {
+    "name": "Dahan River Bikeway (Banqiao section)",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / jogging",
+    "surface": "paved",
+    "lat": 25.008,
+    "lng": 121.452,
+    "notes": "Smooth paved riverside path under Banqiao bridges; very popular weekend cycling route"
+  },
+  {
+    "name": "Xinpu Metro Park (Banciao)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "strolling / tai chi",
+    "surface": "paved",
+    "lat": 25.017,
+    "lng": 121.455,
+    "notes": "Spacious urban park near Xinpu MRT; large pavilion provides wind and light rain shelter"
+  },
+  {
+    "name": "Luzhou Xincheng Park (Sheltered Grove)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 25.082,
+    "lng": 121.473,
+    "notes": "Dense tree canopy provides natural shelter; elderly tai chi groups gather here daily"
+  },
+  {
+    "name": "Heping Island Coastal Park (Keelung)",
+    "moods": ["Nice"],
+    "activity": "walking / photography / swimming",
+    "surface": "paved + rocky shore",
+    "lat": 25.153,
+    "lng": 121.727,
+    "notes": "Dramatic volcanic rock formations and coastal pools 75km away; best on clear, calm days"
+  },
+  {
+    "name": "Bali Shihsanhang Museum of Archaeology",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor culture",
+    "surface": "indoor tile",
+    "lat": 25.158,
+    "lng": 121.399,
+    "notes": "Award-winning archaeology museum in Bali; air-conditioned, excellent exhibits on prehistoric Taiwan"
+  },
+  {
+    "name": "Xizhi Kangning Riverside Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 25.068,
+    "lng": 121.642,
+    "notes": "Flat riverside cycling path along Jilong River, shaded by willows; connects to greater river network"
+  },
+  {
+    "name": "New Taipei City Government Plaza (Banciao)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "strolling",
+    "surface": "paved",
+    "lat": 25.010,
+    "lng": 121.459,
+    "notes": "Open civic plaza with fountain feature and walking paths; partially sheltered by arcade overhangs"
+  },
+  {
+    "name": "Sanxia Triangle Park",
+    "moods": ["Warm"],
+    "activity": "strolling / tai chi",
+    "surface": "paved",
+    "lat": 24.942,
+    "lng": 121.370,
+    "notes": "Small public park adjacent to Zushi Temple; good benches, shaded, central location in Sanxia"
+  },
+  {
+    "name": "Tamsui Fort San Domingo & Red Castle",
+    "moods": ["Nice", "Warm"],
+    "activity": "walking / history / photography",
+    "surface": "paved garden",
+    "lat": 25.178,
+    "lng": 121.427,
+    "notes": "Historic Dutch-era fort with gardens and estuary views; mostly paved, moderate incline"
+  },
+  {
+    "name": "Yangmingshan National Park (Qingtiangang Grassland)",
+    "moods": ["Nice"],
+    "activity": "hiking / picnic / photography",
+    "surface": "grass + paved paths",
+    "lat": 25.172,
+    "lng": 121.555,
+    "notes": "High-altitude volcanic grassland with panoramic views; 60km from Shulin, best on clear days only"
+  },
+  {
+    "name": "Banqiao Xibei Park",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 25.017,
+    "lng": 121.470,
+    "notes": "Neighbourhood park with exercise stations and covered pavilion; good for an easy morning stretch"
+  },
+  {
+    "name": "Shulin Indoor Public Swimming Pool",
+    "moods": ["Stay In"],
+    "activity": "indoor swimming",
+    "surface": "indoor pool deck",
+    "lat": 24.994,
+    "lng": 121.431,
+    "notes": "Community indoor pool; comfortable year-round regardless of weather outside"
+  },
+  {
+    "name": "Wugu Sports Park Indoor Gymnasium",
+    "moods": ["Stay In"],
+    "activity": "indoor sports / walking",
+    "surface": "rubberised court",
+    "lat": 25.072,
+    "lng": 121.465,
+    "notes": "Multi-sport indoor gymnasium with basketball and badminton courts; warm and dry"
+  },
+  {
+    "name": "Danhai Light Rail Promenade (Tamsui)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / light rail ride",
+    "surface": "paved",
+    "lat": 25.195,
+    "lng": 121.424,
+    "notes": "New coastal district light rail promenade; ocean views, mostly flat, some wind exposure"
+  },
+  {
+    "name": "Sijhih Bihu Trailhead (Xizhi)",
+    "moods": ["Nice"],
+    "activity": "hiking",
+    "surface": "dirt + stone steps",
+    "lat": 25.075,
+    "lng": 121.650,
+    "notes": "Mountain trail with lake views, ~4km moderate loop; refreshingly cool at altitude"
+  },
+  {
+    "name": "Xindian Tonghou Riverside Greenway",
+    "moods": ["Nice", "Warm"],
+    "activity": "cycling / walking",
+    "surface": "paved",
+    "lat": 24.958,
+    "lng": 121.548,
+    "notes": "Scenic riverside greenway along Xindian Creek, shaded by bamboo and willows; connects to Bitan"
+  },
+  {
+    "name": "Sanxia Yingdi Park",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 24.938,
+    "lng": 121.375,
+    "notes": "Neighbourhood park with large covered pavilion and exercise equipment; local gathering spot"
+  },
+  {
+    "name": "Tucheng Chengcang Park (Covered Pavilion)",
+    "moods": ["Cloudy & Breezy"],
+    "activity": "tai chi / light exercise",
+    "surface": "paved",
+    "lat": 24.969,
+    "lng": 121.425,
+    "notes": "Terraced hillside park with large roofed pavilion; wind-sheltered, good for gentle morning exercise"
+  },
+  {
+    "name": "Shulin Fuxing Park",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / stretching",
+    "surface": "paved",
+    "lat": 24.990,
+    "lng": 121.429,
+    "notes": "Quiet neighbourhood park with mature shade trees and covered rest area; 5 minutes from Shulin Station"
+  },
+  {
+    "name": "Banqiao Xingmin Sports Park",
+    "moods": ["Nice", "Warm"],
+    "activity": "jogging / stretching / sports",
+    "surface": "rubberised track + paved",
+    "lat": 25.012,
+    "lng": 121.472,
+    "notes": "200m rubberised jogging track with outdoor fitness stations; open 24 hours, well-lit at night"
+  },
+  {
+    "name": "Sanchong Indoor Sports Complex",
+    "moods": ["Stay In"],
+    "activity": "indoor sports / walking",
+    "surface": "indoor rubberised track",
+    "lat": 25.068,
+    "lng": 121.484,
+    "notes": "Indoor multi-purpose sports facility with 200m track; climate-controlled and fully weather-proof"
+  },
+  {
+    "name": "Xinzhuang Night Market (Daytime Street Walk)",
+    "moods": ["Warm", "Cloudy & Breezy"],
+    "activity": "walking / street food",
+    "surface": "covered paved arcade",
+    "lat": 25.035,
+    "lng": 121.446,
+    "notes": "Famous night market street with partial awning cover; good for daytime browsing and snacks"
+  },
+  {
+    "name": "Sanxia District Sports Center",
+    "moods": ["Cloudy & Breezy", "Stay In"],
+    "activity": "indoor sports / swimming",
+    "surface": "indoor pool deck + court",
+    "lat": 24.936,
+    "lng": 121.363,
+    "notes": "Full indoor sports facility including pool and badminton; accessible year-round regardless of weather"
+  }
+]
