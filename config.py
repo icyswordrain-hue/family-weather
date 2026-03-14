@@ -149,7 +149,7 @@ if RUN_MODE == "LOCAL" and os.path.exists(_LOCAL_KEY_PATH):
 # ── Cloud TTS ─────────────────────────────────────────────────────────────────
 # Per-language TTS voice defaults (overridable via env)
 TTS_VOICE_EN = os.environ.get("TTS_VOICE_NAME", "en-US-Neural2-D")
-TTS_VOICE_ZH = os.environ.get("TTS_VOICE_ZH", "zh-TW-Wavenet-B")
+TTS_VOICE_ZH = os.environ.get("TTS_VOICE_ZH", "cmn-TW-Standard-A")
 
 # Legacy aliases — used where language selection isn't yet implemented
 TTS_LANGUAGE_CODE = "zh-TW"
