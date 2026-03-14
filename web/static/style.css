@@ -1400,7 +1400,6 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-card:not(.expanded) .ls-text { display: none; }
-.ls-card:not(.expanded) .ls-insight { display: none; }
 
 .ls-tagline {
   font-size: 1.05rem;
@@ -1425,12 +1424,6 @@ html.dark .audio-toggle-btn.active {
 }
 .ls-expand-all-btn:hover { color: var(--text); border-color: var(--text); }
 
-.ls-sub {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-top: 0.35rem;
-  font-weight: 500;
-}
 
 .ls-badge {
   display: inline-block;
@@ -1458,13 +1451,6 @@ html[lang="zh-TW"] .ls-text {
   line-height: 1.6;
 }
 
-html[lang="zh-TW"] .ls-sub {
-  font-size: 0.95rem;
-}
-
-html[lang="zh-TW"] .ls-badge {
-  font-size: 0.85rem;
-}
 
 html[lang="zh-TW"] .ls-alert-msg {
   font-size: 1.05rem;
@@ -1482,83 +1468,6 @@ html[lang="zh-TW"] .rp-text {
   font-size: 1.1rem;
 }
 
-/* Insight bar — replaces ad-hoc badge+sub combos on lifestyle cards */
-.ls-insight {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.55rem;
-  padding: 0.3rem 0.55rem;
-  background: var(--hover);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  color: var(--text);
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.ls-insight .brand-icon {
-  height: 1em;
-  width: auto;
-  flex-shrink: 0;
-  display: inline-block;
-  margin: 0;
-}
-
-/* zh-TW bump */
-html[lang="zh-TW"] .ls-insight {
-  font-size: 0.95rem;
-}
-
-.ls-badge.hvac-heating {
-  background: var(--tint-heat);
-  color: #c0392b;
-}
-
-.ls-badge.hvac-cooling {
-  background: var(--tint-cool);
-  color: #2980b9;
-}
-
-.ls-badge.hvac-dehumidify {
-  background: var(--ok-lt);
-  color: #27ae60;
-}
-
-.ls-badge.hvac-fan {
-  background: var(--hover);
-  color: #7f8c8d;
-}
-
-.ls-badge.mood-badge {
-  background: var(--blue-lt);
-  color: var(--blue);
-}
-
-html.dark .ls-badge.hvac-heating {
-  background: rgba(192, 57, 43, 0.15);
-  color: #e57368;
-}
-
-html.dark .ls-badge.hvac-cooling {
-  background: rgba(41, 128, 185, 0.15);
-  color: #5dade2;
-}
-
-html.dark .ls-badge.hvac-dehumidify {
-  background: rgba(39, 174, 96, 0.15);
-  color: #58d68d;
-}
-
-html.dark .ls-badge.hvac-fan {
-  background: rgba(255, 255, 255, 0.08);
-  color: #aab;
-}
-
-html.dark .ls-badge.mood-badge {
-  background: rgba(77, 124, 254, 0.15);
-  color: #7da4ff;
-}
 
 /* Alert card in Lifestyle view */
 .ls-alert-card {

@@ -969,7 +969,7 @@ function renderLifestyleView(data) {
     }
   });
 
-  const add = (icon, title, tagline, text, extraNodes = []) => {
+  const add = (icon, title, tagline, text) => {
     const card = document.createElement('div');
     card.className = 'ls-card';
     const ic = document.createElement('div');
@@ -996,7 +996,6 @@ function renderLifestyleView(data) {
     txt.className = 'ls-text';
     txt.textContent = text;
     content.appendChild(txt);
-    extraNodes.forEach(n => content.appendChild(n));
     card.addEventListener('click', () => {
       card.classList.toggle('expanded');
       updateExpandAllBtn();
@@ -1004,30 +1003,6 @@ function renderLifestyleView(data) {
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);
-  };
-
-  const mkBadge = (cls, text) => {
-    const s = document.createElement('span');
-    s.className = 'ls-badge ' + cls;
-    s.textContent = text;
-    return s;
-  };
-  const mkSub = (text) => {
-    const d = document.createElement('div');
-    d.className = 'ls-sub';
-    d.textContent = text;
-    return d;
-  };
-  const mkInsight = (iconHtml, textHtml) => {
-    const d = document.createElement('div');
-    d.className = 'ls-insight';
-    const ic = document.createElement('span');
-    ic.innerHTML = iconHtml;
-    const txt = document.createElement('span');
-    txt.innerHTML = textHtml;
-    d.appendChild(ic);
-    d.appendChild(txt);
-    return d;
   };
 
   // 1. Heads Up alert card (top position; only rendered when alerts exist)
@@ -1075,56 +1050,28 @@ function renderLifestyleView(data) {
     card.appendChild(content);
     grid.appendChild(card);
   }
-  // 2. Wardrobe (includes rain gear as sub-line)
+  // 2. Wardrobe
   if (data.wardrobe) {
-    const extras = [];
-    const parts = [];
-    if (data.wardrobe.feels_like != null) parts.push(`${T.feels_like} ${Math.round(data.wardrobe.feels_like)}°`);
-    if (data.wardrobe.rain_gear_text) parts.push(`☂️ ${data.wardrobe.rain_gear_text}`);
-    if (parts.length > 0) extras.push(mkInsight(IMG('feels-like', 'Feels Like'), parts.join(' · ')));
-    add(IMG('feels-like', 'Feels Like'), T.wardrobe, data.wardrobe.tagline || '', data.wardrobe.text, extras);
+    add(IMG('feels-like', 'Feels Like'), T.wardrobe, data.wardrobe.tagline || '', data.wardrobe.text);
   }
   // 4. Commute
   if (data.commute) {
-    const extras = [];
-    let hazardText = getLang() === 'zh-TW' ? '通勤順暢' : 'Commute clear';
-    if (data.commute.hazards && data.commute.hazards.length > 0) {
-      hazardText = data.commute.hazards[0];
-    }
-    extras.push(mkInsight(IMG('commute', 'Commute'), hazardText));
-    add(IMG('commute', 'Commute'), T.commute, data.commute.tagline || '', data.commute.text, extras);
+    add(IMG('commute', 'Commute'), T.commute, data.commute.tagline || '', data.commute.text);
   }
   // 5. Garden Health
   if (data.garden && data.garden.text) {
-    const insightText = getLang() === 'zh-TW' ? '依天氣調整澆水頻率' : 'Adjust watering to weather';
-    add(IMG('garden', 'Garden'), T.garden, data.garden.tagline || '', data.garden.text, [mkInsight(IMG('last-drip', 'Water'), insightText)]);
+    add(IMG('garden', 'Garden'), T.garden, data.garden.tagline || '', data.garden.text);
   }
   // 6. Outdoor Activities
   if (data.outdoor && data.outdoor.text) {
-    const extras = [];
-    const parts = [];
-    if (data.outdoor.grade) {
-      parts.push(`${getLang() === 'zh-TW' ? '等級' : 'Grade'} ${data.outdoor.grade}`);
-    }
-    if (data.outdoor.best_window) {
-      const bestLabel = (T.slots && T.slots[data.outdoor.best_window]) ? T.slots[data.outdoor.best_window] : (data.outdoor.best_window || '');
-      parts.push(`${getLang() === 'zh-TW' ? '最佳:' : 'Best:'} ${bestLabel}`);
-    }
-    if (parts.length > 0) extras.push(mkInsight(IMG('outdoor', 'Outdoor'), parts.join(' · ')));
-    if (data.air_quality && data.air_quality.aqi != null && data.air_quality.aqi > 100) {
-      extras.push(mkInsight(IMG('air-quality', 'AQI Warn'), `${T.outdoor_aqi_warn}${data.air_quality.aqi}`));
-    }
-    add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.tagline || '', data.outdoor.text, extras);
+    add(IMG('outdoor', 'Outdoor'), T.outdoor_act, data.outdoor.tagline || '', data.outdoor.text);
   }
   // 7. Meals
   if (data.meals && data.meals.text) {
-    const extras = [];
-    if (data.meals.mood) extras.push(mkInsight(IMG('meals', 'Meals'), localiseMetric(data.meals.mood)));
-    add(IMG('meals', 'Meals'), T.meals, data.meals.tagline || '', data.meals.text, extras);
+    add(IMG('meals', 'Meals'), T.meals, data.meals.tagline || '', data.meals.text);
   }
   // 8. HVAC Advice
   if (data.hvac) {
-    const extras = [];
     const hvacMode = (data.hvac.mode || '').toLowerCase();
     const hvacIconName =
       hvacMode === 'cooling'          ? 'cool-shade'    :
@@ -1132,19 +1079,11 @@ function renderLifestyleView(data) {
       hvacMode === 'heating'          ? 'hvac'          :
       hvacMode === 'heating_optional' ? 'hvac'          :
       'window-advice';
-    if (data.hvac.mode) extras.push(mkInsight(IMG(hvacIconName, 'HVAC'), localiseMetric(data.hvac.mode)));
-    add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.tagline || '', data.hvac.text, extras);
+    add(IMG(hvacIconName, 'HVAC'), T.hvac, data.hvac.tagline || '', data.hvac.text);
   }
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {
-    const extras = [];
-    if (data.air_quality.peak_window) {
-      extras.push(mkInsight(IMG('heads-up', 'AQI Peak'), `⚠ ${data.air_quality.peak_window}`));
-    }
-    if (data.air_quality.purifier_advice) {
-      extras.push(mkInsight(IMG('air-quality', 'Air Purifier'), localiseMetric(data.air_quality.purifier_advice)));
-    }
-    add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.tagline || '', data.air_quality.text, extras);
+    add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.tagline || '', data.air_quality.text);
   }
   updateExpandAllBtn();
 }
