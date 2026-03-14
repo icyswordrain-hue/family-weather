@@ -533,15 +533,22 @@ function renderCurrentView(data) {
   const gaugesPanel = document.getElementById('gauges-expand');
   if (outdoorTrigger && gaugesPanel && !outdoorTrigger._expandWired) {
     outdoorTrigger._expandWired = true;
-    const toggle = () => {
+    const toggleGauges = () => {
       const expanded = outdoorTrigger.getAttribute('aria-expanded') === 'true';
       outdoorTrigger.setAttribute('aria-expanded', String(!expanded));
       gaugesPanel.setAttribute('aria-hidden', String(expanded));
       gaugesPanel.classList.toggle('gauges-collapsed', expanded);
+      updateDbExpandBtn();
     };
-    outdoorTrigger.addEventListener('click', toggle);
+    outdoorTrigger.addEventListener('click', toggleGauges);
     outdoorTrigger.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGauges(); }
+    });
+
+    // Dashboard expand-all buttons (mirrors lifestyle pattern)
+    ['db-expand-all-btn', 'db-expand-all-btn-mobile'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); toggleGauges(); });
     });
   }
 
@@ -936,6 +943,16 @@ function aqiToLevel(val) {
 function translateAQIText(status) {
   // AQI status is returned in the active language directly — pass through.
   return status || '';
+}
+
+function updateDbExpandBtn() {
+  const panel = document.getElementById('gauges-expand');
+  const expanded = panel && !panel.classList.contains('gauges-collapsed');
+  const text = expanded ? (T.ls_collapse_all || 'Collapse All') : (T.ls_expand_all || 'Expand All');
+  ['db-expand-all-btn', 'db-expand-all-btn-mobile'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.textContent = text;
+  });
 }
 
 // ── View 3: Lifestyle ──────────────────────────────────────────────────────

@@ -573,19 +573,7 @@ input:focus-visible {
   user-select: none;
 }
 
-.gauge-outdoor-trigger::after {
-  content: '▾';
-  position: absolute;
-  bottom: 6px;
-  right: 10px;
-  font-size: 1.5rem;
-  color: var(--muted);
-  transition: transform 0.25s;
-}
-
-.gauge-outdoor-trigger[aria-expanded="true"]::after {
-  transform: rotate(180deg);
-}
+/* Chevron removed — expand-all button in header replaces it */
 
 @media (prefers-reduced-motion: no-preference) {
   .gauge-outdoor-trigger:hover {
@@ -2216,11 +2204,11 @@ html.dark .source-claude {
     height: 44px;
   }
 
-  /* Gauges expand panel: 4 per row, compact sizing */
+  /* Gauges expand panel: 2×2 grid on mobile */
   .gauges-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
-    max-height: 175px;
+    max-height: 350px;
   }
 
   .gauges-grid .gauge-card {
