@@ -187,6 +187,19 @@ def test_parse_no_metadata_returns_empty():
     assert result["cards"] == {}
 
 
+def test_parse_truncated_metadata_returns_empty_cards():
+    """When METADATA JSON is truncated mid-string, cards should be empty (not crash)."""
+    truncated = (
+        "P1 conditions.\n\nP2 garden.\n\nP3 outdoor.\n\nP4 hvac.\n\nP5 forecast.\n\n"
+        "---METADATA---\n"
+        '{"wardrobe": "light jacket", "commute_am": "Clear morn'  # truncated
+    )
+    result = parse_narration_response(truncated)
+    assert result["metadata"] == {}
+    assert result["cards"] == {}
+    assert "P1 conditions." in result["full_text"]
+
+
 def test_parse_regen_with_code_fences():
     """LLM wraps regen JSON in markdown code fences."""
     response = (

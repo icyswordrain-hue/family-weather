@@ -81,6 +81,8 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         )
         text_blocks = [block.text for block in response.content if block.type == "text"]
         text = "".join(text_blocks)
+        if response.stop_reason == "max_tokens":
+            logger.warning("Claude response truncated (hit max_tokens=%d). METADATA block may be incomplete.", max_tokens or CLAUDE_MAX_TOKENS)
         if text:
             return text.strip()
     except Exception as exc:
@@ -100,6 +102,8 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         )
         text_blocks = [block.text for block in response.content if block.type == "text"]
         text = "".join(text_blocks)
+        if response.stop_reason == "max_tokens":
+            logger.warning("Claude fallback response truncated (hit max_tokens=%d). METADATA block may be incomplete.", max_tokens or CLAUDE_MAX_TOKENS)
         if text:
             return text.strip()
     except Exception as exc:

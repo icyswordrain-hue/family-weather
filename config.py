@@ -100,14 +100,14 @@ TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 # ── Google Gemini ─────────────────────────────────────────────────────────
 GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-2.5-pro")
 GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.5-flash")
-GEMINI_MAX_TOKENS = 1200        # ~600 narration + ~500 expanded metadata (cards derived from metadata)
-GEMINI_MAX_TOKENS_REGEN = 1500  # regen: adds ~1000 tokens of meal/location JSON
+GEMINI_MAX_TOKENS = 1400        # ~450 narration + ~700 metadata JSON + safety margin
+GEMINI_MAX_TOKENS_REGEN = 1800  # regen: adds ~1000 tokens of meal/location JSON
 # ── Anthropic Claude ──────────────────────────────────────────────────────
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
 CLAUDE_REGEN_MODEL = os.environ.get("CLAUDE_REGEN_MODEL", "claude-opus-4-6")
-CLAUDE_MAX_TOKENS = 1200        # ~600 narration + ~500 expanded metadata (cards derived from metadata)
-CLAUDE_MAX_TOKENS_REGEN = 1500  # regen: adds ~1000 tokens of meal/location JSON
+CLAUDE_MAX_TOKENS = 1400        # ~450 narration + ~700 metadata JSON + safety margin
+CLAUDE_MAX_TOKENS_REGEN = 1800  # regen: adds ~1000 tokens of meal/location JSON
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 CLAUDE_CHAT_MODEL = os.environ.get("CLAUDE_CHAT_MODEL", "claude-haiku-4-5-20251001")
 CLAUDE_CHAT_MAX_TOKENS = int(os.environ.get("CLAUDE_CHAT_MAX_TOKENS", "300"))

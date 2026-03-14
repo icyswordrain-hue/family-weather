@@ -63,6 +63,12 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             ),
         )
         text = response.text or ""
+        try:
+            finish = response.candidates[0].finish_reason
+            if finish and str(finish).upper() in ("MAX_TOKENS", "2"):
+                logger.warning("Gemini Pro response truncated (hit max_output_tokens=%d). METADATA block may be incomplete.", max_tokens or GEMINI_MAX_TOKENS)
+        except (IndexError, AttributeError):
+            pass
         if text:
             return text.strip()
     except Exception as e:
@@ -88,6 +94,12 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             ),
         )
         text = response.text or ""
+        try:
+            finish = response.candidates[0].finish_reason
+            if finish and str(finish).upper() in ("MAX_TOKENS", "2"):
+                logger.warning("Gemini Flash response truncated (hit max_output_tokens=%d). METADATA block may be incomplete.", max_tokens or GEMINI_MAX_TOKENS)
+        except (IndexError, AttributeError):
+            pass
         if text:
             return text.strip()
         else:

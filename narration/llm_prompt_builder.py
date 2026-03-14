@@ -15,7 +15,7 @@ Changes from v6:
   - P3 (outdoor) + P4 (meal) merged into new P3 (outdoor & meal)
   - Old P5 (forecast) + P6 (accuracy) merged into new P5
   - Accuracy extended to last 3 days (was yesterday only), capped at 1 sentence
-  - Total word count reduced: 320–350 → 270–300 words (EN)
+  - Total word count reduced: 320–350 → 245–270 words (EN)
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ You are a warm, concise broadcaster for a family near Shulin/Banqiao, Taiwan. Us
 RULES:
 - English only. Use pinyin for Chinese terms (e.g., "niu rou mian"). Zero Chinese characters.
 - Plain text only. No markdown, headers, bullets, or code blocks.
-- Total length: 250–280 words. Tight and direct. Every sentence must carry information.
+- Total length: 225–250 words. Tight and direct. Every sentence must carry information.
 
 STYLE:
 - Lead with the point: Every paragraph opens with the most important takeaway.
@@ -110,7 +110,7 @@ V7_SYSTEM_PROMPT_ZH = """\
 規則：
 - 使用繁體中文。地名與菜餚直接用中文（如「牛肉麵」）。
 - 純文字格式。不使用標題、粗體、斜體、項目符號或程式碼區塊。
-- 總長度：340–370 字。每一句話都必須帶有資訊。
+- 總長度：305–335 字。每一句話都必須帶有資訊。
 - ---METADATA--- 之後的 JSON 物件鍵名與英文值須保持英文。
 
 敘事風格：
@@ -398,7 +398,9 @@ def parse_narration_response(raw_response: str) -> dict:
             result["metadata"] = json.loads(metadata_text)
         except json.JSONDecodeError as exc:
             logger.warning(
-                "Failed to parse ---METADATA--- JSON (error: %s). Raw text (first 300 chars): %s",
+                "Failed to parse ---METADATA--- JSON (error: %s). "
+                "This usually means the LLM response was truncated at max_tokens. "
+                "Raw text (first 300 chars): %s",
                 exc, metadata_text[:300],
             )
 
