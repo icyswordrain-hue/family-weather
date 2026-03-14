@@ -42,3 +42,14 @@ a proportional font — causing overflow or awkward line breaks.
 The 4×1 layout had hidden `.gauges-grid .gauge-header .gauge-icon` with
 `display: none` to save horizontal space. With the 2×2 grid each card has
 ample room, so the rule was removed to restore the brand icons.
+
+### Match side-stack cards to gauge-grid sizing (follow-up)
+
+The 3 side-stack cards (wind, ground, outdoor) had smaller padding, height,
+and fonts than the 4 expanded gauge cards, making the dashboard look
+inconsistent. Aligned all mobile overrides:
+
+- `.gauge-card` padding `0.5rem 0.4rem` → `0.63rem 0.44rem`, min-height `56px` → `88px`
+- `.gauge-label` font-size `0.9rem` → `0.88rem`
+- `.gauge-value` font-size `1.35rem` → `1.28rem`
+- Removed `flex-start` header override and custom icon size (now inherits centered default + base 28px)

@@ -1084,7 +1084,7 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-label {
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2147,19 +2147,20 @@ html.dark .source-claude {
     min-height: 113px;
   }
 
+  /* Side-stack cards: match gauges-grid sizing */
   .current-side-stack .gauge-card {
-    padding: 0.5rem 0.4rem;
-    min-height: 56px;
+    padding: 0.63rem 0.44rem;
+    min-height: 88px;
   }
 
   .current-side-stack .gauge-label {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     letter-spacing: 0.02em;
   }
 
   .current-side-stack .gauge-value {
-    font-size: 1.35rem;
-    font-family: inherit;          /* swap monospace for proportional — fits longer text */
+    font-size: 1.28rem;
+    font-family: inherit;
     word-break: break-word;
     overflow-wrap: break-word;
   }
@@ -2168,15 +2169,6 @@ html.dark .source-claude {
     font-size: 0.85rem;
     word-break: break-word;
     overflow-wrap: break-word;
-  }
-
-  .current-side-stack .gauge-header {
-    justify-content: flex-start;
-  }
-
-  .current-side-stack .gauge-header .gauge-icon .brand-icon {
-    width: 30px;
-    height: 30px;
   }
 
   .current-conditions-wrapper {
