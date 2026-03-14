@@ -47,12 +47,22 @@ plus harden the metadata parser against common LLM formatting quirks.
 - `narration/llm_prompt_builder.py` — parser resilience
 - `tests/test_narration_parser.py` — 5 new parser resilience tests
 
+### 6. Input token slimming (llm_prompt_builder.py)
+- `_slim_for_llm()` now strips 5 additional field categories from the DATA JSON:
+  - `recent_meals` + `recent_locations` (~80 tok) — filtering done upstream
+  - `meal_mood.all_suggestions` + `all_meals_detail` (~250 tok) — LLM uses `top_*` only
+  - `location_rec.all_locations` (~300–400 tok) — LLM uses `top_locations` only
+  - `forecast_7day` (~400 tok) — frontend-only; LLM uses segments + transitions
+  - `outdoor_index.activities` (~100–150 tok) — distilled to HINTS `top_activity`
+- History forecast excerpt trimmed from 400 → 200 chars (~60 tok across 3 days)
+- History metadata line removed (~60 tok) — meal/location repeat avoidance is upstream
+
 ## Token Impact (per-call estimates)
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Normal narration (cache miss) | ~4400 tok | ~4400 tok (same, but cached system prompt on repeat) |
-| Fallback fires | ~8100 tok | ~5500 tok (90s fail-fast + cached system prompt) |
-| Regen day | ~5100 tok | ~4600 tok (tighter output limit) |
+| Normal narration (cache miss) | ~4400 tok | ~3100 tok (slimmed data + cached system prompt) |
+| Fallback fires | ~8100 tok | ~4200 tok (90s fail-fast + cached prompt + slim data) |
+| Regen day | ~5100 tok | ~3700 tok (tighter output limit + slim data) |
 | Chat (repeat msgs) | ~1700 tok/msg | ~700 tok/msg (cached context) |
 | Provider fully down | template only | tries other provider first |

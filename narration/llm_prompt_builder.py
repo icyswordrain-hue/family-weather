@@ -5,7 +5,7 @@ Builds the Claude/Gemini prompt from pre-processed weather data.
 Paragraph structure (v7):
   P1  Conditions & Alerts (always) — current weather, wardrobe, heads-up, cardiac, Ménière's (no AQI)
   P2  Garden & Commute (always) — gardening tip + both commute legs
-  P3  Outdoor & Meal (always) — outdoor activity (no Parkinson's phrasing) + one dish
+  P3  Outdoor & Meal (always) — outdoor activity + one dish
   P4  HVAC & Air Quality (always) — climate control + AQI/window guidance
   P5  Forecast & Accuracy (always) — 24h forecast + accuracy review (last 3 days)
 
@@ -13,7 +13,6 @@ Changes from v6:
   - 6 paragraphs → 5
   - AQI status removed from P1; moved to new P4
   - P3 (outdoor) + P4 (meal) merged into new P3 (outdoor & meal)
-  - Parkinson's-specific phrasing removed from P3/outdoor card
   - Old P5 (forecast) + P6 (accuracy) merged into new P5
   - Accuracy extended to last 3 days (was yesterday only), capped at 1 sentence
   - Total word count reduced: 320–350 → 270–300 words (EN)
@@ -206,13 +205,20 @@ Locations: 8–10 per category, all within 50km of 24.9955°N 121.4279°E (Shuli
 
 
 def _slim_for_llm(processed_data: dict) -> dict:
-    """Strip verbose MOENV fields to reduce LLM input tokens.
+    """Strip fields the LLM never references to reduce input tokens.
 
-    Removes aqi_forecast.content (~200-300 tok) and aqi_forecast.hourly
-    (~300-450 tok), replacing the latter with a single peak_aqi summary.
+    Removes:
+    - aqi_forecast.content/hourly → replaced with peak_aqi summary
+    - recent_meals, recent_locations — filtering done upstream
+    - meal_mood.all_suggestions/all_meals_detail — LLM uses top_* only
+    - location_rec.all_locations — LLM uses top_locations only
+    - forecast_7day — LLM uses forecast_segments + transitions
+    - outdoor_index.activities — distilled to HINTS top_activity
     processed_data itself is never mutated.
     """
     slim = {**processed_data}
+
+    # ── AQI forecast: keep summary, drop verbose content/hourly ──
     if "aqi_forecast" in slim:
         af: dict[str, Any] = dict(slim["aqi_forecast"])
         af.pop("content", None)
@@ -222,9 +228,36 @@ def _slim_for_llm(processed_data: dict) -> dict:
             peak = max(hourly, key=lambda h: h.get("aqi") or 0)
             af["peak_aqi"] = {
                 "aqi": peak.get("aqi"),
-                "hour": (peak.get("forecast_time") or "")[:13],  # "2026-03-07T14"
+                "hour": (peak.get("forecast_time") or "")[:13],
             }
         slim["aqi_forecast"] = af
+
+    # ── Drop upstream-filtered lists (LLM never uses these) ──
+    slim.pop("recent_meals", None)
+    slim.pop("recent_locations", None)
+
+    # ── Meal mood: keep only top_suggestions + top_meals_detail ──
+    if "meal_mood" in slim:
+        mm = dict(slim["meal_mood"])
+        mm.pop("all_suggestions", None)
+        mm.pop("all_meals_detail", None)
+        slim["meal_mood"] = mm
+
+    # ── Location rec: keep only top_locations ──
+    if "location_rec" in slim:
+        lr = dict(slim["location_rec"])
+        lr.pop("all_locations", None)
+        slim["location_rec"] = lr
+
+    # ── 7-day forecast: frontend-only, LLM uses segments + transitions ──
+    slim.pop("forecast_7day", None)
+
+    # ── Outdoor index: drop full activities dict (distilled to HINTS) ──
+    if "outdoor_index" in slim:
+        oi = dict(slim["outdoor_index"])
+        oi.pop("activities", None)
+        slim["outdoor_index"] = oi
+
     return slim
 
 
@@ -451,8 +484,8 @@ def _format_history(history: list[dict]) -> str:
         )
         forecast = paras.get(forecast_key, "")
         if forecast:
-            if len(forecast) > 400:
-                forecast = forecast[:400] + "..."
+            if len(forecast) > 200:
+                forecast = forecast[:200] + "..."
             lines.append(f"Forecast: {forecast}")
 
         # Actual conditions for accuracy
@@ -463,25 +496,6 @@ def _format_history(history: list[dict]) -> str:
                 f"Actual: AT={current.get('AT')}°C RH={current.get('RH')}% "
                 f"Wind={current.get('beaufort_desc')} AQI={current.get('aqi')}"
             )
-
-        # Continuity metadata
-        meta = day.get("metadata", {})
-        parts = []
-        if meta.get("meal"):
-            parts.append(f"meal={meta['meal']}")
-        elif meta.get("meals_suggested"):
-            # Backward compat with v5 history
-            parts.append(f"meals={','.join(meta['meals_suggested'])}")
-        if meta.get("garden"):
-            parts.append(f"garden={meta['garden']}")
-        elif meta.get("gardening_tip_topic"):
-            parts.append(f"garden={meta['gardening_tip_topic']}")
-        if meta.get("outdoor"):
-            parts.append(f"outdoor={meta['outdoor']}")
-        elif meta.get("location_suggested"):
-            parts.append(f"outdoor={meta['location_suggested']}")
-        if parts:
-            lines.append(f"Meta: {'; '.join(parts)}")
 
         lines.append("")
 
