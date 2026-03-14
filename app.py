@@ -563,6 +563,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
     except Exception as exc:
         logger.warning("TTS failed (%s) \u2014 skipping audio.", exc)
+        yield {"type": "log", "message": f"TTS failed: {exc}"}
         full_audio_url = None
     audio_urls = {"full_audio_url": full_audio_url}
 
