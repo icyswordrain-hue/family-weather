@@ -1400,6 +1400,7 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-card:not(.expanded) .ls-text { display: none; }
+.ls-card:not(.expanded) .ls-insight { display: none; }
 
 .ls-tagline {
   font-size: 1.05rem;
