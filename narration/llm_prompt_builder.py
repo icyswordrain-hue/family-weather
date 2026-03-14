@@ -91,13 +91,20 @@ Output exact separator ---METADATA--- then a single JSON:
 Output exact separator ---CARDS--- then a single JSON:
 {
   "wardrobe": "Exactly 1 sentence. What to wear based on apparent temperature only. Do not mention rain or rain gear — that is covered by the rain_gear card.",
+  "wardrobe_tagline": "≤8 words. Imperative. Cover what to wear AND rain gear in one phrase. e.g. 'Light jacket; bring an umbrella.' or 'T-shirt weather, no rain gear needed.'",
   "rain_gear": "Exactly 1 sentence. Whether to carry umbrella, raincoat, or boots.",
   "commute": "Exactly 2 sentences. Morning and evening commute road conditions. Must incorporate the exact commute hazards provided in the HINTS.",
+  "commute_tagline": "≤8 words. Key commute condition. e.g. 'Rain delays — allow extra 15 min.' or 'Clear roads, normal commute.'",
   "meals": "Exactly 1 sentence. Meal suggestion matching the weather mood.",
+  "meals_tagline": "≤8 words. Food suggestion matching weather mood. e.g. 'Hot soup weather — try beef noodles.' or 'Cold noodles and iced tea today.'",
   "hvac": "1–2 sentences. Air conditioning, heating, or ventilation recommendation. Must use the exact HVAC mode from HINTS. If dehumidifier is recommended in HINTS, say to run the dehumidifier. If windows=open in HINTS, mention opening windows for ventilation; if windows=close, mention keeping windows closed.",
+  "hvac_tagline": "≤8 words. Climate action. e.g. 'Run AC on dry mode today.' or 'Open windows — no AC needed.'",
   "garden": "Exactly 2 sentences. Garden tasks and soil or plant care advice.",
+  "garden_tagline": "≤8 words. Garden task. e.g. 'Skip watering — rain does the job.' or 'Water in the evening, soil is dry.'",
   "outdoor": "Exactly 2 sentences. You MUST use the exact top outdoor activity provided in the HINTS section. Best time window and any weather caution. Must reflect the provided outdoor grade from the HINTS.",
+  "outdoor_tagline": "≤8 words. Activity + best time. e.g. 'Great for photography — head out before noon.' or 'Stay in today, rain all day.'",
   "air_quality": "Exactly 1 sentence. Outdoor air quality advisory for tomorrow. If Good (AQI ≤50): reassure, e.g. 'Tomorrow's air looks clean — no precautions needed.' If Moderate (51–100): name the main pollutant, note that sensitive groups should take care, and suggest running an air purifier indoors. If Unhealthy or above: recommend limiting outdoor exposure, keeping windows closed, and running an air purifier.",
+  "air_quality_tagline": "≤8 words. Air status tomorrow. e.g. 'Clean air — no precautions needed.' or 'Poor air — limit outdoor time.'",
   "alert": {
     "text": "1–2 sentences. Summarise today's health risks (cardiac, Ménière's) and commute hazards from P1. Do NOT include air quality — that has its own dedicated card. If nothing significant to flag, leave this as an empty string.",
     "level": "INFO or WARNING or CRITICAL"
@@ -170,13 +177,20 @@ P5 — 預報與準確度（最多 4 句）：
 輸出 ---CARDS--- 後接 JSON：
 {
   "wardrobe": "精確 1 句話。根據體感溫度說明穿著建議。不要提及雨具或降雨，那屬於 rain_gear 卡片。",
+  "wardrobe_tagline": "≤8 個中文字或詞。命令式。同時涵蓋穿著與雨具建議。例如：「輕薄外套，記得帶傘。」或「短袖天氣，不需雨具。」",
   "rain_gear": "精確 1 句話。是否需要攜帶雨傘、雨衣或雨靴。",
   "commute": "精確 2 句話。早晨和傍晚通勤的道路狀況。必須整合 HINTS 中提供的通勤危險提示。",
+  "commute_tagline": "≤8 個中文字或詞。通勤關鍵狀況。例如：「雨天延誤，多留15分鐘。」或「路況順暢，正常出發。」",
   "meals": "精確 1 句話。符合天氣心情的餐食建議。",
+  "meals_tagline": "≤8 個中文字或詞。符合天氣的餐食推薦。例如：「適合來碗熱牛肉麵。」或「清爽涼麵最對味。」",
   "hvac": "1–2 句話。空調、暖氣、除濕或通風建議。必須使用 HINTS 中的空調模式。若 HINTS 建議除濕機，請說明需要開除濕機。若 windows=open，請說明開窗通風；若 windows=close，請說明關閉窗戶。",
+  "hvac_tagline": "≤8 個中文字或詞。空調行動。例如：「開除濕模式即可。」或「開窗通風，不需空調。」",
   "garden": "精確 2 句話。花園工作和土壤或植物護理建議。",
+  "garden_tagline": "≤8 個中文字或詞。花園任務。例如：「今天有雨，免澆水。」或「傍晚澆水，土壤偏乾。」",
   "outdoor": "精確 2 句話。必須使用 HINTS 中提供的精確最佳戶外活動。最佳時間窗口及天氣注意事項。必須反映 HINTS 中提供的戶外等級。",
+  "outdoor_tagline": "≤8 個中文字或詞。活動＋最佳時段。例如：「適合攝影，午前出發最佳。」或「整天有雨，建議待在室內。」",
   "air_quality": "精確 1 句話。明日戶外空氣品質建議。若良好（AQI ≤50）：令人放心，如「明天空氣清新，無需特別防護。」若普通（51–100）：指出主要污染物，提醒敏感族群留意，建議可考慮在室內開啟空氣清淨機。若不健康或以上：建議減少戶外活動、關閉窗戶並開啟空氣清淨機。",
+  "air_quality_tagline": "≤8 個中文字或詞。明日空氣狀況。例如：「空氣清新，無需防護。」或「空氣不佳，減少戶外活動。」",
   "alert": {
     "text": "1–2 句話。摘要 P1 中的健康風險（心臟、梅尼爾氏症）及通勤危險。不要包含空氣品質資訊——那已有專屬卡片。若無特別需要提醒的事項，請留空字串。",
     "level": "INFO 或 WARNING 或 CRITICAL"

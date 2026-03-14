@@ -291,17 +291,19 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # 1. Wardrobe & Rain Gear
     at = current.get("AT")
     rain_recent = (current.get("RAIN") or 0) > 0
-    
+
     wardrobe_text = summaries.get("wardrobe")
     if not wardrobe_text:
         wardrobe_text = _wardrobe_tip(at, lang=lang)
-        
+    wardrobe_tagline = summaries.get("wardrobe_tagline", "")
+
     rain_gear_text = summaries.get("rain_gear")
     if not rain_gear_text:
         rain_gear_text = ("不需準備雨具。" if not rain_recent else "請記得攜帶雨具。") if is_zh else ("No precipitation gear expected." if not rain_recent else "Carry an umbrella.")
 
     # 2. Commute (v7: p2_garden_commute contains garden + commute)
     commute_text = summaries.get("commute")
+    commute_tagline = summaries.get("commute_tagline", "")
     if not commute_text:
         am = commute.get("morning", {}).get("hazards", [])
         pm = commute.get("evening", {}).get("hazards", [])
@@ -314,6 +316,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
 
     # 3. HVAC (v7: p4_hvac_air)
     hvac_text = summaries.get("hvac")
+    hvac_tagline = summaries.get("hvac_tagline", "")
     if not hvac_text:
         hvac_mode = climate.get("mode", "Off")
         dehumidifier = climate.get("dehumidifier")
@@ -368,6 +371,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
 
     # 4. Meals (v7: p3_outdoor_meal)
     meals_text = summaries.get("meals")
+    meals_tagline = summaries.get("meals_tagline", "")
     if not meals_text:
         meal_mood_data = processed.get("meal_mood", {})
         meal_suggestions = meal_mood_data.get("top_suggestions", []) or meal_mood_data.get("all_suggestions", [])
@@ -381,7 +385,9 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
 
     # 5. Garden (v7: first sentence of p2_garden_commute) & Outdoor (v7: p3_outdoor_meal)
     garden_text = summaries.get("garden")
+    garden_tagline = summaries.get("garden_tagline", "")
     outdoor_text = summaries.get("outdoor") or paragraphs.get("p3_outdoor")
+    outdoor_tagline = summaries.get("outdoor_tagline", "")
 
     if not garden_text:
         p2 = paragraphs.get("p2_garden_commute", "")
@@ -417,6 +423,7 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     # Air quality forecast card
     aqi_forecast = processed.get("aqi_forecast", {})
     air_quality_text = summaries.get("air_quality", "")
+    air_quality_tagline = summaries.get("air_quality_tagline", "")
     if not air_quality_text:
         lang_key = "summary_zh" if is_zh else "summary_en"
         air_quality_text = aqi_forecast.get(lang_key) or aqi_forecast.get("content", "")
@@ -461,15 +468,18 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
     return {
         "wardrobe": {
             "text": wardrobe_text,
+            "tagline": wardrobe_tagline,
             "feels_like": at,
             "rain_gear_text": rain_gear_text,
         },
         "commute": {
             "text": commute_text,
+            "tagline": commute_tagline,
             "hazards": commute.get("morning", {}).get("hazards", []) + commute.get("evening", {}).get("hazards", [])
         },
         "air_quality": {
             "text": air_quality_text or ("空氣品質資料暫不可用。" if is_zh else "Air quality data unavailable."),
+            "tagline": air_quality_tagline,
             "aqi": aqi_forecast.get("aqi"),
             "status": aqi_forecast.get("status", ""),
             "peak_window": peak_window,
@@ -479,17 +489,21 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         },
         "hvac": {
             "text": hvac_text,
+            "tagline": hvac_tagline,
             "mode": climate.get("mode", "Off")
         },
         "meals": {
             "text": meals_text,
+            "tagline": meals_tagline,
             "mood": meal_mood,
         },
         "garden": {
             "text": garden_text,
+            "tagline": garden_tagline,
         },
         "outdoor": {
             "text": outdoor_text,
+            "tagline": outdoor_tagline,
             "score": outdoor_index.get("overall_score"),
             "grade": outdoor_index.get("overall_grade"),
             "label": outdoor_index.get("overall_label"),
