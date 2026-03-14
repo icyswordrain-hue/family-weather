@@ -412,7 +412,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initPlayerBar();
   initPlayerSheet();
   initSheetSettings();
-  initChat();
+  // initChat();  // chat feature hidden for now
   initRefreshButton();
   updateClock();
   setInterval(updateClock, 1000);
