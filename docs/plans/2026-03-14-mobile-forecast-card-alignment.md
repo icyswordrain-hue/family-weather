@@ -17,4 +17,4 @@ Secondary issue: "Good to go" outdoor grade text wrapped to 2 lines in the 56px 
 1. Added `min-width: 0` and `overflow: hidden` to `.tc-seg-left` — forces the column to respect its declared flex basis regardless of content width.
 2. Reduced `.tc-seg-label` font-size from `1rem` to `0.82rem` on mobile — fits "AFTERNOON" within 72px so no content is visually clipped.
 3. Widened `.tc-seg-right` from `56px` to `64px` on mobile — prevents "Good to go" from wrapping to 2 lines.
-4. Reduced base `.tc-seg-label` font-size to `0.79rem` (desktop) and `0.74rem` (mobile) — 0.9× scaling to ensure "AFTERNOON" and "OVERNIGHT" fit without clipping at both breakpoints.
+4. Reduced base `.tc-seg-label` font-size to `0.79rem` (desktop) and `0.67rem` (mobile) — iteratively scaled down until "AFTERNOON"/"OVERNIGHT" fit without clipping at both breakpoints.
