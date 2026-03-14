@@ -241,3 +241,38 @@ navy, terracotta, amber, no text, strong contrast, reads clearly at 32px
 **CSS additions (`style.css`):**
 - `.gauge-icon .brand-icon { width: 28px; height: 28px; }`
 - `.nav-icon .brand-icon { width: 24px; height: 24px; }`
+
+---
+
+## 2026-03-14 — Wx Icon Mapping Fix & Partly-Cloudy Regeneration
+
+**Commit:** `fc98cff` — `fix: wx icon mapping — add missing ICONS keys, regenerate partly-cloudy`
+
+### Problem
+
+The dashboard canopy displayed the cloudy (overcast) icon even when the condition was "Sunny". Two root causes:
+
+1. **ICONS dict key mismatch** — The backend `wx_to_cloud_cover()` (`data/scales.py:202`) returns `"Sunny"`, `"Fair"`, and `"Rain"`, but the frontend `ICONS` dict (`app.js:143`) only had lowercase `'sunny'`, `'Sunny/Clear'`, and `'rainy'`. Unmatched keys fell through to the default `IMG('cloudy', 'Cloudy')`.
+2. **Broken partly-cloudy images** — `partly-cloudy.webp` and `partly-cloudy-night.webp` showed a vase with leaves (bad Gemini generation artifact from the style-reference approach), not weather icons.
+
+### 4 Wx Levels (day / night)
+
+| Level | Backend `cloud_cover` | Wx codes | Day icon | Night icon |
+|---|---|---|---|---|
+| Clear | `"Sunny"` | 0–1 | `sunny.webp` | `clear-night.webp` |
+| Partly cloudy | `"Fair"`, `"Mixed Clouds"` | 2–7 | `partly-cloudy.webp` | `partly-cloudy-night.webp` |
+| Overcast | `"Overcast"` | 8–10 | `cloudy.webp` | `cloudy-night.webp` |
+| Rain | `"Rain"` | 11–20 | `rainy.webp` | `rainy-night.webp` |
+
+### Changes
+
+**`web/static/app.js:143–154`** — Added 3 missing keys to `ICONS` dict:
+- `'Sunny': IMG('sunny', 'Sunny')`
+- `'Fair': IMG('partly-cloudy', 'Partly Cloudy')`
+- `'Rain': IMG('rainy', 'Rainy')`
+
+The night branch in `getWeatherIcon()` (lines 159–170) already had `'Sunny'`, `'Fair'`, and `'Rain'` in the array checks — only the daytime `ICONS` dict lookup was broken.
+
+**`web/static/brand-icons/partly-cloudy.webp`** — Regenerated via Nano Banana Pro. New icon: mustard sun with rays partially hidden behind a tan cloud, flat vector style on cream background.
+
+**`web/static/brand-icons/partly-cloudy-night.webp`** — Regenerated. New icon: navy crescent moon partially hidden behind a gray-brown cloud, flat vector style on cream background.
