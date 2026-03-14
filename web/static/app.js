@@ -315,7 +315,15 @@ const TRANSLATIONS = {
       'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
       'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
       'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
-      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知'
+      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知',
+      // Meal moods
+      'Hot & Humid': '炎熱潮濕', 'Warm & Pleasant': '溫暖舒適', 'Cool & Damp': '涼爽潮濕', 'Cold': '寒冷',
+      // HVAC modes
+      'Off': '無需空調', 'fan': '電風扇', 'cooling': '冷氣', 'heating': '暖氣', 'heating_optional': '可選暖氣', 'dehumidify': '除濕',
+      // Air quality purifier advice (en → zh-TW)
+      'Close windows and run the air purifier.': '關閉窗戶並開啟空氣清淨機。',
+      'Consider closing windows and running the air purifier.': '建議關窗，可考慮開啟空氣清淨機。',
+      'Sensitive groups: consider running the air purifier indoors.': '敏感族群可考慮開啟空氣清淨機。',
     },
     slots: {
       'Morning': '早上',
