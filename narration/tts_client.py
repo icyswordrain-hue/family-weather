@@ -9,7 +9,8 @@ Generates two clips:
 
 import hashlib, io, asyncio, logging
 from pathlib import Path
-from config import RUN_MODE, GCS_BUCKET_NAME, GCS_AUDIO_PREFIX
+from config import (RUN_MODE, GCS_BUCKET_NAME, GCS_AUDIO_PREFIX,
+                     TTS_PROVIDER, TTS_VOICE_EN, TTS_VOICE_ZH, TTS_SPEAKING_RATE)
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +32,22 @@ def _upload_to_gcs(audio_bytes: bytes, gcs_path: str) -> str:
     return blob.public_url
 
 
+def _render_google_tts(text: str, lang: str) -> bytes:
+    from google.cloud import texttospeech
+    client = texttospeech.TextToSpeechClient()
+    voice_name = TTS_VOICE_ZH if lang == "zh-TW" else TTS_VOICE_EN
+    lang_code = "zh-TW" if lang == "zh-TW" else "en-US"
+    resp = client.synthesize_speech(
+        input=texttospeech.SynthesisInput(text=text),
+        voice=texttospeech.VoiceSelectionParams(language_code=lang_code, name=voice_name),
+        audio_config=texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3,
+            speaking_rate=TTS_SPEAKING_RATE,
+        ),
+    )
+    return resp.audio_content
+
+
 def _render_edge_tts(text: str, lang: str) -> bytes:
     import edge_tts
     buf = io.BytesIO()
@@ -41,6 +58,15 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
                 buf.write(chunk["data"])
     asyncio.run(_collect())
     return buf.getvalue()
+
+
+def _render_tts(text: str, lang: str) -> bytes:
+    if TTS_PROVIDER == "GOOGLE":
+        try:
+            return _render_google_tts(text, lang)
+        except Exception:
+            log.warning("Google Cloud TTS failed, falling back to Edge TTS", exc_info=True)
+    return _render_edge_tts(text, lang)
 
 
 def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
@@ -55,7 +81,7 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
         if local_path.exists():
             log.info("TTS cache hit (volume): %s", local_path)
             return f"/api/audio/{rel_path}"
-        audio = _render_edge_tts(text, lang)
+        audio = _render_tts(text, lang)
         local_path.parent.mkdir(parents=True, exist_ok=True)
         local_path.write_bytes(audio)
         return f"/api/audio/{rel_path}"
@@ -66,7 +92,7 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
         if blob.exists():
             log.info(f"TTS cache hit: {gcs_path}")
             return blob.public_url
-        audio = _render_edge_tts(text, lang)
+        audio = _render_tts(text, lang)
         return _upload_to_gcs(audio, gcs_path)
 
     # LOCAL mode — match MODAL: cache check + date subdirectory
@@ -74,7 +100,7 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
     if local_path.exists():
         log.info("TTS cache hit (local): %s", local_path)
         return f"/api/audio/{rel_path}"
-    audio = _render_edge_tts(text, lang)
+    audio = _render_tts(text, lang)
     local_path.parent.mkdir(parents=True, exist_ok=True)
     local_path.write_bytes(audio)
     return f"/api/audio/{rel_path}"
