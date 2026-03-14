@@ -568,6 +568,11 @@ def _segment_forecast(
             at_vals = [s["AT"] for s in matching if s.get("AT") is not None]
             rep["MinAT"] = min(at_vals) if at_vals else None
             rep["MaxAT"] = max(at_vals) if at_vals else None
+            # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
+            rep["AvgAT"] = round(sum(at_vals) / len(at_vals), 1) if at_vals else None
+            rh_vals = [s["RH"] for s in matching if s.get("RH") is not None]
+            # pyre-ignore[6]: Pyre2 has trouble with round() overloads here
+            rep["AvgRH"] = round(sum(rh_vals) / len(rh_vals), 1) if rh_vals else None
             found[seg_name] = rep
 
     return cast(dict[str, Optional[dict]], found)
@@ -586,16 +591,32 @@ def _average_slots(slots: list[dict]) -> dict:
     return result
 
 
+_SEVERITY_ORDER = {"significant": 0, "notable": 1, "mild": 2}
+
+_CLOUD_COVER_INDEX = {
+    "Sunny": 0, "Fair": 1, "Mixed Clouds": 2, "Overcast": 3, "Rain": 4,
+}
+
+_SATURATION_INDEX = {
+    "near_saturated": 0, "clammy": 1, "humid": 2, "comfortable": 3, "dry": 4,
+}
+
+_SATURATION_DISPLAY = {
+    "near_saturated": "Near Saturated", "clammy": "Clammy",
+    "humid": "Humid", "comfortable": "Comfortable", "dry": "Dry",
+}
+
+
 def _detect_transitions(
     segmented: dict[str, Optional[dict]],
     aqi: dict,
 ) -> list[dict]:
     """
-    Apply Low Deviation Detection between adjacent segments.
-    Returns a list of transition dicts describing breached thresholds.
+    Severity-weighted Low Deviation Detection between adjacent segments.
+    Each breach includes a severity field: "mild", "notable", or "significant".
+    Breaches are sorted by severity (most important first).
     """
     transitions = []
-    aqi_val = aqi.get("realtime", {}).get("aqi") or 0
 
     for i in range(len(SEGMENT_ORDER) - 1):
         a_name = SEGMENT_ORDER[i]
@@ -604,78 +625,118 @@ def _detect_transitions(
         b = segmented.get(b_name)
         if a is None or b is None:
             continue
-        
+
         # Explicitly narrowed for Pyre2
         assert a is not None
         assert b is not None
 
         breaches = []
 
-        # Apparent temperature within 5°C
-        if a.get("AT") is not None and b.get("AT") is not None:
-            if abs(b["AT"] - a["AT"]) > 5:
+        # ── AT: use AvgAT for more accurate deltas ──
+        a_at = a.get("AvgAT") if a.get("AvgAT") is not None else a.get("AT")
+        b_at = b.get("AvgAT") if b.get("AvgAT") is not None else b.get("AT")
+        if a_at is not None and b_at is not None:
+            delta = b_at - a_at
+            abs_delta = abs(delta)
+            if abs_delta > 5:
+                severity = "significant" if abs_delta > 12 else ("notable" if abs_delta > 8 else "mild")
                 breaches.append({
                     "metric": "AT",
-                    "from": a["AT"],
-                    "to": b["AT"],
-                    "delta": b["AT"] - a["AT"],
+                    "from": a_at,
+                    "to": b_at,
+                    "delta": delta,
+                    "severity": severity,
                 })
 
-        # PoP within 1 scale category
+        # ── PoP6h: category jump with severity tiers ──
         a_pop = _pop_category(a.get("PoP6h"))
         b_pop = _pop_category(b.get("PoP6h"))
-        if abs(b_pop - a_pop) > 1:
+        pop_jump = abs(b_pop - a_pop)
+        if pop_jump > 1:
+            severity = "significant" if pop_jump > 3 else ("notable" if pop_jump > 2 else "mild")
             breaches.append({
                 "metric": "PoP6h",
                 "from": pop_to_text(a.get("PoP6h")),
                 "to": pop_to_text(b.get("PoP6h")),
+                "severity": severity,
             })
 
-        # Relative Humidity within 20%
-        if a.get("RH") is not None and b.get("RH") is not None:
-            if abs(b["RH"] - a["RH"]) > 20:
+        # ── Dew Gap comfort: replaces raw RH% ──
+        a_label = a.get("saturation_label")
+        b_label = b.get("saturation_label")
+        if a_label and b_label and a_label != b_label:
+            a_idx = _SATURATION_INDEX.get(a_label, 2)
+            b_idx = _SATURATION_INDEX.get(b_label, 2)
+            step = abs(b_idx - a_idx)
+            if step >= 1:
+                severity = "significant" if step >= 3 else ("notable" if step >= 2 else "mild")
                 breaches.append({
-                    "metric": "RH",
-                    "from": a["RH"],
-                    "to": b["RH"],
-                    "delta": b["RH"] - a["RH"],
+                    "metric": "DewGap",
+                    "from": _SATURATION_DISPLAY.get(a_label, a_label),
+                    "to": _SATURATION_DISPLAY.get(b_label, b_label),
+                    "delta": (b.get("dew_gap") or 0) - (a.get("dew_gap") or 0),
+                    "severity": severity,
                 })
 
-        # Wind speed same or one Beaufort category apart
+        # ── WS: Beaufort jump with severity tiers ──
         a_bf = _beaufort_index(a.get("WS"))
         b_bf = _beaufort_index(b.get("WS"))
-        if abs(b_bf - a_bf) > 2:
+        bf_jump = abs(b_bf - a_bf)
+        if bf_jump > 2:
+            severity = "significant" if bf_jump > 4 else ("notable" if bf_jump > 3 else "mild")
             breaches.append({
                 "metric": "WS",
                 "from": wind_ms_to_beaufort(a.get("WS")),
                 "to": wind_ms_to_beaufort(b.get("WS")),
+                "severity": severity,
             })
 
-        # Wind direction within 90 degrees
-        if a.get("WD") is not None and b.get("WD") is not None:
-            diff = abs(b["WD"] - a["WD"])
-            if diff > 180:
-                diff = 360 - diff
-            if diff > 90:
-                breaches.append({
-                    "metric": "WD",
-                    "from": degrees_to_cardinal(a["WD"]),
-                    "to": degrees_to_cardinal(b["WD"]),
-                })
-
-        # Cloud cover in same classification
+        # ── CloudCover: only trigger on ≥2 category jump ──
         a_cc = wx_to_cloud_cover(a.get("Wx"))
         b_cc = wx_to_cloud_cover(b.get("Wx"))
-        if a_cc != b_cc:
+        a_cc_idx = _CLOUD_COVER_INDEX.get(a_cc, -1)
+        b_cc_idx = _CLOUD_COVER_INDEX.get(b_cc, -1)
+        cc_jump = abs(b_cc_idx - a_cc_idx)
+        if a_cc_idx >= 0 and b_cc_idx >= 0 and cc_jump >= 2:
+            severity = "significant" if cc_jump >= 4 else ("notable" if cc_jump >= 3 else "mild")
             breaches.append({
                 "metric": "CloudCover",
                 "from": a_cc,
                 "to": b_cc,
+                "severity": severity,
             })
 
-        # AQI within 40 points — per-segment AQI not available from API,
-        # so this threshold cannot be checked between adjacent segments.
-        logger.debug("AQI transition check skipped: per-segment AQI data unavailable")
+        # ── Safe Minutes: outdoor window breach (NEW) ──
+        a_sm = a.get("safe_minutes")
+        b_sm = b.get("safe_minutes")
+        if a_sm is not None and b_sm is not None:
+            if a_sm >= 120 and b_sm < 20:
+                breaches.append({
+                    "metric": "SafeMinutes",
+                    "from": a_sm, "to": b_sm,
+                    "severity": "notable",
+                    "label": "Rain likely — plan indoors",
+                })
+            elif a_sm >= 20 and b_sm < 20:
+                breaches.append({
+                    "metric": "SafeMinutes",
+                    "from": a_sm, "to": b_sm,
+                    "severity": "significant",
+                    "label": "Outdoor window closing",
+                })
+            elif a_sm >= 120 and b_sm < 120:
+                breaches.append({
+                    "metric": "SafeMinutes",
+                    "from": a_sm, "to": b_sm,
+                    "severity": "mild",
+                    "label": "Shorter outdoor window",
+                })
+
+        # Sort breaches: significant first, then notable, then mild
+        breaches.sort(key=lambda b: _SEVERITY_ORDER.get(b.get("severity", "mild"), 2))
+
+        # Overall severity = highest among breaches
+        overall_severity = breaches[0]["severity"] if breaches else None
 
         if breaches:
             transitions.append({
@@ -683,6 +744,7 @@ def _detect_transitions(
                 "to_segment": b_name,
                 "breaches": breaches,
                 "is_transition": True,
+                "severity": overall_severity,
             })
         else:
             transitions.append({

@@ -352,10 +352,16 @@ const TRANSLATIONS = {
       'Rain expected': '預期降雨',
       'More rain': '降雨增加',
       'Less rain': '降雨減少',
-      'Humid': '變潮濕',
-      'Dry air': '變乾燥',
+      'Near Saturated': '近飽和',
+      'Clammy': '悶熱',
+      'Humid': '潮濕',
+      'Comfortable': '舒適',
+      'Dry': '乾燥',
       'Windier': '風力增強',
       'Calmer': '風力減弱',
+      'Shorter outdoor window': '戶外時間縮短',
+      'Rain likely — plan indoors': '可能下雨—建議室內活動',
+      'Outdoor window closing': '戶外時段結束',
       'change': '變化'
     }
   },
@@ -748,27 +754,29 @@ function renderOverviewView(data) {
             if (label === 'Mixed Clouds') label = 'Cloudy';
             parts.push(locTrans(label));
           } else if (b.metric === 'AT') {
-            parts.push(`${b.delta > 0 ? '+' : ''}${Math.round(b.delta)}°`);
+            parts.push(`${Math.round(b.from)}→${Math.round(b.to)}°`);
           } else if (b.metric === 'PoP6h') {
             const intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"];
             const fIdx = intensity.indexOf(b.from), tIdx = intensity.indexOf(b.to);
             if (tIdx > fIdx) parts.push(locTrans(tIdx >= 3 ? 'Rain expected' : 'More rain'));
             else if (tIdx < fIdx) parts.push(locTrans('Less rain'));
-          } else if (b.metric === 'RH') {
-            parts.push(locTrans(b.delta > 0 ? 'Humid' : 'Dry air'));
+          } else if (b.metric === 'DewGap') {
+            parts.push(locTrans(b.to));
           } else if (b.metric === 'WS') {
             const bf = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze"];
             const fIdx = bf.indexOf(b.from), tIdx = bf.indexOf(b.to);
             if (tIdx > fIdx) parts.push(locTrans('Windier'));
             else if (tIdx < fIdx) parts.push(locTrans('Calmer'));
+          } else if (b.metric === 'SafeMinutes') {
+            parts.push(locTrans(b.label));
           }
         });
         const t = document.createElement('div');
-        t.className = 'tc-transition';
+        const sev = transition.severity || 'mild';
+        t.className = 'tc-transition tc-transition--' + sev;
         const tIcon = document.createElement('span');
         tIcon.className = 'tc-transition-icon';
         tIcon.innerHTML = IMG('heads-up', 'Change');
-        // Single-line: "change  +6° · 多雲"
         const tText = document.createElement('span');
         tText.className = 'tc-transition-text';
         const labelPart = locTrans('change');

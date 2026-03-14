@@ -1033,12 +1033,42 @@ html.dark .wk-range-container {
   flex: 1;
 }
 
+/* Severity: mild — default gold style (no override needed) */
+
+/* Severity: notable — mustard/caution tint */
+.tc-transition--notable {
+  background: var(--tint-caution);
+  border-left-color: var(--lvl-3);
+}
+
+/* Severity: significant — terracotta/warn tint */
+.tc-transition--significant {
+  background: var(--tint-heat);
+  border-left-color: var(--warn);
+}
+.tc-transition--significant .tc-transition-label {
+  color: var(--warn);
+}
+
 html.dark .tc-transition {
   border-left-color: rgba(255, 200, 0, 0.4);
 }
 
 html.dark .tc-transition-label {
   color: #f9ca24;
+}
+
+html.dark .tc-transition--notable {
+  background: rgba(217, 155, 63, 0.1);
+  border-left-color: rgba(217, 155, 63, 0.6);
+}
+
+html.dark .tc-transition--significant {
+  background: rgba(226, 108, 59, 0.1);
+  border-left-color: rgba(226, 108, 59, 0.6);
+}
+html.dark .tc-transition--significant .tc-transition-label {
+  color: #e26c3b;
 }
 
 /* ── 36h Forecast — Horizontal Segment Rows ─────────────────────────────── */
