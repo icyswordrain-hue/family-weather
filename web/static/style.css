@@ -3175,10 +3175,12 @@ html.dark .chat-input:focus {
   cursor: pointer;
   padding: 6px;
   flex-shrink: 0;
-  display: flex;
   align-items: center;
   justify-content: center;
   transition: color 150ms;
+}
+.player-chat-btn:not([hidden]) {
+  display: flex;
 }
 
 .player-chat-btn:hover {
