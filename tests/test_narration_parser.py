@@ -151,3 +151,48 @@ def test_zh_system_prompt_no_cards_separator():
 def test_zh_system_prompt_contains_all_metadata_keys():
     for key in _METADATA_KEYS:
         assert f'"{key}"' in V7_SYSTEM_PROMPT_ZH, f"Missing key '{key}' in ZH prompt"
+
+
+# ── Parser resilience tests ──────────────────────────────────────────────────
+
+def test_parse_metadata_with_code_fences():
+    """LLM wraps metadata JSON in markdown code fences."""
+    response = f"P1.\n\nP2.\n\nP3.\n\nP4.\n\nP5.\n\n---METADATA---\n```json\n{MOCK_METADATA}\n```"
+    result = parse_narration_response(response)
+    assert result["metadata"].get("wardrobe") == "light jacket"
+    assert result["cards"].get("wardrobe") == "light jacket"
+
+
+def test_parse_metadata_case_insensitive_separator():
+    """LLM uses lowercase separator."""
+    response = f"P1.\n\nP2.\n\nP3.\n\nP4.\n\nP5.\n\n---metadata---\n{MOCK_METADATA}"
+    result = parse_narration_response(response)
+    assert result["metadata"].get("wardrobe") == "light jacket"
+    assert result["cards"].get("wardrobe") == "light jacket"
+
+
+def test_parse_metadata_spaced_separator():
+    """LLM uses spaces within the dashes."""
+    response = f"P1.\n\nP2.\n\nP3.\n\nP4.\n\nP5.\n\n--- METADATA ---\n{MOCK_METADATA}"
+    result = parse_narration_response(response)
+    assert result["metadata"].get("wardrobe") == "light jacket"
+    assert result["cards"].get("wardrobe") == "light jacket"
+
+
+def test_parse_no_metadata_returns_empty():
+    """When no separator exists at all, metadata and cards are empty."""
+    response = "P1.\n\nP2.\n\nP3.\n\nP4.\n\nP5."
+    result = parse_narration_response(response)
+    assert result["metadata"] == {}
+    assert result["cards"] == {}
+
+
+def test_parse_regen_with_code_fences():
+    """LLM wraps regen JSON in markdown code fences."""
+    response = (
+        f"P1.\n\nP2.\n\nP3.\n\nP4.\n\nP5.\n\n---METADATA---\n{MOCK_METADATA}\n"
+        '---REGEN---\n```json\n{"meals": {"hot_humid": ["noodles"]}, "locations": {}}\n```'
+    )
+    result = parse_narration_response(response)
+    assert result["regen"] is not None
+    assert "meals" in result["regen"]

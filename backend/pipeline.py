@@ -93,40 +93,54 @@ def generate_narration_with_fallback(
     provider_upper = provider.upper().strip()
     is_regen = bool(processed.get("regenerate_meal_lists"))
     logger.info("Narration requested via provider: %s (regen=%s)", provider_upper, is_regen)
+
+    from config import GEMINI_MAX_TOKENS_REGEN, CLAUDE_MAX_TOKENS_REGEN, CLAUDE_REGEN_MODEL
     try:
-        from config import GEMINI_MAX_TOKENS_REGEN, CLAUDE_MAX_TOKENS_REGEN
         messages = build_prompt(processed, history, date_str)
-        if provider_upper == "GEMINI":
-            if generate_gemini is None:
-                logger.error("Gemini client is None (likely import failure or missing key)")
-                raise RuntimeError("Gemini client not available")
-            logger.info("Calling Gemini client...")
-            text = generate_gemini(messages, lang=lang, max_tokens=GEMINI_MAX_TOKENS_REGEN if is_regen else None)
-            logger.info("Gemini narration successful.")
-            result = text, "gemini"
-        elif provider_upper == "CLAUDE":
-            if generate_claude is None:
-                logger.error("Claude client is None (likely import failure or missing key)")
-                raise RuntimeError("Claude client not available")
-            logger.info("Calling Claude client...")
-            from config import CLAUDE_REGEN_MODEL
-            text = generate_claude(
-                messages,
-                lang=lang,
-                max_tokens=CLAUDE_MAX_TOKENS_REGEN if is_regen else None,
-                model_override=CLAUDE_REGEN_MODEL if is_regen else None,
-            )
-            logger.info("Claude narration successful.")
-            result = text, "claude"
-        else:
-            logger.error("Unsupported provider selected: %s", provider_upper)
-            raise ValueError(f"Unknown provider: {provider}")
-
-        # ── Cache store ────────────────────────────────────────────────────
-        _narration_cache.set(cache_key, result)
-        return result
-
     except Exception:
-        logger.exception("Narration failed (%s), falling back to template:", provider_upper)
+        logger.exception("build_prompt failed, falling back to template:")
         text = build_narration(processed, date_str=date_str, history=history, lang=lang)
         return text, "template"
+
+    def _try_claude(msgs):
+        if generate_claude is None:
+            raise RuntimeError("Claude client not available")
+        return generate_claude(
+            msgs,
+            lang=lang,
+            max_tokens=CLAUDE_MAX_TOKENS_REGEN if is_regen else None,
+            model_override=CLAUDE_REGEN_MODEL if is_regen else None,
+        ), "claude"
+
+    def _try_gemini(msgs):
+        if generate_gemini is None:
+            raise RuntimeError("Gemini client not available")
+        return generate_gemini(
+            msgs, lang=lang, max_tokens=GEMINI_MAX_TOKENS_REGEN if is_regen else None
+        ), "gemini"
+
+    # Build ordered attempt list: primary provider first, then cross-provider fallback
+    if provider_upper == "CLAUDE":
+        attempts = [("claude", _try_claude), ("gemini", _try_gemini)]
+    elif provider_upper == "GEMINI":
+        attempts = [("gemini", _try_gemini), ("claude", _try_claude)]
+    else:
+        logger.error("Unsupported provider selected: %s", provider_upper)
+        text = build_narration(processed, date_str=date_str, history=history, lang=lang)
+        return text, "template"
+
+    for label, attempt_fn in attempts:
+        try:
+            logger.info("Calling %s client...", label)
+            text, source = attempt_fn(messages)
+            logger.info("%s narration successful.", label.capitalize())
+            result = text, source
+            _narration_cache.set(cache_key, result)
+            return result
+        except Exception:
+            logger.exception("Narration failed (%s):", label)
+
+    # All LLM providers exhausted — fall back to template
+    logger.warning("All LLM providers failed, falling back to template narrator")
+    text = build_narration(processed, date_str=date_str, history=history, lang=lang)
+    return text, "template"

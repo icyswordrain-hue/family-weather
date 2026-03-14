@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import datetime
 from typing import Any
 
@@ -332,8 +333,9 @@ def parse_narration_response(raw_response: str) -> dict:
         "regen": None,
     }
 
-    # ── Split on ---METADATA--- ───────────────────────────────────────────
-    parts = raw_response.split("---METADATA---", 1)
+    # ── Split on ---METADATA--- (case-insensitive, whitespace-tolerant) ──
+    _METADATA_SEP = re.compile(r'-{3}\s*METADATA\s*-{3}', re.IGNORECASE)
+    parts = _METADATA_SEP.split(raw_response, maxsplit=1)
     narration_text = parts[0].strip()
     result["full_text"] = narration_text
 
@@ -354,16 +356,28 @@ def parse_narration_response(raw_response: str) -> dict:
         cards_parts = metadata_text.split("---CARDS---", 1)
         metadata_text = cards_parts[0].strip()
 
+        # Strip markdown code fences that LLMs sometimes wrap around JSON
+        metadata_text = re.sub(r'^```(?:json)?\s*\n?', '', metadata_text, flags=re.MULTILINE)
+        metadata_text = re.sub(r'\n?```\s*$', '', metadata_text, flags=re.MULTILINE)
+        metadata_text = metadata_text.strip()
+
         try:
             result["metadata"] = json.loads(metadata_text)
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse ---METADATA--- JSON: %s", metadata_text[:200])  # type: ignore
+        except json.JSONDecodeError as exc:
+            logger.warning(
+                "Failed to parse ---METADATA--- JSON (error: %s). Raw text (first 300 chars): %s",
+                exc, metadata_text[:300],
+            )
 
         # Derive cards from metadata fields
         meta = result["metadata"]
         result["cards"] = _derive_cards_from_metadata(meta if isinstance(meta, dict) else {})
 
         if regen_text:
+            # Strip markdown code fences from regen text too
+            regen_text = re.sub(r'^```(?:json)?\s*\n?', '', regen_text, flags=re.MULTILINE)
+            regen_text = re.sub(r'\n?```\s*$', '', regen_text, flags=re.MULTILINE)
+            regen_text = regen_text.strip()
             try:
                 result["regen"] = json.loads(regen_text)
             except json.JSONDecodeError:

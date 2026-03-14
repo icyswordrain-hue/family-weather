@@ -50,6 +50,9 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
     """
     client = _get_client()
     system_prompt = system_prompt_override if system_prompt_override is not None else _load_system_prompt(lang)
+    system_with_cache = [
+        {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}},
+    ]
 
     # Convert Gemini-style messages (role='model'/'user', parts=[{text}])
     # to Claude-style messages (role='assistant'/'user', content=str)
@@ -59,7 +62,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         # Gemini uses 'model', Claude uses 'assistant'
         if role == "model":
             role = "assistant"
-        
+
         text = " ".join(p["text"] for p in msg.get("parts", []) if "text" in p)
         if text:
             claude_messages.append({"role": role, "content": text})
@@ -71,7 +74,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         response = client.messages.create(
             model=model_to_use,
             max_tokens=max_tokens or CLAUDE_MAX_TOKENS,
-            system=system_prompt,
+            system=system_with_cache,
             messages=claude_messages,
             temperature=0.7,
             timeout=float(NARRATION_TIMEOUT_PRO),
@@ -90,7 +93,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         response = client.messages.create(
             model=CLAUDE_FALLBACK_MODEL,
             max_tokens=max_tokens or CLAUDE_MAX_TOKENS,
-            system=system_prompt,
+            system=system_with_cache,
             messages=claude_messages,
             temperature=0.7,
             timeout=float(NARRATION_TIMEOUT_FLASH),

@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import time
 import requests
 from datetime import datetime, timezone, timedelta
 
@@ -42,6 +43,7 @@ from backend.pipeline import (
 
 _regen_cache = {}
 _broadcast_cache: dict[str, dict] = {}  # keyed by date; populated by /api/broadcast in CLOUD mode
+_chat_context_cache: dict[str, tuple[str, float]] = {}  # keyed by "date:lang"; (prompt, timestamp)
 
 def _persist_regen(payload: dict) -> None:
     regen = payload.get("regen")
@@ -204,7 +206,13 @@ def chat():
     from narration.chat_context import build_chat_context
     from narration.claude_client import _get_client
 
-    system_prompt = build_chat_context(broadcast, date_str, lang)
+    _ctx_key = f"{date_str}:{lang}"
+    _ctx_cached = _chat_context_cache.get(_ctx_key)
+    if _ctx_cached and (time.time() - _ctx_cached[1]) < 300:
+        system_prompt = _ctx_cached[0]
+    else:
+        system_prompt = build_chat_context(broadcast, date_str, lang)
+        _chat_context_cache[_ctx_key] = (system_prompt, time.time())
     messages = [*prior_turns, {"role": "user", "content": user_message}]
 
     try:
@@ -568,6 +576,13 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     metadata = parsed["metadata"]
     regen_data = parsed["regen"]
 
+    # Diagnostic: warn if metadata extraction failed
+    if not metadata:
+        yield {"type": "log", "message": "⚠ No ---METADATA--- block found in LLM response. Lifestyle cards will use fallbacks."}
+    else:
+        _card_keys = [k for k, v in parsed.get("cards", {}).items() if v and k != "alert"]
+        yield {"type": "log", "message": f"Metadata OK: {len(_card_keys)} card fields populated."}
+
     # Reconstruct "clean" narration text from parsed paragraphs to sync with TTS
     # This removes any LLM preamble or leftover markers like "P1:"
     narration_text = "\n\n".join(paragraphs.values())
@@ -648,7 +663,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
             "metadata": metadata,
             "processed_data": processed,
             "summaries": summaries,
-        }),
+        }, lang=lang),
     }
     
     yield {"type": "log", "message": "Pipeline complete."}
