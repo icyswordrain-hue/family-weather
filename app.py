@@ -558,7 +558,9 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     if _ta is not None:
         summaries["_top_activity"] = _ta
 
-    yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
+    _has_gac = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
+    _has_sa = "GCP_SA_JSON" in os.environ
+    yield {"type": "log", "message": f"Synthesising TTS audio (GCP_SA_JSON={_has_sa}, GAC={_has_gac}, provider={config.TTS_PROVIDER})\u2026"}
     try:
         full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
     except Exception as exc:
