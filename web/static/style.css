@@ -1448,8 +1448,8 @@ html[lang="zh-TW"] .rp-text {
 }
 
 .ls-insight .brand-icon {
-  width: 16px;
-  height: 16px;
+  height: 1em;
+  width: auto;
   flex-shrink: 0;
   display: inline-block;
   margin: 0;
