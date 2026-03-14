@@ -24,3 +24,15 @@ The dashboard view's gauge panel (humidity, AQI, UV, pressure) was only expandab
 - Removed `.gauge-outdoor-trigger::after` chevron pseudo-element
 - Mobile: changed `.gauges-grid` from `repeat(4, 1fr)` → `repeat(2, 1fr)` (2×2 layout)
 - Mobile: increased `max-height` from `175px` → `350px` to fit two rows
+
+### Wind text overflow fix (follow-up)
+
+The wind gauge card in `.current-side-stack` displays descriptive text like
+"Moderate breeze" as the main value. On mobile the side-stack cards are narrow,
+and the default `Fira Code` monospace font made these strings ~20% wider than
+a proportional font — causing overflow or awkward line breaks.
+
+- `.current-side-stack .gauge-value`: switched `font-family` to `inherit`
+  (proportional), added `word-break: break-word` + `overflow-wrap: break-word`
+- `.current-side-stack .gauge-sub`: reduced from `0.9rem` → `0.85rem`, same
+  word-break safety nets

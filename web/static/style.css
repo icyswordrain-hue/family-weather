@@ -1078,6 +1078,8 @@ html.dark .tc-seg-row.tc-seg-night {
   flex-direction: column;
   align-items: center;
   flex: 0 0 90px;
+  min-width: 0;
+  overflow: hidden;
   gap: 4px;
 }
 
@@ -1189,13 +1191,17 @@ html.dark .tc-seg-row.tc-seg-night {
     flex: 0 0 72px;
   }
 
+  .tc-seg-label {
+    font-size: 0.82rem;
+  }
+
   .tc-seg-left .tc-icon .brand-icon {
     width: 54px;
     height: 54px;
   }
 
   .tc-seg-right {
-    flex: 0 0 56px;
+    flex: 0 0 64px;
   }
 
   .tc-seg-stat {
@@ -2153,10 +2159,15 @@ html.dark .source-claude {
 
   .current-side-stack .gauge-value {
     font-size: 1.35rem;
+    font-family: inherit;          /* swap monospace for proportional — fits longer text */
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .current-side-stack .gauge-sub {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .current-side-stack .gauge-header {
