@@ -38,6 +38,7 @@ jobs:
             MODAL_REFRESH_URL=${{ secrets.MODAL_REFRESH_URL }}
             MODAL_BROADCAST_URL=${{ secrets.MODAL_BROADCAST_URL }}
             MODAL_AUDIO_URL=https://icyswordrain--family-weather-engine-audio.modal.run
+            MODAL_TTS_URL=https://icyswordrain--family-weather-engine-tts.modal.run
 
       - name: Deploy Modal pipeline
         timeout-minutes: 10
