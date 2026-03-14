@@ -562,6 +562,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         summaries["_best_window"] = _bw
     if _ta is not None:
         summaries["_top_activity"] = _ta
+        metadata["activity_suggested"] = _ta
 
     yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
     try:
@@ -591,11 +592,31 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         summaries=summaries,
     )
 
+    # Track suggestion frequency for catalog rotation
+    try:
+        from data.catalog_manager import record_suggestion
+        _suggested_meal = metadata.get("meals_suggested", [None])[0] if isinstance(metadata.get("meals_suggested"), list) else metadata.get("meals_suggested")
+        _suggested_loc = metadata.get("locations_suggested", [None])[0] if isinstance(metadata.get("locations_suggested"), list) else metadata.get("locations_suggested")
+        _suggested_act = metadata.get("activity_suggested")
+        if _suggested_meal or _suggested_loc or _suggested_act:
+            record_suggestion(_suggested_meal, _suggested_loc, _suggested_act)
+    except Exception:
+        logger.warning("Failed to record suggestion frequency", exc_info=True)
+
     # Persist regen data to regen.json
     if regen_data:
         yield {"type": "log", "message": "Persisting regenerated meal/location database..."}
         logger.info("Regen data received, writing to regen.json")
         _persist_regen({"regen": {**regen_data, "updated_at": datetime.now(_TAIPEI_TZ).isoformat()}})
+
+        # Rotate catalogs: retire stale items, insert LLM replacements, return cooled-off bench items
+        try:
+            from data.catalog_manager import rotate_catalog
+            rotation_summary = rotate_catalog(regen_data)
+            yield {"type": "log", "message": f"Catalog rotation: {rotation_summary['meals_retired']} meals retired, {rotation_summary['meals_added']} added; {rotation_summary['locations_retired']} locations retired, {rotation_summary['locations_added']} added"}
+        except Exception:
+            logger.warning("Catalog rotation failed", exc_info=True)
+            yield {"type": "log", "message": "Catalog rotation failed (see logs)"}
 
     # 7.5 Cleanup stale audio files (monthly snapshots + 30-day rolling window)
     try:

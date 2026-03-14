@@ -116,6 +116,9 @@ CHAT_HISTORY_MAX_TURNS = int(os.environ.get("CHAT_HISTORY_MAX_TURNS", "6"))
 # ── Pipeline Behaviour ────────────────────────────────────────────────────────
 HISTORY_DAYS = int(os.environ.get("HISTORY_DAYS", 3))
 REGEN_CYCLE_DAYS = int(os.environ.get("REGEN_CYCLE_DAYS", 30))
+ROTATION_PERCENT = float(os.environ.get("ROTATION_PERCENT", 0.35))   # fraction of items per mood to retire each regen
+BENCH_COOLOFF_CYCLES = int(os.environ.get("BENCH_COOLOFF_CYCLES", 2))  # regen cycles before benched items can return
+DEDUP_WINDOW_DAYS = int(os.environ.get("DEDUP_WINDOW_DAYS", 7))       # days of history to check for repeat suggestions
 
 # ── Processor Thresholds ──────────────────────────────────────────────────────
 MEAL_FALLBACK_DISH = "Sandwich"

@@ -92,3 +92,28 @@ def test_kite_ideal_wind_high_score():
 def test_kite_wind_low_zero_in_general():
     """wind_low has no penalty in general weights (only kite_flying overrides it)."""
     assert OUTDOOR_WEIGHTS_GENERAL["wind_low"] == 0
+
+
+# ── _extract_recent_activities ───────────────────────────────────────────────
+from data.outdoor_scoring import _extract_recent_activities
+
+def test_extract_recent_activities_empty():
+    assert _extract_recent_activities([], days=7) == []
+
+def test_extract_recent_activities_reads_metadata():
+    history = [{"metadata": {"activity_suggested": "hiking"}}]
+    assert "hiking" in _extract_recent_activities(history, days=7)
+
+def test_extract_recent_activities_respects_window():
+    history = [
+        {"metadata": {"activity_suggested": "old_act"}},
+        {"metadata": {"activity_suggested": "new_act"}},
+    ]
+    result = _extract_recent_activities(history, days=1)
+    assert "new_act" in result
+    assert "old_act" not in result
+
+def test_extract_recent_activities_skips_missing():
+    history = [{"metadata": {}}, {"metadata": {"activity_suggested": "cycling"}}]
+    result = _extract_recent_activities(history, days=7)
+    assert result == ["cycling"]

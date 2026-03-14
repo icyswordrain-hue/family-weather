@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from datetime import datetime
 from typing import Any
@@ -178,29 +179,88 @@ P5 — 預報與準確度（最多 4 句）：
 # REGEN INSTRUCTION — appended every 14 days
 # ─────────────────────────────────────────────────────────────────────────────
 
-REGEN_INSTRUCTION = """
+def build_regen_instruction(processed_data: dict) -> str:
+    """Build dynamic regen instruction with stale/bench context for smarter LLM replacement."""
+    try:
+        from data.catalog_manager import (
+            load_catalog_stats,
+            identify_stale_items,
+            get_bench_summary,
+        )
+        from data.catalog_manager import _MEAL_MOOD_MAP, _LOCATION_MOODS
 
-SPECIAL TASK — Database Refresh (runs every 14 days):
+        stats = load_catalog_stats()
+        bench_summary = get_bench_summary()
+
+        # Load current catalogs to identify what will be retired
+        meals_catalog = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "meals.json"), encoding="utf-8"))
+        locations_catalog = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "locations.json"), encoding="utf-8"))
+
+        retiring_meals: dict[str, list[str]] = {}
+        for regen_key, display_mood in _MEAL_MOOD_MAP.items():
+            stale = identify_stale_items(meals_catalog, stats.get("meals", {}), display_mood)
+            if stale:
+                retiring_meals[regen_key] = [item["name"] for item in stale]
+
+        retiring_locations: dict[str, list[str]] = {}
+        for mood in _LOCATION_MOODS:
+            stale = identify_stale_items(locations_catalog, stats.get("locations", {}), mood)
+            if stale:
+                retiring_locations[mood] = [item["name"] for item in stale]
+
+        retiring_section = ""
+        if retiring_meals or retiring_locations:
+            retiring_section += "\nItems being RETIRED this cycle (generate replacements for these):\n"
+            if retiring_meals:
+                retiring_section += f"  Meals: {json.dumps(retiring_meals, ensure_ascii=False)}\n"
+            if retiring_locations:
+                retiring_section += f"  Locations: {json.dumps(retiring_locations, ensure_ascii=False)}\n"
+
+        bench_section = ""
+        if bench_summary.get("meals") or bench_summary.get("locations"):
+            bench_section += "\nItems currently BENCHED (do NOT regenerate these — they will return later):\n"
+            if bench_summary["meals"]:
+                bench_section += f"  Meals: {', '.join(bench_summary['meals'])}\n"
+            if bench_summary["locations"]:
+                bench_section += f"  Locations: {', '.join(bench_summary['locations'])}\n"
+
+        # Calculate target counts based on what's being retired
+        meal_targets = {k: len(v) for k, v in retiring_meals.items()} if retiring_meals else {}
+        loc_targets = {k: len(v) for k, v in retiring_locations.items()} if retiring_locations else {}
+        target_note = ""
+        if meal_targets:
+            target_note += f"\nTarget replacement counts per mood — Meals: {json.dumps(meal_targets)}"
+        if loc_targets:
+            target_note += f"\nTarget replacement counts per mood — Locations: {json.dumps(loc_targets)}"
+
+    except Exception:
+        retiring_section = ""
+        bench_section = ""
+        target_note = ""
+
+    return f"""
+
+SPECIAL TASK — Database Refresh (catalogue rotation):
 After the ---METADATA--- JSON, add a separator ---REGEN--- on its own line, then output a single JSON object with two keys:
 
-{
-  "meals": {
+{{
+  "meals": {{
     "hot_humid": ["dish1 pinyin", "dish2 pinyin", ...],
     "warm_pleasant": ["dish1 pinyin", ...],
     "cool_damp": ["dish1 pinyin", ...],
     "cold": ["dish1 pinyin", ...]
-  },
-  "locations": {
-    "Nice": [{"name":"...","activity":"...","surface":"...","lat":0.0,"lng":0.0,"notes":"..."}],
+  }},
+  "locations": {{
+    "Nice": [{{"name":"...","activity":"...","surface":"...","lat":0.0,"lng":0.0,"notes":"..."}}],
     "Warm": [...],
     "Cloudy & Breezy": [...],
     "Stay In": [...]
-  }
-}
+  }}
+}}
+{retiring_section}{bench_section}{target_note}
+Meals: Generate replacements for retired items. Pinyin only, no Chinese characters. Mix home-cooked staples, night market classics, and regional specialties. No dish repeated across categories.
 
-Meals: 10–12 common Taiwanese dishes per category. Pinyin only, no Chinese characters. Mix home-cooked staples, night market classics, and regional specialties. No dish repeated across categories.
-
-Locations: 8–10 per category, all within 50km of 24.9955°N 121.4279°E (Shulin/Banqiao border). Include parks, trails, riverside paths, cultural sites, temples, museums, and indoor venues as appropriate. Each entry needs: name (pinyin), suggested activity, surface type (paved/gravel/dirt/indoor), approximate lat/lng, and brief notes on terrain difficulty, shade availability, seating, and general accessibility.
+Locations: Generate replacements for retired items, all within 50km of 24.9955°N 121.4279°E (Shulin/Banqiao border). Include parks, trails, riverside paths, cultural sites, temples, museums, and indoor venues as appropriate. Each entry needs: name (pinyin), suggested activity, surface type (paved/gravel/dirt/indoor), approximate lat/lng, and brief notes on terrain difficulty, shade availability, seating, and general accessibility.
 """
 
 
@@ -235,6 +295,7 @@ def _slim_for_llm(processed_data: dict) -> dict:
     # ── Drop upstream-filtered lists (LLM never uses these) ──
     slim.pop("recent_meals", None)
     slim.pop("recent_locations", None)
+    slim.pop("recent_activities", None)
 
     # ── Meal mood: keep only top_suggestions + top_meals_detail ──
     if "meal_mood" in slim:
@@ -277,13 +338,20 @@ def build_prompt(
     history_text = _format_history(history)
     data_text = json.dumps(_slim_for_llm(processed_data), ensure_ascii=False, indent=2)
 
-    regen_note = REGEN_INSTRUCTION if processed_data.get("regenerate_meal_lists") else ""
+    regen_note = build_regen_instruction(processed_data) if processed_data.get("regenerate_meal_lists") else ""
 
     _acts = processed_data.get("outdoor_index", {}).get("activities", {})
+    _recent_acts = set(processed_data.get("recent_activities", []))
     if _acts:
-        _max_score = max(_acts[k]["score"] for k in _acts)
-        _tied = [k for k, v in _acts.items() if v["score"] == _max_score]
-        top_activity = "photography" if ("photography" in _tied and _max_score >= 80) else _tied[0]
+        # Rank activities by score descending, skip recently suggested ones
+        _ranked = sorted(_acts.items(), key=lambda kv: kv[1]["score"], reverse=True)
+        _fresh = [(k, v) for k, v in _ranked if k not in _recent_acts]
+        if _fresh:
+            _top_k, _top_v = _fresh[0]
+            top_activity = "photography" if ("photography" in [k for k, _ in _fresh[:3]] and _fresh[0][1]["score"] >= 80 and "photography" not in _recent_acts) else _top_k
+        else:
+            # All activities recently used — fall back to raw top scorer
+            top_activity = _ranked[0][0]
     else:
         top_activity = "unknown"
     outdoor_grade = processed_data.get("outdoor_index", {}).get("overall_grade", "unknown")

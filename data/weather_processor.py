@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from typing import Optional, cast
 
 # pyre-ignore[21]
-from config import MEAL_FALLBACK_DISH, AQI_ALERT_THRESHOLD, LOCATION_LAT, LOCATION_LON
+from config import MEAL_FALLBACK_DISH, AQI_ALERT_THRESHOLD, LOCATION_LAT, LOCATION_LON, DEDUP_WINDOW_DAYS
 # pyre-ignore[21]
 from data.solar import get_solar_times
 
@@ -45,7 +45,7 @@ from data.health_alerts import _cardiac_alert, _detect_menieres_alert, _compute_
 # pyre-ignore[21]
 from data.meal_classifier import _classify_meal_mood, _extract_recent_meals
 # pyre-ignore[21]
-from data.outdoor_scoring import _compute_outdoor_index, _classify_outdoor_mood, _extract_recent_locations
+from data.outdoor_scoring import _compute_outdoor_index, _classify_outdoor_mood, _extract_recent_locations, _extract_recent_activities
 
 AQI_STATUS_MAP = {
     "良好": {"en": "Expected to be Good", "zh_TW": "預測為「良好」"},
@@ -270,7 +270,7 @@ def process(
     # ── 7. Meal mood ─────────────────────────────────────────────────────────
     logger.debug("Step 7 - Meal mood")
     meal_mood = _classify_meal_mood(segmented)
-    recent_meals = _extract_recent_meals(history, days=3)
+    recent_meals = _extract_recent_meals(history, days=DEDUP_WINDOW_DAYS)
 
     # Filter meal suggestions to avoid recent repeats; pass full pool to LLM for Opus selection
     filtered_meals = [s for s in meal_mood.get("all_suggestions", []) if not any(r in s for r in recent_meals)]
@@ -313,7 +313,7 @@ def process(
     # ── 7b. Outdoor location recommendations (deferred until outdoor_index ready)
     logger.debug("Step 7b - Outdoor locations")
     location_rec = _classify_outdoor_mood(segmented, aqi, outdoor_index)
-    recent_locations = _extract_recent_locations(history, days=3)
+    recent_locations = _extract_recent_locations(history, days=DEDUP_WINDOW_DAYS)
 
     # Filter locations to avoid recently suggested spots; pass full pool to LLM for Opus selection
     filtered_locations = [
@@ -323,6 +323,9 @@ def process(
     location_rec["top_locations"] = (
         filtered_locations if filtered_locations else location_rec.get("all_locations", [])
     )
+
+    # ── 7c. Recent activities for dedup hint ──────────────────────────────────
+    recent_activities = _extract_recent_activities(history, days=DEDUP_WINDOW_DAYS)
 
     aqi_forecast["hourly"] = aqi.get("hourly_forecast", [])
     aqi_forecast["summary_en"] = extract_aqi_summary(aqi_forecast.get("content", ""), "en")
@@ -361,6 +364,7 @@ def process(
         "recent_meals": recent_meals,
         "location_rec": location_rec,
         "recent_locations": recent_locations,
+        "recent_activities": recent_activities,
         "climate_control": climate_recs,
         "cardiac_alert": cardiac_alert,
         "menieres_alert": menieres_alert,

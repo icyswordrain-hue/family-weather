@@ -285,10 +285,20 @@ def _classify_outdoor_mood(segmented: dict, aqi: dict, outdoor_index: dict) -> d
         "top_locations": all_locs[:3],
     }
 
-def _extract_recent_locations(history: list[dict], days: int = 3) -> list[str]:
+def _extract_recent_locations(history: list[dict], days: int = 7) -> list[str]:
     """Extract location names from history."""
     locs = []
     for day in history[-days:]:
         day_locs = day.get("metadata", {}).get("locations_suggested", [])
         locs.extend(day_locs)
     return locs
+
+
+def _extract_recent_activities(history: list[dict], days: int = 7) -> list[str]:
+    """Extract activity names from history for dedup."""
+    activities = []
+    for day in history[-days:]:
+        act = day.get("metadata", {}).get("activity_suggested")
+        if act:
+            activities.append(act)
+    return activities

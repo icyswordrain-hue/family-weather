@@ -75,7 +75,7 @@ def _classify_meal_mood(segmented: dict[str, Optional[dict]]) -> dict:
     }
 
 
-def _extract_recent_meals(history: list[dict], days: int = 3) -> list[str]:
+def _extract_recent_meals(history: list[dict], days: int = 7) -> list[str]:
     """Extract meal suggestions from the last N days of history."""
     meals = []
     for day in history[-days:]:
