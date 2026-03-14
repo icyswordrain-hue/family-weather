@@ -37,7 +37,8 @@ def _render_google_tts(text: str, lang: str) -> bytes:
     from google.cloud import texttospeech
     client = texttospeech.TextToSpeechClient()
     voice_name = TTS_VOICE_ZH if lang == "zh-TW" else TTS_VOICE_EN
-    lang_code = "cmn-TW" if lang == "zh-TW" else "en-US"
+    # Derive lang_code from the voice name prefix (e.g. "en-GB-Neural2-C" → "en-GB")
+    lang_code = "cmn-TW" if lang == "zh-TW" else voice_name.rsplit("-", 2)[0]
     resp = client.synthesize_speech(
         input=texttospeech.SynthesisInput(text=text),
         voice=texttospeech.VoiceSelectionParams(language_code=lang_code, name=voice_name),
