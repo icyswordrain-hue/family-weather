@@ -2227,11 +2227,6 @@ html.dark .source-claude {
     min-height: 88px;
   }
 
-  /* Remove icon from the 4 expanded mini-gauges — keeps side-stack icons intact */
-  .gauges-grid .gauge-header .gauge-icon {
-    display: none;
-  }
-
   .gauges-grid .gauge-label {
     font-size: 0.88rem;
     letter-spacing: 0.02em;

@@ -36,3 +36,9 @@ a proportional font — causing overflow or awkward line breaks.
   (proportional), added `word-break: break-word` + `overflow-wrap: break-word`
 - `.current-side-stack .gauge-sub`: reduced from `0.9rem` → `0.85rem`, same
   word-break safety nets
+
+### Restore gauge icons on mobile (follow-up)
+
+The 4×1 layout had hidden `.gauges-grid .gauge-header .gauge-icon` with
+`display: none` to save horizontal space. With the 2×2 grid each card has
+ample room, so the rule was removed to restore the brand icons.
