@@ -38,3 +38,28 @@ Fixed a localization bug in `app.js` where structural strings like `best_window`
 The `AQI · PM2.5 · PM10 µg/m³` detail insight added above was removed from the Air Quality card extras. Raw sensor numbers are not actionable; the `peak_window` warning and `purifier_advice` insights already carry the useful information.
 
 **Change:** Deleted the `parts` / `textLine` block in `renderLifestyleView()` (`app.js`). The `peak_window` and `purifier_advice` extras are retained unchanged.
+
+---
+
+## Follow-up — 2026-03-14: Fix Lifestyle Tagline Language Toggle
+
+**Problem:** Three lifestyle card taglines did not update on language toggle:
+
+| Card | Field | Root cause |
+| --- | --- | --- |
+| **Meals** | `data.meals.mood` | English enum (`"Hot & Humid"` etc.) not in `T.metrics['zh-TW']` |
+| **HVAC** | `data.hvac.mode` | English enum (`"cooling"` etc.) not in `T.metrics['zh-TW']` |
+| **Air Quality** | `data.air_quality.purifier_advice` | Backend sentence not wrapped in `localiseMetric()`, and no mapping existed in either direction |
+
+**Fix (`app.js`):**
+
+1. Added to `TRANSLATIONS['zh-TW'].metrics`:
+   - Meal moods: `'Hot & Humid'` → `'炎熱潮濕'`, `'Warm & Pleasant'` → `'溫暖舒適'`, `'Cool & Damp'` → `'涼爽潮濕'`, `'Cold'` → `'寒冷'`
+   - HVAC modes: `'Off'`, `'fan'`, `'cooling'`, `'heating'`, `'heating_optional'`, `'dehumidify'` → Chinese equivalents
+   - English purifier advice sentences → Chinese (3 strings)
+
+2. Added `TRANSLATIONS['en'].metrics` (new) with Chinese purifier advice sentences → English, for the reverse-toggle case (broadcast generated in zh-TW, user switches to en).
+
+3. Wrapped `data.air_quality.purifier_advice` in `localiseMetric()` in `renderLifestyleView()`.
+
+**Note:** `meals.mood` and `hvac.mode` are always English enum values from the Python backend regardless of broadcast language — only one direction of mapping is needed. `purifier_advice` is a localized sentence from the backend, requiring both directions.

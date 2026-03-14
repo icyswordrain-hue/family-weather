@@ -239,6 +239,12 @@ const TRANSLATIONS = {
     log_step_prefix: 'Step: ',
     log_runtime_error: 'Runtime Error: ',
     no_7day: '7-day forecast unavailable',
+    metrics: {
+      // Air quality purifier advice (zh-TW → en, for when broadcast was generated in zh-TW)
+      '關閉窗戶並開啟空氣清淨機。': 'Close windows and run the air purifier.',
+      '建議關窗，可考慮開啟空氣清淨機。': 'Consider closing windows and running the air purifier.',
+      '敏感族群可考慮開啟空氣清淨機。': 'Sensitive groups: consider running the air purifier indoors.',
+    },
   },
   'zh-TW': {
     loading: '正在獲取天氣…',
@@ -1089,7 +1095,7 @@ function renderLifestyleView(data) {
       extras.push(mkInsight(IMG('heads-up', 'AQI Peak'), `⚠ ${data.air_quality.peak_window}`));
     }
     if (data.air_quality.purifier_advice) {
-      extras.push(mkInsight(IMG('air-quality', 'Air Purifier'), data.air_quality.purifier_advice));
+      extras.push(mkInsight(IMG('air-quality', 'Air Purifier'), localiseMetric(data.air_quality.purifier_advice)));
     }
     add(IMG('air-quality', 'Air Quality'), T.air_quality, data.air_quality.text, extras);
   }
