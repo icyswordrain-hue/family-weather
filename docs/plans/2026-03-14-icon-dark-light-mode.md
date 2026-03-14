@@ -71,3 +71,28 @@ Replaced the single static `theme-color` with a media-query pair:
 4. Chrome Android standalone PWA → address bar flips cream ↔ dark navy
 5. iOS Safari standalone → status bar tint responds
 6. Windows 11 taskbar / Android home screen → stays terracotta regardless of OS theme (expected, platform limitation)
+
+---
+
+## Follow-up Finding: "Open in App" Icon Inconsistency
+
+**Observed:** Chrome's "Open in app" button shows a visually different icon than the browser tab favicon.
+
+**Root cause (diagnosed via Pillow pixel inspection):**
+
+| File | Mode | Actual size | Manifest declared |
+| --- | --- | --- | --- |
+| `icon-512-any.webp` | RGB (no alpha) | 1024×1024 | 512×512 |
+| `icon-192-any.webp` | RGB (no alpha) | 192×192 | 192×192 |
+| `icon-512-maskable.webp` | RGB (no alpha) | 1024×1024 | 512×512 |
+
+The `icon-*-any.webp` files have **no alpha channel**. The area outside the squircle is solid white/cream `(253,253,251)` — not transparent. On Chrome's dark "Open in app" button, those white corners are visible, making the icon appear as a white rectangle containing a terracotta squircle rather than a floating squircle shape.
+
+The `favicon.svg` has no such issue — the squircle fills the viewport with no surrounding pixels.
+
+**Status: known issue, deferred.** The "Open in app" button is transient UI; the installed home screen icon uses the maskable variant (full-bleed, correct). Fix requires:
+
+1. Regenerate `icon-512-any.webp` and `icon-192-any.webp` with **RGBA transparent corners** from the source image tool, OR
+2. Apply a programmatic Pillow mask using the squircle path to punch out the corners to alpha (risky if cream artwork elements near edges get caught in the flood-fill).
+
+Also note: `icon-512-any.webp` and `icon-512-maskable.webp` are both **1024×1024** while the manifest declares `512×512`. Align the `sizes` field when regenerating.
