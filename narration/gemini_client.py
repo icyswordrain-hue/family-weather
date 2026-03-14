@@ -44,16 +44,15 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
                 )
             )
 
-    # Use a fresh client with a long timeout to avoid ReadTimeout
-    client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=300_000))
-
     # 1. Primary Attempt: GEMINI_PRO
     try:
         model_to_use = model_override or GEMINI_PRO_MODEL
         if not model_to_use.startswith("models/"):
             model_to_use = f"models/{model_to_use}"
-            
-        logger.info("Attempting Gemini (%s)", model_to_use)
+
+        pro_timeout_ms = int(NARRATION_TIMEOUT_PRO) * 1000
+        client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=pro_timeout_ms))
+        logger.info("Attempting Gemini (%s) with %ds timeout", model_to_use, int(NARRATION_TIMEOUT_PRO))
         response = client.models.generate_content(
             model=model_to_use,
             contents=gemini_contents,
@@ -75,8 +74,10 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         flash_model = GEMINI_FLASH_MODEL
         if not flash_model.startswith("models/"):
             flash_model = f"models/{flash_model}"
-            
-        logger.info("Attempting Gemini Flash fallback (%s)", flash_model)
+
+        flash_timeout_ms = int(NARRATION_TIMEOUT_FLASH) * 1000
+        client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=flash_timeout_ms))
+        logger.info("Attempting Gemini Flash fallback (%s) with %ds timeout", flash_model, int(NARRATION_TIMEOUT_FLASH))
         response = client.models.generate_content(
             model=flash_model,
             contents=gemini_contents,
