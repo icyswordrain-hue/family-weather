@@ -399,6 +399,14 @@ def _process_current(current: dict, aqi_realtime: dict) -> dict:
     wx_code = current.get("Wx")
     wx_source_text = current.get("WxText")
     result["Wx_text"] = wx_source_text or wx_to_cloud_cover(wx_code)
+    # cloud_cover: English category for icon lookup (Sunny/Fair/Mixed Clouds/Overcast/Rain)
+    if wx_code is not None:
+        result["cloud_cover"] = wx_to_cloud_cover(wx_code)
+    elif wx_source_text:
+        _ZH_TO_CLOUD = {"晴": "Sunny", "多雲": "Mixed Clouds", "陰": "Overcast"}
+        result["cloud_cover"] = _ZH_TO_CLOUD.get(wx_source_text, "Mixed Clouds")
+    else:
+        result["cloud_cover"] = None
     
     # 3. 5-Level Metrics
     # UV

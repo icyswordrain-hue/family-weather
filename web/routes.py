@@ -129,6 +129,7 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict 
         "location": current.get("station_name"),
         "weather_code": current.get("Wx"),
         "weather_text": current.get("Wx_text"),
+        "cloud_cover": current.get("cloud_cover"),
         "ground_state": current.get("ground_state", "Dry"),
         "ground_level": current.get("ground_level", 1),
 

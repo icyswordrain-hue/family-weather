@@ -507,7 +507,7 @@ function renderCurrentView(data) {
   setText('cur-weather-text', localiseWeatherText(data.weather_text || '\u2014'));
   const h = new Date().getHours();
   const isCurrentNight = (h >= 18 || h < 6);
-  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.weather_code || data.weather_text, localiseWeatherText(data.weather_text || '\u2014'), isCurrentNight);
+  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.cloud_cover || data.weather_code || data.weather_text, localiseWeatherText(data.weather_text || '\u2014'), isCurrentNight);
   setText('rp-location', localiseLocation(data.location || '\u2014'));
   const mobileLoc = document.getElementById('mobile-location');
   if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '\u2014');
