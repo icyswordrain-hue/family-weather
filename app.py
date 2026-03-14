@@ -32,7 +32,7 @@ from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
 from narration.fallback_narrator import build_narration
 from narration.llm_prompt_builder import build_prompt, parse_narration_response
-from narration.tts_client import synthesise_with_cache
+from narration.tts_client import synthesise_with_cache, cleanup_old_audio
 
 from history.conversation import load_history, save_day, get_today_broadcast
 from web.routes import build_slices
@@ -245,18 +245,7 @@ def get_broadcast():
 
 @app.route("/api/audio/<path:filename>")
 def serve_audio(filename):
-    """Serve TTS audio from Modal volume (proxied via Cloud Run in CLOUD mode)."""
-    if RUN_MODE == "CLOUD":
-        modal_audio_url = os.environ.get("MODAL_AUDIO_URL", "")
-        if not modal_audio_url:
-            return jsonify({"error": "MODAL_AUDIO_URL not configured"}), 500
-        try:
-            resp = requests.get(modal_audio_url, params={"filename": filename}, timeout=30)
-            return Response(resp.content, mimetype="audio/mpeg", status=resp.status_code)
-        except Exception as exc:
-            logger.error("Audio proxy failed: %s", exc)
-            return jsonify({"error": str(exc)}), 502
-    # LOCAL or MODAL — serve directly from the filesystem
+    """Serve TTS audio from local filesystem (LOCAL mode only)."""
     from pathlib import Path
     from flask import send_file
     audio_path = Path(LOCAL_DATA_DIR) / "audio" / filename
@@ -558,9 +547,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     if _ta is not None:
         summaries["_top_activity"] = _ta
 
-    _has_gac = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
-    _has_sa = "GCP_SA_JSON" in os.environ
-    yield {"type": "log", "message": f"Synthesising TTS audio (GCP_SA_JSON={_has_sa}, GAC={_has_gac}, provider={config.TTS_PROVIDER})\u2026"}
+    yield {"type": "log", "message": "Synthesising TTS audio\u2026"}
     try:
         full_audio_url = synthesise_with_cache(narration_text, lang, date_str, slot)
     except Exception as exc:
@@ -593,6 +580,16 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         yield {"type": "log", "message": "Persisting regenerated meal/location database..."}
         logger.info("Regen data received, writing to regen.json")
         _persist_regen({"regen": {**regen_data, "updated_at": datetime.now(_TAIPEI_TZ).isoformat()}})
+
+    # 7.5 Cleanup stale audio files (monthly snapshots + 30-day rolling window)
+    if RUN_MODE in ("MODAL", "LOCAL"):
+        _data = "/data" if RUN_MODE == "MODAL" else LOCAL_DATA_DIR
+        try:
+            removed = cleanup_old_audio(Path(_data) / "audio")
+            if removed:
+                yield {"type": "log", "message": f"Cleaned up {removed} old audio file(s)."}
+        except Exception as exc:
+            logger.warning("Audio cleanup failed: %s", exc)
 
     # 8. Result
     result = {

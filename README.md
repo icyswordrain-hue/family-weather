@@ -205,7 +205,6 @@ Navigate to `http://localhost:8080`.
 | `REGEN_CYCLE_DAYS` | `14` | Days between meal/location DB regen |
 | `MODAL_REFRESH_URL` | — | Modal refresh endpoint URL (CLOUD mode) |
 | `MODAL_BROADCAST_URL` | — | Modal broadcast endpoint URL (CLOUD mode) |
-| `MODAL_AUDIO_URL` | — | Modal audio endpoint URL (CLOUD mode) |
 | `DESKTOP_TTS_URL` | — | Optional external TTS service URL |
 | `DESKTOP_TTS_SECRET` | — | Auth secret for external TTS service |
 | `DESKTOP_TTS_TIMEOUT` | `8` | Timeout (s) for external TTS service |

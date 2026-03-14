@@ -7,7 +7,8 @@ Generates two clips:
   2. Kids clip (P1 apparent temp + cloud cover only, ≤ 15s) — for the kids view
 """
 
-import hashlib, io, asyncio, logging, os
+import hashlib, io, asyncio, logging, os, re
+from datetime import date, timedelta
 from pathlib import Path
 from config import (RUN_MODE, GCS_BUCKET_NAME, GCS_AUDIO_PREFIX,
                      TTS_PROVIDER, TTS_VOICE_EN, TTS_VOICE_ZH, TTS_SPEAKING_RATE)
@@ -76,8 +77,6 @@ def _render_tts(text: str, lang: str) -> bytes:
     has_gcp = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
     if provider == "EDGE" and has_gcp:
         provider = "GOOGLE"
-    log.info("TTS provider=%s (config=%s, GOOGLE_APPLICATION_CREDENTIALS=%s)",
-             provider, TTS_PROVIDER, has_gcp)
     if provider == "GOOGLE":
         try:
             return _render_google_tts(text, lang)
@@ -86,34 +85,70 @@ def _render_tts(text: str, lang: str) -> bytes:
     return _render_edge_tts(text, lang)
 
 
+def cleanup_old_audio(audio_root: Path, keep_days: int = 30) -> int:
+    """Remove stale TTS audio. Keep last 30 days + 1 file per language on each 1st-of-month."""
+    if not audio_root.is_dir():
+        return 0
+    cutoff = date.today() - timedelta(days=keep_days)
+    removed = 0
+    for entry in sorted(audio_root.iterdir()):
+        if not entry.is_dir():
+            continue
+        m = re.fullmatch(r"\d{4}-\d{2}-\d{2}", entry.name)
+        if not m:
+            continue
+        dir_date = date.fromisoformat(entry.name)
+        if dir_date >= cutoff:
+            continue  # within rolling window — keep everything
+        mp3s = list(entry.glob("*.mp3"))
+        if not mp3s:
+            entry.rmdir()
+            continue
+        if dir_date.day == 1:
+            # Monthly snapshot — keep newest file per language
+            by_lang: dict[str, list[Path]] = {}
+            for f in mp3s:
+                # filename: {slot}_{lang}_{hash}.mp3  e.g. morning_zh-TW_abc123.mp3
+                parts = f.stem.rsplit("_", 1)  # ["{slot}_{lang}", "{hash}"]
+                lang = parts[0].split("_", 1)[1] if len(parts) == 2 else "unknown"
+                by_lang.setdefault(lang, []).append(f)
+            for lang, files in by_lang.items():
+                files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+                for f in files[1:]:
+                    f.unlink()
+                    removed += 1
+        else:
+            # Not 1st-of-month and older than cutoff — delete all
+            for f in mp3s:
+                f.unlink()
+                removed += 1
+            try:
+                entry.rmdir()
+            except OSError:
+                pass
+    if removed:
+        log.info("Audio cleanup: removed %d stale file(s) from %s", removed, audio_root)
+    return removed
+
+
 def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
-    """Returns /api/audio/... URL (modal), public GCS URL (cloud), or local path (local). Checks cache first."""
+    """Returns a playable audio URL. GCS public URL for MODAL/CLOUD, local path for LOCAL."""
     from config import LOCAL_DATA_DIR
+    run_mode = os.environ.get("RUN_MODE", RUN_MODE)
     gcs_path = tts_cache_key(text, lang, date, slot)
-    # gcs_path = "audio/{date}/{slot}_{lang}_{hash}.mp3"
     rel_path = gcs_path[len("audio/"):]  # "{date}/{slot}_{lang}_{hash}.mp3"
 
-    if RUN_MODE == "MODAL":
-        local_path = Path(LOCAL_DATA_DIR) / gcs_path  # /data/audio/{date}/...
-        if local_path.exists():
-            log.info("TTS cache hit (volume): %s", local_path)
-            return f"/api/audio/{rel_path}"
-        audio = _render_tts(text, lang)
-        local_path.parent.mkdir(parents=True, exist_ok=True)
-        local_path.write_bytes(audio)
-        return f"/api/audio/{rel_path}"
-
-    if RUN_MODE == "CLOUD":
+    if run_mode in ("MODAL", "CLOUD"):
         from google.cloud import storage
         blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(gcs_path)
         if blob.exists():
-            log.info(f"TTS cache hit: {gcs_path}")
+            log.info("TTS cache hit (GCS): %s", gcs_path)
             return blob.public_url
         audio = _render_tts(text, lang)
         return _upload_to_gcs(audio, gcs_path)
 
-    # LOCAL mode — match MODAL: cache check + date subdirectory
-    local_path = Path(LOCAL_DATA_DIR) / gcs_path  # local_data/audio/{date}/...
+    # LOCAL mode
+    local_path = Path(LOCAL_DATA_DIR) / gcs_path
     if local_path.exists():
         log.info("TTS cache hit (local): %s", local_path)
         return f"/api/audio/{rel_path}"

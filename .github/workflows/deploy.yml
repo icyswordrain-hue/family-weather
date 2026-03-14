@@ -37,7 +37,6 @@ jobs:
             RUN_MODE=CLOUD
             MODAL_REFRESH_URL=${{ secrets.MODAL_REFRESH_URL }}
             MODAL_BROADCAST_URL=${{ secrets.MODAL_BROADCAST_URL }}
-            MODAL_AUDIO_URL=https://icyswordrain--family-weather-engine-audio.modal.run
 
       - name: Deploy Modal pipeline
         timeout-minutes: 10

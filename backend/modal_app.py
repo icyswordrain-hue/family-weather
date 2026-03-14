@@ -63,6 +63,12 @@ def refresh(payload: dict = None):
         try:
             for step in _pipeline_steps(date_str, provider_override=provider, lang=lang, slot=slot):
                 yield json.dumps(step) + "\n"
+                # Commit volume after pipeline writes (history, audio, etc.)
+                if step.get("type") == "result":
+                    try:
+                        volume.commit()
+                    except Exception:
+                        pass
         except Exception as e:
             yield json.dumps({"type": "error", "message": str(e)}) + "\n"
         finally:
@@ -95,15 +101,5 @@ def broadcast(date: str = None, lang: str = "en"):
     return {**cached, "slices": slices}
 
 
-@app.function(image=image, secrets=secrets, volumes={"/data": volume})
-@modal.fastapi_endpoint()
-def audio(filename: str):
-    """Serve audio file from the Modal volume. filename = {date}/{slot}_{lang}_{hash}.mp3"""
-    from pathlib import Path
-    from fastapi.responses import Response, JSONResponse
-    audio_path = Path("/data/audio") / filename
-    if not audio_path.exists():
-        return JSONResponse({"error": "not found"}, status_code=404)
-    return Response(audio_path.read_bytes(), media_type="audio/mpeg")
 
 
