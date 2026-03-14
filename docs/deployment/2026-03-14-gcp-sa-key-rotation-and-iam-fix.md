@@ -77,8 +77,61 @@ gcloud projects add-iam-policy-binding gen-lang-client-0266464307 \
 
 ---
 
+## IAM Hardening (same day, later session)
+
+Audited all project IAM bindings against actual GCP service usage and revoked everything unnecessary.
+
+**Services confirmed in use:** Artifact Registry, Cloud Run, GCS, Cloud TTS, Secret Manager.
+**Services NOT in use:** Pub/Sub, Vertex AI.
+
+### Changes made
+
+**Default Compute SA** (`707581314081-compute@developer.gserviceaccount.com`):
+
+| Action | Role | Reason |
+|---|---|---|
+| Revoked | `roles/editor` | 11,073 excess permissions — replaced with targeted roles |
+| Revoked | `roles/artifactregistry.writer` | Runtime only pulls images, never pushes |
+| Revoked | `roles/run.admin` | Service doesn't manage itself |
+| Added | `roles/storage.objectAdmin` | GCS access for audio, history, regen data |
+
+**Family Weather SA** (`family-weather-sa@...`):
+
+| Action | Role | Reason |
+|---|---|---|
+| Revoked | `roles/artifactregistry.attachmentWriter` | Not needed |
+| Revoked | `roles/artifactregistry.writer` | CI/CD moved back to `github-actions-sa` |
+| Revoked | `roles/run.admin` | CI/CD moved back to `github-actions-sa` |
+| Revoked | `roles/pubsub.publisher` | No Pub/Sub usage in codebase |
+| Revoked | `roles/iam.serviceAccountTokenCreator` | No signed URLs or token delegation |
+| Added | `roles/storage.objectAdmin` | GCS access for audio, history, regen data |
+
+**GitHub Actions SA** (`github-actions-sa@...`):
+
+| Action | Role | Reason |
+|---|---|---|
+| Added | `roles/artifactregistry.writer` | Needed to push Docker images |
+
+**Vertex AI Express SA** (`vertex-express@...`): Deleted entirely — project uses Gemini via API key, not Vertex AI.
+
+### GCP_SA_KEY rotated back to github-actions-sa
+
+The March 14 morning session had rotated `GCP_SA_KEY` to `family-weather-sa`. After revoking CI/CD roles from that SA, we generated a fresh key for `github-actions-sa` and updated the GitHub secret. This restores the intended separation: `github-actions-sa` for CI/CD, `family-weather-sa` for runtime.
+
+### Final IAM state
+
+| Service Account | Roles |
+|---|---|
+| `707581314081-compute` (default) | AR Reader, Logs Writer, Secret Manager Secret Accessor, Storage Object Admin, SA User |
+| `family-weather-sa` | Cloud Speech Client, Storage Object Admin, SA User |
+| `github-actions-sa` | AR Writer, Cloud Run Admin, SA User |
+
+---
+
 ## Lessons Learned
 
 - The previous working setup used a different SA (`github-actions-sa`). When secrets were rotated to `family-weather-sa`, the IAM roles did not carry over.
 - `artifactregistry.attachmentWriter` is not `artifactregistry.writer` — the former only handles OCI attachments, not image uploads.
 - Always verify both the key validity AND the SA's IAM roles when rotating service account keys.
+- The `Editor` primitive role grants ~11,000 permissions. Replace it with the 3–5 specific roles you actually need.
+- Keep CI/CD and runtime service accounts separate — mixing them leads to overprivileged SAs.

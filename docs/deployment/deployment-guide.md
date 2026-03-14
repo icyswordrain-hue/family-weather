@@ -22,6 +22,7 @@ _Last updated: 2026-03-01_
 | Modal broadcast | `https://icyswordrain--family-weather-engine-broadcast.modal.run` |
 | GitHub repo | `icyswordrain-hue/family-weather` (branch: `master`) |
 | Compute service account | `707581314081-compute@developer.gserviceaccount.com` |
+| Runtime service account | `family-weather-sa@gen-lang-client-0266464307.iam.gserviceaccount.com` |
 | GitHub Actions service account | `github-actions-sa@gen-lang-client-0266464307.iam.gserviceaccount.com` |
 | Local working directory | `C:\Users\User\.gemini\antigravity\scratch\family-weather` |
 | Python version | 3.13.0 |
@@ -132,22 +133,50 @@ gcloud auth configure-docker asia-east1-docker.pkg.dev
 
 ---
 
-## Step 5 — GitHub Actions Service Account
+## Step 5 — Service Account IAM Roles
 
-Create the service account (one-time):
+Three service accounts, each with least-privilege roles:
+
+**github-actions-sa** — CI/CD only (pushes images, deploys Cloud Run):
+
+| Role | Purpose |
+|------|---------|
+| `roles/artifactregistry.writer` | Push Docker images to Artifact Registry |
+| `roles/run.admin` | Deploy revisions to Cloud Run |
+| `roles/iam.serviceAccountUser` | Act as runtime SA during deployment |
+
+**family-weather-sa** — Cloud Run + Modal runtime:
+
+| Role | Purpose |
+|------|---------|
+| `roles/speech.client` | Google Cloud TTS synthesis |
+| `roles/storage.objectAdmin` | Read/write GCS (audio, history, regen) |
+| `roles/iam.serviceAccountUser` | Service identity |
+
+**707581314081-compute** (default compute SA):
+
+| Role | Purpose |
+|------|---------|
+| `roles/artifactregistry.reader` | Pull container images |
+| `roles/logging.logWriter` | Cloud Run logs |
+| `roles/secretmanager.secretAccessor` | Read secrets injected into Cloud Run |
+| `roles/storage.objectAdmin` | GCS access from Cloud Run |
+| `roles/iam.serviceAccountUser` | Service identity |
+
+Create the GitHub Actions service account (one-time):
 
 ```
 gcloud iam service-accounts create github-actions-sa --display-name="GitHub Actions Deployer" --project=gen-lang-client-0266464307
 ```
 
-Grant required roles:
+Grant its roles:
 
 ```
 gcloud projects add-iam-policy-binding gen-lang-client-0266464307 --member="serviceAccount:github-actions-sa@gen-lang-client-0266464307.iam.gserviceaccount.com" --role="roles/run.admin"
 
 gcloud projects add-iam-policy-binding gen-lang-client-0266464307 --member="serviceAccount:github-actions-sa@gen-lang-client-0266464307.iam.gserviceaccount.com" --role="roles/iam.serviceAccountUser"
 
-gcloud artifacts repositories add-iam-policy-binding family-weather --location=asia-east1 --member="serviceAccount:github-actions-sa@gen-lang-client-0266464307.iam.gserviceaccount.com" --role="roles/artifactregistry.writer"
+gcloud projects add-iam-policy-binding gen-lang-client-0266464307 --member="serviceAccount:github-actions-sa@gen-lang-client-0266464307.iam.gserviceaccount.com" --role="roles/artifactregistry.writer"
 ```
 
 Create the key — **do not commit this file to git**:
