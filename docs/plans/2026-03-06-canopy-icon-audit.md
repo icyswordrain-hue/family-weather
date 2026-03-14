@@ -276,3 +276,12 @@ The night branch in `getWeatherIcon()` (lines 159–170) already had `'Sunny'`, 
 **`web/static/brand-icons/partly-cloudy.webp`** — Regenerated via Nano Banana Pro. New icon: mustard sun with rays partially hidden behind a tan cloud, flat vector style on cream background.
 
 **`web/static/brand-icons/partly-cloudy-night.webp`** — Regenerated. New icon: navy crescent moon partially hidden behind a gray-brown cloud, flat vector style on cream background.
+
+### Follow-up: Hero icon still showed cloudy (commit `574892a`)
+
+**Root cause:** CWA station observations return Chinese weather text (`晴`/`多雲`/`陰`) without a numeric Wx code. The hero icon lookup used `weather_code || weather_text`, but Chinese text didn't match any ICONS key → always showed cloudy fallback.
+
+**Fix:**
+- **`data/weather_processor.py:398–407`** — Added `cloud_cover` field to current conditions. Derives from Wx code when available; maps Chinese text (`晴→Sunny`, `多雲→Mixed Clouds`, `陰→Overcast`) as fallback.
+- **`web/routes.py:131`** — Pass `cloud_cover` through to frontend.
+- **`web/static/app.js:510`** — Hero icon now uses `data.cloud_cover || data.weather_code || data.weather_text`.
