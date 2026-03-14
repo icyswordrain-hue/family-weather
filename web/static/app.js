@@ -141,12 +141,12 @@ const IMG = (name, alt) =>
   `<img src="/static/brand-icons/${name}.webp" class="brand-icon" alt="${alt}" />`;
 
 const ICONS = {
-  'sunny': IMG('sunny', 'Sunny'), 'Sunny/Clear': IMG('sunny', 'Sunny'), '1': IMG('sunny', 'Sunny'),
-  'partly-cloudy': IMG('partly-cloudy', 'Partly Cloudy'), 'Mixed Clouds': IMG('partly-cloudy', 'Partly Cloudy'),
+  'sunny': IMG('sunny', 'Sunny'), 'Sunny': IMG('sunny', 'Sunny'), 'Sunny/Clear': IMG('sunny', 'Sunny'), '1': IMG('sunny', 'Sunny'),
+  'partly-cloudy': IMG('partly-cloudy', 'Partly Cloudy'), 'Fair': IMG('partly-cloudy', 'Partly Cloudy'), 'Mixed Clouds': IMG('partly-cloudy', 'Partly Cloudy'),
   '2': IMG('partly-cloudy', 'Partly Cloudy'), '3': IMG('partly-cloudy', 'Partly Cloudy'),
   'cloudy': IMG('cloudy', 'Cloudy'), 'Overcast': IMG('cloudy', 'Cloudy'),
   '4': IMG('cloudy', 'Cloudy'), '5': IMG('cloudy', 'Cloudy'), '6': IMG('cloudy', 'Cloudy'), '7': IMG('cloudy', 'Cloudy'),
-  'rainy': IMG('rainy', 'Rainy'),
+  'rainy': IMG('rainy', 'Rainy'), 'Rain': IMG('rainy', 'Rainy'),
   '8': IMG('rainy', 'Rainy'), '9': IMG('rainy', 'Rainy'), '10': IMG('rainy', 'Rainy'),
   '11': IMG('rainy', 'Rainy'), '12': IMG('rainy', 'Rainy'), '13': IMG('rainy', 'Rainy'),
   '14': IMG('rainy', 'Rainy'), '15': IMG('rainy', 'Rainy'), '16': IMG('rainy', 'Rainy'),
