@@ -73,8 +73,11 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
 def _render_tts(text: str, lang: str) -> bytes:
     # Check at call time — in Modal, GCP creds are bootstrapped after config import
     provider = TTS_PROVIDER
-    if provider == "EDGE" and "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+    has_gcp = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
+    if provider == "EDGE" and has_gcp:
         provider = "GOOGLE"
+    log.info("TTS provider=%s (config=%s, GOOGLE_APPLICATION_CREDENTIALS=%s)",
+             provider, TTS_PROVIDER, has_gcp)
     if provider == "GOOGLE":
         try:
             return _render_google_tts(text, lang)
