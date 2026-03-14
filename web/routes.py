@@ -14,6 +14,18 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 
+def _truncate_tagline(text: str, max_words: int = 8) -> str:
+    """Truncate text to at most max_words for use as a card tagline."""
+    if not text:
+        return ""
+    if any('\u4e00' <= c <= '\u9fff' for c in text[:5]):
+        return text[:16].rstrip("，。、；") + ("" if len(text) <= 16 else "")
+    words = text.split()
+    if len(words) <= max_words:
+        return text.rstrip(".")
+    return " ".join(words[:max_words]).rstrip(".,;—") + "."
+
+
 def _compute_aqi_peak_window(hourly: list[dict]) -> str | None:
     """Return a human-readable peak-AQI window string from hourly AQI data.
 
@@ -465,6 +477,22 @@ def _slice_lifestyle(current: dict, commute: dict, climate: dict, paragraphs: di
         purifier_advice = "敏感族群可考慮開啟空氣清淨機。" if is_zh else "Sensitive groups: consider running the air purifier indoors."
     else:
         purifier_advice = None
+
+    # Fallback taglines: truncate card text when LLM didn't provide taglines
+    if not wardrobe_tagline and wardrobe_text:
+        wardrobe_tagline = _truncate_tagline(wardrobe_text)
+    if not commute_tagline and commute_text:
+        commute_tagline = _truncate_tagline(commute_text)
+    if not hvac_tagline and hvac_text:
+        hvac_tagline = _truncate_tagline(hvac_text)
+    if not meals_tagline and meals_text:
+        meals_tagline = _truncate_tagline(meals_text)
+    if not garden_tagline and garden_text:
+        garden_tagline = _truncate_tagline(garden_text)
+    if not outdoor_tagline and outdoor_text:
+        outdoor_tagline = _truncate_tagline(outdoor_text)
+    if not air_quality_tagline and air_quality_text:
+        air_quality_tagline = _truncate_tagline(air_quality_text)
 
     return {
         "wardrobe": {
