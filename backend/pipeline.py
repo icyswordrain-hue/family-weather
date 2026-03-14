@@ -85,13 +85,13 @@ def generate_narration_with_fallback(
     hour = datetime.now().hour
     cache_key = make_cache_key(lang, city, wx_text, _classify_time(hour))
 
-    cached = _narration_cache.get(cache_key)
-    if cached:
-        logger.info("Narration cache HIT: %s", cache_key)
-        return cached
-
     provider_upper = provider.upper().strip()
     is_regen = bool(processed.get("regenerate_meal_lists"))
+
+    cached = _narration_cache.get(cache_key)
+    if cached and not is_regen:
+        logger.info("Narration cache HIT: %s", cache_key)
+        return cached
     logger.info("Narration requested via provider: %s (regen=%s)", provider_upper, is_regen)
 
     from config import GEMINI_MAX_TOKENS_REGEN, CLAUDE_MAX_TOKENS_REGEN, CLAUDE_REGEN_MODEL
@@ -135,7 +135,8 @@ def generate_narration_with_fallback(
             text, source = attempt_fn(messages)
             logger.info("%s narration successful.", label.capitalize())
             result = text, source
-            _narration_cache.set(cache_key, result)
+            if not is_regen:
+                _narration_cache.set(cache_key, result)
             return result
         except Exception:
             logger.exception("Narration failed (%s):", label)

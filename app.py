@@ -474,21 +474,35 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     regen_history = load_history(days=REGEN_CYCLE_DAYS + 1)
     should_regen = check_regen_cycle(regen_history, date_str, REGEN_CYCLE_DAYS)
 
-    # Fallback: history entries lose the regenerate_meal_lists marker when
+    # Fallback: history entries can lose the regenerate_meal_lists marker when
     # same-day runs overwrite them.  regen.json persists updated_at independently.
     if should_regen:
-        from pathlib import Path
-        regen_path = Path(LOCAL_DATA_DIR) / "regen.json"
-        if regen_path.exists():
+        last_updated = None
+        if RUN_MODE == "CLOUD":
             try:
-                regen_info = json.loads(regen_path.read_text(encoding="utf-8"))
-                last_updated = (regen_info.get("updated_at") or "")[:10]
-                if last_updated:
-                    days_since = (datetime.strptime(date_str, "%Y-%m-%d") - datetime.strptime(last_updated, "%Y-%m-%d")).days
-                    if days_since < REGEN_CYCLE_DAYS:
-                        should_regen = False
-                        yield {"type": "log", "message": f"Regen skipped (last regen {days_since}d ago per regen.json)"}
+                from google.cloud import storage as _gcs
+                _blob = _gcs.Client().bucket(config.GCS_BUCKET_NAME).blob(config.GCS_REGEN_PATH)
+                _regen_info = json.loads(_blob.download_as_text(encoding="utf-8"))
+                last_updated = (_regen_info.get("updated_at") or "")[:10]
             except Exception:
+                pass
+        else:
+            from pathlib import Path
+            regen_path = Path(LOCAL_DATA_DIR) / "regen.json"
+            if regen_path.exists():
+                try:
+                    regen_info = json.loads(regen_path.read_text(encoding="utf-8"))
+                    last_updated = (regen_info.get("updated_at") or "")[:10]
+                except Exception:
+                    pass
+
+        if last_updated:
+            try:
+                days_since = (datetime.strptime(date_str, "%Y-%m-%d") - datetime.strptime(last_updated, "%Y-%m-%d")).days
+                if days_since < REGEN_CYCLE_DAYS:
+                    should_regen = False
+                    yield {"type": "log", "message": f"Regen skipped (last regen {days_since}d ago per regen.json)"}
+            except ValueError:
                 pass
 
     if should_regen:
@@ -526,6 +540,8 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
     metadata["narration_source"] = narration_source
     metadata["narration_model"] = config.GEMINI_PRO_MODEL if narration_source == "gemini" else (config.CLAUDE_MODEL if narration_source == "claude" else "Template")
+    if processed.get("regenerate_meal_lists"):
+        metadata["regen"] = True
 
     # 5.5 Synthesize TTS (LOCAL: eager; MODAL morning: eager; others: on-demand)
     summaries = parsed.get("cards", {})
