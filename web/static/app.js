@@ -940,11 +940,13 @@ function translateAQIText(status) {
 
 // ── View 3: Lifestyle ──────────────────────────────────────────────────────
 function updateExpandAllBtn() {
-  const btn = document.getElementById('ls-expand-all-btn');
-  if (!btn) return;
   const cards = document.querySelectorAll('#lifestyle-grid .ls-card');
   const allExpanded = cards.length > 0 && [...cards].every(c => c.classList.contains('expanded'));
-  btn.textContent = allExpanded ? (T.ls_collapse_all || 'Collapse All') : (T.ls_expand_all || 'Expand All');
+  const text = allExpanded ? (T.ls_collapse_all || 'Collapse All') : (T.ls_expand_all || 'Expand All');
+  ['ls-expand-all-btn', 'ls-expand-all-btn-mobile'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.textContent = text;
+  });
 }
 
 function renderLifestyleView(data) {
@@ -953,20 +955,19 @@ function renderLifestyleView(data) {
   if (!grid) return;
   grid.innerHTML = '';
 
-  // Wire expand-all button (re-wired each render to capture fresh card refs)
-  const expandAllBtn = document.getElementById('ls-expand-all-btn');
-  if (expandAllBtn) {
-    expandAllBtn.onclick = () => {
-      const cards = document.querySelectorAll('#lifestyle-grid .ls-card');
-      const allExpanded = cards.length > 0 && [...cards].every(c => c.classList.contains('expanded'));
-      cards.forEach(card => {
-        card.classList.toggle('expanded', !allExpanded);
-        const tog = card.querySelector('.ls-details-toggle');
-        if (tog) tog.textContent = !allExpanded ? (T.ls_details_hide || 'Hide ▴') : (T.ls_details_show || 'Details ▾');
-      });
-      updateExpandAllBtn();
-    };
-  }
+  // Wire expand-all buttons (re-wired each render to capture fresh card refs)
+  ['ls-expand-all-btn', 'ls-expand-all-btn-mobile'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const cards = document.querySelectorAll('#lifestyle-grid .ls-card');
+        const allExpanded = cards.length > 0 && [...cards].every(c => c.classList.contains('expanded'));
+        cards.forEach(card => card.classList.toggle('expanded', !allExpanded));
+        updateExpandAllBtn();
+      };
+    }
+  });
 
   const add = (icon, title, text, extraNodes = []) => {
     const card = document.createElement('div');
@@ -978,22 +979,22 @@ function renderLifestyleView(data) {
     content.className = 'ls-content';
     const t = document.createElement('div');
     t.className = 'ls-title';
-    t.textContent = title;
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = title;
+    const chevron = document.createElement('span');
+    chevron.className = 'ls-chevron';
+    t.appendChild(titleSpan);
+    t.appendChild(chevron);
     const txt = document.createElement('div');
     txt.className = 'ls-text';
     txt.textContent = text;
     content.appendChild(t);
     content.appendChild(txt);
     extraNodes.forEach(n => content.appendChild(n));
-    const toggle = document.createElement('button');
-    toggle.className = 'ls-details-toggle';
-    toggle.textContent = T.ls_details_show || 'Details ▾';
-    toggle.addEventListener('click', () => {
-      const expanded = card.classList.toggle('expanded');
-      toggle.textContent = expanded ? (T.ls_details_hide || 'Hide ▴') : (T.ls_details_show || 'Details ▾');
+    card.addEventListener('click', () => {
+      card.classList.toggle('expanded');
       updateExpandAllBtn();
     });
-    content.appendChild(toggle);
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);

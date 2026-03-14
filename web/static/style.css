@@ -1301,11 +1301,15 @@ html.dark .audio-toggle-btn.active {
 .ls-card {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1.1rem;
+  padding: 1.3rem;
   box-shadow: var(--shadow);
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
+  cursor: pointer;
+}
+.ls-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
 }
 
 .ls-icon {
@@ -1369,12 +1373,24 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-title {
-  font-size: 1.1rem;
-  font-weight: 400;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 500;
   margin-bottom: 0.4rem;
   font-family: 'Noto Serif TC', serif;
   letter-spacing: 0.02em;
 }
+
+.ls-chevron {
+  font-size: 0.75rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+.ls-chevron::before { content: '▾'; }
+.ls-card.expanded .ls-chevron::before { content: '▴'; }
 
 .ls-text {
   font-size: 0.82rem;
@@ -1385,20 +1401,6 @@ html.dark .audio-toggle-btn.active {
 
 .ls-card:not(.expanded) .ls-text { display: none; }
 
-.ls-details-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-family: inherit;
-}
-.ls-details-toggle:hover { color: var(--text); }
 
 .ls-expand-all-btn {
   font-size: 0.75rem;
@@ -1435,7 +1437,7 @@ html.dark .audio-toggle-btn.active {
 
 /* Accessibility for Elderly in Chinese Mode */
 html[lang="zh-TW"] .ls-title {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
 }
 
 html[lang="zh-TW"] .ls-text {
@@ -1455,7 +1457,6 @@ html[lang="zh-TW"] .ls-alert-msg {
   font-size: 1.05rem;
 }
 
-html[lang="zh-TW"] .ls-details-toggle,
 html[lang="zh-TW"] .ls-expand-all-btn {
   font-size: 0.9rem;
 }
@@ -1477,7 +1478,7 @@ html[lang="zh-TW"] .rp-text {
   padding: 0.3rem 0.55rem;
   background: var(--hover);
   border-radius: 8px;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--text);
   font-weight: 500;
   line-height: 1.35;
@@ -2095,6 +2096,12 @@ html.dark .source-claude {
   .compact-header,
   .section-header-card {
     display: flex;
+  }
+
+  .section-header-card .ls-expand-all-btn {
+    position: relative;
+    z-index: 1;
+    margin-left: auto;
   }
 
   /* Section slab: abs-positioned behind heading text, mirroring desktop heading-slab */
