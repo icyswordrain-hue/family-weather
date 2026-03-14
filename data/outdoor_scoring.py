@@ -70,6 +70,48 @@ OUTDOOR_WEIGHTS_BY_ACTIVITY: dict[str, dict] = {
         "rain_light": -15,    # Wet lines manageable but annoying
         "wet_ground": -5,     # Slight penalty for wet grass
     },
+    "jogging": {
+        "dew_gap_clammy": -20, "dew_gap_humid": -10,
+        "aqi_unhealthy": -45, "aqi_sensitive": -20,
+        "wet_ground": -15,
+    },
+    "fishing": {
+        "rain_active": -20, "rain_light": 0, "pop_high": -10, "pop_mid": 0,
+        "wind_strong": -25, "wind_moderate": -10,
+        "wet_ground": 0,
+    },
+    "bird_watching": {
+        "rain_active": -40, "rain_light": -20,
+        "wind_strong": -20, "wind_moderate": -5,
+        "vis_very_poor": -50, "vis_poor": -30,
+        "wet_ground": -5,
+    },
+    "tai_chi": {
+        "rain_active": -50, "rain_light": -30,
+        "wind_strong": -20, "wind_moderate": -5,
+        "wet_ground": -15,
+    },
+    "temple_visit": {
+        "rain_active": -10, "rain_light": 0, "pop_high": -5, "pop_mid": 0,
+        "wind_strong": -10, "wind_moderate": 0,
+        "wet_ground": 0,
+    },
+    "market_stroll": {
+        "rain_active": -40, "rain_light": -20,
+        "wind_strong": -15, "wind_moderate": -5,
+        "wet_ground": -10,
+    },
+    "riverside_walk": {
+        "rain_active": -45, "rain_light": -15,
+        "wind_strong": -25, "wind_moderate": -10,
+        "wet_ground": -25, "vis_poor": -20,
+    },
+    "gardening": {
+        "rain_active": -50, "rain_light": -20,
+        "uvi_extreme": -20, "uvi_very_high": -12,
+        "wind_strong": -15, "wind_moderate": -5,
+        "wet_ground": 0,
+    },
 }
 
 def _grade_score(score: int) -> tuple[str, str]:

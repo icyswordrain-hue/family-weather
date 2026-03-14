@@ -20,11 +20,11 @@
   {
     "name": "Bitan Scenic Area (Xindian)",
     "moods": ["Nice", "Warm"],
-    "activity": "walking / paddleboat",
+    "activity": "walking / paddleboat / riverside_walk / fishing",
     "surface": "paved promenade",
     "lat": 24.956,
     "lng": 121.541,
-    "notes": "Suspension bridge, shaded banks, gentle terrain"
+    "notes": "Suspension bridge, shaded banks, gentle terrain; riverside fishing popular near the bridge"
   },
   {
     "name": "Banqiao 435 Art Zone Garden",
@@ -74,7 +74,7 @@
   {
     "name": "Sanxia Old Street & Zushi Temple",
     "moods": ["Warm"],
-    "activity": "walking / culture",
+    "activity": "walking / culture / temple_visit / market_stroll",
     "surface": "cobblestone + paved",
     "lat": 24.942,
     "lng": 121.369,
@@ -227,7 +227,7 @@
   {
     "name": "Guandu Nature Park (Beitou)",
     "moods": ["Nice", "Warm"],
-    "activity": "birdwatching / walking",
+    "activity": "bird_watching / walking",
     "surface": "paved + boardwalk",
     "lat": 25.131,
     "lng": 121.458,
@@ -290,7 +290,7 @@
   {
     "name": "Xinhai Wetlands Nature Park (Wenshan)",
     "moods": ["Nice"],
-    "activity": "birdwatching / walking",
+    "activity": "bird_watching / walking",
     "surface": "dirt + boardwalk",
     "lat": 24.990,
     "lng": 121.553,
@@ -326,11 +326,11 @@
   {
     "name": "Sanxia Chengfu Riverside Park",
     "moods": ["Nice", "Warm"],
-    "activity": "cycling / walking",
+    "activity": "cycling / walking / riverside_walk / fishing",
     "surface": "paved",
     "lat": 24.940,
     "lng": 121.372,
-    "notes": "Quiet riverside path beside Sanxia River, less crowded than main bikeway"
+    "notes": "Quiet riverside path beside Sanxia River, less crowded than main bikeway; good fishing spots along the bank"
   },
   {
     "name": "Tucheng Sacred Heart Campus Forest Walk",
@@ -677,7 +677,7 @@
   {
     "name": "Shulin Sanhe Temple Covered Walkway",
     "moods": ["Cloudy & Breezy"],
-    "activity": "light walk / temple visit",
+    "activity": "light walk / temple_visit",
     "surface": "covered paved",
     "lat": 24.993,
     "lng": 121.433,
@@ -686,11 +686,11 @@
   {
     "name": "Dahan River Bikeway (Tucheng section)",
     "moods": ["Nice", "Warm"],
-    "activity": "cycling / walking",
+    "activity": "cycling / walking / fishing / bird_watching",
     "surface": "paved",
     "lat": 24.975,
     "lng": 121.422,
-    "notes": "Quiet upstream section of the Dahan bikeway; fewer cyclists, good bird-watching spots"
+    "notes": "Quiet upstream section of the Dahan bikeway; fewer cyclists, good bird-watching and fishing spots along the bank"
   },
   {
     "name": "Dahan River Bikeway (Banqiao section)",
@@ -884,7 +884,7 @@
   {
     "name": "Xinzhuang Night Market (Daytime Street Walk)",
     "moods": ["Warm", "Cloudy & Breezy"],
-    "activity": "walking / street food",
+    "activity": "walking / street food / market_stroll",
     "surface": "covered paved arcade",
     "lat": 25.035,
     "lng": 121.446,
