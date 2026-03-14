@@ -19,7 +19,7 @@ The original `sunrise.webp` and `sunset.webp` are 1380×752 (landscape). The CSS
 The solar row (sunrise/sunset times in the dashboard canopy hero) was scaled up by ×1.5 from the 80%-of-original baseline:
 
 | Property | Before | After |
-|---|---|---|
+| --- | --- | --- |
 | Font size | `0.76rem` | `1.14rem` |
 | Icon — desktop | `22px` | `33px` |
 | Icon — mobile | `29px` | `44px` |
@@ -29,7 +29,7 @@ The solar row (sunrise/sunset times in the dashboard canopy hero) was scaled up 
 The `.tc-seg-right` column and `.tc-seg-row` gap were tightened as part of the stacked-stat layout (see `2026-03-13-canopy-view-ui-tweaks.md`). These changes were staged here as they were uncommitted.
 
 | Property | Before | After |
-|---|---|---|
+| --- | --- | --- |
 | `.tc-seg-row` gap | `14px` | `8px` |
 | `.tc-seg-right` flex (desktop) | `160px` | `80px` |
 | `.tc-seg-right` flex (mobile) | `100px` | `56px` |

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    .bg { fill: #B5522A; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #C96438; }
+    }
+  </style>
+  <!-- squircle background -->
+  <rect class="bg" x="5" y="5" width="90" height="90" rx="22" ry="22"/>
+  <!-- rooftop peak -->
+  <polyline points="24,63 50,37 76,63"
+            fill="none" stroke="#F2E8DC" stroke-width="7.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- canopy arc -->
+  <path d="M 18,73 Q 50,53 82,73"
+        fill="none" stroke="#7A9E7E" stroke-width="6"
+        stroke-linecap="round"/>
+</svg>
