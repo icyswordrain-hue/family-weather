@@ -78,12 +78,22 @@ def _render_tts(text: str, lang: str) -> bytes:
     has_gcp = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
     if provider == "EDGE" and has_gcp:
         provider = "GOOGLE"
+    log.info("TTS render: provider=%s, has_gcp=%s, text_len=%d, lang=%s",
+             provider, has_gcp, len(text), lang)
     if provider == "GOOGLE":
         try:
-            return _render_google_tts(text, lang)
+            audio = _render_google_tts(text, lang)
+            log.info("Google Cloud TTS succeeded (%d bytes)", len(audio))
+            return audio
         except Exception:
             log.warning("Google Cloud TTS failed, falling back to Edge TTS", exc_info=True)
-    return _render_edge_tts(text, lang)
+    try:
+        audio = _render_edge_tts(text, lang)
+        log.info("Edge TTS succeeded (%d bytes)", len(audio))
+        return audio
+    except Exception:
+        log.error("Edge TTS also failed", exc_info=True)
+        raise
 
 
 def _extract_lang_from_filename(name: str) -> str:
@@ -198,10 +208,12 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
         from google.cloud import storage
         blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(gcs_path)
         if blob.exists():
-            log.info("TTS cache hit (GCS): %s", gcs_path)
+            log.info("TTS cache hit (GCS): %s → %s", gcs_path, blob.public_url)
             return blob.public_url
         audio = _render_tts(text, lang)
-        return _upload_to_gcs(audio, gcs_path)
+        url = _upload_to_gcs(audio, gcs_path)
+        log.info("TTS synthesised and uploaded: %s", url)
+        return url
 
     # LOCAL mode
     local_path = Path(LOCAL_DATA_DIR) / gcs_path
