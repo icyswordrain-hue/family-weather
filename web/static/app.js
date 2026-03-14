@@ -1077,20 +1077,6 @@ function renderLifestyleView(data) {
   // 9. Air Quality (tomorrow's forecast) — moved to end
   if (data.air_quality && data.air_quality.text) {
     const extras = [];
-    const parts = [];
-    if (data.air_quality.aqi != null) {
-      const statusText = data.air_quality.status ? ` (${data.air_quality.status})` : '';
-      parts.push(`AQI ${data.air_quality.aqi}${statusText}`);
-    }
-    if (data.air_quality.pm25 != null) {
-      parts.push(`PM2.5 ${data.air_quality.pm25}`);
-      if (data.air_quality.pm10 != null) parts.push(`PM10 ${data.air_quality.pm10}`);
-    }
-    if (parts.length > 0) {
-      let textLine = parts.join(' · ');
-      if (data.air_quality.pm25 != null) textLine += ' µg/m³';
-      extras.push(mkInsight(IMG('air-quality', 'Air Quality'), textLine));
-    }
     if (data.air_quality.peak_window) {
       extras.push(mkInsight(IMG('heads-up', 'AQI Peak'), `⚠ ${data.air_quality.peak_window}`));
     }

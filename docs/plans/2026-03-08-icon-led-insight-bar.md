@@ -30,3 +30,11 @@ Fixed an issue where the UI (`routes.py`) and the LLM builder had misaligned alg
 
 ### 4. Language Consistency
 Fixed a localization bug in `app.js` where structural strings like `best_window` (e.g., "Morning", "Afternoon") were being rendered verbatim in English, even when `lang = "zh-TW"`. They are now passed through the `T.slots` dictionary, returning proper localized values (e.g., "早上").
+
+---
+
+## Follow-up — 2026-03-14: Remove AQI Detail Tagline
+
+The `AQI · PM2.5 · PM10 µg/m³` detail insight added above was removed from the Air Quality card extras. Raw sensor numbers are not actionable; the `peak_window` warning and `purifier_advice` insights already carry the useful information.
+
+**Change:** Deleted the `parts` / `textLine` block in `renderLifestyleView()` (`app.js`). The `peak_window` and `purifier_advice` extras are retained unchanged.
