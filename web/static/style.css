@@ -578,7 +578,7 @@ input:focus-visible {
   position: absolute;
   bottom: 6px;
   right: 10px;
-  font-size: 0.7rem;
+  font-size: 1.5rem;
   color: var(--muted);
   transition: transform 0.25s;
 }
@@ -1372,6 +1372,11 @@ html.dark .audio-toggle-btn.active {
   height: 56px;
 }
 
+.ls-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .ls-title {
   display: flex;
   justify-content: space-between;
@@ -1384,7 +1389,7 @@ html.dark .audio-toggle-btn.active {
 }
 
 .ls-chevron {
-  font-size: 0.75rem;
+  font-size: 1.5rem;
   color: var(--muted);
   flex-shrink: 0;
   margin-left: 0.5rem;
@@ -1402,25 +1407,27 @@ html.dark .audio-toggle-btn.active {
 .ls-card:not(.expanded) .ls-text { display: none; }
 
 .ls-tagline {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   color: var(--text);
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.35;
 }
 .ls-card.expanded .ls-tagline { display: none; }
 
 
 .ls-expand-all-btn {
-  font-size: 0.75rem;
-  color: var(--muted);
-  background: none;
-  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--blue);
+  background: var(--blue-lt);
+  border: 1.5px solid var(--blue);
   border-radius: 99px;
-  padding: 3px 10px;
+  padding: 5px 14px;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
   align-self: center;
+  position: relative;
+  z-index: 1;
 }
 .ls-expand-all-btn:hover { color: var(--text); border-color: var(--text); }
 
@@ -1443,7 +1450,7 @@ html[lang="zh-TW"] .ls-title {
 }
 
 html[lang="zh-TW"] .ls-tagline {
-  font-size: 1.2rem;
+  font-size: 1.08rem;
 }
 
 html[lang="zh-TW"] .ls-text {
@@ -1457,7 +1464,7 @@ html[lang="zh-TW"] .ls-alert-msg {
 }
 
 html[lang="zh-TW"] .ls-expand-all-btn {
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 html[lang="zh-TW"] .nav-item {
