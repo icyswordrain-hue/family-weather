@@ -529,6 +529,23 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     regen_history = load_history(days=REGEN_CYCLE_DAYS + 1)
     should_regen = check_regen_cycle(regen_history, date_str, REGEN_CYCLE_DAYS)
 
+    # Fallback: history entries lose the regenerate_meal_lists marker when
+    # same-day runs overwrite them.  regen.json persists updated_at independently.
+    if should_regen:
+        from pathlib import Path
+        regen_path = Path(LOCAL_DATA_DIR) / "regen.json"
+        if regen_path.exists():
+            try:
+                regen_info = json.loads(regen_path.read_text(encoding="utf-8"))
+                last_updated = (regen_info.get("updated_at") or "")[:10]
+                if last_updated:
+                    days_since = (datetime.strptime(date_str, "%Y-%m-%d") - datetime.strptime(last_updated, "%Y-%m-%d")).days
+                    if days_since < REGEN_CYCLE_DAYS:
+                        should_regen = False
+                        yield {"type": "log", "message": f"Regen skipped (last regen {days_since}d ago per regen.json)"}
+            except Exception:
+                pass
+
     if should_regen:
         yield {"type": "log", "message": f"Triggering periodic database regeneration ({REGEN_CYCLE_DAYS}-day cycle)..."}
         logger.info("Regen cycle triggered for %s", date_str)
