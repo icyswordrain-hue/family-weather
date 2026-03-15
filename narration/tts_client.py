@@ -74,27 +74,25 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
 
 
 def _render_tts(text: str, lang: str) -> bytes:
-    # Check at call time — in Modal, GCP creds are bootstrapped after config import
-    provider = TTS_PROVIDER
     has_gcp = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
-    if provider == "EDGE" and has_gcp:
-        provider = "GOOGLE"
     log.info("TTS render: provider=%s, has_gcp=%s, text_len=%d, lang=%s",
-             provider, has_gcp, len(text), lang)
-    if provider == "GOOGLE":
-        try:
-            audio = _render_google_tts(text, lang)
-            log.info("Google Cloud TTS succeeded (%d bytes)", len(audio))
-            return audio
-        except Exception:
-            log.warning("Google Cloud TTS failed, falling back to Edge TTS", exc_info=True)
+             TTS_PROVIDER, has_gcp, len(text), lang)
+    # Edge TTS primary (free, no API key); Google Cloud TTS as fallback
     try:
         audio = _render_edge_tts(text, lang)
         log.info("Edge TTS succeeded (%d bytes)", len(audio))
         return audio
     except Exception:
-        log.error("Edge TTS also failed", exc_info=True)
-        raise
+        log.warning("Edge TTS failed, falling back to Google Cloud TTS", exc_info=True)
+    if has_gcp:
+        try:
+            audio = _render_google_tts(text, lang)
+            log.info("Google Cloud TTS succeeded (%d bytes)", len(audio))
+            return audio
+        except Exception:
+            log.error("Google Cloud TTS also failed", exc_info=True)
+            raise
+    raise RuntimeError("Edge TTS failed and no GCP credentials for fallback")
 
 
 def _extract_lang_from_filename(name: str) -> str:

@@ -85,7 +85,10 @@ def generate_narration_with_fallback(
     city = "shulin"
     wx_text = current.get("beaufort_desc", current.get("weather_text", ""))
     hour = datetime.now(CST).hour
-    cache_key = make_cache_key(lang, city, wx_text, _classify_time(hour))
+    at = current.get("AT") or 0
+    rain = (current.get("RAIN") or 0) > 0
+    cache_key = make_cache_key(lang, city, wx_text, _classify_time(hour),
+                               temp_c=float(at), rain=rain)
 
     provider_upper = provider.upper().strip()
     is_regen = bool(processed.get("regenerate_meal_lists"))

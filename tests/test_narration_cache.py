@@ -7,11 +7,23 @@ def test_cache_key_includes_lang():
     assert key_en.startswith('en_')
     assert key_zh.startswith('zh-tw_')
 
-def test_cache_key_ignores_exact_temp():
-    """Keys for similar weather states should match regardless of exact temperature."""
+def test_cache_key_same_temp_bucket():
+    """Temps within same 3°C bucket produce identical keys."""
     key1 = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=24)
-    key2 = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=26)
-    assert key1 == key2
+    key2 = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=25)
+    assert key1 == key2  # both round to 24
+
+def test_cache_key_different_temp_bucket():
+    """Temps in different 3°C buckets produce different keys."""
+    key1 = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=24)
+    key2 = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=27)
+    assert key1 != key2  # 24 vs 27
+
+def test_cache_key_rain_flag():
+    """Rain flag changes the cache key."""
+    key_dry = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=24, rain=False)
+    key_wet = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=24, rain=True)
+    assert key_dry != key_wet
 
 def test_cache_key_differs_by_wx_class():
     key_rain = make_cache_key('en', "Shulin", "Rain", "morning", temp_c=24)
@@ -25,8 +37,8 @@ def test_cache_key_differs_by_time_of_day():
 
 def test_cache_hit_returns_cached_value():
     cache = NarrationCache(ttl_seconds=60)
-    cache.set("zh-tw_shulin_rain_morning", ("narration text", "claude"))
-    result = cache.get("zh-tw_shulin_rain_morning")
+    cache.set("test_key", ("narration text", "claude"))
+    result = cache.get("test_key")
     assert result == ("narration text", "claude")
 
 def test_cache_miss_returns_none():

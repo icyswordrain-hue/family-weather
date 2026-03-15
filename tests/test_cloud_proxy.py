@@ -154,12 +154,12 @@ def test_chat_uses_cached_broadcast(monkeypatch):
         "processed_data": {"current": {"AT": 25}},
     }
 
-    mock_client = MagicMock()
-    mock_response = MagicMock()
-    mock_response.content = [MagicMock(text="It will be sunny!")]
-    mock_client.messages.create.return_value = mock_response
+    mock_gemini_client = MagicMock()
+    mock_gemini_response = MagicMock()
+    mock_gemini_response.text = "It will be sunny!"
+    mock_gemini_client.models.generate_content.return_value = mock_gemini_response
 
-    with patch("narration.claude_client._get_client", return_value=mock_client):
+    with patch("google.genai.Client", return_value=mock_gemini_client):
         with patch("narration.chat_context.build_chat_context", return_value="system prompt"):
             with app.test_client() as client:
                 res = client.post("/api/chat", json={
@@ -178,13 +178,13 @@ def test_chat_fetches_broadcast_from_modal(monkeypatch):
     mock_get_resp = MagicMock()
     mock_get_resp.json.return_value = fake_broadcast
 
-    mock_client = MagicMock()
-    mock_response = MagicMock()
-    mock_response.content = [MagicMock(text="Bring an umbrella")]
-    mock_client.messages.create.return_value = mock_response
+    mock_gemini_client = MagicMock()
+    mock_gemini_response = MagicMock()
+    mock_gemini_response.text = "Bring an umbrella"
+    mock_gemini_client.models.generate_content.return_value = mock_gemini_response
 
     with patch("app.requests.get", return_value=mock_get_resp):
-        with patch("narration.claude_client._get_client", return_value=mock_client):
+        with patch("google.genai.Client", return_value=mock_gemini_client):
             with patch("narration.chat_context.build_chat_context", return_value="system prompt"):
                 with app.test_client() as client:
                     res = client.post("/api/chat", json={

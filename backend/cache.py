@@ -24,14 +24,21 @@ def _classify_time(hour: int) -> str:
         return "evening"
     return "night"
 
-def make_cache_key(lang: str, city: str, weather_text: str, time_of_day: str, temp_c: float = 0) -> str:
+def _temp_bucket(temp_c: float) -> int:
+    """Round temperature to nearest 3°C bucket (matches ±3°C change threshold)."""
+    return round(temp_c / 3) * 3
+
+def make_cache_key(lang: str, city: str, weather_text: str, time_of_day: str,
+                   temp_c: float = 0, rain: bool = False) -> str:
     """
-    Fuzzy cache key: lang + city + wx_bucket + time_of_day.
-    temp_c is intentionally excluded to maximise hit rate.
-    lang is included to prevent EN and ZH entries colliding.
+    Conditions-aware cache key: invalidates when weather actually changes.
+    temp_c bucketed to 3°C intervals (matches the old ±3°C condition-change threshold).
+    rain flag captures precipitation onset/cessation.
     """
     wx = _classify_wx(weather_text)
-    return f"{lang}_{city}_{wx}_{time_of_day}".lower()
+    tb = _temp_bucket(temp_c) if temp_c else 0
+    rf = "rain" if rain else "dry"
+    return f"{lang}_{city}_{wx}_{tb}c_{rf}_{time_of_day}".lower()
 
 class NarrationCache:
     def __init__(self, ttl_seconds: int = 1800):

@@ -112,6 +112,8 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 CLAUDE_CHAT_MODEL = os.environ.get("CLAUDE_CHAT_MODEL", "claude-haiku-4-5-20251001")
 CLAUDE_CHAT_MAX_TOKENS = int(os.environ.get("CLAUDE_CHAT_MAX_TOKENS", "300"))
 CHAT_HISTORY_MAX_TURNS = int(os.environ.get("CHAT_HISTORY_MAX_TURNS", "6"))
+GEMINI_CHAT_MODEL = os.environ.get("GEMINI_CHAT_MODEL", "gemini-2.5-flash")
+GEMINI_CHAT_MAX_TOKENS = int(os.environ.get("GEMINI_CHAT_MAX_TOKENS", "300"))
 
 # ── Pipeline Behaviour ────────────────────────────────────────────────────────
 HISTORY_DAYS = int(os.environ.get("HISTORY_DAYS", 3))
@@ -142,7 +144,7 @@ TTS_TIMEOUT = 30
 
 # ── Narration Provider ────────────────────────────────────────────────────
 # Options: "GEMINI", "CLAUDE", "TEMPLATE"
-NARRATION_PROVIDER = os.environ.get("NARRATION_PROVIDER", "CLAUDE").upper()
+NARRATION_PROVIDER = os.environ.get("NARRATION_PROVIDER", "GEMINI").upper()
 
 # ── Google Cloud Credentials (Local) ──────────────────────────────────────────
 _LOCAL_KEY_PATH = os.path.join(os.getcwd(), LOCAL_DATA_DIR, "service-account.json")
@@ -159,9 +161,9 @@ TTS_LANGUAGE_CODE = "zh-TW"
 TTS_VOICE_NAME = TTS_VOICE_ZH
 TTS_SPEAKING_RATE = 0.95
 
-# Default to Google if credentials exist, otherwise Edge
+# Default to Edge (free); Google Cloud TTS available as fallback
 _HAS_GCP_CREDS = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
-TTS_PROVIDER = os.environ.get("TTS_PROVIDER", "GOOGLE" if _HAS_GCP_CREDS else "EDGE")
+TTS_PROVIDER = os.environ.get("TTS_PROVIDER", "EDGE")
 
 # ── GCS Object Keys ───────────────────────────────────────────────────────────
 GCS_BROADCAST_PREFIX = "broadcasts"   # broadcasts/YYYY-MM-DD/

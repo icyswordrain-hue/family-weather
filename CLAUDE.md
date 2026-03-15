@@ -75,7 +75,11 @@ web/
 
 **`_detect_menieres_alert()`:** Only a ≥6 hPa 24h swing sets `triggered=True`. Low pressure + high humidity gives `severity="moderate"` but NOT `triggered=True`.
 
-**Narration provider:** Controlled by `NARRATION_PROVIDER` env var (default `"CLAUDE"`). `generate_narration_with_fallback()` in `pipeline.py` has a two-tier fallback: (1) each provider's internal fallback (`claude_client.py` Sonnet 4.6 → Haiku 4.5; `gemini_client.py` Pro → Flash), then (2) cross-provider fallback (e.g. Claude fails entirely → tries Gemini), then (3) template narrator. Both clients detect truncated responses (max_tokens with unparseable `---METADATA---`) and fall through to their internal fallback model before raising. Do not route chat (`/api/chat`) through `generate_narration()` — call `_get_client().messages.create()` directly.
+**Narration provider:** Controlled by `NARRATION_PROVIDER` env var (default `"GEMINI"`). `generate_narration_with_fallback()` in `pipeline.py` has a two-tier fallback: (1) each provider's internal fallback (`gemini_client.py` Pro → Flash; `claude_client.py` Sonnet 4.6 → Haiku 4.5), then (2) cross-provider fallback (e.g. Gemini fails entirely → tries Claude), then (3) template narrator. Both clients detect truncated responses (max_tokens with unparseable `---METADATA---`) and fall through to their internal fallback model before raising.
+
+**Chat provider:** `/api/chat` uses Gemini Flash 2.5 as primary, with silent fallback to Claude Haiku 4.5. Do not route chat through `generate_narration()`.
+
+**Pipeline skip layers (2 layers):** The pipeline uses only two cache layers: (1) narration TTL cache (30-min, conditions-aware key with temp bucket + rain flag in `backend/cache.py`), and (2) TTS MD5 cache (identical text → same audio file). There is no midday skip, no condition-change skip, and no TTS slot restriction — Edge TTS is free so all slots get audio.
 
 **Timestamps:** All timestamps are naive Taipei wall-clock time (UTC+8). No UTC conversion. Segment logic (morning/afternoon/evening/overnight) depends on the server running in Asia/Taipei.
 
@@ -106,7 +110,7 @@ Brand icons: WebP only in `web/static/brand-icons/`. Use the `IMG(name, alt)` he
 
 ## TTS Voices
 
-Two providers with automatic fallback (Google Cloud → Edge TTS):
+Two providers with automatic fallback (Edge TTS → Google Cloud):
 
 | Provider | English | Chinese | Pitch |
 |----------|---------|---------|-------|

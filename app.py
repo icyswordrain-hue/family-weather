@@ -26,7 +26,7 @@ from config import RUN_MODE
 import config
 from config import LOCAL_DATA_DIR, HISTORY_DAYS, REGEN_CYCLE_DAYS, CST
 from data.fetch_cwa import fetch_current_conditions, fetch_all_forecasts, fetch_all_forecasts_7day
-from data.helpers import _dew_point as _calc_dew_point  # pyre-ignore[21]
+
 from data.station_history import load_recent_station_history
 from data.fetch_moenv import fetch_all_aqi
 from data.weather_processor import process
@@ -137,7 +137,7 @@ def _get_broadcast_for_chat(date_str: str) -> dict | None:
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    """Answer a weather question using today's broadcast as context (Haiku 4.5)."""
+    """Answer a weather question using today's broadcast as context (Gemini Flash 2.5)."""
     body = request.get_json(silent=True) or {}
     user_message = (body.get("message") or "").strip()
     if not user_message or len(user_message) > 500:
@@ -152,7 +152,6 @@ def chat():
         return jsonify({"error": f"No broadcast available for {date_str}", "code": "no_broadcast"}), 503
 
     from narration.chat_context import build_chat_context
-    from narration.claude_client import _get_client
 
     _ctx_key = f"{date_str}:{lang}"
     _ctx_cached = _chat_context_cache.get(_ctx_key)
@@ -161,23 +160,53 @@ def chat():
     else:
         system_prompt = build_chat_context(broadcast, date_str, lang)
         _chat_context_cache[_ctx_key] = (system_prompt, time.time())
-    messages = [*prior_turns, {"role": "user", "content": user_message}]
+
+    # Build Gemini-compatible contents from chat history
+    gemini_contents = []
+    for turn in prior_turns:
+        role = turn.get("role", "user")
+        gemini_contents.append({"role": role, "parts": [{"text": turn.get("content", "")}]})
+    gemini_contents.append({"role": "user", "parts": [{"text": user_message}]})
 
     try:
-        client = _get_client()
-        response = client.messages.create(
-            model=config.CLAUDE_CHAT_MODEL,
-            max_tokens=config.CLAUDE_CHAT_MAX_TOKENS,
-            system=system_prompt,
-            messages=messages,
-            timeout=15.0,
+        from google import genai
+        api_key = os.environ.get("GEMINI_API_KEY") or config.GEMINI_API_KEY
+        client = genai.Client(api_key=api_key, http_options=genai.types.HttpOptions(timeout=15_000))
+        model = config.GEMINI_CHAT_MODEL
+        if not model.startswith("models/"):
+            model = f"models/{model}"
+        response = client.models.generate_content(
+            model=model,
+            contents=gemini_contents,
+            config=genai.types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                max_output_tokens=config.GEMINI_CHAT_MAX_TOKENS,
+                temperature=0.7,
+            ),
         )
-        reply = response.content[0].text.strip()
-        turn = len(prior_turns) // 2 + 1
-        return jsonify({"reply": reply, "turn": turn})
-    except Exception as exc:
-        logger.error("Chat failed: %s", exc)
-        return jsonify({"error": str(exc), "code": "upstream_error"}), 503
+        reply = (response.text or "").strip()
+        turn_num = len(prior_turns) // 2 + 1
+        return jsonify({"reply": reply, "turn": turn_num})
+    except Exception as gemini_exc:
+        logger.warning("Chat (Gemini) failed: %s — falling back to Haiku", gemini_exc)
+        # Silent fallback to Claude Haiku
+        try:
+            from narration.claude_client import _get_client
+            claude_client = _get_client()
+            messages = [*prior_turns, {"role": "user", "content": user_message}]
+            response = claude_client.messages.create(
+                model=config.CLAUDE_CHAT_MODEL,
+                max_tokens=config.CLAUDE_CHAT_MAX_TOKENS,
+                system=system_prompt,
+                messages=messages,
+                timeout=15.0,
+            )
+            reply = response.content[0].text.strip()
+            turn_num = len(prior_turns) // 2 + 1
+            return jsonify({"reply": reply, "turn": turn_num})
+        except Exception as claude_exc:
+            logger.error("Chat fallback (Haiku) also failed: %s", claude_exc)
+            return jsonify({"error": str(claude_exc), "code": "upstream_error"}), 503
 
 
 @app.route("/api/warmup")
@@ -332,40 +361,6 @@ def _aqi_category(aqi: int) -> str:
     if aqi <= 200: return "unhealthy"
     return "very_unhealthy"
 
-def _conditions_changed(current: dict, morning: dict) -> tuple[bool, list[str]]:
-    """
-    Lightweight check: does the live current reading differ enough from the
-    morning broadcast to warrant a full midday pipeline run?
-
-    `current`  — raw dict from fetch_current_conditions() (CWA keys: AT, RH, RAIN …)
-    `morning`  — processed_data["current"] from the morning broadcast (enriched keys)
-    """
-    reasons = []
-
-    # Temperature — CWA raw key is AT (apparent temp)
-    c_temp = current.get("AT") or 0
-    m_temp = morning.get("AT") or 0
-    if abs(c_temp - m_temp) >= 3:
-        reasons.append(f"temp {m_temp}→{c_temp}°C")
-
-    # Precipitation — CWA raw key is RAIN
-    if (current.get("RAIN", 0) > 0) != (morning.get("RAIN", 0) > 0):
-        reasons.append("rain status changed")
-
-    # Dew point — not pre-computed on the raw station dict; derive inline
-    c_dp: float | None = (
-        _calc_dew_point(current["AT"], current["RH"])
-        if current.get("AT") is not None and current.get("RH") is not None
-        else None
-    )
-    m_dp: float | None = morning.get("dew_point")
-    if c_dp is not None and m_dp is not None and abs(c_dp - m_dp) >= 3:
-        reasons.append("dew point shift ≥3°C")
-
-    # AQI, alerts, and outdoor score_label require a full pipeline run;
-    # they are not available from the raw CWA station fetch.
-
-    return bool(reasons), reasons
 
 def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "zh-TW", slot: str = "midday", force: bool = False):
     """
@@ -377,26 +372,6 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     _refresh_counter += 1
     yield {"type": "log", "message": f"Starting pipeline for {date_str} (refresh #{_refresh_counter})"}
     logger.info("Starting pipeline for %s (refresh #%d)", date_str, _refresh_counter)
-
-    # 0. Midday skip check — runs inside the pipeline so it uses the correct
-    #    storage backend (local file in LOCAL/MODAL, GCS in CLOUD).
-    if slot == "midday" and not force:
-        try:
-            from history.conversation import load_broadcast
-            current_obs = fetch_current_conditions()
-            m_broadcast = load_broadcast(date_str, slot="morning")
-            morning = m_broadcast.get("processed_data", {}).get("current", {}) if m_broadcast else {}
-            if morning:
-                changed, reasons = _conditions_changed(current_obs, morning)
-                if not changed:
-                    logger.info("Midday skip: conditions unchanged")
-                    yield {"type": "log", "message": "Midday skip: conditions unchanged since morning"}
-                    yield {"type": "result", "payload": {"status": "skipped", "broadcast": m_broadcast}}
-                    return
-                logger.info("Midday proceeding: %s", reasons)
-                yield {"type": "log", "message": f"Midday proceeding: {', '.join(reasons)}"}
-        except Exception as e:
-            logger.warning("Midday skip check failed (%s), running full pipeline", e)
 
     # 1. Fetch raw data
     try:
@@ -530,38 +505,8 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         logger.info("Regen cycle triggered for %s", date_str)
         processed["regenerate_meal_lists"] = True
 
-    # 3c. Skip narration if conditions unchanged from previous broadcast
-    from history.conversation import get_lang_data
-    _skip_narration = False
-    _prev_broadcast = None
-    if force:
-        yield {"type": "log", "message": "Force refresh — regenerating narration"}
-    elif not processed.get("regenerate_meal_lists"):
-        try:
-            from history.conversation import load_broadcast
-            _prev_broadcast = load_broadcast(date_str)
-            if _prev_broadcast:
-                _prev_current = _prev_broadcast.get("processed_data", {}).get("current", {})
-                _new_current = processed.get("current", {})
-                _changed, _reasons = _conditions_changed(_new_current, _prev_current)
-                if not _changed:
-                    _skip_narration = True
-                    # But if the user switched providers, force regeneration
-                    if provider_override and _prev_broadcast:
-                        _prev_src = (get_lang_data(_prev_broadcast, "en") or get_lang_data(_prev_broadcast, "zh-TW") or {})
-                        _prev_provider = _prev_src.get("metadata", {}).get("narration_source", "").split("_reuse")[0].upper()
-                        if _prev_provider != provider_override.upper():
-                            _skip_narration = False
-                            yield {"type": "log", "message": f"Provider changed ({_prev_provider} \u2192 {provider_override}) \u2014 regenerating narration"}
-                    if _skip_narration:
-                        yield {"type": "log", "message": "Conditions unchanged \u2014 reusing previous narration"}
-                        logger.info("Narration skip: conditions unchanged from previous broadcast")
-                else:
-                    yield {"type": "log", "message": f"Conditions changed: {', '.join(_reasons)}"}
-        except Exception as _e:
-            logger.warning("Condition-change check failed (%s), generating new narration", _e)
-
     # 4. Generate narration for both languages
+    from history.conversation import get_lang_data
     _LANGS = ["zh-TW", "en"]
     langs_data: dict[str, dict] = {}
     regen_data = None
@@ -579,88 +524,67 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     else:
         _ta = None
 
-    if _skip_narration and _prev_broadcast:
-        # Reuse both languages from previous broadcast
-        for _lang in _LANGS:
-            _prev_ld = get_lang_data(_prev_broadcast, _lang)
-            if not _prev_ld:
-                continue
-            _prev_src = _prev_ld.get("metadata", {}).get("narration_source", "unknown")
-            _reuse_meta = dict(_prev_ld.get("metadata", {}))
-            _reuse_meta["narration_source"] = f"{_prev_src.split('_reuse')[0]}_reuse"
-            langs_data[_lang] = {
-                "narration_text": _prev_ld.get("narration_text", ""),
-                "paragraphs": _prev_ld.get("paragraphs", {}),
-                "metadata": _reuse_meta,
-                "summaries": dict(_prev_ld.get("summaries", {})),
-                "audio_urls": dict(_prev_ld.get("audio_urls", {})),
-            }
-        tts_generated_at = _prev_broadcast.get("tts_generated_at")
-    else:
-        narration_provider = (provider_override or config.NARRATION_PROVIDER).upper()
+    narration_provider = (provider_override or config.NARRATION_PROVIDER).upper()
 
-        for _lang in _LANGS:
-            yield {"type": "log", "message": f"Building {_lang} narration via {narration_provider}..."}
-            logger.info("Building %s narration via %s...", _lang, narration_provider)
+    for _lang in _LANGS:
+        yield {"type": "log", "message": f"Building {_lang} narration via {narration_provider}..."}
+        logger.info("Building %s narration via %s...", _lang, narration_provider)
 
-            _nar_text, _nar_source = generate_narration_with_fallback(
-                narration_provider, processed, history, date_str, lang=_lang, force=force
-            )
+        _nar_text, _nar_source = generate_narration_with_fallback(
+            narration_provider, processed, history, date_str, lang=_lang, force=force
+        )
 
-            _parsed = parse_narration_response(_nar_text)
-            _paragraphs = _parsed["paragraphs"]
-            _metadata = _parsed["metadata"]
+        _parsed = parse_narration_response(_nar_text)
+        _paragraphs = _parsed["paragraphs"]
+        _metadata = _parsed["metadata"]
 
-            # Capture regen data from the first language parse only
-            if regen_data is None:
-                regen_data = _parsed["regen"]
+        # Capture regen data from the first language parse only
+        if regen_data is None:
+            regen_data = _parsed["regen"]
 
-            if not _metadata:
-                yield {"type": "log", "message": f"\u26a0 No ---METADATA--- in {_lang} LLM response."}
-            else:
-                _ck = [k for k, v in _parsed.get("cards", {}).items() if v and k != "alert"]
-                yield {"type": "log", "message": f"{_lang} metadata OK: {len(_ck)} card fields."}
+        if not _metadata:
+            yield {"type": "log", "message": f"\u26a0 No ---METADATA--- in {_lang} LLM response."}
+        else:
+            _ck = [k for k, v in _parsed.get("cards", {}).items() if v and k != "alert"]
+            yield {"type": "log", "message": f"{_lang} metadata OK: {len(_ck)} card fields."}
 
-            # Clean narration text
-            _nar_text = "\n\n".join(_paragraphs.values())
+        # Clean narration text
+        _nar_text = "\n\n".join(_paragraphs.values())
 
-            _metadata["narration_source"] = _nar_source
-            _metadata["narration_model"] = config.GEMINI_PRO_MODEL if _nar_source == "gemini" else (config.CLAUDE_MODEL if _nar_source == "claude" else "Template")
-            if processed.get("regenerate_meal_lists"):
-                _metadata["regen"] = True
+        _metadata["narration_source"] = _nar_source
+        _metadata["narration_model"] = config.GEMINI_PRO_MODEL if _nar_source == "gemini" else (config.CLAUDE_MODEL if _nar_source == "claude" else "Template")
+        if processed.get("regenerate_meal_lists"):
+            _metadata["regen"] = True
 
-            _summaries = _parsed.get("cards", {})
+        _summaries = _parsed.get("cards", {})
 
-            # Pin best_window / top_activity into summaries
-            if _bw is not None:
-                _summaries["_best_window"] = _bw
-            if _ta is not None:
-                _summaries["_top_activity"] = _ta
-                _metadata["activity_suggested"] = _ta
+        # Pin best_window / top_activity into summaries
+        if _bw is not None:
+            _summaries["_best_window"] = _bw
+        if _ta is not None:
+            _summaries["_top_activity"] = _ta
+            _metadata["activity_suggested"] = _ta
 
-            # TTS: morning slot always; other slots only when force=True
-            _audio_urls: dict[str, str | None] = {}
-            if slot == "morning" or force:
-                _tts_slot = slot if slot == "morning" else "manual"
-                yield {"type": "log", "message": f"Synthesising {_lang} TTS audio\u2026"}
-                try:
-                    _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, _tts_slot)
-                except Exception as _exc:
-                    logger.warning("TTS failed for %s \u2014 skipping audio.", _lang, exc_info=True)
-                    yield {"type": "log", "message": f"TTS failed ({_lang}): {_exc}"}
-                    _audio_url = None
-                _audio_urls = {"full_audio_url": _audio_url}
-                tts_generated_at = datetime.now(_TAIPEI_TZ).isoformat()
+        # TTS: always synthesise for every slot (Edge TTS is free)
+        yield {"type": "log", "message": f"Synthesising {_lang} TTS audio\u2026"}
+        try:
+            _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, slot)
+        except Exception as _exc:
+            logger.warning("TTS failed for %s \u2014 skipping audio.", _lang, exc_info=True)
+            yield {"type": "log", "message": f"TTS failed ({_lang}): {_exc}"}
+            _audio_url = None
+        _audio_urls: dict[str, str | None] = {"full_audio_url": _audio_url}
+        tts_generated_at = datetime.now(_TAIPEI_TZ).isoformat()
 
-            langs_data[_lang] = {
-                "narration_text": _nar_text,
-                "paragraphs": _paragraphs,
-                "metadata": _metadata,
-                "summaries": _summaries,
-                "audio_urls": _audio_urls,
-            }
+        langs_data[_lang] = {
+            "narration_text": _nar_text,
+            "paragraphs": _paragraphs,
+            "metadata": _metadata,
+            "summaries": _summaries,
+            "audio_urls": _audio_urls,
+        }
 
-        yield {"type": "log", "message": "Narration generated for all languages."}
+    yield {"type": "log", "message": "Narration generated for all languages."}
 
     # 7. Save (v2 schema)
     yield {"type": "log", "message": "Saving broadcast to history..."}
