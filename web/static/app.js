@@ -143,6 +143,7 @@ const TRANSLATIONS = {
     h1_dashboard: 'Canopy',
     h2_24h: '24-Hour Forecast',
     h2_7day: '7-Day Forecast',
+    provider_label: 'AI Provider',
     lang_label: 'Language',
     theme_label: 'Theme',
     system_controls: 'System Controls',
@@ -215,6 +216,7 @@ const TRANSLATIONS = {
     h1_dashboard: '厝邊天氣',
     h2_24h: '24 小時預報',
     h2_7day: '七日預報',
+    provider_label: 'AI 模型',
     lang_label: 'Language',
     theme_label: '外觀主題',
     system_controls: '系統控制',
@@ -1031,11 +1033,15 @@ function initPlayerBar() {
 
     if (!paragraphs || !paragraphs.length) { content.textContent = ''; return; }
 
+    const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
     const paras = paragraphs.filter(p => p.text);
     let html = '';
     paras.forEach(p => {
       html += `<div class="ps-para"><h3 class="ps-para-title">${p.title}</h3><p class="ps-para-body">${p.text}</p></div>`;
     });
+    if (meta?.source) {
+      html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
+    }
     content.innerHTML = html;
   };
 }
@@ -1102,6 +1108,17 @@ function initSidebarControls() {
       const lang = input.value;
       localStorage.setItem('lang', lang);
       applyLanguage(lang);
+    });
+  });
+
+  // Provider toggle
+  const savedProvider = localStorage.getItem('provider') || 'CLAUDE';
+  const provRadio = document.querySelector(`input[name="provider"][value="${savedProvider}"]`);
+  if (provRadio) provRadio.checked = true;
+
+  document.querySelectorAll('input[name="provider"]').forEach(input => {
+    input.addEventListener('change', () => {
+      localStorage.setItem('provider', input.value);
     });
   });
 
@@ -1488,7 +1505,7 @@ async function triggerRefresh() {
   startLoadingAnimation();
   addLog(T.boot);
 
-  const provider = 'CLAUDE';
+  const provider = localStorage.getItem('provider') || 'CLAUDE';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
   addLog(`${T.log_requesting}${provider}`);

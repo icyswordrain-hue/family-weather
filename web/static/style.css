@@ -2964,6 +2964,27 @@ html.dark .ps-speed-pill:hover:not(.active) {
   color: #aec4ff;
 }
 
+/* ── Narration source badge ─────────────────────────────────────────────── */
+.ps-meta {
+  margin-top: 0.25rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.narration-badge {
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--hover, #EDE7DD);
+}
+
+html.dark .narration-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* ── Settings tab — section cards ───────────────────────────────────────── */
 .ps-section-card {
   background: var(--main-bg, #F3F0E8);
@@ -3037,7 +3058,7 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
   width: 100%;
   padding: 9px 14px;
   border-radius: 10px;
-  background: var(--teal, #5B8C85);
+  background: var(--coral, #E26C3B);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
@@ -3048,7 +3069,7 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
 }
 
 .ps-btn:hover {
-  background: var(--ok, #7DB89A);
+  background: var(--warn, #D45A28);
 }
 
 .ps-btn:disabled {
@@ -3088,11 +3109,11 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
 }
 
 html.dark .ps-btn {
-  background: rgba(91, 140, 133, 0.7);
+  background: rgba(226, 108, 59, 0.75);
 }
 
 html.dark .ps-btn:hover {
-  background: rgba(91, 140, 133, 0.9);
+  background: rgba(226, 108, 59, 0.95);
 }
 
 html.dark .ps-btn-secondary {

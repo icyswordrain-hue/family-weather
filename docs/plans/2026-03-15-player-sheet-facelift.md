@@ -62,6 +62,8 @@ Settings tab                    Settings tab
                                 └─────────────────────────┘
 ```
 
-## Amendment — source badge removed (2026-03-15)
+## Amendment — source badge repositioned + settings warmer tones (2026-03-15)
 
-The Claude / Gemini / template source badge was initially placed in the last paragraph card's title row. Removed entirely — the narration surface should be clean prose with no attribution UI. Dead CSS (`.narration-badge`, `.source-claude`, `.source-gemini`, `.source-template`, `.ps-meta`, `.ps-para-title-row`) also deleted.
+**Badge:** The Claude / Gemini / template source badge was initially placed in the last paragraph card's title row, then removed. Final position: a small right-aligned `.ps-meta` row beneath all paragraph cards. All source-specific colour classes dropped — badge uses a single neutral style (`var(--hover)` background, `var(--muted)` text) so it reads as a quiet footnote rather than a branded chip. Dead CSS (`.source-claude`, `.source-gemini`, `.source-template`, `.ps-para-title-row`) deleted.
+
+**Settings buttons:** `.ps-btn` primary colour changed from `var(--teal)` (#5B8C85, sage) to `var(--coral)` (#E26C3B, terracotta), hover darkens to `var(--warn)`. Matches the warm earthy tone of the settings section cards rather than the cooler green used in data-driven UI elements.
