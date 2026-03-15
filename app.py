@@ -338,6 +338,7 @@ def refresh():
     date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
     provider = body.get("provider") # Optional: "GEMINI" or "CLAUDE"
     lang = body.get("lang", "zh-TW")
+    force = bool(body.get("force", False))
     logger.info("DEBUG: Received refresh request. Body: %s, Provider: %s, Lang: %s", body, provider, lang)
 
     slot = classify_run_slot(body)
@@ -347,10 +348,10 @@ def refresh():
         modal_url = os.environ.get("MODAL_REFRESH_URL")
         if not modal_url:
             return jsonify({"error": "MODAL_REFRESH_URL not configured"}), 500
-            
+
         try:
             # Proxy the streaming response from Modal
-            resp = requests.post(modal_url, json={"date": date_str, "provider": provider, "lang": lang, "slot": slot}, stream=True, timeout=290)
+            resp = requests.post(modal_url, json={"date": date_str, "provider": provider, "lang": lang, "slot": slot, "force": force}, stream=True, timeout=290)
             return Response(
                 stream_with_context(resp.iter_content(chunk_size=None)),
                 content_type=resp.headers.get('content-type', 'application/x-ndjson')
@@ -361,7 +362,7 @@ def refresh():
 
     def generate():
         try:
-            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang, slot=slot):
+            for step in _pipeline_steps(date_str, provider_override=provider, lang=lang, slot=slot, force=force):
                 yield json.dumps(step) + "\n"
         except Exception as exc:
             logger.error("Pipeline error: %s", exc, exc_info=True)
@@ -420,7 +421,7 @@ def _conditions_changed(current: dict, morning: dict) -> tuple[bool, list[str]]:
 
     return bool(reasons), reasons
 
-def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "zh-TW", slot: str = "midday"):
+def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: str = "zh-TW", slot: str = "midday", force: bool = False):
     """
     Generator that yields log messages and finally the result dict.
     Yields: {"type": "log", "message": str} OR {"type": "result", "payload": dict}
@@ -587,7 +588,9 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     from history.conversation import get_lang_data
     _skip_narration = False
     _prev_broadcast = None
-    if not processed.get("regenerate_meal_lists"):
+    if force:
+        yield {"type": "log", "message": "Force refresh — regenerating narration"}
+    elif not processed.get("regenerate_meal_lists"):
         try:
             from history.conversation import load_broadcast
             _prev_broadcast = load_broadcast(date_str)

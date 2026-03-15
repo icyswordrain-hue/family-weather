@@ -145,6 +145,9 @@ const TRANSLATIONS = {
     h2_7day: '7-Day Forecast',
     provider_label: 'AI Provider',
     lang_label: 'Language',
+    narration_label: 'Narration',
+    narration_auto: 'Auto',
+    narration_force: 'Force',
     theme_label: 'Theme',
     system_controls: 'System Controls',
     refresh_btn: 'Refresh',
@@ -218,6 +221,9 @@ const TRANSLATIONS = {
     h2_7day: '七日預報',
     provider_label: 'AI 模型',
     lang_label: 'Language',
+    narration_label: '播報模式',
+    narration_auto: '自動',
+    narration_force: '強制',
     theme_label: '外觀主題',
     system_controls: '系統控制',
     refresh_btn: '重新整理',
@@ -1508,6 +1514,16 @@ function showError(msg) {
 function initRefreshButton() {
   const btn = document.getElementById('refresh-btn');
   if (btn) btn.addEventListener('click', triggerRefresh);
+
+  // Visual feedback when force-narration mode is toggled
+  document.querySelectorAll('input[name="narration-mode"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const isForce = r.value === 'force' && r.checked;
+      const span = btn?.querySelector('[data-i18n]');
+      if (span) span.textContent = isForce ? `${T.narration_force} ${T.refresh_btn}` : T.refresh_btn;
+      btn?.classList.toggle('force-mode', isForce);
+    });
+  });
 }
 
 async function triggerRefresh() {
@@ -1522,6 +1538,7 @@ async function triggerRefresh() {
   addLog(T.boot);
 
   const provider = localStorage.getItem('provider') || 'CLAUDE';
+  const forceNarration = document.querySelector('input[name="narration-mode"]:checked')?.value === 'force';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
   addLog(`${T.log_requesting}${provider}`);
@@ -1532,7 +1549,7 @@ async function triggerRefresh() {
     const res = await fetch('/api/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider, lang: getLang() })
+      body: JSON.stringify({ provider, lang: getLang(), force: forceNarration })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -1573,6 +1590,9 @@ async function triggerRefresh() {
             saveBroadcastCache(broadcastData);
             showContent();
             gotResult = true;
+            // Reset force-narration toggle back to Auto after each refresh
+            const autoRadio = document.querySelector('input[name="narration-mode"][value="auto"]');
+            if (autoRadio) { autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change')); }
           } else if (msg.type === 'status') {
             _addStatusRow(msg.sources);
           } else if (msg.type === 'error') {

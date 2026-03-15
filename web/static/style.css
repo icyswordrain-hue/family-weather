@@ -4672,6 +4672,11 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
   pointer-events: none;
 }
 
+.ps-btn.force-mode {
+  background: #c47d10;
+  border-color: #c47d10;
+}
+
 .ps-btn .refresh-icon {
   width: 1.1rem;
   height: 1.1rem;
