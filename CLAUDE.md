@@ -104,6 +104,17 @@ Chat is stateless: the client sends the last 6 turns in `messages[]`; `chat_cont
 
 Brand icons: WebP only in `web/static/brand-icons/`. Use the `IMG(name, alt)` helper in `app.js`; do NOT add PNGs. All icons must be 1:1 square (512×512 recommended) — the CSS forces equal `width`/`height` on most contexts, so non-square images will be distorted. `sunrise-square.webp` and `sunset-square.webp` (1024×1024) are used for the solar row in the dashboard canopy. The landscape `sunrise.webp` / `sunset.webp` (1380×752) remain in the directory but are no longer referenced. The `*-slab.webp` files (512×128 4:1) are intentional exceptions — they use `height` fixed + `width: auto` in CSS so aspect ratio is preserved.
 
+## TTS Voices
+
+Two providers with automatic fallback (Google Cloud → Edge TTS):
+
+| Provider | English | Chinese | Pitch |
+|----------|---------|---------|-------|
+| Google Cloud TTS | `en-GB-Standard-C` (female) | `cmn-TW-Standard-A` (female) | +2.0 semitones |
+| Edge TTS | `en-US-JennyNeural` (female) | `zh-TW-HsiaoChenNeural` (female) | +5Hz |
+
+Voice names are configured in `config.py` (`TTS_VOICE_EN`, `TTS_VOICE_ZH`) for Google and in the `VOICES` dict in `tts_client.py` for Edge. Pitch adjustments are hardcoded in `_render_google_tts()` and `_render_edge_tts()`.
+
 ## Test Notes
 
 - `GRADE_THRESHOLDS` labels: A="Go out", B="Good to go", C="Manageable", D="Think twice", F="Stay in"

@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 VOICES = {
     "zh-TW": "zh-TW-HsiaoChenNeural",
-    "en":    "en-US-GuyNeural",
+    "en":    "en-US-JennyNeural",
 }
 
 def tts_cache_key(text: str, lang: str, date: str, slot: str) -> str:
@@ -45,6 +45,7 @@ def _render_google_tts(text: str, lang: str) -> bytes:
         audio_config=texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.MP3,
             speaking_rate=TTS_SPEAKING_RATE,
+            pitch=2.0,
         ),
     )
     return resp.audio_content
@@ -54,7 +55,7 @@ def _render_edge_tts(text: str, lang: str) -> bytes:
     import edge_tts
     buf = io.BytesIO()
     async def _collect():
-        communicate = edge_tts.Communicate(text, VOICES[lang])
+        communicate = edge_tts.Communicate(text, VOICES[lang], pitch="+5Hz")
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 buf.write(chunk["data"])
