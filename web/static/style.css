@@ -2009,6 +2009,7 @@ input:focus-visible {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  align-self: stretch;
   gap: 6px;
 }
 
@@ -2021,6 +2022,11 @@ input:focus-visible {
   background: rgba(255, 255, 255, 0.07);
   padding: 3px 12px;
   border-radius: 15px;
+}
+
+.sidebar-last-updated:only-child {
+  width: 100%;
+  text-align: center;
 }
 
 .sidebar-audio-age:not([hidden])::before {
