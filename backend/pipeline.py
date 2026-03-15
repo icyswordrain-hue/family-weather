@@ -66,6 +66,7 @@ def generate_narration_with_fallback(
     history: list[dict],
     date_str: str,
     lang: str = 'en',
+    force: bool = False,
 ) -> tuple[str, str]:
     """Generate narration text via the given LLM provider, falling back to template.
 
@@ -90,7 +91,7 @@ def generate_narration_with_fallback(
     is_regen = bool(processed.get("regenerate_meal_lists"))
 
     cached = _narration_cache.get(cache_key)
-    if cached and not is_regen:
+    if cached and not is_regen and not force:
         logger.info("Narration cache HIT: %s", cache_key)
         return cached
     logger.info("Narration requested via provider: %s (regen=%s)", provider_upper, is_regen)

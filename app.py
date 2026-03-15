@@ -604,7 +604,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
             logger.info("Building %s narration via %s...", _lang, narration_provider)
 
             _nar_text, _nar_source = generate_narration_with_fallback(
-                narration_provider, processed, history, date_str, lang=_lang
+                narration_provider, processed, history, date_str, lang=_lang, force=force
             )
 
             _parsed = parse_narration_response(_nar_text)
