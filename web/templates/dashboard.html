@@ -35,7 +35,10 @@
       <span id="mobile-clock">--:--</span>
       <div class="mobile-meta">
         <div class="mobile-timestamps">
-          <span id="mobile-last-updated"></span>
+          <div class="mobile-updated-pill" id="mobile-updated-pill">
+            <span class="mobile-updated-label" id="mobile-updated-label">updated</span>
+            <span id="mobile-last-updated"></span>
+          </div>
           <span class="mobile-audio-age" id="mobile-audio-age" hidden></span>
         </div>
         <span class="mobile-location" id="mobile-location">—</span>
@@ -60,21 +63,21 @@
         </div>
         <div class="rp-location" id="rp-location">—</div>
         <div class="sidebar-meta">
-          <span class="sidebar-updated-label" id="sidebar-updated-label">updated</span>
-          <div class="sidebar-meta-row">
+          <div class="sidebar-updated-pill" id="sidebar-updated-pill">
+            <span class="sidebar-updated-label" id="sidebar-updated-label">updated</span>
             <span class="sidebar-last-updated" id="sidebar-last-updated"></span>
-            <span class="sidebar-audio-age" id="sidebar-audio-age" hidden></span>
           </div>
+          <span class="sidebar-audio-age" id="sidebar-audio-age" hidden></span>
         </div>
       </div>
 
       <nav class="sidebar-nav">
         <p class="nav-section-label" data-i18n="nav_section">功能</p>
-        <button class="nav-item active" data-view="lifestyle">
+        <button class="nav-item" data-view="lifestyle">
           <span class="nav-icon"><img src="/static/brand-icons/morning-shade.webp" class="brand-icon" alt="" /></span>
           <span data-i18n="nav_lifestyle">生活建議</span>
         </button>
-        <button class="nav-item" data-view="dashboard">
+        <button class="nav-item active" data-view="dashboard">
           <span class="nav-icon"><img src="/static/brand-icons/dusk-cover.webp" class="brand-icon" alt="" /></span>
           <span data-i18n="nav_dashboard">天氣總覽</span>
         </button>
@@ -117,7 +120,7 @@
       <div class="main-content hidden" id="main-content">
 
         <!-- VIEW 1: Lifestyle (Default) -->
-        <div id="view-lifestyle" class="view-container active">
+        <div id="view-lifestyle" class="view-container">
           <header class="view-header">
             <img src="/static/brand-icons/daily-canopy-slab.webp" class="heading-slab" alt="" aria-hidden="true" />
             <h1><span id="view-heading-lifestyle" data-i18n="h1_lifestyle">生活建議</span></h1>
@@ -132,7 +135,7 @@
         </div>
 
         <!-- VIEW 2: Dashboard (Overview) -->
-        <div id="view-dashboard" class="view-container">
+        <div id="view-dashboard" class="view-container active">
           <header class="view-header">
             <img src="/static/brand-icons/high-canopy-slab.webp" class="heading-slab" alt="" aria-hidden="true" />
             <h1><span id="view-heading-dashboard" data-i18n="h1_dashboard">天氣儀表板</span></h1>

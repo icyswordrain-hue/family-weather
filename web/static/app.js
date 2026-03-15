@@ -33,7 +33,7 @@ console.log("App.js Loaded");
 
 // ── State ──────────────────────────────────────────────────────────────────
 let broadcastData = null;
-let currentView = 'lifestyle'; // 'lifestyle' | 'narration' | 'dashboard'
+let currentView = 'dashboard'; // 'lifestyle' | 'narration' | 'dashboard'
 let loadingInterval = null;
 let LOADING_MSGS = []; // Populated by applyLanguage
 
@@ -385,16 +385,19 @@ function render(data) {
     setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
     setText('sidebar-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
     const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;
-    const sidebarUpdEl = document.getElementById('sidebar-last-updated');
-    if (sidebarUpdEl) {
-      sidebarUpdEl.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
-      sidebarUpdEl.classList.toggle('stale-red', ageH >= 4);
+    const sidebarPill = document.getElementById('sidebar-updated-pill');
+    if (sidebarPill) {
+      sidebarPill.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
+      sidebarPill.classList.toggle('stale-red', ageH >= 4);
     }
     const mobileUpdEl = document.getElementById('mobile-last-updated');
     if (mobileUpdEl) {
-      mobileUpdEl.textContent = `${T.last_updated}${m}/${dd} ${hh}:${min}`;
-      mobileUpdEl.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
-      mobileUpdEl.classList.toggle('stale-red', ageH >= 4);
+      mobileUpdEl.textContent = `${m}/${dd} ${hh}:${min}`;
+    }
+    const mobilePill = document.getElementById('mobile-updated-pill');
+    if (mobilePill) {
+      mobilePill.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
+      mobilePill.classList.toggle('stale-red', ageH >= 4);
     }
   }
 
@@ -532,10 +535,10 @@ function renderOverviewView(data) {
       const iconEl = h('div', 'tc-icon');
       iconEl.innerHTML = getWeatherIcon(seg.cloud_cover || seg.Wx, 'Weather', isNight);
       leftEl.appendChild(h('div', 'tc-seg-label', seg.display_name || origSlotName));
+      leftEl.appendChild(iconEl);
       if (seg.location) {
         leftEl.appendChild(h('div', 'tc-seg-location', seg.location));
       }
-      leftEl.appendChild(iconEl);
 
       // ── Center: range bar only ─────────────────────────────────────
       const centerEl = h('div', 'tc-seg-center');
@@ -688,14 +691,12 @@ function renderOverviewView(data) {
         dayLabel = T.days[dt.getDay()];
       }
       daySection.appendChild(h('div', 'wk-row-label', dayLabel));
-      const dayLoc = dayItem?.location;
-      const nightLoc = nightItem?.location;
-      if (dayLoc && nightLoc && dayLoc !== nightLoc) {
-        daySection.appendChild(h('div', 'tc-seg-location', `${dayLoc} / ${nightLoc}`));
-      } else if (dayLoc || nightLoc) {
-        daySection.appendChild(h('div', 'tc-seg-location', dayLoc || nightLoc));
+      const dayIconWrap = h('div', 'wk-icon-wrap');
+      dayIconWrap.appendChild(dayIconEl);
+      if (dayItem?.location) {
+        dayIconWrap.appendChild(h('div', 'wk-loc-label', dayItem.location));
       }
-      daySection.appendChild(dayIconEl);
+      daySection.appendChild(dayIconWrap);
 
       // ── Center: min | range bar | max
       // Aggregate low/high across day + night for a true daily range
@@ -740,6 +741,9 @@ function renderOverviewView(data) {
         nightSection.style.opacity = '0.3';
       }
       nightSection.appendChild(nightIconEl);
+      if (nightItem?.location) {
+        nightSection.appendChild(h('div', 'wk-loc-label', nightItem.location));
+      }
 
       row.appendChild(daySection);
       row.appendChild(centerSection);
@@ -831,27 +835,45 @@ function renderLifestyleView(data) {
   if (data.alert && data.alert.length > 0) {
     const hasCritical = data.alert.some(a => a.level === 'CRITICAL');
     const hasWarning = data.alert.some(a => a.level === 'WARNING');
-    let alertClass = 'ls-card ls-alert-card';
-    if (hasCritical) alertClass += ' ls-alert-critical';
-    else if (hasWarning) alertClass += ' ls-alert-warning';
-    const card = h('div', alertClass);
+    const card = h('div', 'ls-card');
+    if (hasCritical) card.classList.add('ls-alert-critical');
+    else if (hasWarning) card.classList.add('ls-alert-warning');
+
     const ic = h('div', 'ls-icon');
     ic.innerHTML = hasCritical ? IMG('alert', 'Alert') : (hasWarning ? IMG('heads-up', 'Warning') : IMG('all-clear', 'Clear'));
+
     const content = h('div', 'ls-content');
-    content.appendChild(h('div', 'ls-title', T.heads_up_title));
+    const titleEl = h('div', 'ls-title');
+    titleEl.appendChild(h('span', null, T.heads_up_title));
+    titleEl.appendChild(h('span', 'ls-chevron'));
+    content.appendChild(titleEl);
+
+    // Tagline: first/most severe alert message
+    const topAlert = data.alert.find(a => a.level === 'CRITICAL') || data.alert[0];
+    if (topAlert) content.appendChild(h('div', 'ls-tagline', topAlert.msg));
+
+    // Expandable body with all alert items
     const TYPE_ICONS = {
       Health: IMG('heart-flag', 'Health'), Commute: IMG('commute', 'Commute'),
       Air: IMG('air-quality', 'Air Quality'), General: IMG('general', 'General'),
     };
+    const body = h('div', 'ls-text');
+    const alertGroup = h('div', 'ls-alert-group');
     data.alert.forEach(item => {
-      const row = h('div', 'ls-alert-item');
-      const ico = h('span', 'ls-alert-type-icon');
+      const row = h('div', 'ls-alert-row');
+      const ico = h('div', 'ls-alert-row-icon');
       ico.innerHTML = TYPE_ICONS[item.type] || IMG('general', 'General');
       row.appendChild(ico);
-      row.appendChild(h('span', 'ls-alert-msg', item.msg));
-      row.appendChild(h('span', 'ls-badge ls-alert-badge-' + (item.level || 'WARNING').toLowerCase(), item.level || 'WARNING'));
-      content.appendChild(row);
+      const detail = h('div', 'ls-alert-row-content');
+      detail.appendChild(h('div', 'ls-alert-row-level', item.level || 'WARNING'));
+      detail.appendChild(h('div', 'ls-alert-row-msg', item.msg));
+      row.appendChild(detail);
+      alertGroup.appendChild(row);
     });
+    body.appendChild(alertGroup);
+    content.appendChild(body);
+
+    card.addEventListener('click', () => { card.classList.toggle('expanded'); updateExpandAllBtn(); });
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);

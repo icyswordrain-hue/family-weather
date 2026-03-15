@@ -1998,27 +1998,33 @@ input:focus-visible {
   padding: 0 16px;
 }
 
+.sidebar-updated-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 4px 12px;
+  border-radius: 15px;
+  gap: 1px;
+}
+
 .sidebar-updated-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.07);
-  padding: 3px 12px;
-  border-radius: 15px;
   text-align: center;
 }
 
-.sidebar-meta-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
+.sidebar-last-updated {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
-.sidebar-last-updated,
 .sidebar-audio-age {
-  flex: 1;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.02em;
@@ -2033,11 +2039,19 @@ input:focus-visible {
   content: none;
 }
 
-#sidebar-last-updated.stale-amber {
+#sidebar-updated-pill.stale-amber {
+  background: rgba(245, 158, 11, 0.15);
+}
+#sidebar-updated-pill.stale-amber .sidebar-updated-label,
+#sidebar-updated-pill.stale-amber .sidebar-last-updated {
   color: #f59e0b;
 }
 
-#sidebar-last-updated.stale-red {
+#sidebar-updated-pill.stale-red {
+  background: rgba(239, 68, 68, 0.15);
+}
+#sidebar-updated-pill.stale-red .sidebar-updated-label,
+#sidebar-updated-pill.stale-red .sidebar-last-updated {
   color: #ef4444;
 }
 
@@ -2768,7 +2782,7 @@ html.dark .tc-seg-row.tc-seg-night {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 72px;
+  flex: 0 0 86px;
   min-width: 0;
   overflow: hidden;
   gap: 4px;
@@ -2885,7 +2899,7 @@ html.dark .tc-seg-row.tc-seg-night {
   }
 
   .tc-seg-left {
-    flex: 0 0 72px;
+    flex: 0 0 80px;
   }
 
   .tc-seg-label {
@@ -3167,58 +3181,76 @@ html[lang="zh-TW"] .rp-text {
 }
 
 
-/* Alert card in Lifestyle view */
-.ls-alert-card {
-  border-left: 4px solid var(--blue);
-}
-
-.ls-alert-card.ls-alert-critical {
-  border-left-color: var(--coral);
+/* Alert card severity variants (applied to .ls-card) */
+.ls-card.ls-alert-critical {
+  border-left: 4px solid var(--coral);
   background: linear-gradient(to right, var(--warn-lt), var(--surface));
 }
 
-.ls-alert-card.ls-alert-warning {
-  border-left-color: #f39c12;
+.ls-card.ls-alert-warning {
+  border-left: 4px solid #f39c12;
   background: linear-gradient(to right, var(--tint-caution), var(--surface));
 }
 
-.ls-alert-item {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}
-
-.ls-alert-type-icon {
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-.ls-alert-msg {
-  font-size: 0.85rem;
-  line-height: 1.45;
-  color: var(--text);
-  flex: 1;
-}
-
-.ls-badge.ls-alert-badge-critical {
-  background: var(--warn-lt);
-  color: var(--coral);
-}
-
-.ls-badge.ls-alert-badge-warning {
-  background: var(--tint-caution);
-  color: #e67e22;
-}
-
-html.dark .ls-alert-card.ls-alert-warning {
+html.dark .ls-card.ls-alert-warning {
   background: linear-gradient(to right, rgba(243, 156, 18, 0.08), var(--surface));
 }
 
-html.dark .ls-badge.ls-alert-badge-warning {
-  background: rgba(243, 156, 18, 0.15);
-  color: #f5b942;
+/* Alert items inside lifestyle card expandable region */
+.ls-alert-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ls-alert-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.ls-alert-row:not(:last-child) {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ls-alert-row-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--blue-lt);
+  border-radius: 8px;
+}
+
+.ls-alert-row-icon .brand-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ls-card.ls-alert-critical .ls-alert-row-icon {
+  background: var(--warn-lt);
+}
+
+.ls-alert-row-content {
+  flex: 1;
+}
+
+.ls-alert-row-level {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+
+.ls-alert-row-msg {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.45;
 }
 
 /* Outdoor Index Grade Pills */
@@ -3354,22 +3386,45 @@ html.dark .ls-badge.ls-alert-badge-warning {
   gap: 1px;
 }
 
+.mobile-updated-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 8px;
+  border-radius: 10px;
+  gap: 0px;
+}
+
+.mobile-updated-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
 #mobile-last-updated {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  background: rgba(255, 255, 255, 0.07);
-  padding: 2px 8px;
-  border-radius: 10px;
 }
 
-#mobile-last-updated.stale-amber {
+#mobile-updated-pill.stale-amber {
+  background: rgba(245, 158, 11, 0.15);
+}
+#mobile-updated-pill.stale-amber .mobile-updated-label,
+#mobile-updated-pill.stale-amber #mobile-last-updated {
   color: #f59e0b;
 }
 
-#mobile-last-updated.stale-red {
+#mobile-updated-pill.stale-red {
+  background: rgba(239, 68, 68, 0.15);
+}
+#mobile-updated-pill.stale-red .mobile-updated-label,
+#mobile-updated-pill.stale-red #mobile-last-updated {
   color: #ef4444;
 }
 
@@ -4927,7 +4982,7 @@ html.dark .player-sheet-handle {
   border-radius: 10px;
   padding: 10px 14px;
   box-shadow: var(--shadow);
-  min-height: 84px;
+  min-height: 96px;
 }
 
 .wk-row-day {
@@ -4995,11 +5050,26 @@ html.dark .player-sheet-handle {
   opacity: 0.70;
 }
 
+.wk-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.wk-loc-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  opacity: 0.65;
+  white-space: nowrap;
+  text-align: center;
+}
+
 @media (max-width: 767px) {
   .wk-row {
     padding: 8px 10px;
     gap: 6px;
-    min-height: 64px;
+    min-height: 74px;
   }
 
   .wk-row-day {

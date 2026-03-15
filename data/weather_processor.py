@@ -254,24 +254,36 @@ def process(
         for slot in primary_7day_slots:
             slot["location"] = "Shulin"
 
-    # ── 3. Segment the forecast (location-aware on weekdays) ────────────────
+    # ── 3. Segment the forecast (location-aware, per-segment weekday check) ─
     logger.debug("Step 3 - Segment forecast calling...")
-    is_weekday = datetime.now().weekday() < 5  # Mon=0 … Fri=4
 
-    if is_weekday and banqiao_slots:
+    _LOC_MAP_WEEKDAY = {"Morning": "Banqiao", "Afternoon": "Banqiao",
+                         "Evening": "Shulin", "Overnight": "Shulin"}
+
+    if banqiao_slots:
         home_segments = _segment_forecast(primary_slots)
         work_segments = _segment_forecast(banqiao_slots)
-        segmented = {
-            "Morning":   work_segments["Morning"] or home_segments["Morning"],
-            "Afternoon": work_segments["Afternoon"] or home_segments["Afternoon"],
-            "Evening":   home_segments["Evening"] or work_segments["Evening"],
-            "Overnight": home_segments["Overnight"] or work_segments["Overnight"],
-        }
-        _LOC_MAP = {"Morning": "Banqiao", "Afternoon": "Banqiao",
-                     "Evening": "Shulin", "Overnight": "Shulin"}
-        for seg_name, seg in segmented.items():
-            if seg:
-                seg["location"] = _LOC_MAP[seg_name]
+        segmented = {}
+        for seg_name in SEGMENT_ORDER:
+            home_seg = home_segments[seg_name]
+            work_seg = work_segments[seg_name]
+            # Determine if this specific segment falls on a weekday
+            ref_seg = work_seg or home_seg
+            seg_is_weekday = False
+            if ref_seg and ref_seg.get("start_time"):
+                seg_dt = _parse_dt(ref_seg["start_time"]).replace(tzinfo=None)
+                seg_is_weekday = seg_dt.weekday() < 5
+            if seg_is_weekday:
+                if seg_name in ("Morning", "Afternoon"):
+                    segmented[seg_name] = work_seg or home_seg
+                else:
+                    segmented[seg_name] = home_seg or work_seg
+                if segmented[seg_name]:
+                    segmented[seg_name]["location"] = _LOC_MAP_WEEKDAY[seg_name]
+            else:
+                segmented[seg_name] = home_seg
+                if segmented[seg_name]:
+                    segmented[seg_name]["location"] = "Shulin"
     else:
         segmented = _segment_forecast(primary_slots)
         for seg_name, seg in segmented.items():
@@ -324,7 +336,8 @@ def process(
     # Weekdays: morning → Banqiao (work), evening → Shulin (home)
     # Weekends: both legs use home (Shulin) forecast
     logger.debug("Step 6 - Commute")
-    if is_weekday and banqiao_slots:
+    is_weekday_today = datetime.now().weekday() < 5
+    if is_weekday_today and banqiao_slots:
         morning_commute = _commute_window(banqiao_slots, 7, 8.5, current)
     else:
         morning_commute = _commute_window(primary_slots, 7, 8.5, current)
