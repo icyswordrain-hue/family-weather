@@ -12,7 +12,7 @@ The sidebar (240px) displayed timestamps ("updated: 3/15 11:46 · Audio from 11:
 ### 1. Pill badge styling (style.css)
 
 Three-pill layout stacked vertically:
-- Top row: full-width "updated" label pill (uppercase, 0.8rem, `letter-spacing: 0.04em`)
+- Top row: "updated" label pill (`align-self: stretch` to match row width, uppercase, 0.8rem)
 - Bottom row: two side-by-side pills for timestamp and audio age (0.8rem)
 - `.sidebar-meta` uses `flex-direction: column`; `.sidebar-meta-row` wraps the bottom two pills in a horizontal flex row
 - All pills share `background: rgba(255, 255, 255, 0.07)`, `padding: 3px 12px`, `border-radius: 15px`
@@ -26,8 +26,16 @@ Abbreviated timestamp text to fit comfortably in side-by-side pills:
 
 Both `en` and `zh-TW` translations updated.
 
+### 3. Mobile pill badges (style.css)
+
+Ported pill styling to the mobile compact header timestamps:
+
+- `#mobile-last-updated` — added `background`, `padding: 2px 8px`, `border-radius: 10px`, bumped opacity to 0.5
+- `.mobile-audio-age` — same pill treatment, removed `::before` dot separator
+- Stale color classes (`.stale-amber`, `.stale-red`) kept as-is — text color override on pill background
+
 ## Files Changed
 
-- `web/static/style.css` — `.sidebar-meta`, `.sidebar-updated-label`, `.sidebar-meta-row`, `.sidebar-last-updated`, `.sidebar-audio-age` rules
+- `web/static/style.css` — `.sidebar-meta`, `.sidebar-updated-label`, `.sidebar-meta-row`, `.sidebar-last-updated`, `.sidebar-audio-age`, `#mobile-last-updated`, `.mobile-audio-age` rules
 - `web/templates/dashboard.html` — added `sidebar-updated-label` span and `.sidebar-meta-row` wrapper
 - `web/static/app.js` — `TRANSLATIONS.en.last_updated`, `TRANSLATIONS.en.audio_from`, `TRANSLATIONS['zh-TW'].last_updated`, `TRANSLATIONS['zh-TW'].audio_from`
