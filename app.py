@@ -596,8 +596,16 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
                 _changed, _reasons = _conditions_changed(_new_current, _prev_current)
                 if not _changed:
                     _skip_narration = True
-                    yield {"type": "log", "message": "Conditions unchanged \u2014 reusing previous narration"}
-                    logger.info("Narration skip: conditions unchanged from previous broadcast")
+                    # But if the user switched providers, force regeneration
+                    if provider_override and _prev_broadcast:
+                        _prev_src = (get_lang_data(_prev_broadcast, "en") or get_lang_data(_prev_broadcast, "zh-TW") or {})
+                        _prev_provider = _prev_src.get("metadata", {}).get("narration_source", "").split("_reuse")[0].upper()
+                        if _prev_provider != provider_override.upper():
+                            _skip_narration = False
+                            yield {"type": "log", "message": f"Provider changed ({_prev_provider} \u2192 {provider_override}) \u2014 regenerating narration"}
+                    if _skip_narration:
+                        yield {"type": "log", "message": "Conditions unchanged \u2014 reusing previous narration"}
+                        logger.info("Narration skip: conditions unchanged from previous broadcast")
                 else:
                     yield {"type": "log", "message": f"Conditions changed: {', '.join(_reasons)}"}
         except Exception as _e:
@@ -630,7 +638,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
                 continue
             _prev_src = _prev_ld.get("metadata", {}).get("narration_source", "unknown")
             _reuse_meta = dict(_prev_ld.get("metadata", {}))
-            _reuse_meta["narration_source"] = f"{_prev_src}_reuse"
+            _reuse_meta["narration_source"] = f"{_prev_src.split('_reuse')[0]}_reuse"
             langs_data[_lang] = {
                 "narration_text": _prev_ld.get("narration_text", ""),
                 "paragraphs": _prev_ld.get("paragraphs", {}),
