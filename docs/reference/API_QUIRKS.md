@@ -136,3 +136,21 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
 8. **AQF_P_01 `content` Field is a Shared Narrative, Not Per-Date**
    - All records for a given `publishtime` share the **same** `content` blob — a multi-paragraph 7-day outlook. The text covers all forecast dates in a single narrative. Do not assume `content` is scoped to the specific `forecastdate` of the record.
    - The `warnings` field (first paragraph of `content`) is surfaced as a lifestyle alert only when AQI ≥ 150 **and** the paragraph contains explicit advisory keywords (`不良`, `不健康`, `有害`, `建議減少`, `建議室內`, `避免戶外`). This prevents generic weather synopses from appearing as WARNING-level alerts.
+
+---
+
+## LLM Provider Switching (Claude ↔ Gemini)
+
+9. **API Key Injection Timing in Modal**
+   - Modal injects secrets (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`) **after** Python modules are imported. Any module-level `from config import GEMINI_API_KEY` captures the stale (empty) value.
+   - **Fix:** Both clients must read their API key from `os.environ` at call time. Claude does this via the `_get_client()` lazy singleton (`claude_client.py:24`). Gemini does it inline before each `genai.Client()` creation (`gemini_client.py:55,85`).
+   - **Symptom:** Gemini narration returns "All Gemini models failed" with auth errors in Modal logs. Claude works fine because its client re-reads `os.environ`.
+
+10. **Narration Reuse Ignores Provider Change**
+    - The pipeline skips narration generation when weather conditions are unchanged (`app.py:596-598`). This skip check only compares weather data — it doesn't check whether the user switched providers.
+    - **Fix:** After the conditions-unchanged check, compare the requested `provider_override` against the previous broadcast's `narration_source` (stripping `_reuse` suffixes). Force regeneration on mismatch (`app.py:600-605`).
+    - **Symptom:** Switching from Claude to Gemini and refreshing shows `narration_source: "claude_reuse"` instead of generating fresh Gemini narration.
+
+11. **`_reuse` Suffix Accumulation**
+    - When narration is reused, the source label had `_reuse` appended each time: `claude` → `claude_reuse` → `claude_reuse_reuse` → ...
+    - **Fix:** Strip existing `_reuse` suffixes before appending: `_prev_src.split('_reuse')[0] + '_reuse'` (`app.py:641`). Source is now always `claude_reuse` or `gemini_reuse`, never deeper.
