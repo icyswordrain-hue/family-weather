@@ -1986,9 +1986,10 @@ input:focus-visible {
 
 .sidebar-meta {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 8px;
   margin-top: 6px;
 }
 
@@ -1997,6 +1998,13 @@ input:focus-visible {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar-audio-age:not([hidden])::before {
+  content: '·';
+  margin-right: 8px;
+  opacity: 0.5;
 }
 
 .sidebar-bottom {
@@ -3545,10 +3553,23 @@ html.dark .ls-badge.ls-alert-badge-warning {
   color: #ef4444;
 }
 
+.mobile-timestamps {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+}
+
 .mobile-audio-age {
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.35);
   line-height: 1;
+}
+
+.mobile-audio-age:not([hidden])::before {
+  content: '·';
+  margin-right: 6px;
+  opacity: 0.5;
 }
 
 /* ── Section Header Card (mobile only) ─────────────────────────────────── */
