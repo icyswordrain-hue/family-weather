@@ -61,3 +61,7 @@ Settings tab                    Settings tab
                                 │  [tan]  重新合成語音     │
                                 └─────────────────────────┘
 ```
+
+## Amendment — source badge removed (2026-03-15)
+
+The Claude / Gemini / template source badge was initially placed in the last paragraph card's title row. Removed entirely — the narration surface should be clean prose with no attribution UI. Dead CSS (`.narration-badge`, `.source-claude`, `.source-gemini`, `.source-template`, `.ps-meta`, `.ps-para-title-row`) also deleted.

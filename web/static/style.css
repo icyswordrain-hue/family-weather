@@ -1610,42 +1610,6 @@ html.dark .ls-badge.ls-alert-badge-warning {
   margin-bottom: 0.5rem;
 }
 
-.narration-badge {
-  font-size: 0.8rem;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-weight: 500;
-}
-
-.source-gemini {
-  background: var(--blue-lt);
-  color: var(--blue);
-}
-
-.source-template {
-  background: var(--hover);
-  color: var(--muted);
-}
-
-.source-claude {
-  background: var(--tint-heat);
-  color: #c0392b;
-}
-
-html.dark .source-gemini {
-  background: rgba(77, 124, 254, 0.18);
-  color: #7da4ff;
-}
-
-html.dark .source-template {
-  background: rgba(107, 114, 128, 0.18);
-  color: #cbd5e1;
-}
-
-html.dark .source-claude {
-  background: rgba(192, 57, 43, 0.18);
-  color: #ff7675;
-}
 
 .native-audio {
   width: 100%;
@@ -2833,18 +2797,6 @@ html.dark .ps-para {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.ps-para-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 0.4rem;
-}
-
-.ps-para-title-row .ps-para-title {
-  margin: 0;
-}
-
 .ps-para-title {
   font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
   font-size: 1.05rem;
@@ -2865,15 +2817,6 @@ html.dark .ps-para-body {
   color: #e0e6ed;
 }
 
-.ps-meta {
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--border, #e8ecf3);
-  margin-top: 0.5rem;
-}
-
-html.dark .ps-meta {
-  border-top-color: rgba(255, 255, 255, 0.08);
-}
 
 #ps-narration-content {
   padding-bottom: 8px;
