@@ -238,15 +238,19 @@ def get_broadcast():
             return jsonify({"error": str(exc)}), 500
         return jsonify(result)
 
-    # Flatten v2 language-specific data for frontend compatibility
+    # Build slices for every stored language so frontend can switch instantly
     from history.conversation import get_lang_data
+    for _l in list(cached.get("langs", {})):
+        _ld = get_lang_data(cached, _l)
+        cached["langs"][_l]["slices"] = build_slices({
+            "paragraphs": _ld.get("paragraphs", {}),
+            "metadata": _ld.get("metadata", {}),
+            "processed_data": cached.get("processed_data", {}),
+            "summaries": _ld.get("summaries", {}),
+        }, lang=_l)
+
+    # Flatten requested lang for backwards compatibility
     ld = get_lang_data(cached, lang)
-    slices = build_slices({
-        "paragraphs": ld.get("paragraphs", {}),
-        "metadata": ld.get("metadata", {}),
-        "processed_data": cached.get("processed_data", {}),
-        "summaries": ld.get("summaries", {}),
-    }, lang=lang)
     return jsonify({
         **cached,
         "narration_text": ld.get("narration_text", ""),
@@ -254,7 +258,7 @@ def get_broadcast():
         "metadata": ld.get("metadata", {}),
         "audio_urls": ld.get("audio_urls", {}),
         "summaries": ld.get("summaries", {}),
-        "slices": slices,
+        "slices": cached["langs"].get(lang, {}).get("slices", {}),
     })
 
 

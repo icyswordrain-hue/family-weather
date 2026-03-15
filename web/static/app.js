@@ -1969,7 +1969,18 @@ function applyLanguage(lang) {
   setText('section-heading-7day', T.h2_7day);
   setText('section-heading-aqi', T.aqi_title);
 
-  // Re-render data labels if data is already loaded
+  // Switch language-specific broadcast data from stored langs (no API call)
+  if (broadcastData && broadcastData.langs && broadcastData.langs[lang]) {
+    const ld = broadcastData.langs[lang];
+    broadcastData.narration_text = ld.narration_text || '';
+    broadcastData.paragraphs = ld.paragraphs || {};
+    broadcastData.metadata = ld.metadata || {};
+    broadcastData.audio_urls = ld.audio_urls || {};
+    broadcastData.summaries = ld.summaries || {};
+    if (ld.slices) broadcastData.slices = ld.slices;
+  }
+
+  // Re-render with the new language's data
   if (broadcastData) render(broadcastData);
 }
 
