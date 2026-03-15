@@ -154,3 +154,8 @@ All timestamps throughout this codebase use **Asia/Taipei (UTC+8)** as the singl
 11. **`_reuse` Suffix Accumulation**
     - When narration is reused, the source label had `_reuse` appended each time: `claude` → `claude_reuse` → `claude_reuse_reuse` → ...
     - **Fix:** Strip existing `_reuse` suffixes before appending: `_prev_src.split('_reuse')[0] + '_reuse'` (`app.py:641`). Source is now always `claude_reuse` or `gemini_reuse`, never deeper.
+
+12. **Import Ordering in Provider-Change Check**
+    - The provider-change check (item 10) used `get_lang_data()` at `app.py:601`, but the function was not imported until `app.py:616`. The resulting `NameError` was silently caught by the surrounding `try/except` block, which left `_skip_narration = True` — causing **all** narration (both providers) to render as stale reuse.
+    - **Fix:** Move `from history.conversation import get_lang_data` before its first use at `app.py:587`, ahead of the conditions-unchanged check.
+    - **Lesson:** When adding code inside a broad `try/except Exception`, verify that all names used are already in scope. Silent `NameError` swallowing is especially dangerous when the except handler doesn't reset state variables set before the error.
