@@ -2798,7 +2798,7 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-location {
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   opacity: 0.55;
   margin-top: -2px;
 }
@@ -4997,7 +4997,9 @@ html.dark .player-sheet-handle {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 54px;
+  justify-content: center;
+  flex: 0 0 60px;
+  gap: 2px;
 }
 
 .wk-row-label {
@@ -5054,15 +5056,17 @@ html.dark .player-sheet-handle {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px;
 }
 
 .wk-loc-label {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   color: var(--muted);
   opacity: 0.65;
   white-space: nowrap;
   text-align: center;
+  line-height: 1;
 }
 
 @media (max-width: 767px) {
@@ -5077,7 +5081,7 @@ html.dark .player-sheet-handle {
   }
 
   .wk-row-night {
-    flex: 0 0 40px;
+    flex: 0 0 48px;
   }
 
   .wk-row-day .wk-icon .brand-icon,
