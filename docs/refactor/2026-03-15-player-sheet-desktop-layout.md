@@ -35,6 +35,45 @@ Added `player-last-updated` span to the player bar, adjacent to `player-audio-ag
 | `web/static/style.css` | `.ps-columns` / `.ps-column` grid; `align-content: start` on settings grid; `.player-last-updated` styling; hidden on mobile |
 | `web/templates/dashboard.html` | Added `player-last-updated` span to player bar |
 
+## Bug Fix: Settings panel visible behind narration tab
+
+### Problem
+
+On desktop (≥768px), clicking the 活 (narration) seal showed both the narration content and the settings content simultaneously. The settings panel was always visible regardless of tab state.
+
+### Root Cause
+
+The desktop media query for the settings 2×2 grid originally used a bare selector:
+
+```css
+@media (min-width: 768px) {
+  #ps-panel-settings {
+    display: grid;  /* overrides browser [hidden] { display: none } */
+  }
+}
+```
+
+The `display: grid` declaration has higher specificity than the browser's user-agent `[hidden] { display: none }` rule, so the `hidden` attribute set by the tab-switching JS had no effect on desktop.
+
+### Fix
+
+Added `:not([hidden])` qualifier so the grid layout only applies when the panel is the active tab:
+
+```css
+@media (min-width: 768px) {
+  #ps-panel-settings:not([hidden]) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    align-content: start;
+  }
+}
+```
+
+### Tab switching mechanism
+
+The player sheet uses `[hidden]` attribute toggling (not CSS classes) to show/hide tab panels. The seal click handler at `app.js:1123–1135` loops through all `.ps-tab-panel` elements, removing `hidden` from the target and setting `hidden` on all others. Any CSS rule that sets `display` on a panel **must** include `:not([hidden])` to avoid overriding the native hidden behavior.
+
 ## CSS Split Note
 
 When the CSS split refactor (`2026-03-15-css-split.md`) is executed, `.ps-columns`/`.ps-column` and the settings media query belong in `player.css`. The `.player-last-updated` rule belongs in `player.css` as well.
