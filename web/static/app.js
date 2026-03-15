@@ -1605,7 +1605,7 @@ async function triggerRefresh() {
             } else {
               addLog(T.render);
               broadcastData = msg.payload;
-              render(broadcastData);
+              applyLanguage(getLang());
               saveBroadcastCache(broadcastData);
               showContent();
               gotResult = true;

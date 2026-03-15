@@ -713,7 +713,15 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
     except Exception as exc:
         logger.warning("Audio cleanup failed: %s", exc)
 
-    # 8. Result — flatten the requested lang for frontend compatibility
+    # 8. Result — include all langs so frontend can switch without a new API call
+    for _l, _ld_data in langs_data.items():
+        _ld_data["slices"] = build_slices({
+            "paragraphs": _ld_data.get("paragraphs", {}),
+            "metadata": _ld_data.get("metadata", {}),
+            "processed_data": processed,
+            "summaries": _ld_data.get("summaries", {}),
+        }, lang=_l)
+
     _resp_ld = langs_data.get(lang, langs_data.get("zh-TW", {}))
     result = {
         "date": date_str,
@@ -726,12 +734,8 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         "audio_urls": _resp_ld.get("audio_urls", {}),
         "processed_data": processed,
         "regen": regen_data,
-        "slices": build_slices({
-            "paragraphs": _resp_ld.get("paragraphs", {}),
-            "metadata": _resp_ld.get("metadata", {}),
-            "processed_data": processed,
-            "summaries": _resp_ld.get("summaries", {}),
-        }, lang=lang),
+        "langs": langs_data,
+        "slices": _resp_ld.get("slices", {}),
     }
 
     yield {"type": "log", "message": "Pipeline complete."}
