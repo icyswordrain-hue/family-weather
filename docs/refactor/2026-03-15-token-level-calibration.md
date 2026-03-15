@@ -57,4 +57,8 @@ gemini     regen     2800   1578 FINISHREASON.STOP   Y     Y   512  11.7s
 | `GEMINI_MAX_TOKENS`      | 1600   | **1100** | Peak 861, ~28% headroom                         |
 | `GEMINI_MAX_TOKENS_REGEN`| 2000   | 2000   | No change — peak 1578 fits                       |
 | `CLAUDE_MAX_TOKENS`      | 1600   | 1600   | No change — peak 1452 fits with ~10% headroom    |
-| `CLAUDE_MAX_TOKENS_REGEN`| 2000   | **4096** | Claude fills any budget; needs generous cap for complete regen JSON |
+| `CLAUDE_MAX_TOKENS_REGEN`| 2000   | **3600** | Claude fills any budget; 3600 caps cost while allowing complete regen JSON |
+
+### Note on CLAUDE_MAX_TOKENS_REGEN
+
+Initially set to 4096, reduced to 3600 to cap output cost. Claude's regen behavior expands to fill any token budget — at 2800 it used all 2800 tokens. 3600 provides sufficient room for the narration (~1400 tokens) + metadata JSON (~200 tokens) + regen JSON (~1500–2000 tokens) while avoiding unbounded generation.
