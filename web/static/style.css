@@ -3628,8 +3628,9 @@ html.dark .ls-badge.ls-alert-badge-warning {
     padding: 6px;
   }
 
-  /* Sheet toggle hidden in slim bar */
-  .player-sheet-toggle {
+  /* Sheet toggle + last-updated hidden in slim bar */
+  .player-sheet-toggle,
+  .player-last-updated {
     display: none;
   }
 
@@ -4136,6 +4137,14 @@ html.dark .player-play-btn:hover {
   white-space: nowrap;
 }
 
+.player-last-updated {
+  font-size: 0.7rem;
+  color: var(--muted, #7a8ca0);
+  opacity: 0.7;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .player-speed-btn {
   background: var(--blue-lt, #eef2ff);
   border: none;
@@ -4457,19 +4466,25 @@ html.dark .ps-seal:hover:not(.active) {
 }
 
 /* ── Desktop multi-column layouts ──────────────────────────────────────── */
+
+/* Narration: JS-generated 3-column grid (desktop only) */
+.ps-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0 24px;
+}
+
+.ps-column {
+  min-width: 0;
+}
+
+/* Settings: 2×2 card grid (desktop only) */
 @media (min-width: 768px) {
-  #ps-narration-content {
-    column-count: 3;
-    column-gap: 24px;
-  }
-  .ps-prose,
-  .ps-prose-divider {
-    break-inside: avoid;
-  }
   #ps-panel-settings {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px 24px;
+    align-content: start;
   }
   #ps-panel-settings .ps-section-card {
     border-bottom: none;

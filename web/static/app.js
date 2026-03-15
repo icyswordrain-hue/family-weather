@@ -393,6 +393,7 @@ function render(data) {
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
+    setText('player-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
     const mobileUpdEl = document.getElementById('mobile-last-updated');
     if (mobileUpdEl) {
       const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;
@@ -1040,13 +1041,34 @@ function initPlayerBar() {
 
     const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
     const paras = paragraphs.filter(p => p.text);
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+    function proseHtml(p) {
+      return `<div class="ps-prose"><div class="ps-prose-label">${p.title}</div><p class="ps-prose-body">${p.text}</p></div>`;
+    }
+
     let html = '';
-    paras.forEach((p, i) => {
-      html += `<div class="ps-prose"><div class="ps-prose-label">${p.title}</div><p class="ps-prose-body">${p.text}</p></div>`;
-      if (i < paras.length - 1) {
-        html += `<div class="ps-prose-divider"></div>`;
-      }
-    });
+    if (isDesktop && paras.length > 1) {
+      // Desktop: distribute paragraphs into 3 grid columns
+      const cols = [[], [], []];
+      paras.forEach((p, i) => cols[i % 3].push(p));
+      html += '<div class="ps-columns">';
+      cols.forEach(col => {
+        html += '<div class="ps-column">';
+        col.forEach((p, i) => {
+          html += proseHtml(p);
+          if (i < col.length - 1) html += '<div class="ps-prose-divider"></div>';
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      // Mobile / single paragraph: sequential layout
+      paras.forEach((p, i) => {
+        html += proseHtml(p);
+        if (i < paras.length - 1) html += '<div class="ps-prose-divider"></div>';
+      });
+    }
     if (meta?.source) {
       html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
     }
