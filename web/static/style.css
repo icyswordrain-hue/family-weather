@@ -1984,6 +1984,21 @@ input:focus-visible {
   width: 100%;
 }
 
+.sidebar-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.sidebar-last-updated,
+.sidebar-audio-age {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
+}
+
 .sidebar-bottom {
   margin-top: auto;
 }
@@ -2692,9 +2707,9 @@ html.dark .tc-transition--significant .tc-transition-label {
   gap: 8px;
   background: var(--surface);
   border-radius: 12px;
-  padding: 10px 18px;
+  padding: 8px 14px;
   box-shadow: var(--shadow);
-  min-height: 126px;
+  min-height: 101px;
   border-left: 4px solid var(--blue);
 }
 
@@ -2711,7 +2726,7 @@ html.dark .tc-seg-row.tc-seg-night {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 90px;
+  flex: 0 0 72px;
   min-width: 0;
   overflow: hidden;
   gap: 4px;
@@ -2731,10 +2746,10 @@ html.dark .tc-seg-row.tc-seg-night {
   margin: 0;
 }
 
-/* 72px icon — overrides .tc-icon .brand-icon { 64px } */
+/* 58px icon — overrides .tc-icon .brand-icon { 64px } */
 .tc-seg-left .tc-icon .brand-icon {
-  width: 72px;
-  height: 72px;
+  width: 58px;
+  height: 58px;
 }
 
 .tc-seg-time {
@@ -2805,8 +2820,8 @@ html.dark .tc-seg-row.tc-seg-night {
 }
 
 .tc-seg-stat .tc-stat-icon .brand-icon {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
 }
 
 .tc-seg-stat .tc-stat-text {
