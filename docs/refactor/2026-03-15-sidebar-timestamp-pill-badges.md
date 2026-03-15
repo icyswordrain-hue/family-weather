@@ -11,10 +11,11 @@ The sidebar (240px) displayed timestamps ("updated: 3/15 11:46 · Audio from 11:
 
 ### 1. Pill badge styling (style.css)
 
-Replaced the plain inline text with subtle pill-shaped badges:
-- Added `background: rgba(255, 255, 255, 0.07)`, `padding: 3px 12px`, `border-radius: 15px`
-- Font size set to 0.975rem (1.5× scale-up from initial 0.65rem)
-- Increased text opacity from 0.4 to 0.5 to compensate for smaller size
+Three-pill layout stacked vertically:
+- Top row: full-width "updated" label pill (uppercase, 0.8rem, `letter-spacing: 0.04em`)
+- Bottom row: two side-by-side pills for timestamp and audio age (0.8rem)
+- `.sidebar-meta` uses `flex-direction: column`; `.sidebar-meta-row` wraps the bottom two pills in a horizontal flex row
+- All pills share `background: rgba(255, 255, 255, 0.07)`, `padding: 3px 12px`, `border-radius: 15px`
 - Removed the `::before` dot separator (pills provide visual separation)
 
 ### 2. Shortened labels (app.js)
@@ -27,5 +28,6 @@ Both `en` and `zh-TW` translations updated.
 
 ## Files Changed
 
-- `web/static/style.css` — `.sidebar-meta`, `.sidebar-last-updated`, `.sidebar-audio-age` rules
+- `web/static/style.css` — `.sidebar-meta`, `.sidebar-updated-label`, `.sidebar-meta-row`, `.sidebar-last-updated`, `.sidebar-audio-age` rules
+- `web/templates/dashboard.html` — added `sidebar-updated-label` span and `.sidebar-meta-row` wrapper
 - `web/static/app.js` — `TRANSLATIONS.en.last_updated`, `TRANSLATIONS.en.audio_from`, `TRANSLATIONS['zh-TW'].last_updated`, `TRANSLATIONS['zh-TW'].audio_from`
