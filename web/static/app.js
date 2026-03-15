@@ -1081,7 +1081,12 @@ function initPlayerSheet() {
 
   toggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    sheet.classList.contains('open') ? closeSheet() : openSheet();
+    if (sheet.classList.contains('open')) {
+      closeSheet();
+    } else {
+      document.querySelector('.ps-seal[data-tab="narration"]')?.click();
+      openSheet();
+    }
   });
   if (close) close.addEventListener('click', closeSheet);
   if (backdrop) backdrop.addEventListener('click', closeSheet);
@@ -1148,11 +1153,11 @@ function initSidebarControls() {
 function initSheetSettings() {
   // Sidebar settings nav item → open player sheet on Settings tab
   document.getElementById('sidebar-settings-btn')?.addEventListener('click', () => {
-    document.querySelector('.ps-seal[data-tab="settings"]')?.click();
     const sheet = document.getElementById('player-sheet');
     if (sheet && !sheet.classList.contains('open')) {
       document.getElementById('player-sheet-toggle')?.click();
     }
+    document.querySelector('.ps-seal[data-tab="settings"]')?.click();
   });
 }
 

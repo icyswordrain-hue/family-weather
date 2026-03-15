@@ -4456,6 +4456,29 @@ html.dark .ps-seal:hover:not(.active) {
   overflow-y: auto;
 }
 
+/* ── Desktop multi-column layouts ──────────────────────────────────────── */
+@media (min-width: 768px) {
+  #ps-narration-content {
+    column-count: 3;
+    column-gap: 24px;
+  }
+  .ps-prose,
+  .ps-prose-divider {
+    break-inside: avoid;
+  }
+  #ps-panel-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+  #ps-panel-settings .ps-section-card {
+    border-bottom: none;
+    border: 1px solid var(--border, #E0D9CC);
+    border-radius: 8px;
+    padding: 14px;
+  }
+}
+
 /* ── Sheet Controls (progress + speed in narration tab) ── */
 .ps-controls {
   display: none;
