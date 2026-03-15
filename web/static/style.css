@@ -3039,6 +3039,15 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
   color: rgba(255, 255, 255, 0.75);
 }
 
+.ps-tab-panel .rp-last-updated {
+  color: var(--muted, #7a8ca0);
+  margin-bottom: 4px;
+}
+
+html.dark .ps-tab-panel .rp-last-updated {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .ps-tab-panel .rp-btn {
   width: 100%;
   margin-top: 4px;
@@ -3290,14 +3299,16 @@ html.dark .chat-input:focus {
   }
 }
 
-/* ── Sidebar Controls ─────────────────────────── */
-.sidebar-controls {
+/* ── Settings Trigger (sidebar nav) ──────────────── */
+.nav-settings-trigger {
   margin-top: auto;
-  padding: 14px 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+}
+
+.nav-settings-trigger .nav-icon svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
 }
 
 .sidebar-control-group {
@@ -3313,34 +3324,6 @@ html.dark .chat-input:focus {
   letter-spacing: 0.07em;
   color: var(--sidebar-text);
   opacity: 0.6;
-}
-
-.sidebar-toggle-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.sidebar-radio-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: var(--sidebar-text);
-  cursor: pointer;
-}
-
-.sidebar-radio-label input[type="radio"] {
-  accent-color: var(--blue);
-}
-
-/* ── Sidebar Status / Refresh ──────────────────── */
-.sidebar-status {
-  padding: 10px 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
 
 /* ── Segmented Control (Language / Provider) ───── */
@@ -3426,15 +3409,6 @@ html.dark .chat-input:focus {
 
 .rp-btn.loading .refresh-icon {
   animation: rotate-sync 1.2s linear infinite;
-}
-
-/* ── Sidebar Status / Refresh ──────────────────── */
-.sidebar-status {
-  padding: 10px 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
 
 /* ── 7-Day two-row grid ─────────────────────── */

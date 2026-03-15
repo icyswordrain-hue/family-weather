@@ -1370,25 +1370,7 @@ function initSidebarControls() {
 
 // ── Sheet Settings Controls ─────────────────────────────────────────────────
 function initSheetSettings() {
-  // Sheet language radios → mirror sidebar radios
-  document.querySelectorAll('input[name="language-sheet"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const sidebar = document.querySelector(`input[name="language"][value="${radio.value}"]`);
-      if (sidebar) { sidebar.checked = true; sidebar.dispatchEvent(new Event('change', { bubbles: true })); }
-    });
-  });
-
-
-  // Sheet refresh → delegate to sidebar refresh button
-  const sheetRefresh = document.getElementById('sheet-refresh-btn');
-  if (sheetRefresh) {
-    sheetRefresh.addEventListener('click', () => {
-      document.getElementById('player-sheet-close')?.click();
-      document.getElementById('refresh-btn')?.click();
-    });
-  }
-
-  // Sheet TTS re-synthesize button
+  // TTS re-synthesize button
   const sheetTts = document.getElementById('sheet-tts-btn');
   if (sheetTts) {
     sheetTts.addEventListener('click', async () => {
@@ -1419,12 +1401,12 @@ function initSheetSettings() {
     });
   }
 
-  // Sync sheet radios to current sidebar state on init
-  ['language'].forEach(name => {
-    const checked = document.querySelector(`input[name="${name}"]:checked`);
-    if (checked) {
-      const sheetRadio = document.querySelector(`input[name="${name}-sheet"][value="${checked.value}"]`);
-      if (sheetRadio) sheetRadio.checked = true;
+  // Sidebar settings nav item → open player sheet on Settings tab
+  document.getElementById('sidebar-settings-btn')?.addEventListener('click', () => {
+    document.querySelector('.ps-tab[data-tab="settings"]')?.click();
+    const sheet = document.getElementById('player-sheet');
+    if (sheet && !sheet.classList.contains('open')) {
+      document.getElementById('player-sheet-toggle')?.click();
     }
   });
 }
@@ -1511,7 +1493,7 @@ function initChat() {
   window._renderSuggestions = _renderSuggestions;
 
   // Re-apply placeholder and chips on language change
-  document.querySelectorAll('input[name="language"], input[name="language-sheet"]').forEach(r => {
+  document.querySelectorAll('input[name="language"]').forEach(r => {
     r.addEventListener('change', () => { updatePlaceholder(); _renderSuggestions(); });
   });
 
