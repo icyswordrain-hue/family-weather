@@ -67,3 +67,24 @@ Settings tab                    Settings tab
 **Badge:** The Claude / Gemini / template source badge was initially placed in the last paragraph card's title row, then removed. Final position: a small right-aligned `.ps-meta` row beneath all paragraph cards. All source-specific colour classes dropped — badge uses a single neutral style (`var(--hover)` background, `var(--muted)` text) so it reads as a quiet footnote rather than a branded chip. Dead CSS (`.source-claude`, `.source-gemini`, `.source-template`, `.ps-para-title-row`) deleted.
 
 **Settings buttons:** `.ps-btn` primary colour changed from `var(--teal)` (#5B8C85, sage) to `var(--coral)` (#E26C3B, terracotta), hover darkens to `var(--warn)`. Matches the warm earthy tone of the settings section cards rather than the cooler green used in data-driven UI elements.
+
+## Amendment — CJK stroke weight boost (2026-03-15)
+
+Chinese characters throughout the UI appeared too light relative to the earthy, warm visual language of the design. Bumping `font-weight` globally was not an option because it would also thicken English text (Inter).
+
+**Technique:** CSS `@font-face` `unicode-range` override. By declaring new `@font-face` blocks for `Noto Sans TC` that cover only CJK codepoints and point to a heavier woff2 binary, the browser uses the heavier file for Chinese glyphs while Latin glyphs (rendered by Inter, which lies outside the unicode-range) are untouched.
+
+Two remappings were added:
+
+- CSS `font-weight: 400` → loads Noto Sans TC **weight-500** woff2 (medium strokes)
+- CSS `font-weight: 500` → loads Noto Sans TC **weight-700** woff2 (bold strokes)
+
+202 `@font-face` blocks were generated from the Google Fonts CSS2 API (`Noto+Sans+TC:wght@500;700`) and inserted before `:root {` in `style.css`. The 101 blocks per weight correspond to Google Fonts' CJK unicode-range slices; the non-CJK tail subsets (cyrillic, vietnamese, latin-ext, latin) were excluded.
+
+**What changes:** Chinese body text, card titles, narration paragraphs — all Noto Sans TC rendering.
+**Unchanged:** English text (Inter), serif display titles (ZCOOL XiaoWei — different font-family), monospace numbers (Fira Code).
+
+| File | Change |
+| --- | --- |
+| `web/static/style.css` | 202 `@font-face` CJK weight-remap blocks inserted before `:root {` |
+| `web/templates/dashboard.html` | `style.css` cache-bust version v19 → v20 |
