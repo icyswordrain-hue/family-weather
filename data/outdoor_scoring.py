@@ -167,11 +167,11 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
                 if at is not None:
                     diff = at - 22
                         
-                    # Quadratic falloff penalty
-                    # At diff=5  (27°C / 17°C) → -10
-                    # At diff=10 (32°C / 12°C) → -40
-                    # At diff=14 (36°C / 8°C)  → -75 (cap, score = 25)
-                    penalty = -int((abs(diff) ** 2) / 2.5)
+                    # Asymmetric quadratic falloff penalty
+                    # Hot side (div=3.0): gentler — Taiwan locals acclimatised to heat
+                    # Cold side (div=2.0): steeper — damp cold feels worse
+                    divisor = 3.0 if diff > 0 else 2.0
+                    penalty = -int((abs(diff) ** 2) / divisor)
                     penalty = max(-75, penalty)
                     
                     # Store the label based on 3 levels of deviation (~4deg, ~8deg, >8deg)
@@ -196,7 +196,14 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
                     if rule_type == "blocker": blockers.append(label_to_use)
                     else: cautions.append(label_to_use)
             else:
-                score += weights.get(penalty_key, 0)
+                penalty_val = weights.get(penalty_key, 0)
+                # Hot-side dew_gap reduction: AT already captures humidity
+                # discomfort via BOM formula, so halve to avoid double-counting
+                at = c.get("at")
+                if penalty_key in ("dew_gap_clammy", "dew_gap_humid") \
+                        and at is not None and at >= 28:
+                    penalty_val = penalty_val // 2
+                score += penalty_val
                 if rule_type == "blocker": blockers.append(label)
                 else: cautions.append(label)
 
