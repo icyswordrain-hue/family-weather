@@ -228,6 +228,12 @@ GEMINI_PRO_MODEL=gemini-3-flash-preview     # primary
 GEMINI_FLASH_MODEL=gemini-2.5-flash         # fallback
 ```
 
+### Why not consolidate Claude and Gemini clients?
+
+The two clients (`narration/claude_client.py`, `narration/gemini_client.py`) use fundamentally different SDKs (`anthropic` vs `google.genai`) with incompatible message formats, response parsing, and client lifecycle patterns. Merging them would create a leaky abstraction. The current structure — separate files with the same `generate_narration()` signature, orchestrated by `backend/pipeline.py` — is the right level of abstraction.
+
+**API key gotcha:** Both clients must read their API key from `os.environ` at call time (not module import time) because Modal injects secrets after module import. Claude does this via `_get_client()` (lazy singleton); Gemini does it inline at each `genai.Client()` creation.
+
 ---
 
 ## Other Minor Savings (not worth the complexity)
