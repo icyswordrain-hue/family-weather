@@ -4518,10 +4518,10 @@ html.dark .ps-seal:hover:not(.active) {
 
 /* ── Desktop multi-column layouts ──────────────────────────────────────── */
 
-/* Narration: JS-generated 3-column grid (desktop only) */
+/* Narration: JS-generated 5-column grid (desktop only) */
 .ps-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(5, 1fr);
   gap: 0 24px;
 }
 
@@ -4529,11 +4529,11 @@ html.dark .ps-seal:hover:not(.active) {
   min-width: 0;
 }
 
-/* Settings: 2×2 card grid (desktop only) */
+/* Settings: 4-column card grid (desktop only) */
 @media (min-width: 768px) {
   #ps-panel-settings:not([hidden]) {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px 24px;
     align-content: start;
   }

@@ -384,6 +384,7 @@ function render(data) {
     const narrationSlice = data.slices && data.slices.narration;
     const paragraphs = narrationSlice ? (narrationSlice.paragraphs || []) : [];
     const meta = narrationSlice ? (narrationSlice.meta || {}) : {};
+    if (data.generated_at) meta.generated_at = data.generated_at;
     const audioUrl = data.audio_urls && data.audio_urls.full_audio_url || null;
     if (window._playerBarSetAudio) {
       window._playerBarSetAudio(audioUrl, paragraphs, meta);
@@ -1055,9 +1056,9 @@ function initPlayerBar() {
 
     let html = '';
     if (isDesktop && paras.length > 1) {
-      // Desktop: distribute paragraphs into 3 grid columns
-      const cols = [[], [], []];
-      paras.forEach((p, i) => cols[i % 3].push(p));
+      // Desktop: distribute paragraphs into 5 grid columns
+      const cols = [[], [], [], [], []];
+      paras.forEach((p, i) => cols[i % 5].push(p));
       html += '<div class="ps-columns">';
       cols.forEach(col => {
         html += '<div class="ps-column">';
@@ -1076,7 +1077,14 @@ function initPlayerBar() {
       });
     }
     if (meta?.source) {
-      html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
+      const isReuse = source.includes('reuse');
+      const badgeClass = source.replace('_reuse', '');
+      let badgeText = meta.source;
+      if (isReuse && meta.generated_at) {
+        const d = new Date(meta.generated_at);
+        badgeText = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      }
+      html += `<div class="ps-meta"><span class="narration-badge source-${badgeClass}">${badgeText}</span></div>`;
     }
     content.innerHTML = html;
   };

@@ -74,6 +74,33 @@ Added `:not([hidden])` qualifier so the grid layout only applies when the panel 
 
 The player sheet uses `[hidden]` attribute toggling (not CSS classes) to show/hide tab panels. The seal click handler at `app.js:1123–1135` loops through all `.ps-tab-panel` elements, removing `hidden` from the target and setting `hidden` on all others. Any CSS rule that sets `display` on a panel **must** include `:not([hidden])` to avoid overriding the native hidden behavior.
 
+## Reuse badge → timestamp + column count updates
+
+### 1. Reuse badge shows `hh:mm` instead of "Claude_Reuse"
+
+When narration is reused from a previous broadcast cycle, the source badge previously displayed `"Claude_Reuse"` or `"Gemini_Reuse"`. Now it shows the broadcast generation time as `hh:mm` (e.g., `14:30`).
+
+**How it works:**
+
+- `render()` in `app.js` injects `data.generated_at` into the narration `meta` object before passing it to `_playerBarSetAudio()`
+- The badge renderer checks if `source` contains `"reuse"` — if so, it parses `meta.generated_at` into `hh:mm` for the badge text
+- The CSS class strips the `_reuse` suffix (`source-claude` / `source-gemini`) so badge styling matches the original provider
+
+### 2. Narration columns: 3 → 5
+
+`_playerBarSetAudio()` now distributes paragraphs round-robin across 5 columns (`i % 5`) on desktop. CSS grid updated to `repeat(5, 1fr)`. With 5 narration paragraphs (p1–p5), each gets its own column.
+
+### 3. Settings columns: 2 → 4
+
+CSS grid updated to `repeat(4, 1fr)` inside the `@media (min-width: 768px)` block. All 4 settings cards (provider, language, narration mode, refresh) display in a single row.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `web/static/app.js` | Pass `generated_at` into meta; 5-column distribution; badge shows `hh:mm` for reuse |
+| `web/static/style.css` | `.ps-columns` grid → `repeat(5, 1fr)`; settings grid → `repeat(4, 1fr)` |
+
 ## CSS Split Note
 
 When the CSS split refactor (`2026-03-15-css-split.md`) is executed, `.ps-columns`/`.ps-column` and the settings media query belong in `player.css`. The `.player-last-updated` rule belongs in `player.css` as well.
