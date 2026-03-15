@@ -25,7 +25,7 @@ Forecast segments and commute windows now reflect **where Dad actually is** at e
 | Evening (18–24) | Shulin | Shulin |
 | Overnight (00–06) | Shulin | Shulin |
 
-Implementation: calls `_segment_forecast()` twice (once per location) and merges by segment name. Each segment dict tagged with `location` field ("Banqiao" or "Shulin"). Falls back to Shulin if Banqiao data is missing.
+Implementation: calls `_segment_forecast()` twice (once per location) and merges by segment name. Each segment's weekday/weekend status is determined from its own slot `start_time` (not the current day), so cross-day boundaries work correctly (e.g. Sunday evening → Monday morning = weekday). Each segment dict tagged with `location` field ("Banqiao" or "Shulin"). Falls back to Shulin if Banqiao data is missing.
 
 ### Commute Windows (Step 6)
 
@@ -69,5 +69,5 @@ Implementation: calls `_segment_forecast()` twice (once per location) and merges
 ## Notes
 
 - `fetch_work_conditions()` in `fetch_cwa.py` remains unused — it fetches live observations (not forecasts). Will become useful when adding real-time destination conditions to the dashboard.
-- The `is_weekday` check uses `datetime.now().weekday()` — same naive-Taipei-time contract as the rest of the codebase.
+- The 36h weekday check uses each segment's slot `start_time` weekday (not `datetime.now().weekday()`), so cross-day boundaries work correctly — e.g. Sunday evening looking at Monday morning correctly identifies Monday as a weekday. Commute windows still use `datetime.now().weekday()` since they only apply to the current day. Same naive-Taipei-time contract as the rest of the codebase.
 - Banqiao forecast data was already being fetched by `fetch_all_forecasts()` / `fetch_all_forecasts_7day()` via `CWA_FORECAST_LOCATIONS = ["樹林區", "板橋區"]` — no additional API calls needed.

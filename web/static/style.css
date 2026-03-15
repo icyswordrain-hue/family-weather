@@ -3351,6 +3351,7 @@ html.dark .ls-card.ls-alert-warning {
 
 .main-panel {
   flex: 1;
+  min-height: 0;
   background: var(--main-bg);
   overflow-y: auto;
   padding: 40px 48px;
