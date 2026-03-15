@@ -1844,6 +1844,13 @@ input:focus-visible {
   color: var(--muted);
   box-shadow: var(--shadow);
   z-index: 50;
+  max-width: calc(100vw - 3rem);
+}
+
+.optimistic-loading span:not(.spinner-small) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spinner-small {

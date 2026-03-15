@@ -1547,8 +1547,6 @@ async function triggerRefresh() {
   }
 
   showLoading(true);
-  startLoadingAnimation();
-  addLog(T.boot);
 
   const provider = localStorage.getItem('provider') || 'CLAUDE';
   const forceNarration = document.querySelector('input[name="narration-mode"]:checked')?.value === 'force';
@@ -1596,6 +1594,8 @@ async function triggerRefresh() {
             addLog(msg.message);
             const loadingTxt = document.getElementById('loading-text');
             if (loadingTxt) loadingTxt.textContent = msg.message;
+            const optTxt = document.getElementById('optimistic-text');
+            if (optTxt) optTxt.textContent = msg.message;
           } else if (msg.type === 'result') {
             // Midday skip returns {status:"skipped", broadcast:...} — don't overwrite good data
             if (msg.payload?.status === 'skipped') {
@@ -1603,7 +1603,6 @@ async function triggerRefresh() {
               showContent();
               gotResult = true;
             } else {
-              addLog(T.render);
               broadcastData = msg.payload;
               applyLanguage(getLang());
               saveBroadcastCache(broadcastData);
@@ -1662,16 +1661,17 @@ async function triggerRefresh() {
 
 function startLoadingAnimation() {
   const txt = document.getElementById('loading-text');
-  if (!txt) return;
+  const optTxt = document.getElementById('optimistic-text');
+  if (!txt && !optTxt) return;
   let i = 0;
-  txt.textContent = LOADING_MSGS[0];
-  addLog(`${T.log_step_prefix}${LOADING_MSGS[0]}`);
+  if (txt) txt.textContent = LOADING_MSGS[0];
+  if (optTxt) optTxt.textContent = LOADING_MSGS[0];
 
   if (loadingInterval) clearInterval(loadingInterval);
   loadingInterval = setInterval(() => {
     i = (i + 1) % LOADING_MSGS.length;
-    txt.textContent = LOADING_MSGS[i];
-    addLog(`${T.log_step_prefix}${LOADING_MSGS[i]}`);
+    if (txt) txt.textContent = LOADING_MSGS[i];
+    if (optTxt) optTxt.textContent = LOADING_MSGS[i];
   }, 1200);
 }
 
