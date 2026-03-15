@@ -53,5 +53,5 @@ Extended stale-data coloring (previously mobile-only) to the desktop sidebar pil
 ## Files Changed
 
 - `web/static/style.css` — `.sidebar-meta`, `.sidebar-updated-label`, `.sidebar-meta-row`, `.sidebar-last-updated`, `.sidebar-audio-age`, `#mobile-last-updated`, `.mobile-audio-age` rules
-- `web/templates/dashboard.html` — added `sidebar-updated-label` span and `.sidebar-meta-row` wrapper
+- `web/templates/dashboard.html` — added `sidebar-updated-label` span and `.sidebar-meta-row` wrapper; reordered mobile-meta children (timestamps above location)
 - `web/static/app.js` — `TRANSLATIONS.en.last_updated`, `TRANSLATIONS.en.audio_from`, `TRANSLATIONS['zh-TW'].last_updated`, `TRANSLATIONS['zh-TW'].audio_from`
