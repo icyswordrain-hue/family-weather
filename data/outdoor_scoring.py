@@ -144,7 +144,7 @@ def _score_conditions(c: dict, weights: dict) -> tuple[int, list[str], list[str]
         ("pop", c.get("pop"), lambda v: v is not None and 40 < v <= 70, "pop_mid", "caution", "rain_possible"),
         ("at", c.get("at"), lambda v: v is not None and v != 22, "at_comfort_penalty", "caution", "at_comfort"),
         ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and v < 2,        "dew_gap_clammy", "caution", "very_humid"),
-        ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and 2 <= v < 5,   "dew_gap_humid",  "caution", "humid"),
+        ("dew_gap",   c.get("dew_gap"),   lambda v: v is not None and 2 <= v < 4,   "dew_gap_humid",  "caution", "humid"),
         ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) >= 7, "wind_strong", "blocker", "strong_wind"),
         ("ws", c.get("ws"), lambda v: v is not None and 5 <= _beaufort_index(v) < 7, "wind_moderate", "caution", "moderate_wind"),
         ("ws", c.get("ws"), lambda v: v is not None and _beaufort_index(v) < 3, "wind_low", "caution", "calm_wind"),

@@ -46,7 +46,7 @@ _LOCATION_ZH = {
 
 _METRIC_ZH = {
     # Humidity / dew gap
-    'Near Saturated': '接近飽和', 'Clammy': '悶濕',
+    'Near Saturated': '接近飽和', 'Slightly Humid': '微潮',
     'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適',
     'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
     # Wind (Beaufort)
@@ -89,7 +89,7 @@ _SLOT_ZH = {
 _TRANSITION_ZH = {
     'Sunny': '晴朗', 'Cloudy': '多雲',
     'Rain expected': '預期降雨', 'More rain': '降雨增加', 'Less rain': '降雨減少',
-    'Near Saturated': '近飽和', 'Clammy': '悶熱', 'Humid': '潮濕',
+    'Near Saturated': '近飽和', 'Humid': '潮濕', 'Slightly Humid': '微潮',
     'Comfortable': '舒適', 'Dry': '乾燥',
     'Windier': '風力增強', 'Calmer': '風力減弱',
     'Shorter outdoor window': '戶外時間縮短',

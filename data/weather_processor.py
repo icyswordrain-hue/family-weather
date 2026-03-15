@@ -124,9 +124,9 @@ def _calculate_dew_gap(temp_c: float | None, dew_point_c: float | None) -> float
 def _saturation_label(dew_gap_c: float) -> str:
     """Snake-case comfort label from dew gap, for LLM context and internal logic."""
     if dew_gap_c < 2:  return "near_saturated"
-    if dew_gap_c < 5:  return "clammy"
-    if dew_gap_c < 10: return "humid"
-    if dew_gap_c < 15: return "comfortable"
+    if dew_gap_c < 4:  return "humid"
+    if dew_gap_c < 6:  return "slightly_humid"
+    if dew_gap_c < 14: return "comfortable"
     return "dry"
 
 def _calculate_apparent_temp_from_dew(
@@ -598,12 +598,12 @@ _CLOUD_COVER_INDEX = {
 }
 
 _SATURATION_INDEX = {
-    "near_saturated": 0, "clammy": 1, "humid": 2, "comfortable": 3, "dry": 4,
+    "near_saturated": 0, "humid": 1, "slightly_humid": 2, "comfortable": 3, "dry": 4,
 }
 
 _SATURATION_DISPLAY = {
-    "near_saturated": "Near Saturated", "clammy": "Clammy",
-    "humid": "Humid", "comfortable": "Comfortable", "dry": "Dry",
+    "near_saturated": "Near Saturated", "humid": "Humid",
+    "slightly_humid": "Slightly Humid", "comfortable": "Comfortable", "dry": "Dry",
 }
 
 

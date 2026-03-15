@@ -51,7 +51,7 @@ def _apparent_temp(temp_c: float, rh: float, wind_ms: float) -> float:
 
 def _saturation_label(dew_gap: float) -> str:
     if dew_gap < 2:  return "near_saturated"
-    if dew_gap < 5:  return "clammy"
-    if dew_gap < 10: return "humid"
-    if dew_gap < 15: return "comfortable"
+    if dew_gap < 4:  return "humid"
+    if dew_gap < 6:  return "slightly_humid"
+    if dew_gap < 14: return "comfortable"
     return "dry"
