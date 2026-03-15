@@ -262,60 +262,6 @@ def get_broadcast():
     })
 
 
-@app.route("/api/tts", methods=["POST"])
-def regenerate_tts():
-    """Re-synthesize TTS audio for both languages from the current broadcast narration."""
-    body = request.get_json(silent=True) or {}
-    date_str = body.get("date") or datetime.now(_TAIPEI_TZ).strftime("%Y-%m-%d")
-
-    if RUN_MODE == "CLOUD":
-        modal_url = os.environ.get("MODAL_TTS_URL")
-        if not modal_url:
-            return jsonify({"error": "MODAL_TTS_URL not configured"}), 500
-        try:
-            resp = requests.post(modal_url, json={"date": date_str}, timeout=120)
-            return (resp.text, resp.status_code, resp.headers.items())
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    broadcast = get_today_broadcast(date_str)
-    if not broadcast:
-        return jsonify({"error": "No broadcast found"}), 404
-
-    from history.conversation import get_lang_data
-    updated_langs = dict(broadcast.get("langs", {}))
-    tts_ts = datetime.now(_TAIPEI_TZ).isoformat()
-
-    for _lang in ["zh-TW", "en"]:
-        ld = get_lang_data(broadcast, _lang)
-        text = ld.get("narration_text", "")
-        if not text:
-            continue
-        try:
-            url = synthesise_with_cache(text, _lang, date_str, "manual")
-            if _lang in updated_langs:
-                updated_langs[_lang] = {**updated_langs[_lang], "audio_urls": {"full_audio_url": url}}
-        except Exception as exc:
-            logger.warning("TTS re-synthesis failed for %s: %s", _lang, exc)
-
-    save_day(
-        date_str=date_str,
-        raw_data=broadcast.get("raw_data", {}),
-        processed_data=broadcast.get("processed_data", {}),
-        langs=updated_langs,
-        tts_generated_at=tts_ts,
-    )
-
-    # Return updated audio URLs for the requested lang
-    req_lang = body.get("lang", "zh-TW")
-    resp_ld = updated_langs.get(req_lang, next(iter(updated_langs.values()), {}))
-    return jsonify({
-        "status": "ok",
-        "tts_generated_at": tts_ts,
-        "audio_urls": resp_ld.get("audio_urls", {}),
-    })
-
-
 @app.route("/api/audio/<path:filename>")
 def serve_audio(filename):
     """Serve TTS audio from local filesystem (LOCAL mode only)."""
@@ -692,12 +638,13 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
                 _summaries["_top_activity"] = _ta
                 _metadata["activity_suggested"] = _ta
 
-            # TTS: morning slot only
+            # TTS: morning slot always; other slots only when force=True
             _audio_urls: dict[str, str | None] = {}
-            if slot == "morning":
+            if slot == "morning" or force:
+                _tts_slot = slot if slot == "morning" else "manual"
                 yield {"type": "log", "message": f"Synthesising {_lang} TTS audio\u2026"}
                 try:
-                    _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, slot)
+                    _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, _tts_slot)
                 except Exception as _exc:
                     logger.warning("TTS failed for %s \u2014 skipping audio.", _lang, exc_info=True)
                     yield {"type": "log", "message": f"TTS failed ({_lang}): {_exc}"}

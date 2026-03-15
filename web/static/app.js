@@ -151,7 +151,6 @@ const TRANSLATIONS = {
     theme_label: 'Theme',
     system_controls: 'System Controls',
     refresh_btn: 'Refresh',
-    tts_btn: 'Re-synthesize Audio',
     audio_from: 'Audio from ',
     tab_narration: 'Narration',
     tab_settings: 'Settings',
@@ -227,7 +226,6 @@ const TRANSLATIONS = {
     theme_label: '外觀主題',
     system_controls: '系統控制',
     refresh_btn: '重新整理',
-    tts_btn: '重新合成語音',
     audio_from: '語音來自 ',
     tab_narration: '解說',
     tab_settings: '設定',
@@ -1148,37 +1146,6 @@ function initSidebarControls() {
 
 // ── Sheet Settings Controls ─────────────────────────────────────────────────
 function initSheetSettings() {
-  // TTS re-synthesize button
-  const sheetTts = document.getElementById('sheet-tts-btn');
-  if (sheetTts) {
-    sheetTts.addEventListener('click', async () => {
-      sheetTts.disabled = true;
-      sheetTts.classList.add('loading');
-      try {
-        const resp = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lang: getLang() })
-        });
-        const result = await resp.json();
-        if (result.status === 'ok' && result.audio_urls?.full_audio_url) {
-          const audio = document.getElementById('player-audio');
-          if (audio) audio.src = result.audio_urls.full_audio_url;
-          if (broadcastData) {
-            broadcastData.audio_urls = result.audio_urls;
-            broadcastData.tts_generated_at = result.tts_generated_at;
-          }
-          _updateAudioAgeBadge(broadcastData?.generated_at, result.tts_generated_at);
-        }
-      } catch (e) {
-        console.error('TTS re-synthesis failed:', e);
-      } finally {
-        sheetTts.disabled = false;
-        sheetTts.classList.remove('loading');
-      }
-    });
-  }
-
   // Sidebar settings nav item → open player sheet on Settings tab
   document.getElementById('sidebar-settings-btn')?.addEventListener('click', () => {
     document.querySelector('.ps-seal[data-tab="settings"]')?.click();

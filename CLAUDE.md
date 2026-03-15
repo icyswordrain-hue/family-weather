@@ -28,7 +28,7 @@ Three execution contexts controlled by `RUN_MODE` env var:
 **Data flow (CLOUD):**
 ```
 Browser → Cloud Run Flask → Modal HTTP → pipeline → Modal Volume
-                          ↖ proxies /api/refresh, /api/broadcast, /api/tts
+                          ↖ proxies /api/refresh, /api/broadcast
 ```
 
 **Module layout:**
