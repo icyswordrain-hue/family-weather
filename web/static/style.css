@@ -1987,9 +1987,10 @@ input:focus-visible {
 .sidebar-meta {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 6px;
   margin-top: 8px;
+  padding: 0 16px;
 }
 
 .sidebar-updated-label {
@@ -2000,7 +2001,6 @@ input:focus-visible {
   background: rgba(255, 255, 255, 0.07);
   padding: 3px 12px;
   border-radius: 15px;
-  align-self: stretch;
   text-align: center;
 }
 
@@ -2008,13 +2008,12 @@ input:focus-visible {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  align-self: stretch;
   gap: 6px;
 }
 
 .sidebar-last-updated,
 .sidebar-audio-age {
+  flex: 1;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.02em;
@@ -2022,10 +2021,6 @@ input:focus-visible {
   background: rgba(255, 255, 255, 0.07);
   padding: 3px 12px;
   border-radius: 15px;
-}
-
-.sidebar-last-updated:only-child {
-  width: 100%;
   text-align: center;
 }
 
