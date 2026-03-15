@@ -164,7 +164,6 @@ _HAS_GCP_CREDS = "GOOGLE_APPLICATION_CREDENTIALS" in os.environ
 TTS_PROVIDER = os.environ.get("TTS_PROVIDER", "GOOGLE" if _HAS_GCP_CREDS else "EDGE")
 
 # ── GCS Object Keys ───────────────────────────────────────────────────────────
-GCS_HISTORY_KEY = "history/conversation.json"
 GCS_BROADCAST_PREFIX = "broadcasts"   # broadcasts/YYYY-MM-DD/
 GCS_AUDIO_FILENAME = "broadcast.mp3"
 GCS_TEXT_FILENAME = "broadcast.json"

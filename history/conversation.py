@@ -1,5 +1,5 @@
 """
-conversation.py — Read and write conversation history JSON in Cloud Storage.
+conversation.py — Read and write conversation history JSON (local file / Modal Volume).
 
 History format v2 (one file, keyed by date):
 {
@@ -31,15 +31,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-from google.cloud import storage
-from google.api_core.exceptions import NotFound
-
-from config import (
-    GCS_BUCKET_NAME,
-    GCS_HISTORY_KEY,
-    RUN_MODE,
-    LOCAL_DATA_DIR,
-)
+from config import LOCAL_DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +87,7 @@ def get_lang_data(broadcast: dict, lang: str) -> dict:
 
 def load_history(days: int = 3) -> list[dict]:
     """
-    Load the conversation history JSON from GCS and return the last N days.
+    Load the conversation history JSON and return the last N days.
 
     Returns a list of day dicts (oldest first), each being the value from
     the top-level date key. Returns [] if the history file does not exist.
@@ -112,22 +104,8 @@ def load_history(days: int = 3) -> list[dict]:
 
 
 def _load_history_map() -> dict[str, dict]:
-    """Unified helper to load the full history map from GCS or Local."""
-    try:
-        if RUN_MODE in ("LOCAL", "MODAL"):
-            return _load_history_map_local()
-
-        client = storage.Client()
-        bucket = client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(GCS_HISTORY_KEY)
-        raw = blob.download_as_text(encoding="utf-8")
-        return json.loads(raw)
-    except (NotFound, FileNotFoundError):
-        logger.info(f"No conversation history found ({RUN_MODE}) — starting fresh")
-        return {}
-    except Exception as exc:
-        logger.warning("Could not load conversation history: %s", exc)
-        return {}
+    """Load the full history map from local/volume storage."""
+    return _load_history_map_local()
 
 
 def save_day(
@@ -147,32 +125,7 @@ def save_day(
                         "summaries":..., "audio_urls":...}, "zh-TW": {...}}
         tts_generated_at: ISO-8601 timestamp of last TTS synthesis (or None).
     """
-    # Load existing history
-    try:
-        if RUN_MODE in ("LOCAL", "MODAL"):
-            history_map = _load_history_map_local()
-        else:
-            client = storage.Client()
-            bucket = client.bucket(GCS_BUCKET_NAME)
-            blob = bucket.blob(GCS_HISTORY_KEY)
-
-            try:
-                raw = blob.download_as_text(encoding="utf-8")
-                history_map: dict[str, dict] = json.loads(raw)
-            except NotFound:
-                history_map = {}
-
-    except Exception as exc:
-        logger.warning("Could not load existing history for merge: %s — starting fresh", exc)
-        history_map = {}
-        # Ensure blob is defined for the subsequent upload if we are in non-local mode
-        if RUN_MODE not in ("LOCAL", "MODAL"):
-            try:
-                client = storage.Client()
-                bucket = client.bucket(GCS_BUCKET_NAME)
-                blob = bucket.blob(GCS_HISTORY_KEY)
-            except Exception:
-                blob = None
+    history_map = _load_history_map_local()
 
     # Build today's entry (v2 schema)
     history_map[date_str] = {
@@ -188,16 +141,8 @@ def save_day(
     cutoff = _date_str_offset(-30)
     history_map = {k: v for k, v in history_map.items() if k >= cutoff}
 
-    # Write back
-    if RUN_MODE in ("LOCAL", "MODAL"):
-        _save_history_local(history_map)
-    else:
-        # history_map contains everything
-        if blob:
-            blob.upload_from_string(json.dumps(history_map, indent=2, ensure_ascii=False), content_type="application/json")
-        else:
-            logger.error("Could not save history: blob is not initialized")
-    logger.info("Saved conversation history for %s (%s)", date_str, RUN_MODE)
+    _save_history_local(history_map)
+    logger.info("Saved conversation history for %s", date_str)
 
 
 def get_today_broadcast(date_str: str | None = None) -> Optional[dict]:
