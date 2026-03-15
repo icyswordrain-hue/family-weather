@@ -38,9 +38,14 @@ Ported pill styling to the mobile compact header timestamps:
 
 Swapped order in `.mobile-meta`: timestamps now appear above the station location name, matching the desktop sidebar's visual hierarchy (clock → timestamps → location).
 
-### 5. Single-pill full-width match (desktop) (style.css)
+### 5. Equal-width pills (style.css)
 
-When audio-age is hidden, the timestamp pill is the only child of `.sidebar-meta-row`. Added `.sidebar-last-updated:only-child { width: 100%; text-align: center; }` so it stretches to match the "updated" pill above. `.sidebar-meta-row` also gets `align-self: stretch` to fill the column width.
+Ensured all pills match width regardless of content or audio-age visibility:
+
+- `.sidebar-meta` switched to `align-items: stretch` + `padding: 0 16px` so all children fill the same constrained width
+- `.sidebar-last-updated` and `.sidebar-audio-age` use `flex: 1` + `text-align: center` to split the row equally
+- Single pill (no audio-age) fills 100% automatically via `flex: 1`
+- Removed the previous `:only-child` / `align-self: stretch` approach
 
 ### 6. Stale coloring on desktop (style.css + app.js)
 
