@@ -238,8 +238,8 @@
           </div>
           <!-- Settings tab -->
           <div class="ps-tab-panel" id="ps-panel-settings" hidden>
-            <div class="sidebar-control-group">
-              <span class="sidebar-control-label" data-i18n="lang_label">Language</span>
+            <div class="ps-section-card">
+              <span class="ps-section-label" data-i18n="lang_label">Language</span>
               <div class="seg-ctrl" role="group" aria-label="Language">
                 <label class="seg-option">
                   <input type="radio" name="language" value="en" aria-label="English">
@@ -251,26 +251,28 @@
                 </label>
               </div>
             </div>
-            <div id="rp-last-updated" class="rp-last-updated"></div>
-            <button class="rp-btn" id="refresh-btn" title="Fetch latest data" aria-label="Refresh Weather">
-              <svg class="refresh-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-                <path d="M21 12a9 9 0 1 0-9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                <path d="M21 21v-5h-5" />
-              </svg>
-              <span data-i18n="refresh_btn">重新整理</span>
-            </button>
-            <button class="rp-btn rp-btn-secondary" id="sheet-tts-btn">
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-              </svg>
-              <span data-i18n="tts_btn">重新合成語音</span>
-            </button>
+            <div class="ps-section-card">
+              <div id="rp-last-updated" class="ps-last-updated"></div>
+              <button class="ps-btn" id="refresh-btn" title="Fetch latest data" aria-label="Refresh Weather">
+                <svg class="refresh-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                  <path d="M21 12a9 9 0 1 0-9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                  <path d="M21 21v-5h-5" />
+                </svg>
+                <span data-i18n="refresh_btn">重新整理</span>
+              </button>
+              <button class="ps-btn ps-btn-secondary" id="sheet-tts-btn">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+                <span data-i18n="tts_btn">重新合成語音</span>
+              </button>
+            </div>
           </div>
           <!-- Chat tab -->
           <div class="ps-tab-panel" id="ps-panel-chat" hidden>

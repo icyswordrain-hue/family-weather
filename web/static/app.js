@@ -1032,14 +1032,17 @@ function initPlayerBar() {
     if (!paragraphs || !paragraphs.length) { content.textContent = ''; return; }
 
     const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
+    const badge = meta?.source
+      ? `<span class="narration-badge source-${source}">${meta.source}</span>`
+      : '';
+    const paras = paragraphs.filter(p => p.text);
     let html = '';
-    paragraphs.forEach(p => {
-      if (!p.text) return;
-      html += `<div class="ps-para"><h3 class="ps-para-title">${p.title}</h3><p class="ps-para-body">${p.text}</p></div>`;
+    paras.forEach((p, i) => {
+      const titleBadge = (i === paras.length - 1 && badge)
+        ? `<div class="ps-para-title-row"><h3 class="ps-para-title">${p.title}</h3>${badge}</div>`
+        : `<h3 class="ps-para-title">${p.title}</h3>`;
+      html += `<div class="ps-para">${titleBadge}<p class="ps-para-body">${p.text}</p></div>`;
     });
-    if (meta && meta.source) {
-      html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
-    }
     content.innerHTML = html;
   };
 }

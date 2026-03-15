@@ -2133,17 +2133,8 @@ html.dark .source-claude {
   }
 
   .player-sheet-handle {
-    display: block;
     width: 36px;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(0, 0, 0, 0.15);
     margin: 8px auto 4px;
-    flex-shrink: 0;
-  }
-
-  html.dark .player-sheet-handle {
-    background: rgba(255, 255, 255, 0.2);
   }
 
   .player-sheet-backdrop {
@@ -2169,17 +2160,12 @@ html.dark .source-claude {
     line-height: 1.75;
   }
 
-  #ps-narration-content {
-    width: 90%;
-    margin: 0 auto;
-  }
-
   .player-sheet-header {
-    padding: 14px 16px;
+    padding: 14px 16px 12px;
   }
 
   .ps-tab {
-    padding: 12px 22px;
+    padding: 12px 16px;
     font-size: 1.05rem;
   }
 
@@ -2758,13 +2744,15 @@ html.dark .player-speed-btn:hover {
   left: var(--sidebar-w, 240px);
   right: var(--rp-w, 180px);
   height: calc(90vh - 78px);
-  background: var(--surface, #ffffff);
-  border-top: 1px solid var(--border, #e8ecf3);
+  background: var(--surface, #FAF8F3);
+  border-top: none;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   overflow: hidden;
   z-index: 200;
   transform: translateY(calc(100% + 78px));
   transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -8px 32px rgba(44, 35, 24, 0.15);
   display: flex;
   flex-direction: column;
 }
@@ -2798,13 +2786,15 @@ html.dark .player-sheet::after {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border, #e8ecf3);
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--border, #E0D9CC);
   flex-shrink: 0;
+  background: var(--main-bg, #F3F0E8);
 }
 
 html.dark .player-sheet-header {
   border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .player-sheet-close {
@@ -2830,23 +2820,43 @@ html.dark .player-sheet-body {
 }
 
 .ps-para {
-  margin-bottom: 1.4rem;
-  break-inside: avoid;
+  background: var(--surface, #FAF8F3);
+  border: 1px solid var(--border, #E0D9CC);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 0.8rem;
+}
+
+html.dark .ps-para {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ps-para-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 0.4rem;
+}
+
+.ps-para-title-row .ps-para-title {
+  margin: 0;
 }
 
 .ps-para-title {
-  font-size: 1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted, #7a8ca0);
-  margin: 0 0 0.35rem;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif TC', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--teal, #5B8C85);
+  margin: 0 0 0.4rem;
 }
 
 .ps-para-body {
   font-size: 0.9rem;
   line-height: 1.7;
-  color: var(--text, #1e2a3a);
+  color: var(--text, #2C2318);
   white-space: pre-wrap;
   margin: 0;
 }
@@ -2866,15 +2876,17 @@ html.dark .ps-meta {
 }
 
 #ps-narration-content {
-  width: 90%;
-  margin: 0 auto;
+  padding-bottom: 8px;
 }
 
 /* ── Player Sheet Tabs ───────────────────────── */
 .player-sheet-tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
+  background: rgba(44, 35, 24, 0.07);
+  border-radius: 10px;
+  padding: 3px;
 }
 
 .ps-tab {
@@ -2882,26 +2894,30 @@ html.dark .ps-meta {
   border: none;
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--muted, #7a8ca0);
+  color: var(--muted);
   padding: 5px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 150ms, color 150ms;
+  transition: background 150ms, color 150ms, box-shadow 150ms;
+  flex: 1;
+  text-align: center;
 }
 
 .ps-tab.active {
-  background: var(--blue-lt, #eef2ff);
-  color: var(--blue, #4d7cfe);
+  background: var(--surface, #FAF8F3);
+  color: var(--text, #2C2318);
+  box-shadow: 0 1px 6px rgba(44, 35, 24, 0.08);
 }
 
 .ps-tab:hover:not(.active) {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text, #1e2a3a);
+  background: rgba(44, 35, 24, 0.04);
+  color: var(--text);
 }
 
 html.dark .ps-tab.active {
-  background: rgba(77, 124, 254, 0.18);
-  color: #7da4ff;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 html.dark .ps-tab:hover:not(.active) {
@@ -3005,26 +3021,56 @@ html.dark .ps-speed-pill:hover:not(.active) {
   color: #aec4ff;
 }
 
-/* Settings tab layout — light surface overrides for dark-sidebar components */
-.ps-tab-panel .sidebar-control-group {
-  margin-bottom: 20px;
+/* ── Settings tab — section cards ───────────────────────────────────────── */
+.ps-section-card {
+  background: var(--main-bg, #F3F0E8);
+  border: 1px solid var(--border, #E0D9CC);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
 }
 
-.ps-tab-panel .sidebar-control-label {
-  color: var(--muted, #7a8ca0);
-  opacity: 1;
+html.dark .ps-section-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
+.ps-section-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.ps-last-updated {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+html.dark .ps-last-updated {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Segmented control in sheet context — warm tint background */
 .ps-tab-panel .seg-ctrl {
-  background: var(--border, #e8ecf3);
+  background: rgba(44, 35, 24, 0.08);
 }
 
 .ps-tab-panel .seg-option span {
-  color: var(--muted, #7a8ca0);
+  color: var(--muted);
 }
 
 .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover {
-  color: var(--text, #1e2a3a);
+  color: var(--text);
+}
+
+.ps-tab-panel .seg-option input[type="radio"]:checked+span {
+  background: var(--teal, #5B8C85);
+  box-shadow: 0 1px 4px rgba(91, 140, 133, 0.4);
 }
 
 html.dark .ps-tab-panel .seg-ctrl {
@@ -3039,39 +3085,81 @@ html.dark .ps-tab-panel .seg-option input[type="radio"]:not(:checked)+span:hover
   color: rgba(255, 255, 255, 0.75);
 }
 
-.ps-tab-panel .rp-last-updated {
-  color: var(--muted, #7a8ca0);
-  margin-bottom: 4px;
-}
-
-html.dark .ps-tab-panel .rp-last-updated {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.ps-tab-panel .rp-btn {
+/* ── Sheet action buttons ────────────────────────────────────────────────── */
+.ps-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
-  margin-top: 4px;
-  /* Light-mode: override the dark-sidebar white-alpha defaults */
-  background: var(--blue-lt, #eef2ff);
-  color: var(--blue, #4d7cfe);
-  border-color: rgba(77, 124, 254, 0.25);
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--teal, #5B8C85);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 160ms;
+  margin-top: 6px;
 }
 
-.ps-tab-panel .rp-btn:hover {
-  background: var(--blue, #4d7cfe);
-  color: #ffffff;
-  border-color: transparent;
+.ps-btn:hover {
+  background: var(--ok, #7DB89A);
 }
 
-html.dark .ps-tab-panel .rp-btn {
+.ps-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ps-btn.loading,
+.ps-btn.spinning {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.ps-btn .refresh-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  display: inline-block;
+}
+
+.ps-btn.loading .refresh-icon {
+  animation: rotate-sync 1.2s linear infinite;
+}
+
+.ps-btn.spinning span:first-child {
+  animation: spin 1.5s ease-in-out infinite;
+}
+
+.ps-btn-secondary {
+  background: var(--hover, #EDE7DD);
+  color: var(--text, #2C2318);
+  border: 1px solid var(--border, #E0D9CC);
+  font-weight: 500;
+}
+
+.ps-btn-secondary:hover {
+  background: var(--border, #E0D9CC);
+}
+
+html.dark .ps-btn {
+  background: rgba(91, 140, 133, 0.7);
+}
+
+html.dark .ps-btn:hover {
+  background: rgba(91, 140, 133, 0.9);
+}
+
+html.dark .ps-btn-secondary {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.75);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-html.dark .ps-tab-panel .rp-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+html.dark .ps-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 /* ── Chat Panel ─────────────────────────────────────────────────────────── */
@@ -3256,7 +3344,17 @@ html.dark .chat-input:focus {
 }
 
 .player-sheet-handle {
-  display: none;
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border, #E0D9CC);
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+html.dark .player-sheet-handle {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* tabs are shown on both desktop and mobile so chat ↔ narration switching works */
