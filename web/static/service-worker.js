@@ -1,12 +1,15 @@
 // Service Worker — Canopy / 厝邊天氣
-const CACHE_NAME = 'weather-v8';
+const CACHE_NAME = 'weather-v9';
 const SHELL_ASSETS = [
     '/',
     '/static/style.css',
     '/static/app.js',
     '/static/manifest.json',
-    '/static/icon-192.svg',
-    '/static/icon-512.svg',
+    '/static/favicon.svg',
+    '/static/icon-192-any.webp',
+    '/static/icon-512-any.webp',
+    '/static/media-artwork-192.webp',
+    '/static/media-artwork-512.webp',
 ];
 
 // Install: cache app shell

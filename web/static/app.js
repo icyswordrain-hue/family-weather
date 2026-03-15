@@ -8,7 +8,6 @@
  *  4. Narration: Full text script
  *
  * Features:
- *  - Dynamic Right Panel (Context-aware)
  *  - Mobile "Info" Drawer
  */
 
@@ -24,12 +23,6 @@ function remoteLog(type, msg) {
 }
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
-  const logList = document.getElementById('rp-log-list');
-  if (logList) {
-    const div = h('div', 'log-entry error');
-    div.appendChild(h('span', 'log-msg', `${(window._T_runtime_error || 'Runtime Error: ')}${msg}`));
-    logList.appendChild(div);
-  }
   remoteLog('error', `${msg} at ${url}:${lineNo}`);
   console.error("Global Error:", msg, error);
   return false;
@@ -95,7 +88,6 @@ function getWeatherIcon(weatherKey, alt, isNight) {
 const TRANSLATIONS = {
   en: {
     loading: 'Fetching forecast…',
-    error_prefix: 'Error: ',
     last_updated: '',
     ground: 'Ground',
     wind: 'Wind',
@@ -125,8 +117,6 @@ const TRANSLATIONS = {
     outdoor_aqi_warn: '⚠ Outdoor score reduced — AQI ',
     best_label: 'Best',
     top_label: 'Top',
-    boot: 'System Boot: Initiating connection…',
-    data_ok: 'Data received successfully.',
     render: 'Pipeline success. Rendering…',
     step1: 'Connecting to CWA Shulin Station…',
     step2: 'Retrieving Township Forecasts…',
@@ -158,10 +148,6 @@ const TRANSLATIONS = {
     chat_placeholder: 'Ask about today\'s weather…',
     chat_thinking: 'Thinking…',
     chat_error: 'Unable to answer right now.',
-    log_requesting: 'Requesting narration via: ',
-    log_title: 'System Log',
-    log_step_prefix: 'Step: ',
-    log_runtime_error: 'Runtime Error: ',
     no_7day: '7-day forecast unavailable',
     ls_details_show: 'Details ▾',
     ls_details_hide: 'Hide ▴',
@@ -170,7 +156,6 @@ const TRANSLATIONS = {
   },
   'zh-TW': {
     loading: '正在獲取天氣…',
-    error_prefix: '錯誤：',
     last_updated: '',
     ground: '地面狀況',
     wind: '風速',
@@ -200,8 +185,6 @@ const TRANSLATIONS = {
     outdoor_aqi_warn: '⚠ 戶外指數降低 — AQI ',
     best_label: '最佳時段',
     top_label: '推薦活動',
-    boot: '系統啟動：初始化連線…',
-    data_ok: '資料接收成功。',
     render: '管道成功，正在渲染…',
     step1: '連線至 CWA 樹林站…',
     step2: '取得鄉鎮預報…',
@@ -233,10 +216,6 @@ const TRANSLATIONS = {
     chat_placeholder: '問問今天的天氣…',
     chat_thinking: '思考中…',
     chat_error: '目前無法回答，請稍後再試。',
-    log_requesting: '請求廣播（提供者）：',
-    log_title: '系統記錄',
-    log_step_prefix: '步驟：',
-    log_runtime_error: '執行錯誤：',
     no_7day: '七日預報暫不可用',
     ls_details_show: '詳細 ▾',
     ls_details_hide: '收起 ▴',
@@ -287,10 +266,8 @@ window.addEventListener('DOMContentLoaded', () => {
     triggerRefresh
   };
 
-  // Language must be applied first so T.boot is correct
   initSidebarControls();
   initSystemTheme();
-  addLog(T.boot);
 
   initNav();
   initPlayerBar();
@@ -338,12 +315,10 @@ async function fetchBroadcast(silent = false) {
     // Reset chat history when new broadcast arrives (context snapshot changes)
     if (typeof window._chatResetHistory === 'function') window._chatResetHistory();
     if (typeof window._renderSuggestions === 'function') window._renderSuggestions();
-    addLog(T.data_ok);
     render(broadcastData);
     saveBroadcastCache(broadcastData);
     showContent(); // also hides #optimistic-loading
   } catch (err) {
-    addLog(`${T.error_prefix}${err.message || 'Unknown error'}`);
     if (!silent) {
       showError(err.message || 'Unknown error');
     } else {
@@ -1064,6 +1039,20 @@ function initPlayerBar() {
     bar.classList.remove('loading');
     audio.playbackRate = speed;  // set early; loadedmetadata will confirm
 
+    // Media session metadata for lock screen / notification controls
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: '厝邊天氣',
+        artist: 'Canopy Weather',
+        artwork: [
+          { src: '/static/media-artwork-192.webp', sizes: '192x192', type: 'image/webp' },
+          { src: '/static/media-artwork-512.webp', sizes: '512x512', type: 'image/webp' }
+        ]
+      });
+      navigator.mediaSession.setActionHandler('play', () => audio.play());
+      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+    }
+
     const content = document.getElementById('ps-narration-content');
     if (!content) return;
 
@@ -1579,7 +1568,6 @@ async function _processNdjsonStream(reader) {
       if (!line.trim()) continue;
       try {
         if (!line.trim().startsWith('{')) {
-          addLog(`Server: ${line.trim()}`);
           if (line.toLowerCase().includes('error')) {
             showError(line.trim());
             gotResult = true;
@@ -1590,7 +1578,6 @@ async function _processNdjsonStream(reader) {
         const msg = JSON.parse(line);
         if (msg.type === 'log') {
           stopLoadingAnimation();
-          addLog(msg.message);
           const loadingTxt = document.getElementById('loading-text');
           if (loadingTxt) loadingTxt.textContent = msg.message;
           const optTxt = document.getElementById('optimistic-text');
@@ -1652,7 +1639,6 @@ async function _processNdjsonStream(reader) {
 
         } else if (msg.type === 'result') {
           if (msg.payload?.status === 'skipped') {
-            addLog('Conditions unchanged — keeping current broadcast');
             showContent();
             gotResult = true;
           } else {
@@ -1665,9 +1651,6 @@ async function _processNdjsonStream(reader) {
           }
           const autoRadio = document.querySelector('input[name="narration-mode"][value="auto"]');
           if (autoRadio) { autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change')); }
-
-        } else if (msg.type === 'status') {
-          _addStatusRow(msg.sources);
 
         } else if (msg.type === 'error') {
           showError(msg.message || 'Pipeline failed');
@@ -1718,7 +1701,6 @@ async function triggerRefresh() {
   const forceNarration = document.querySelector('input[name="narration-mode"]:checked')?.value === 'force';
 
   console.log("DEBUG: Selected provider for refresh:", provider);
-  addLog(`${T.log_requesting}${provider}`);
 
   try {
     const res = await fetch('/api/refresh', {
@@ -1733,7 +1715,6 @@ async function triggerRefresh() {
     // Stream ended without a result — fetch latest cached broadcast instead of hanging
     if (!gotResult) {
       console.warn("Stream ended without result event — falling back to /api/broadcast");
-      addLog("Pipeline stream truncated — loading last available broadcast…");
       try {
         const fallback = await fetch(`/api/broadcast?lang=${getLang()}`);
         if (fallback.ok) {
@@ -1750,7 +1731,6 @@ async function triggerRefresh() {
     }
 
   } catch (err) {
-    addLog(`Error: ${err.message}`);
     showError(err.message || 'Refresh failed');
   } finally {
     stopLoadingAnimation();
@@ -1784,34 +1764,6 @@ function stopLoadingAnimation() {
   }
 }
 
-function _addStatusRow(sources) {
-  const list = document.getElementById('rp-log-list');
-  if (!list) return;
-  const row = h('div', 'log-entry log-status-row');
-  (sources || []).forEach(src => {
-    row.appendChild(h('span', `log-status-chip log-status-${src.state}`, `${src.name} ${src.detail}`));
-  });
-  list.appendChild(row);
-  list.scrollTop = list.scrollHeight;
-}
-
-function addLog(msg) {
-  const list = document.getElementById('rp-log-list');
-  if (!list) return;
-  const div = h('div', 'log-entry');
-
-  let ts = '';
-  try {
-    ts = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  } catch (e) {
-    ts = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-  }
-
-  div.appendChild(h('span', 'log-ts', ts));
-  div.appendChild(h('span', 'log-msg', msg));
-  list.appendChild(div);
-  list.scrollTop = list.scrollHeight;
-}
 
 function getLang() {
   return localStorage.getItem('lang') || 'zh-TW';
@@ -1833,8 +1785,6 @@ function applyLanguage(lang) {
     const key = el.dataset.i18n;
     if (T[key] !== undefined) el.textContent = T[key];
   });
-
-  window._T_runtime_error = T.log_runtime_error;
 
   // Swap view headings (hardcoded in HTML, no data-i18n — update by element ID)
   setText('view-heading-lifestyle', T.h1_lifestyle);
