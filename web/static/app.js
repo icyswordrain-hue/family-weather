@@ -348,9 +348,15 @@ async function fetchBroadcast(silent = false) {
 
 // ── Render Dispatch ────────────────────────────────────────────────────────
 function _updateAudioAgeBadge(generatedAt, ttsGeneratedAt) {
-  const badge = document.getElementById('player-audio-age');
-  if (!badge) return;
-  if (!ttsGeneratedAt || !generatedAt) { badge.hidden = true; return; }
+  const badges = [
+    document.getElementById('sidebar-audio-age'),
+    document.getElementById('mobile-audio-age'),
+  ].filter(Boolean);
+  if (!badges.length) return;
+  if (!ttsGeneratedAt || !generatedAt) {
+    badges.forEach(b => { b.hidden = true; });
+    return;
+  }
   const genMs = new Date(generatedAt).getTime();
   const ttsMs = new Date(ttsGeneratedAt).getTime();
   // Show badge if TTS is more than 10 minutes older than narration
@@ -358,10 +364,10 @@ function _updateAudioAgeBadge(generatedAt, ttsGeneratedAt) {
     const d = new Date(ttsGeneratedAt);
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    badge.textContent = `${T.audio_from}${hh}:${min}`;
-    badge.hidden = false;
+    const text = `${T.audio_from}${hh}:${min}`;
+    badges.forEach(b => { b.textContent = text; b.hidden = false; });
   } else {
-    badge.hidden = true;
+    badges.forEach(b => { b.hidden = true; });
   }
 }
 
@@ -393,7 +399,7 @@ function render(data) {
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
-    setText('player-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
+    setText('sidebar-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
     const mobileUpdEl = document.getElementById('mobile-last-updated');
     if (mobileUpdEl) {
       const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;

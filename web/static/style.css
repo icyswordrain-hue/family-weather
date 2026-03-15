@@ -3545,6 +3545,12 @@ html.dark .ls-badge.ls-alert-badge-warning {
   color: #ef4444;
 }
 
+.mobile-audio-age {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1;
+}
+
 /* ── Section Header Card (mobile only) ─────────────────────────────────── */
 .section-header-card {
   display: none;
@@ -3643,9 +3649,8 @@ html.dark .ls-badge.ls-alert-badge-warning {
     padding: 6px;
   }
 
-  /* Sheet toggle + last-updated hidden in slim bar */
-  .player-sheet-toggle,
-  .player-last-updated {
+  /* Sheet toggle hidden in slim bar */
+  .player-sheet-toggle {
     display: none;
   }
 
@@ -4142,22 +4147,6 @@ html.dark .player-play-btn:hover {
   min-width: 90px;
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.player-audio-age {
-  font-size: 0.7rem;
-  color: var(--muted, #7a8ca0);
-  opacity: 0.7;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.player-last-updated {
-  font-size: 0.7rem;
-  color: var(--muted, #7a8ca0);
-  opacity: 0.7;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .player-speed-btn {
