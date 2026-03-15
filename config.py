@@ -100,14 +100,14 @@ TIMEZONE = "Asia/Taipei"  # UTC+8 — all forecast segment logic depends on this
 # ── Google Gemini ─────────────────────────────────────────────────────────
 GEMINI_PRO_MODEL = os.environ.get("GEMINI_PRO_MODEL",   "gemini-3-flash-preview")
 GEMINI_FLASH_MODEL = os.environ.get("GEMINI_FLASH_MODEL",  "gemini-2.5-flash")
-GEMINI_MAX_TOKENS = 1600        # ~450 narration + ~700 metadata JSON + headroom for zh-TW CJK tokens
-GEMINI_MAX_TOKENS_REGEN = 2000  # regen: adds ~1000 tokens of meal/location JSON
+GEMINI_MAX_TOKENS = 1100        # measured peak ~860 tokens; 1100 gives ~28% headroom
+GEMINI_MAX_TOKENS_REGEN = 2000  # regen: measured peak ~1578 tokens
 # ── Anthropic Claude ──────────────────────────────────────────────────────
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
 CLAUDE_FALLBACK_MODEL = os.environ.get("CLAUDE_FALLBACK_MODEL", "claude-haiku-4-5-20251001")
 CLAUDE_REGEN_MODEL = os.environ.get("CLAUDE_REGEN_MODEL", "claude-sonnet-4-6")
-CLAUDE_MAX_TOKENS = 1600        # ~450 narration + ~700 metadata JSON + headroom for zh-TW CJK tokens
-CLAUDE_MAX_TOKENS_REGEN = 2000  # regen: adds ~1000 tokens of meal/location JSON
+CLAUDE_MAX_TOKENS = 1600        # measured peak ~1452 tokens; 1600 gives ~10% headroom
+CLAUDE_MAX_TOKENS_REGEN = 4096  # regen: Claude fills any budget; 4096 ensures complete regen JSON
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 CLAUDE_CHAT_MODEL = os.environ.get("CLAUDE_CHAT_MODEL", "claude-haiku-4-5-20251001")
 CLAUDE_CHAT_MAX_TOKENS = int(os.environ.get("CLAUDE_CHAT_MAX_TOKENS", "300"))
