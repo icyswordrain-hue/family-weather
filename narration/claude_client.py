@@ -4,7 +4,9 @@ claude_client.py — Calls Anthropic Claude to generate the narration text.
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 import anthropic
 
 from config import (
@@ -14,6 +16,26 @@ from config import (
     NARRATION_TIMEOUT_PRO,
 )
 logger = logging.getLogger(__name__)
+
+_METADATA_SEP = re.compile(r'-{3}\s*METADATA\s*-{3}', re.IGNORECASE)
+
+
+def _has_parseable_metadata(text: str) -> bool:
+    """Return True if text contains ---METADATA--- followed by valid JSON."""
+    parts = _METADATA_SEP.split(text, maxsplit=1)
+    if len(parts) < 2:
+        return False
+    remainder = parts[1].strip()
+    # Strip optional ---REGEN--- and ---CARDS--- sections
+    remainder = remainder.split("---REGEN---", 1)[0]
+    remainder = remainder.split("---CARDS---", 1)[0]
+    remainder = re.sub(r'^```(?:json)?\s*\n?', '', remainder.strip(), flags=re.MULTILINE)
+    remainder = re.sub(r'\n?```\s*$', '', remainder, flags=re.MULTILINE)
+    try:
+        json.loads(remainder.strip())
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
 
 _client: anthropic.Anthropic | None = None
 
@@ -82,8 +104,13 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         text_blocks = [block.text for block in response.content if block.type == "text"]
         text = "".join(text_blocks)
         if response.stop_reason == "max_tokens":
-            logger.warning("Claude response truncated (hit max_tokens=%d). METADATA block may be incomplete.", max_tokens or CLAUDE_MAX_TOKENS)
-        if text:
+            if text and not _has_parseable_metadata(text):
+                logger.warning("Claude (%s) truncated at max_tokens=%d with unparseable metadata — falling through to fallback model.", model_to_use, max_tokens or CLAUDE_MAX_TOKENS)
+            else:
+                logger.warning("Claude response truncated (hit max_tokens=%d). METADATA block may be incomplete.", max_tokens or CLAUDE_MAX_TOKENS)
+                if text:
+                    return text.strip()
+        elif text:
             return text.strip()
     except Exception as exc:
         logger.warning("Claude primary failed or timed out: %s", exc)
@@ -103,7 +130,8 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         text_blocks = [block.text for block in response.content if block.type == "text"]
         text = "".join(text_blocks)
         if response.stop_reason == "max_tokens":
-            logger.warning("Claude fallback response truncated (hit max_tokens=%d). METADATA block may be incomplete.", max_tokens or CLAUDE_MAX_TOKENS)
+            logger.warning("Claude fallback (%s) truncated (hit max_tokens=%d). metadata_ok=%s",
+                           CLAUDE_FALLBACK_MODEL, max_tokens or CLAUDE_MAX_TOKENS, _has_parseable_metadata(text) if text else False)
         if text:
             return text.strip()
     except Exception as exc:

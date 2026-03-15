@@ -75,7 +75,7 @@ web/
 
 **`_detect_menieres_alert()`:** Only a ≥6 hPa 24h swing sets `triggered=True`. Low pressure + high humidity gives `severity="moderate"` but NOT `triggered=True`.
 
-**Narration provider:** Controlled by `NARRATION_PROVIDER` env var (default `"CLAUDE"`). `generate_narration_with_fallback()` in `pipeline.py` calls exactly one provider — there is NO cross-provider waterfall. Each provider has its own internal fallback: `claude_client.py` tries Sonnet 4.6 → Haiku 4.5; `gemini_client.py` tries Pro Exp → Flash. Both fall back to the template narrator on total failure. Do not route chat (`/api/chat`) through `generate_narration()` — call `_get_client().messages.create()` directly.
+**Narration provider:** Controlled by `NARRATION_PROVIDER` env var (default `"CLAUDE"`). `generate_narration_with_fallback()` in `pipeline.py` has a two-tier fallback: (1) each provider's internal fallback (`claude_client.py` Sonnet 4.6 → Haiku 4.5; `gemini_client.py` Pro → Flash), then (2) cross-provider fallback (e.g. Claude fails entirely → tries Gemini), then (3) template narrator. Both clients detect truncated responses (max_tokens with unparseable `---METADATA---`) and fall through to their internal fallback model before raising. Do not route chat (`/api/chat`) through `generate_narration()` — call `_get_client().messages.create()` directly.
 
 **Timestamps:** All timestamps are naive Taipei wall-clock time (UTC+8). No UTC conversion. Segment logic (morning/afternoon/evening/overnight) depends on the server running in Asia/Taipei.
 

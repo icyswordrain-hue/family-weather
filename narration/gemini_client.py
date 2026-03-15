@@ -5,6 +5,7 @@ Also extracts per-paragraph text and metadata from the response.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 
@@ -20,6 +21,26 @@ from config import (
 )
 
 logger = logging.getLogger(__name__)
+
+_METADATA_SEP = re.compile(r'-{3}\s*METADATA\s*-{3}', re.IGNORECASE)
+
+
+def _has_parseable_metadata(text: str) -> bool:
+    """Return True if text contains ---METADATA--- followed by valid JSON."""
+    parts = _METADATA_SEP.split(text, maxsplit=1)
+    if len(parts) < 2:
+        return False
+    remainder = parts[1].strip()
+    remainder = remainder.split("---REGEN---", 1)[0]
+    remainder = remainder.split("---CARDS---", 1)[0]
+    remainder = re.sub(r'^```(?:json)?\s*\n?', '', remainder.strip(), flags=re.MULTILINE)
+    remainder = re.sub(r'\n?```\s*$', '', remainder, flags=re.MULTILINE)
+    try:
+        json.loads(remainder.strip())
+        return True
+    except (json.JSONDecodeError, ValueError):
+        return False
+
 
 def _load_system_prompt(lang: str = 'en') -> str:
     """Import the system prompt from prompt_builder to avoid duplication."""
@@ -65,13 +86,20 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             ),
         )
         text = response.text or ""
+        _truncated = False
         try:
             finish = response.candidates[0].finish_reason
             if finish and str(finish).upper() in ("MAX_TOKENS", "2"):
-                logger.warning("Gemini Pro response truncated (hit max_output_tokens=%d). METADATA block may be incomplete.", max_tokens or GEMINI_MAX_TOKENS)
+                _truncated = True
         except (IndexError, AttributeError):
             pass
-        if text:
+        if _truncated and text and not _has_parseable_metadata(text):
+            logger.warning("Gemini Pro (%s) truncated at max_tokens=%d with unparseable metadata — falling through to Flash.", model_to_use, max_tokens or GEMINI_MAX_TOKENS)
+        elif _truncated:
+            logger.warning("Gemini Pro response truncated (hit max_output_tokens=%d). METADATA block may be incomplete.", max_tokens or GEMINI_MAX_TOKENS)
+            if text:
+                return text.strip()
+        elif text:
             return text.strip()
     except Exception as e:
         logger.error("Gemini Pro failed: %s: %s", type(e).__name__, e)
@@ -100,7 +128,8 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
         try:
             finish = response.candidates[0].finish_reason
             if finish and str(finish).upper() in ("MAX_TOKENS", "2"):
-                logger.warning("Gemini Flash response truncated (hit max_output_tokens=%d). METADATA block may be incomplete.", max_tokens or GEMINI_MAX_TOKENS)
+                logger.warning("Gemini Flash (%s) truncated (hit max_output_tokens=%d). metadata_ok=%s",
+                               flash_model, max_tokens or GEMINI_MAX_TOKENS, _has_parseable_metadata(text) if text else False)
         except (IndexError, AttributeError):
             pass
         if text:

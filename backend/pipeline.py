@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from config import CST
 from narration.llm_prompt_builder import build_prompt
 from narration.fallback_narrator import build_narration
 from backend.cache import NarrationCache, make_cache_key, _classify_time
@@ -82,7 +83,7 @@ def generate_narration_with_fallback(
     current = processed.get("current", {})
     city = "shulin"
     wx_text = current.get("beaufort_desc", current.get("weather_text", ""))
-    hour = datetime.now().hour
+    hour = datetime.now(CST).hour
     cache_key = make_cache_key(lang, city, wx_text, _classify_time(hour))
 
     provider_upper = provider.upper().strip()
@@ -136,7 +137,12 @@ def generate_narration_with_fallback(
             logger.info("%s narration successful.", label.capitalize())
             result = text, source
             if not is_regen:
-                _narration_cache.set(cache_key, result)
+                # Only cache if the response contains parseable metadata;
+                # truncated responses with broken JSON would poison the cache.
+                if "---METADATA---" in text.upper():
+                    _narration_cache.set(cache_key, result)
+                else:
+                    logger.warning("Skipping cache — response missing ---METADATA--- separator")
             return result
         except Exception:
             logger.exception("Narration failed (%s):", label)
