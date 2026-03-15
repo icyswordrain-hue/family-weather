@@ -312,10 +312,6 @@ input:focus-visible {
   }
 }
 
-.rp-btn.loading .refresh-icon {
-  display: inline-block;
-  animation: rotate-sync 1.2s linear infinite;
-}
 
 .marker {
   position: absolute;
@@ -576,7 +572,9 @@ input:focus-visible {
 /* Chevron removed — expand-all button in header replaces it */
 
 @media (prefers-reduced-motion: no-preference) {
-  .gauge-outdoor-trigger:hover {
+  .gauge-outdoor-trigger:hover,
+  .gauge-card:hover,
+  .time-card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
   }
@@ -687,12 +685,6 @@ input:focus-visible {
   min-height: 132px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .gauge-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-  }
-}
 
 .gauge-label {
   font-size: 0.9rem;
@@ -734,10 +726,6 @@ input:focus-visible {
   font-size: 0.8rem;
 }
 
-.gauge-header .gauge-icon .brand-icon {
-  width: 28px;
-  height: 28px;
-}
 
 /* Level Colors (5-Level Scale) */
 .lvl-0 {
@@ -847,12 +835,6 @@ input:focus-visible {
   min-height: 220px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .time-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-  }
-}
 
 .tc-header {
   font-size: 0.9rem;
@@ -1640,59 +1622,10 @@ html.dark .ls-badge.ls-alert-badge-warning {
   margin-top: 1rem;
 }
 
-.rp-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  border-radius: 99px;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-  justify-content: center;
-  min-width: 100px;
-}
-
-.rp-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.rp-btn:active {
-  transform: translateY(0);
-}
-
-.rp-btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
-  font-size: 0.8rem;
-}
-
-.rp-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.rp-btn.loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.rp-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 @keyframes spin {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.rp-btn.spinning span:first-child {
-  animation: spin 1.5s ease-in-out infinite;
 }
 
 .rp-time {
@@ -1781,7 +1714,6 @@ html.dark .ls-badge.ls-alert-badge-warning {
   overflow: hidden;
 }
 
-/* ── Right Panel Log ── */
 /* ── Right Panel Log ── */
 .rp-top {
   flex: 0 0 auto;
@@ -1921,11 +1853,7 @@ html.dark .ls-badge.ls-alert-badge-warning {
   color: #3fb950;
 }
 
-.log-status-chip.log-status-warn {
-  background: rgba(210, 153, 34, 0.15);
-  color: #d2a21a;
-}
-
+.log-status-chip.log-status-warn,
 .log-status-chip.log-status-stale {
   background: rgba(210, 153, 34, 0.15);
   color: #d2a21a;
@@ -2385,42 +2313,14 @@ html.dark {
 body,
 .sidebar,
 .main-panel,
-.right-panel,
-.card,
-.metric-card,
-.lifestyle-card,
-.narration-card,
-.timeline-slot,
-.heads-up-card {
+.right-panel {
   transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 
-/* Dark mode card overrides */
-html.dark .card,
-html.dark .metric-card,
-html.dark .lifestyle-card,
-html.dark .narration-card,
-html.dark .timeline-slot {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--text);
-}
-
 /* Dark mode text overrides */
-html.dark .metric-value,
-html.dark .metric-label,
-html.dark .card-title,
-html.dark .view-title,
-html.dark .lifestyle-title,
 html.dark h2,
 html.dark h3 {
   color: var(--text);
-}
-
-html.dark .metric-sub,
-html.dark .lifestyle-text,
-html.dark .muted-text {
-  color: var(--muted);
 }
 
 /* Dark mode right panel — border only; background comes from var(--rp-bg) */
@@ -2428,19 +2328,6 @@ html.dark .right-panel {
   border-left-color: var(--border);
 }
 
-/* Dark chart area */
-html.dark .chart-container canvas {
-  filter: brightness(0.9);
-}
-
-/* Dark narration text */
-html.dark .narration-text {
-  color: var(--text);
-}
-
-html.dark .narration-para {
-  border-left-color: var(--border);
-}
 
 /* Loading / error screens */
 html.dark .loading-screen,
@@ -2595,18 +2482,6 @@ html.dark .player-play-btn {
 
 html.dark .player-play-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-}
-
-.player-progress-wrap {
-  flex: 1;
-  height: 6px;
-  background: var(--border, #e8ecf3);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-html.dark .player-progress-wrap {
-  background: rgba(255, 255, 255, 0.12);
 }
 
 .player-progress-wrap {
@@ -3440,39 +3315,6 @@ html.dark .player-sheet-handle {
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ── Refresh Button (enlarged icon) ────────────── */
-.rp-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
-}
-
-.rp-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-.rp-btn .refresh-icon {
-  width: 1.15rem;
-  height: 1.15rem;
-  display: inline-block;
-}
-
-.rp-btn.loading .refresh-icon {
-  animation: rotate-sync 1.2s linear infinite;
-}
-
 /* ── 7-Day two-row grid ─────────────────────── */
 /* ── 7-Day Forecast — Horizontal Row Layout ─────────────────────────────── */
 #ov-weekly-timeline.weekly-grid {
@@ -3548,18 +3390,14 @@ html.dark .player-sheet-handle {
   line-height: 1;
 }
 
-.wk-row-day .wk-icon .brand-icon {
+.wk-row-day .wk-icon .brand-icon,
+.wk-row-night .wk-icon .brand-icon {
   width: 54px;
   height: 54px;
 }
 
 .wk-row-night .wk-icon {
   opacity: 0.70;
-}
-
-.wk-row-night .wk-icon .brand-icon {
-  width: 54px;
-  height: 54px;
 }
 
 @media (max-width: 767px) {
@@ -3577,11 +3415,7 @@ html.dark .player-sheet-handle {
     flex: 0 0 40px;
   }
 
-  .wk-row-day .wk-icon .brand-icon {
-    width: 42px;
-    height: 42px;
-  }
-
+  .wk-row-day .wk-icon .brand-icon,
   .wk-row-night .wk-icon .brand-icon {
     width: 42px;
     height: 42px;
