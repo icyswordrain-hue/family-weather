@@ -380,7 +380,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
 
     # 0. Midday skip check — runs inside the pipeline so it uses the correct
     #    storage backend (local file in LOCAL/MODAL, GCS in CLOUD).
-    if slot == "midday":
+    if slot == "midday" and not force:
         try:
             from history.conversation import load_broadcast
             current_obs = fetch_current_conditions()

@@ -101,6 +101,35 @@ CSS grid updated to `repeat(4, 1fr)` inside the `@media (min-width: 768px)` bloc
 | `web/static/app.js` | Pass `generated_at` into meta; 5-column distribution; badge shows `hh:mm` for reuse |
 | `web/static/style.css` | `.ps-columns` grid → `repeat(5, 1fr)`; settings grid → `repeat(4, 1fr)` |
 
+## Bug Fix: Force refresh blocked by midday skip
+
+### Problem
+
+Clicking "Force refresh" (強制 + 重新整理) during midday hours produced a blank narration tab. The pipeline returned `{"status": "skipped", "broadcast": ...}` with no `slices` key, so `data.slices.narration` was undefined and `_playerBarSetAudio` received an empty paragraphs array.
+
+### Root Cause
+
+Two independent skip checks exist in `_pipeline_steps()`:
+
+1. **Line 383 — Pipeline-level midday skip** (`slot == "midday"`): Compares live CWA conditions against the morning broadcast. If unchanged, returns early from the **entire pipeline** — no data processing, no narration, no slices built.
+2. **Line 537 — Narration-level skip** (`_skip_narration`): Only skips narration generation, still builds slices from reused paragraphs.
+
+The `force` flag was checked at skip #2 (line 537) but **not** at skip #1 (line 383). So a force refresh during midday still hit the early return, producing a result without `slices`.
+
+### Fix
+
+Added `and not force` to the midday skip gate:
+
+```python
+# Before
+if slot == "midday":
+
+# After
+if slot == "midday" and not force:
+```
+
+Now force refresh bypasses both skip checks and always runs the full pipeline.
+
 ## CSS Split Note
 
 When the CSS split refactor (`2026-03-15-css-split.md`) is executed, `.ps-columns`/`.ps-column` and the settings media query belong in `player.css`. The `.player-last-updated` rule belongs in `player.css` as well.
