@@ -11,7 +11,150 @@ Views:
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
+
+# ── Localisation maps ────────────────────────────────────────────────────────
+# Moved from app.js to allow backend slices to serve pre-localised text.
+
+_WEATHER_TEXT_EN = {
+    '晴': 'Sunny', '晴時多雲': 'Partly Cloudy', '多雲時晴': 'Mostly Sunny',
+    '多雲': 'Cloudy', '陰': 'Overcast', '陰時多雲': 'Mostly Cloudy',
+    '多雲時陰': 'Mostly Cloudy', '短暫雨': 'Brief Rain', '短暫陣雨': 'Brief Showers',
+    '陣雨': 'Showers', '雨': 'Rain', '大雨': 'Heavy Rain', '豪雨': 'Torrential Rain',
+    '短暫雷陣雨': 'Brief Thunderstorms', '雷陣雨': 'Thunderstorms',
+    '有霧': 'Foggy', '霧': 'Fog', '有靄': 'Hazy',
+}
+
+_LOCATION_EN = {
+    '桃改臺北': 'Shulin Station', '桃改台北': 'Shulin Station',
+    '板橋': 'Banqiao Station', '新北': 'Xindian Stn.',
+    '樹林': 'Shulin Station',
+    '樹林區': 'Shulin', '板橋區': 'Banqiao', '三峽區': 'Sanxia',
+    '三重': 'Sanchong', '中和': 'Zhonghe', '永和': 'Yonghe',
+    '新莊': 'Xinzhuang', '土城': 'Tucheng', '蘆洲': 'Luzhou',
+    '鶯歌': 'Yingge', '淡水': 'Tamsui', '汐止': 'Xizhi',
+    '瑞芳': 'Ruifang', '深坑': 'Shenkeng', '石碇': 'Shiding',
+    '坪林': 'Pinglin', '烏來': 'Wulai', '八里': 'Bali',
+    '林口': 'Linkou', '五股': 'Wugu', '泰山': 'Taishan',
+}
+
+_LOCATION_ZH = {
+    '桃改臺北': '樹林站', '桃改台北': '樹林站', '樹林': '樹林站',
+    '板橋': '板橋站', '新北': '新店站',
+}
+
+_METRIC_ZH = {
+    # Humidity / dew gap
+    'Near Saturated': '接近飽和', 'Clammy': '悶濕',
+    'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適',
+    'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
+    # Wind (Beaufort)
+    'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風',
+    'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風',
+    'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風',
+    'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
+    # AQI status
+    'Good': '良好', 'Moderate': '普通',
+    'Unhealthy for Sensitive Groups': '對敏感族群不健康',
+    'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
+    # Outdoor grades
+    'Go out': '適合外出', 'Good to go': '可以出門', 'Manageable': '勉強可行',
+    'Think twice': '建議斟酌', 'Stay in': '建議待室內',
+    # UV
+    'Low': '低', 'High': '高', 'Very High': '極高', 'Extreme': '極端',
+    'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
+    # Pressure
+    'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
+    # Visibility
+    'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
+    # Precipitation likelihood
+    'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能',
+    'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知',
+    # Ground state
+    'Wet': '潮濕地面',
+    # Meal moods
+    'Hot & Humid': '炎熱潮濕', 'Warm & Pleasant': '溫暖舒適',
+    'Cool & Damp': '涼爽潮濕', 'Cold': '寒冷',
+    # HVAC modes
+    'Off': '無需空調', 'fan': '電風扇', 'cooling': '冷氣',
+    'heating': '暖氣', 'heating_optional': '可選暖氣', 'dehumidify': '除濕',
+}
+
+_SLOT_ZH = {
+    'Morning': '早上', 'Afternoon': '下午',
+    'Evening': '晚上', 'Overnight': '深夜', 'Forecast': '預報',
+}
+
+_TRANSITION_ZH = {
+    'Sunny': '晴朗', 'Cloudy': '多雲',
+    'Rain expected': '預期降雨', 'More rain': '降雨增加', 'Less rain': '降雨減少',
+    'Near Saturated': '近飽和', 'Clammy': '悶熱', 'Humid': '潮濕',
+    'Comfortable': '舒適', 'Dry': '乾燥',
+    'Windier': '風力增強', 'Calmer': '風力減弱',
+    'Shorter outdoor window': '戶外時間縮短',
+    'Rain likely — plan indoors': '可能下雨—建議室內活動',
+    'Outdoor window closing': '戶外時段結束',
+    'change': '變化',
+}
+
+_BEAUFORT_ORDER = [
+    "Calm", "Light air", "Light breeze", "Gentle breeze",
+    "Moderate breeze", "Fresh breeze", "Strong breeze",
+    "Near gale", "Gale", "Strong gale", "Storm",
+    "Violent storm", "Hurricane force",
+]
+
+
+def _loc_metric(text: str | None, lang: str) -> str:
+    if not text:
+        return ''
+    if lang == 'zh-TW':
+        return _METRIC_ZH.get(text, text)
+    return text
+
+
+def _loc_weather(text: str | None, lang: str) -> str:
+    if not text:
+        return ''
+    if lang == 'en':
+        return _WEATHER_TEXT_EN.get(text, text)
+    return text
+
+
+def _loc_location(name: str | None, lang: str) -> str:
+    if not name:
+        return ''
+    if lang == 'en':
+        return _LOCATION_EN.get(name, name)
+    return _LOCATION_ZH.get(name, name)
+
+
+def _loc_precip(text: str | None, lang: str) -> str:
+    if not text:
+        return '—'
+    if lang != 'zh-TW':
+        return text
+    if text == 'All clear':
+        return '不會降雨'
+    if text == 'Stay in':
+        return '建議待室內'
+    m = re.match(r'^~(\d+)\s*min$', text)
+    if m:
+        return f'約 {m.group(1)} 分鐘'
+    return text
+
+
+def _loc_slot(name: str, lang: str) -> str:
+    if lang == 'zh-TW':
+        return _SLOT_ZH.get(name, name)
+    return name
+
+
+def _loc_transition(text: str, lang: str) -> str:
+    if lang == 'zh-TW':
+        return _TRANSITION_ZH.get(text, text)
+    return text
 
 
 def _truncate_tagline(text: str, max_words: int = 8) -> str:
@@ -122,8 +265,8 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
     solar = processed.get("solar")
 
     return {
-        "current": _slice_current(current_data, aqi_realtime, solar, outdoor_index),
-        "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day),
+        "current": _slice_current(current_data, aqi_realtime, solar, outdoor_index, lang=lang),
+        "overview": _slice_overview(forecast_segs, aqi_forecast, transitions, outdoor_index, forecast_7day, lang=lang),
         "lifestyle": _slice_lifestyle(current_data, commute, climate, paragraphs, processed, summaries, outdoor_index, lang=lang),
         "narration": _slice_narration(paragraphs, meta),
     }
@@ -131,52 +274,52 @@ def build_slices(broadcast: dict, lang: str = "en") -> dict:
 
 # ── View Slices ──────────────────────────────────────────────────────────────
 
-def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict | None = None, outdoor: dict | None = None) -> dict:
+def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict | None = None, outdoor: dict | None = None, lang: str = "en") -> dict:
     """Current View: Real-time conditions with 5-level insights."""
     aqi_realtime = aqi_realtime or {}
     outdoor = outdoor or {}
     return {
         "temp": current.get("AT"),
         "obs_time": current.get("obs_time"),
-        "location": current.get("station_name"),
+        "location": _loc_location(current.get("station_name"), lang),
         "weather_code": current.get("Wx"),
-        "weather_text": current.get("Wx_text"),
-        "cloud_cover": current.get("cloud_cover"),
-        "ground_state": current.get("ground_state", "Dry"),
+        "weather_text": _loc_weather(current.get("Wx_text"), lang),
+        "cloud_cover": current.get("cloud_cover"),  # stays English — used as icon key
+        "ground_state": _loc_metric(current.get("ground_state", "Dry"), lang),
         "ground_level": current.get("ground_level", 1),
 
         # 5-Level Metrics
         "hum": {
             "val": current.get("RH"),
-            "text": current.get("hum_text", "Normal"),
+            "text": _loc_metric(current.get("hum_text", "Normal"), lang),
             "level": current.get("hum_level", 3)
         },
         "wind": {
             "val": current.get("WDSD"),
-            "text": current.get("wind_text", "Calm"),
+            "text": _loc_metric(current.get("wind_text", "Calm"), lang),
             "level": current.get("wind_level", 1),
             "dir": current.get("wind_dir_text")
         },
         "aqi": {
             "val": current.get("aqi"),
-            "text": current.get("aqi_status", "Good"),
+            "text": _loc_metric(current.get("aqi_status", "Good"), lang),
             "level": current.get("aqi_level", 1),
             "pm25": aqi_realtime.get("pm25"),
             "pm10": aqi_realtime.get("pm10"),
         },
         "vis": {
             "val": current.get("visibility"),
-            "text": current.get("vis_text", "Good"),
+            "text": _loc_metric(current.get("vis_text", "Good"), lang),
             "level": current.get("vis_level", 1)
         },
         "uv": {
             "val": current.get("UVI"),
-            "text": current.get("uv_text", "Low"),
+            "text": _loc_metric(current.get("uv_text", "Low"), lang),
             "level": current.get("uv_level", 1)
         },
         "pres": {
             "val": current.get("PRES"),
-            "text": current.get("pres_text", "Normal"),
+            "text": _loc_metric(current.get("pres_text", "Normal"), lang),
             "level": current.get("pres_level", 3)
         },
         "solar": solar,
@@ -185,7 +328,7 @@ def _slice_current(current: dict, aqi_realtime: dict | None = None, solar: dict 
         "outdoor": {
             "score": outdoor.get("overall_score"),
             "grade": outdoor.get("overall_grade"),
-            "label": outdoor.get("overall_label"),
+            "label": _loc_metric(outdoor.get("overall_label"), lang),
         },
     }
 
