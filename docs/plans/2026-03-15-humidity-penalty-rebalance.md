@@ -66,3 +66,18 @@ Updated in:
 - `data/helpers.py` — `_saturation_label()` duplicate
 - `data/outdoor_scoring.py` — dew_gap_humid threshold tightened (< 5 → < 4)
 - `web/routes.py` — Chinese translations (Clammy → Slightly Humid / 微潮)
+
+### Local refresh verification (2026-03-15)
+
+After deploying the new thresholds, a local pipeline refresh confirmed correct
+label generation. Example from the 2026-03-15 broadcast:
+
+| Segment   | RH   | Dew gap | Old label      | New label      |
+|-----------|------|---------|----------------|----------------|
+| Morning   | 80%  | 3.0°C   | Clammy (4)     | Humid (3)      |
+| Afternoon | 62%  | 7.7°C   | Humid (3)      | Comfortable (1)|
+| Evening   | 68%  | 5.0°C   | Humid (3)      | Slightly Humid (2)|
+| Overnight | 82%  | 2.5°C   | Clammy (4)     | Humid (3)      |
+
+Stale labels in prior history entries (2026-03-14) are preserved as-is —
+history records reflect the thresholds active at generation time.
