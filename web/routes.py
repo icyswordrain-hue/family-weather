@@ -339,6 +339,7 @@ def _slice_overview(
     transitions: list | None = None,
     outdoor_index: dict | None = None,
     forecast_7day: list | None = None,
+    lang: str = "en",
 ) -> dict:
     """Overview View: Timeline, AQI Forecast, Transitions."""
     aqi_forecast = aqi_forecast or {}
@@ -352,11 +353,13 @@ def _slice_overview(
     for name, seg in segments.items():
         if seg:
             seg_copy = dict(seg)
-            seg_copy["display_name"] = name
+            seg_copy["slot_key"] = name  # always English — used for transition lookup
+            seg_copy["display_name"] = _loc_slot(name, lang)
             seg_grade_data = outdoor_index.get("segments", {}).get(name, {})
             seg_copy["outdoor_score"] = seg_grade_data.get("score")
             seg_copy["outdoor_grade"] = seg_grade_data.get("grade")
-            seg_copy["outdoor_label"] = seg_grade_data.get("label")
+            seg_copy["outdoor_label"] = _loc_metric(seg_grade_data.get("label"), lang)
+            seg_copy["precip_text"] = _loc_precip(seg.get("precip_text"), lang)
             seg_copy["aqi"] = _match_aqi_to_segment(seg.get("start_time"), hourly_aqi)
             timeline_list.append(seg_copy)
 
@@ -371,6 +374,8 @@ def _slice_overview(
         "max": max(at_maxs) if at_maxs else None,
     }
 
+    localised_transitions = _localise_transitions(transitions, lang)
+
     return {
         "timeline": timeline_list,
         "timeline_temp_range": timeline_temp_range,
@@ -378,8 +383,63 @@ def _slice_overview(
         "aqi_forecast": {
             **aqi_forecast,
         },
-        "transitions": transitions,
+        "transitions": localised_transitions,
     }
+
+
+def _localise_transitions(transitions: list, lang: str) -> list:
+    """Add pre-computed 'display' field to each breach for frontend rendering."""
+    result = []
+    for t in transitions:
+        t_copy = dict(t)
+        new_breaches = []
+        for b in t.get("breaches", []):
+            b_copy = dict(b)
+            metric = b_copy.get("metric")
+            if metric == "CloudCover":
+                label = b_copy.get("to", "")
+                if label == "Sunny/Clear":
+                    label = "Sunny"
+                elif label == "Mixed Clouds":
+                    label = "Cloudy"
+                b_copy["display"] = _loc_transition(label, lang)
+            elif metric == "AT":
+                f, t_val = b_copy.get("from"), b_copy.get("to")
+                if f is not None and t_val is not None:
+                    b_copy["display"] = f"{round(f)}→{round(t_val)}°"
+                else:
+                    b_copy["display"] = ""
+            elif metric == "PoP6h":
+                intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"]
+                f_raw, t_raw = b_copy.get("from", ""), b_copy.get("to", "")
+                f_idx = intensity.index(f_raw) if f_raw in intensity else -1
+                t_idx = intensity.index(t_raw) if t_raw in intensity else -1
+                if t_idx > f_idx:
+                    b_copy["display"] = _loc_transition("Rain expected" if t_idx >= 3 else "More rain", lang)
+                elif t_idx < f_idx:
+                    b_copy["display"] = _loc_transition("Less rain", lang)
+                else:
+                    b_copy["display"] = ""
+            elif metric == "DewGap":
+                b_copy["display"] = _loc_transition(b_copy.get("to", ""), lang)
+            elif metric == "WS":
+                f_raw, t_raw = b_copy.get("from", ""), b_copy.get("to", "")
+                f_idx = _BEAUFORT_ORDER.index(f_raw) if f_raw in _BEAUFORT_ORDER else 0
+                t_idx = _BEAUFORT_ORDER.index(t_raw) if t_raw in _BEAUFORT_ORDER else 0
+                if t_idx > f_idx:
+                    b_copy["display"] = _loc_transition("Windier", lang)
+                elif t_idx < f_idx:
+                    b_copy["display"] = _loc_transition("Calmer", lang)
+                else:
+                    b_copy["display"] = ""
+            elif metric == "SafeMinutes":
+                b_copy["display"] = _loc_transition(b_copy.get("label", ""), lang)
+            else:
+                b_copy["display"] = ""
+            new_breaches.append(b_copy)
+        t_copy["breaches"] = new_breaches
+        result.append(t_copy)
+    return result
 
 
 # ---------------------------------------------------------------------------

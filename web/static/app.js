@@ -51,91 +51,6 @@ let LOADING_MSGS = []; // Populated by applyLanguage
 const CACHE_KEY = 'weather_broadcast_cache';
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-// ── Weather text localisation map (CWA API → English) ──────────────────────
-const WEATHER_TEXT_EN = {
-  '晴': 'Sunny',
-  '晴時多雲': 'Partly Cloudy',
-  '多雲時晴': 'Mostly Sunny',
-  '多雲': 'Cloudy',
-  '陰': 'Overcast',
-  '陰時多雲': 'Mostly Cloudy',
-  '多雲時陰': 'Mostly Cloudy',
-  '短暫雨': 'Brief Rain',
-  '短暫陣雨': 'Brief Showers',
-  '陣雨': 'Showers',
-  '雨': 'Rain',
-  '大雨': 'Heavy Rain',
-  '豪雨': 'Torrential Rain',
-  '短暫雷陣雨': 'Brief Thunderstorms',
-  '雷陣雨': 'Thunderstorms',
-  '有霧': 'Foggy',
-  '霧': 'Fog',
-  '有靄': 'Hazy',
-};
-
-function localiseWeatherText(text) {
-  if (getLang() === 'en') return WEATHER_TEXT_EN[text] || text;
-  return text;
-}
-
-const LOCATION_EN = {
-  // ── CWA Station names (as returned by StationName field) ──────────────
-  '桃改臺北': 'Shulin Station',   // 72AI40 — home station
-  '桃改台北': 'Shulin Station',   // alternate romanisation
-  '板橋': 'Banqiao Station',  // C0AJ80 — work station
-  '新北': 'Xindian Stn.',     // 466881 — synoptic fallback
-  '樹林': 'Shulin Station',   // 72AI40 auto name
-  // ── Township district names (from forecast location names) ────────────
-  '樹林區': 'Shulin',
-  '板橋區': 'Banqiao',
-  '三峽區': 'Sanxia',
-  '三重': 'Sanchong',
-  '中和': 'Zhonghe',
-  '永和': 'Yonghe',
-  '新莊': 'Xinzhuang',
-  '土城': 'Tucheng',
-  '蘆洲': 'Luzhou',
-  '鶯歌': 'Yingge',
-  '淡水': 'Tamsui',
-  '汐止': 'Xizhi',
-  '瑞芳': 'Ruifang',
-  '深坑': 'Shenkeng',
-  '石碇': 'Shiding',
-  '坪林': 'Pinglin',
-  '烏來': 'Wulai',
-  '八里': 'Bali',
-  '林口': 'Linkou',
-  '五股': 'Wugu',
-  '泰山': 'Taishan',
-};
-
-function localiseLocation(name) {
-  if (getLang() === 'en') return LOCATION_EN[name] || name;
-  // zh-TW: map raw station names to friendly district labels
-  const ZH_STATION = {
-    '桃改臺北': '樹林站',
-    '桃改台北': '樹林站',
-    '樹林': '樹林站',
-    '板橋': '板橋站',
-    '新北': '新店站',
-  };
-  return ZH_STATION[name] || name;
-}
-
-function localiseMetric(text) {
-  if (!text) return '';
-  return (T.metrics && T.metrics[text]) ? T.metrics[text] : text;
-}
-
-function localisePrecipText(text) {
-  if (!text) return '—';
-  if (getLang() !== 'zh-TW') return text;
-  if (text === 'All clear') return '不會降雨';
-  if (text === 'Stay in') return '建議待室內';
-  const m = text.match(/^~(\d+)\s*min$/);
-  if (m) return `約 ${m[1]} 分鐘`;
-  return text;
-}
 
 const IMG = (name, alt) =>
   `<img src="/static/brand-icons/${name}.webp" class="brand-icon" alt="${alt}" />`;
@@ -245,12 +160,6 @@ const TRANSLATIONS = {
     ls_details_hide: 'Hide ▴',
     ls_expand_all: 'Expand All',
     ls_collapse_all: 'Collapse All',
-    metrics: {
-      // Air quality purifier advice (zh-TW → en, for when broadcast was generated in zh-TW)
-      '關閉窗戶並開啟空氣清淨機。': 'Close windows and run the air purifier.',
-      '建議關窗，可考慮開啟空氣清淨機。': 'Consider closing windows and running the air purifier.',
-      '敏感族群可考慮開啟空氣清淨機。': 'Sensitive groups: consider running the air purifier indoors.',
-    },
   },
   'zh-TW': {
     loading: '正在獲取天氣…',
@@ -323,51 +232,6 @@ const TRANSLATIONS = {
     ls_details_hide: '收起 ▴',
     ls_expand_all: '全展開',
     ls_collapse_all: '全收合',
-    metrics: {
-      'Near Saturated': '接近飽和', 'Clammy': '悶濕',
-      'Very Dry': '極度乾燥', 'Dry': '乾燥', 'Comfortable': '舒適', 'Muggy': '悶熱', 'Humid': '潮濕', 'Very Humid': '極度潮濕', 'Oppressive': '令人窒息',
-      'Calm': '無風', 'Light air': '軟風', 'Light breeze': '輕風', 'Gentle breeze': '微風', 'Moderate breeze': '和風', 'Fresh breeze': '清風', 'Strong breeze': '強風', 'Near gale': '疾風', 'Gale': '大風', 'Strong gale': '烈風', 'Storm': '狂風', 'Violent storm': '暴風', 'Hurricane force': '颶風',
-      'Good': '良好', 'Moderate': '普通', 'Unhealthy for Sensitive Groups': '對敏感族群不健康', 'Unhealthy': '不健康', 'Very Unhealthy': '非常不健康', 'Hazardous': '危害',
-      'Go out': '適合外出', 'Good to go': '可以出門', 'Manageable': '勉強可行', 'Think twice': '建議斟酌', 'Stay in': '建議待室內',
-      'Low': '低', 'High': '高', 'Very High': '極高', 'Extreme': '極端',
-      'Safe': '安全', 'Wear Sunscreen': '需擦防曬', 'Seek Shade': '請避曬',
-      'Unsettled': '不穩定', 'Normal': '正常', 'Stable': '穩定',
-      'Very Poor': '極差', 'Poor': '差', 'Fair': '尚可', 'Excellent': '極佳',
-      'Very Unlikely': '極不可能', 'Unlikely': '不太可能', 'Possible': '有可能', 'Likely': '很有可能', 'Very Likely': '極有可能', 'Unknown': '未知',
-      // Meal moods
-      'Hot & Humid': '炎熱潮濕', 'Warm & Pleasant': '溫暖舒適', 'Cool & Damp': '涼爽潮濕', 'Cold': '寒冷',
-      // HVAC modes
-      'Off': '無需空調', 'fan': '電風扇', 'cooling': '冷氣', 'heating': '暖氣', 'heating_optional': '可選暖氣', 'dehumidify': '除濕',
-      // Air quality purifier advice (en → zh-TW)
-      'Close windows and run the air purifier.': '關閉窗戶並開啟空氣清淨機。',
-      'Consider closing windows and running the air purifier.': '建議關窗，可考慮開啟空氣清淨機。',
-      'Sensitive groups: consider running the air purifier indoors.': '敏感族群可考慮開啟空氣清淨機。',
-    },
-    slots: {
-      'Morning': '早上',
-      'Afternoon': '下午',
-      'Evening': '晚上',
-      'Overnight': '深夜',
-      'Forecast': '預報'
-    },
-    transitions: {
-      'Sunny': '晴朗',
-      'Cloudy': '多雲',
-      'Rain expected': '預期降雨',
-      'More rain': '降雨增加',
-      'Less rain': '降雨減少',
-      'Near Saturated': '近飽和',
-      'Clammy': '悶熱',
-      'Humid': '潮濕',
-      'Comfortable': '舒適',
-      'Dry': '乾燥',
-      'Windier': '風力增強',
-      'Calmer': '風力減弱',
-      'Shorter outdoor window': '戶外時間縮短',
-      'Rain likely — plan indoors': '可能下雨—建議室內活動',
-      'Outdoor window closing': '戶外時段結束',
-      'change': '變化'
-    }
   },
 };
 
@@ -535,25 +399,25 @@ function render(data) {
 function renderCurrentView(data) {
   if (!data) return;
   setText('cur-temp', Math.round(data.temp) + '\u00b0');
-  setText('cur-weather-text', localiseWeatherText(data.weather_text || '\u2014'));
+  setText('cur-weather-text', data.weather_text || '\u2014');
   const h = new Date().getHours();
   const isCurrentNight = (h >= 18 || h < 6);
-  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.cloud_cover || data.weather_code || data.weather_text, localiseWeatherText(data.weather_text || '\u2014'), isCurrentNight);
-  setText('rp-location', localiseLocation(data.location || '\u2014'));
+  document.getElementById('cur-icon').innerHTML = getWeatherIcon(data.cloud_cover || data.weather_code || data.weather_text, data.weather_text || '\u2014', isCurrentNight);
+  setText('rp-location', data.location || '\u2014');
   const mobileLoc = document.getElementById('mobile-location');
-  if (mobileLoc) mobileLoc.textContent = localiseLocation(data.location || '\u2014');
+  if (mobileLoc) mobileLoc.textContent = data.location || '\u2014';
 
   // Gauge Cards
-  renderGauge('gauge-ground', localiseMetric(data.ground_state), T.ground, '', `lvl-${data.ground_level}`, IMG('ground', 'Ground'));
-  renderGauge('gauge-wind', localiseMetric(data.wind.text), T.wind, `${data.wind.val} m/s ${data.wind.dir || '\u2014'}`, `lvl-${data.wind.level}`, IMG('wind', 'Wind'));
-  renderGauge('gauge-hum', localiseMetric(data.hum.text), T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`, IMG('canopy-moisture', 'Humidity'));
+  renderGauge('gauge-ground', data.ground_state, T.ground, '', `lvl-${data.ground_level}`, IMG('ground', 'Ground'));
+  renderGauge('gauge-wind', data.wind.text, T.wind, `${data.wind.val} m/s ${data.wind.dir || '\u2014'}`, `lvl-${data.wind.level}`, IMG('wind', 'Wind'));
+  renderGauge('gauge-hum', data.hum.text, T.humidity, data.hum.val + '%', `lvl-${data.hum.level}`, IMG('canopy-moisture', 'Humidity'));
   renderGauge('gauge-aqi', String(data.aqi.val ?? '\u2014'), T.air_quality, '', `lvl-${data.aqi.level}`, IMG('air-quality', 'Air Quality'));
-  renderGauge('gauge-uv', localiseMetric(data.uv.text), T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
-  renderGauge('gauge-pres', localiseMetric(data.pres.text), T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
+  renderGauge('gauge-uv', data.uv.text, T.uv, `Index ${data.uv.val || 0}`, `lvl-${data.uv.level}`, IMG('uv-warning', 'UV'));
+  renderGauge('gauge-pres', data.pres.text, T.pressure, `${Math.round(data.pres.val)} hPa`, `lvl-${data.pres.level}`, IMG('pressure-drop', 'Pressure'));
 
   // Outdoor score trigger card (side stack)
   if (data.outdoor && data.outdoor.grade) {
-    renderGauge('gauge-outdoor', localiseMetric(data.outdoor.label || ''), T.outdoor_act, '', `oi-grade-${data.outdoor.grade}`, IMG('outdoor', 'Outdoor'));
+    renderGauge('gauge-outdoor', data.outdoor.label || '', T.outdoor_act, '', `oi-grade-${data.outdoor.grade}`, IMG('outdoor', 'Outdoor'));
   } else {
     const oel = document.getElementById('gauge-outdoor');
     if (oel) oel.innerHTML = '';
@@ -663,7 +527,7 @@ function renderOverviewView(data) {
     const tlGlobalMax = isFinite(weekGlobalMax) ? weekGlobalMax : (data.timeline_temp_range?.max ?? -Infinity);
 
     (data.timeline || []).forEach((seg, idx) => {
-      const origSlotName = seg.display_name || 'Forecast';
+      const origSlotName = seg.slot_key || seg.display_name || 'Forecast';
       const isNight = (() => {
         try {
           const h = new Date(seg.start_time.replace('+08:00', '')).getHours();
@@ -680,7 +544,7 @@ function renderOverviewView(data) {
 
       const labelEl = document.createElement('div');
       labelEl.className = 'tc-seg-label';
-      labelEl.textContent = (T.slots && T.slots[origSlotName]) ? T.slots[origSlotName] : origSlotName;
+      labelEl.textContent = seg.display_name || origSlotName;
 
       const iconEl = document.createElement('div');
       iconEl.className = 'tc-icon';
@@ -749,12 +613,12 @@ function renderOverviewView(data) {
       if (!isNight && seg.outdoor_label) {
         const gradeToLvl = { A: 1, B: 2, C: 3, D: 4, F: 5 };
         rightEl.appendChild(mkStat('outdoor', 'Outdoor',
-          localiseMetric(seg.outdoor_label) || seg.outdoor_label,
+          seg.outdoor_label,
           `lvl-${gradeToLvl[seg.outdoor_grade] || 0}`));
       }
       if (isNight && seg.precip_text != null) {
         rightEl.appendChild(mkStat('rain-gear', 'Rain',
-          localisePrecipText(seg.precip_text),
+          seg.precip_text || '—',
           `lvl-${seg.precip_level || 0}`));
       }
 
@@ -770,31 +634,9 @@ function renderOverviewView(data) {
       const nextSeg = data.timeline[idx + 1];
       const transition = nextSeg ? transitionMap[origSlotName] : null;
       if (transition && transition.is_transition) {
-        const locTrans = (txt) => (T.transitions && T.transitions[txt]) ? T.transitions[txt] : txt;
         const parts = [];
         (transition.breaches || []).forEach(b => {
-          if (b.metric === 'CloudCover') {
-            let label = b.to;
-            if (label === 'Sunny/Clear') label = 'Sunny';
-            if (label === 'Mixed Clouds') label = 'Cloudy';
-            parts.push(locTrans(label));
-          } else if (b.metric === 'AT') {
-            parts.push(`${Math.round(b.from)}→${Math.round(b.to)}°`);
-          } else if (b.metric === 'PoP6h') {
-            const intensity = ["Dry", "Very Unlikely", "Unlikely", "Possible", "Likely", "Very Likely"];
-            const fIdx = intensity.indexOf(b.from), tIdx = intensity.indexOf(b.to);
-            if (tIdx > fIdx) parts.push(locTrans(tIdx >= 3 ? 'Rain expected' : 'More rain'));
-            else if (tIdx < fIdx) parts.push(locTrans('Less rain'));
-          } else if (b.metric === 'DewGap') {
-            parts.push(locTrans(b.to));
-          } else if (b.metric === 'WS') {
-            const bf = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze"];
-            const fIdx = bf.indexOf(b.from), tIdx = bf.indexOf(b.to);
-            if (tIdx > fIdx) parts.push(locTrans('Windier'));
-            else if (tIdx < fIdx) parts.push(locTrans('Calmer'));
-          } else if (b.metric === 'SafeMinutes') {
-            parts.push(locTrans(b.label));
-          }
+          if (b.display) parts.push(b.display);
         });
         const t = document.createElement('div');
         const sev = transition.severity || 'mild';
@@ -804,9 +646,8 @@ function renderOverviewView(data) {
         tIcon.innerHTML = IMG('heads-up', 'Change');
         const tText = document.createElement('span');
         tText.className = 'tc-transition-text';
-        const labelPart = locTrans('change');
         const bodyPart = parts.length ? parts.join(' · ') : '—';
-        tText.textContent = `${labelPart}  ${bodyPart}`;
+        tText.textContent = bodyPart;
         t.appendChild(tIcon);
         t.appendChild(tText);
         col.appendChild(t);
