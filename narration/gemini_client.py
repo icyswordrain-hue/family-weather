@@ -51,7 +51,9 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             model_to_use = f"models/{model_to_use}"
 
         pro_timeout_ms = int(NARRATION_TIMEOUT_PRO) * 1000
-        client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=pro_timeout_ms))
+        import os
+        api_key = os.environ.get("GEMINI_API_KEY") or GEMINI_API_KEY
+        client = genai.Client(api_key=api_key, http_options=genai.types.HttpOptions(timeout=pro_timeout_ms))
         logger.info("Attempting Gemini (%s) with %ds timeout", model_to_use, int(NARRATION_TIMEOUT_PRO))
         response = client.models.generate_content(
             model=model_to_use,
@@ -82,7 +84,8 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
             flash_model = f"models/{flash_model}"
 
         flash_timeout_ms = int(NARRATION_TIMEOUT_FLASH) * 1000
-        client = genai.Client(api_key=GEMINI_API_KEY, http_options=genai.types.HttpOptions(timeout=flash_timeout_ms))
+        api_key = os.environ.get("GEMINI_API_KEY") or GEMINI_API_KEY
+        client = genai.Client(api_key=api_key, http_options=genai.types.HttpOptions(timeout=flash_timeout_ms))
         logger.info("Attempting Gemini Flash fallback (%s) with %ds timeout", flash_model, int(NARRATION_TIMEOUT_FLASH))
         response = client.models.generate_content(
             model=flash_model,
