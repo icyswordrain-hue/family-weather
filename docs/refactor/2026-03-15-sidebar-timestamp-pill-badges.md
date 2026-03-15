@@ -12,8 +12,8 @@ The sidebar (240px) displayed timestamps ("updated: 3/15 11:46 · Audio from 11:
 ### 1. Pill badge styling (style.css)
 
 Replaced the plain inline text with subtle pill-shaped badges:
-- Added `background: rgba(255, 255, 255, 0.07)`, `padding: 2px 8px`, `border-radius: 10px`
-- Reduced font size from 0.72rem to 0.65rem
+- Added `background: rgba(255, 255, 255, 0.07)`, `padding: 3px 12px`, `border-radius: 15px`
+- Font size set to 0.975rem (1.5× scale-up from initial 0.65rem)
 - Increased text opacity from 0.4 to 0.5 to compensate for smaller size
 - Removed the `::before` dot separator (pills provide visual separation)
 
