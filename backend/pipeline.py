@@ -98,7 +98,7 @@ def generate_narration_with_fallback(
 
     from config import GEMINI_MAX_TOKENS_REGEN, CLAUDE_MAX_TOKENS_REGEN, CLAUDE_REGEN_MODEL
     try:
-        messages = build_prompt(processed, history, date_str)
+        messages = build_prompt(processed, history, date_str, lang=lang)
     except Exception:
         logger.exception("build_prompt failed, falling back to template:")
         text = build_narration(processed, date_str=date_str, history=history, lang=lang)

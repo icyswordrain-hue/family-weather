@@ -122,6 +122,9 @@ STYLE:
 - Transition narration: Describe shifts as physical movement ("clouds will thicken through the afternoon") rather than data diffs.
 - Life-anchored time: Use "before you leave at seven" or "around lunch" instead of "06:00–12:00."
 - Yesterday comparison: Include one brief comparison (e.g., "warmer than yesterday") using history. Skip if no history.
+- Trend awareness: When [TRENDS] shows notable changes, weave one comparison naturally into the relevant paragraph (P1 for temp/humidity, P4 for AQI). Don't force it if trends are absent.
+- Variety: When [RECENT_NARRATION] is present, avoid repeating the same meal, garden topic, or tagline phrasing from recent days. Vary recommendations and vocabulary.
+- Pattern continuity: When [PATTERNS] notes a streak or recurring condition, acknowledge it briefly (e.g., "third rainy commute this week") rather than treating each day as isolated.
 - Hard limit: Every paragraph must be 4 sentences or fewer.
 
 STRUCTURE:
@@ -334,6 +337,7 @@ def build_prompt(
     processed_data: dict,
     history: list[dict],
     today_date: str | None = None,
+    lang: str = 'en',
 ) -> list[dict]:
     """
     Build the message list for Claude/Gemini narration.
@@ -344,6 +348,9 @@ def build_prompt(
     today = today_date or datetime.now().strftime("%Y-%m-%d")
 
     history_text = _format_history(history)
+    trends_text = _format_trends(history, processed_data)
+    recent_narration_text = _format_recent_narration(history, lang)
+    patterns_text = _format_patterns(history, processed_data)
     data_text = json.dumps(_slim_for_llm(processed_data), ensure_ascii=False, indent=2)
 
     regen_note = build_regen_instruction(processed_data) if processed_data.get("regenerate_meal_lists") else ""
@@ -388,7 +395,7 @@ def build_prompt(
     user_message = f"""Date: {today}
 
 HISTORY:
-{history_text}
+{history_text}{trends_text}{recent_narration_text}{patterns_text}
 
 DATA:
 {data_text}
@@ -584,3 +591,187 @@ def _format_history(history: list[dict]) -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+def _format_trends(history: list[dict], processed_data: dict) -> str:
+    """Compute notable today-vs-recent deltas for LLM context.
+
+    Only emits lines where the change is significant enough to mention.
+    Returns empty string if nothing notable.
+    """
+    if not history:
+        return ""
+
+    today_current = processed_data.get("current", {})
+    today_at = today_current.get("AT")
+    today_rh = today_current.get("RH")
+    today_aqi = today_current.get("aqi")
+
+    parts = []
+
+    # ── Temperature delta (vs yesterday) ──
+    yesterday = history[-1]
+    yest_current = yesterday.get("processed_data", {}).get("current", {})
+    yest_at = yest_current.get("AT")
+    if today_at is not None and yest_at is not None:
+        try:
+            delta = round(float(today_at) - float(yest_at))
+            if abs(delta) >= 4:
+                sign = "+" if delta > 0 else ""
+                parts.append(f"Temp: {sign}{delta}°C vs yesterday")
+        except (ValueError, TypeError):
+            pass
+
+    # ── Humidity delta (vs yesterday) ──
+    yest_rh = yest_current.get("RH")
+    if today_rh is not None and yest_rh is not None:
+        try:
+            delta = round(float(today_rh) - float(yest_rh))
+            if abs(delta) >= 10:
+                sign = "+" if delta > 0 else ""
+                parts.append(f"RH: {sign}{delta}%")
+        except (ValueError, TypeError):
+            pass
+
+    # ── AQI trend across available days ──
+    aqi_values = []
+    for day in history:
+        day_aqi = day.get("processed_data", {}).get("current", {}).get("aqi")
+        if day_aqi is not None:
+            try:
+                aqi_values.append(float(day_aqi))
+            except (ValueError, TypeError):
+                pass
+    if today_aqi is not None and aqi_values:
+        try:
+            today_aqi_f = float(today_aqi)
+            avg_hist = sum(aqi_values) / len(aqi_values)
+            if today_aqi_f < avg_hist - 15:
+                parts.append(f"AQI: improving ({len(aqi_values) + 1} days)")
+            elif today_aqi_f > avg_hist + 15:
+                parts.append(f"AQI: worsening ({len(aqi_values) + 1} days)")
+        except (ValueError, TypeError):
+            pass
+
+    # ── Rain streak ──
+    rain_keywords = {"rain", "drizzle", "shower", "thunderstorm", "rainy", "wet", "雨", "陣雨", "雷"}
+    rain_days = 0
+    for day in reversed(history):
+        day_current = day.get("processed_data", {}).get("current", {})
+        wx = str(day_current.get("Wx_text", "") or day_current.get("weather_text", "")).lower()
+        precip = str(day_current.get("precip_text", "")).lower()
+        if any(k in wx or k in precip for k in rain_keywords):
+            rain_days += 1
+        else:
+            break
+    if rain_days >= 2:
+        parts.append(f"Rain: {rain_days}-day streak")
+
+    if not parts:
+        return ""
+    return "\n[TRENDS]\n" + " | ".join(parts)
+
+
+def _format_recent_narration(history: list[dict], lang: str) -> str:
+    """Extract recent narration metadata to help LLM avoid repetition.
+
+    Returns a compact block listing meals, garden topics, and taglines
+    from the last 2 days so the LLM can vary its recommendations.
+    """
+    if not history:
+        return ""
+
+    from history.conversation import get_lang_data
+
+    labels = {1: "Yesterday", 2: "2 days ago", 3: "3 days ago"}
+    lines = []
+    for i, day in enumerate(reversed(history[:3]), start=1):
+        label = labels.get(i, f"{i} days ago")
+        ld = get_lang_data(day, lang)
+        meta = ld.get("metadata", {})
+        if not meta:
+            continue
+        fields = []
+        if meta.get("meal"):
+            fields.append(f"meal={meta['meal']}")
+        if meta.get("garden"):
+            fields.append(f"garden=\"{meta['garden']}\"")
+        if meta.get("outdoor_tagline"):
+            fields.append(f"outdoor=\"{meta['outdoor_tagline']}\"")
+        if meta.get("wardrobe_tagline"):
+            fields.append(f"wardrobe=\"{meta['wardrobe_tagline']}\"")
+        if fields:
+            lines.append(f"{label}: {' | '.join(fields)}")
+
+    if not lines:
+        return ""
+    return "\n[RECENT_NARRATION]\n" + "\n".join(lines)
+
+
+def _format_patterns(history: list[dict], processed_data: dict) -> str:
+    """Detect recurring condition patterns across recent history.
+
+    Returns a compact block noting streaks and recurring conditions
+    so the LLM can acknowledge continuity rather than treating each day in isolation.
+    """
+    if not history:
+        return ""
+
+    patterns = []
+
+    # ── Consecutive rainy commute days ──
+    rain_commute_keywords = {"rain", "wet", "slippery", "flooding", "umbrella", "雨", "濕滑"}
+    rain_commute_streak = 0
+    for day in reversed(history):
+        commute = day.get("processed_data", {}).get("commute", {})
+        am_hazards = " ".join(commute.get("morning", {}).get("hazards", [])).lower()
+        pm_hazards = " ".join(commute.get("evening", {}).get("hazards", [])).lower()
+        combined = am_hazards + " " + pm_hazards
+        if any(k in combined for k in rain_commute_keywords):
+            rain_commute_streak += 1
+        else:
+            break
+    if rain_commute_streak >= 2:
+        # Check if today also has rain commute
+        today_commute = processed_data.get("commute", {})
+        today_am = " ".join(today_commute.get("morning", {}).get("hazards", [])).lower()
+        today_pm = " ".join(today_commute.get("evening", {}).get("hazards", [])).lower()
+        today_combined = today_am + " " + today_pm
+        if any(k in today_combined for k in rain_commute_keywords):
+            patterns.append(f"Rainy commute: {rain_commute_streak + 1} days in a row (including today)")
+        else:
+            patterns.append(f"Rainy commute: ended a {rain_commute_streak}-day streak")
+
+    # ── Extended poor outdoor grades ──
+    poor_grades = {"D", "F"}
+    grade_streak = 0
+    for day in reversed(history):
+        grade = day.get("processed_data", {}).get("outdoor_index", {}).get("overall_grade")
+        if grade in poor_grades:
+            grade_streak += 1
+        else:
+            break
+    today_grade = processed_data.get("outdoor_index", {}).get("overall_grade")
+    if grade_streak >= 3 and today_grade and today_grade not in poor_grades:
+        patterns.append(f"Outdoor: today's {today_grade} grade is the best in {grade_streak + 1} days")
+
+    # ── Sustained moderate+ AQI ──
+    mod_aqi_streak = 0
+    for day in reversed(history):
+        day_aqi = day.get("processed_data", {}).get("current", {}).get("aqi")
+        if day_aqi is not None:
+            try:
+                if float(day_aqi) > 100:
+                    mod_aqi_streak += 1
+                else:
+                    break
+            except (ValueError, TypeError):
+                break
+        else:
+            break
+    if mod_aqi_streak >= 2:
+        patterns.append(f"AQI above moderate for {mod_aqi_streak} consecutive days")
+
+    if not patterns:
+        return ""
+    return "\n[PATTERNS]\n" + "\n".join(f"- {p}" for p in patterns)
