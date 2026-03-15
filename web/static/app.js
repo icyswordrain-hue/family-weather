@@ -291,6 +291,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initNav();
   initPlayerBar();
   initPlayerSheet();
+  initInkThread();
   initSheetSettings();
   // initChat();  // chat feature hidden for now
   initRefreshButton();
@@ -1036,8 +1037,11 @@ function initPlayerBar() {
     const source = (meta && meta.source) ? meta.source.toLowerCase() : 'template';
     const paras = paragraphs.filter(p => p.text);
     let html = '';
-    paras.forEach(p => {
-      html += `<div class="ps-para"><h3 class="ps-para-title">${p.title}</h3><p class="ps-para-body">${p.text}</p></div>`;
+    paras.forEach((p, i) => {
+      html += `<div class="ps-prose"><div class="ps-prose-label">${p.title}</div><p class="ps-prose-body">${p.text}</p></div>`;
+      if (i < paras.length - 1) {
+        html += `<div class="ps-prose-divider"></div>`;
+      }
     });
     if (meta?.source) {
       html += `<div class="ps-meta"><span class="narration-badge source-${source}">${meta.source}</span></div>`;
@@ -1078,11 +1082,11 @@ function initPlayerSheet() {
   if (close) close.addEventListener('click', closeSheet);
   if (backdrop) backdrop.addEventListener('click', closeSheet);
 
-  // ── Tab switching ──────────────────────────────────────────────────────
-  document.querySelectorAll('.ps-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.tab;
-      document.querySelectorAll('.ps-tab').forEach(t => t.classList.toggle('active', t === tab));
+  // ── Seal navigation ────────────────────────────────────────────────────
+  document.querySelectorAll('.ps-seal').forEach(seal => {
+    seal.addEventListener('click', () => {
+      const target = seal.dataset.tab;
+      document.querySelectorAll('.ps-seal').forEach(s => s.classList.toggle('active', s === seal));
       document.querySelectorAll('.ps-tab-panel').forEach(panel => {
         if (panel.id === `ps-panel-${target}`) {
           panel.removeAttribute('hidden');
@@ -1092,6 +1096,18 @@ function initPlayerSheet() {
       });
     });
   });
+}
+
+// ── Ink Thread Progress ────────────────────────────────────────────────────
+function initInkThread() {
+  const audio = document.getElementById('player-audio');
+  const fill = document.getElementById('ps-ink-fill');
+  if (!audio || !fill) return;
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    fill.style.height = (audio.currentTime / audio.duration * 100) + '%';
+  });
+  audio.addEventListener('ended', () => { fill.style.height = '0%'; });
 }
 
 // ── Sidebar Controls ───────────────────────────────────────────────────────
@@ -1159,7 +1175,7 @@ function initSheetSettings() {
 
   // Sidebar settings nav item → open player sheet on Settings tab
   document.getElementById('sidebar-settings-btn')?.addEventListener('click', () => {
-    document.querySelector('.ps-tab[data-tab="settings"]')?.click();
+    document.querySelector('.ps-seal[data-tab="settings"]')?.click();
     const sheet = document.getElementById('player-sheet');
     if (sheet && !sheet.classList.contains('open')) {
       document.getElementById('player-sheet-toggle')?.click();
@@ -1264,7 +1280,7 @@ function initChat() {
     if (sheet && !sheet.classList.contains('open')) {
       document.getElementById('player-sheet-toggle')?.click();
     }
-    document.querySelector('.ps-tab[data-tab="chat"]')?.click();
+    document.querySelector('.ps-seal[data-tab="chat"]')?.click();
   }
 
   // Player bar "Ask" button — opens sheet on chat tab
