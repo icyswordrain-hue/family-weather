@@ -584,6 +584,7 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         processed["regenerate_meal_lists"] = True
 
     # 3c. Skip narration if conditions unchanged from previous broadcast
+    from history.conversation import get_lang_data
     _skip_narration = False
     _prev_broadcast = None
     if not processed.get("regenerate_meal_lists"):
@@ -612,7 +613,6 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
             logger.warning("Condition-change check failed (%s), generating new narration", _e)
 
     # 4. Generate narration for both languages
-    from history.conversation import get_lang_data
     _LANGS = ["zh-TW", "en"]
     langs_data: dict[str, dict] = {}
     regen_data = None
