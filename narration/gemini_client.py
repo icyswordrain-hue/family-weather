@@ -48,7 +48,7 @@ def _load_system_prompt(lang: str = 'en') -> str:
     return build_system_prompt(lang=lang)
 
 
-def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None, max_tokens: int | None = None) -> str:
+def generate_narration(messages: list[dict], model_override: str | None = None, lang: str = 'en', system_prompt_override: str | None = None, max_tokens: int | None = None, thinking_budget: int = 0) -> str:
     """
     Send the prepared message list to Gemini and return the narration text.
     """
@@ -83,6 +83,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
                 system_instruction=system_prompt,
                 max_output_tokens=max_tokens or GEMINI_MAX_TOKENS,
                 temperature=0.7,
+                thinking_config=genai.types.ThinkingConfig(thinking_budget=thinking_budget),
             ),
         )
         text = response.text or ""
@@ -122,6 +123,7 @@ def generate_narration(messages: list[dict], model_override: str | None = None, 
                 system_instruction=system_prompt,
                 max_output_tokens=max_tokens or GEMINI_MAX_TOKENS,
                 temperature=0.7,
+                thinking_config=genai.types.ThinkingConfig(thinking_budget=thinking_budget),
             ),
         )
         text = response.text or ""
