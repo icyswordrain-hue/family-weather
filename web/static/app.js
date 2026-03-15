@@ -401,9 +401,14 @@ function render(data) {
     const min = String(d.getMinutes()).padStart(2, '0');
     setText('rp-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
     setText('sidebar-last-updated', `${T.last_updated}${m}/${dd} ${hh}:${min}`);
+    const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;
+    const sidebarUpdEl = document.getElementById('sidebar-last-updated');
+    if (sidebarUpdEl) {
+      sidebarUpdEl.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
+      sidebarUpdEl.classList.toggle('stale-red', ageH >= 4);
+    }
     const mobileUpdEl = document.getElementById('mobile-last-updated');
     if (mobileUpdEl) {
-      const ageH = (Date.now() - new Date(ts).getTime()) / 3_600_000;
       mobileUpdEl.textContent = `${T.last_updated}${m}/${dd} ${hh}:${min}`;
       mobileUpdEl.classList.toggle('stale-amber', ageH >= 2 && ageH < 4);
       mobileUpdEl.classList.toggle('stale-red', ageH >= 4);

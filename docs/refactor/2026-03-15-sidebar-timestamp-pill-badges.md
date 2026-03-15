@@ -34,6 +34,14 @@ Ported pill styling to the mobile compact header timestamps:
 - `.mobile-audio-age` — same pill treatment, removed `::before` dot separator
 - Stale color classes (`.stale-amber`, `.stale-red`) kept as-is — text color override on pill background
 
+### 4. Stale coloring on desktop (style.css + app.js)
+
+Extended stale-data coloring (previously mobile-only) to the desktop sidebar pill:
+
+- Added `#sidebar-last-updated.stale-amber` and `.stale-red` CSS rules
+- Hoisted `ageH` computation out of the mobile `if` block so both desktop and mobile share it
+- Desktop `#sidebar-last-updated` now toggles `stale-amber` (2–4h) and `stale-red` (4h+)
+
 ## Files Changed
 
 - `web/static/style.css` — `.sidebar-meta`, `.sidebar-updated-label`, `.sidebar-meta-row`, `.sidebar-last-updated`, `.sidebar-audio-age`, `#mobile-last-updated`, `.mobile-audio-age` rules

@@ -2027,6 +2027,14 @@ input:focus-visible {
   content: none;
 }
 
+#sidebar-last-updated.stale-amber {
+  color: #f59e0b;
+}
+
+#sidebar-last-updated.stale-red {
+  color: #ef4444;
+}
+
 .sidebar-bottom {
   margin-top: auto;
 }
