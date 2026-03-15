@@ -10,12 +10,13 @@ Each pipeline run makes these external calls in sequence:
 Cloud Scheduler (cron) → Cloud Run → Modal /refresh endpoint
   ├─ CWA API ×6       (free — government open data)
   ├─ MOENV API ×2      (free — government open data)
-  ├─ Claude Sonnet 4.6 ×2  (narration: zh-TW + en)
+  ├─ LLM narration ×2  (Claude or Gemini, per provider toggle)
   ├─ Google Cloud TTS ×2   (morning slot only)
   └─ GCS writes ×3-5       (save broadcast, upload audio)
 ```
 
 **Scheduled runs:** 3×/day (06:15, 11:15, 17:15 CST)
+
 - **Morning:** always runs full pipeline + TTS
 - **Midday & Evening:** fetch current obs first, skip full pipeline if conditions haven't changed (temp ±3°C, rain status, dew point ±3°C). On stable-weather days, both skip entirely.
 
@@ -25,14 +26,14 @@ Cloud Scheduler (cron) → Cloud Run → Modal /refresh endpoint
 |---------|---------|-------------|---------------|-------------|
 | CWA API | 6 | 3–6 | 3–6 | ~12 |
 | MOENV API | 2 | 1–2 | 1–2 | ~4 |
-| Claude Sonnet 4.6 | 2 | 0–2 | 0–2 | ~4 |
+| LLM narration | 2 | 0–2 | 0–2 | ~4 |
 | Google Cloud TTS | 2 | 0 | 0 | 2 |
 | GCS operations | 5 | 0–5 | 0–5 | ~10 |
 | Chat (Haiku 4.5) | user-driven | — | — | ~3 (est.) |
 
 ---
 
-## Cost Breakdown
+## Cost Breakdown (Claude provider — current default)
 
 ### 1. Claude API — Narration (dominant cost)
 
@@ -73,6 +74,7 @@ Cloud Scheduler (cron) → Cloud Run → Modal /refresh endpoint
 ### 4. Modal (serverless compute)
 
 **Container:** Default CPU/memory (no GPU), Python 3.12
+
 - Full pipeline run: ~60–90s (avg 75s)
 - Skipped midday/evening: ~10s (condition check only)
 - Broadcast reads: <1s each, ~15/day
@@ -120,7 +122,7 @@ Government open data — free.
 
 ---
 
-## Total Cost Summary
+## Total Cost Summary (Claude provider)
 
 | Period | Claude Narration | Claude Chat | TTS | Modal | GCS | **Grand Total** |
 |--------|-----------------|-------------|-----|-------|-----|----------------|
@@ -132,95 +134,104 @@ Government open data — free.
 
 ## Available Gemini Models (from API)
 
-Models confirmed available via the project's Gemini API key (as of 2026-03-15):
+Models confirmed available via the project's Gemini API key (**Paid tier 1**, as of 2026-03-15):
 
-| Model ID | Input limit | Output limit | Notes |
-|----------|-----------|-------------|-------|
-| `gemini-2.5-pro` | 1M | 65K | Highest quality, expensive |
-| `gemini-2.5-flash` | 1M | 65K | Best quality/cost ratio, supports thinking budgets |
-| `gemini-2.5-flash-lite` | 1M | 65K | Cheapest, no thinking |
-| `gemini-2.0-flash` | 1M | 8K | Previous gen, no thinking |
-| `gemini-2.0-flash-lite` | 1M | 8K | Previous gen budget option |
+### Stable models
 
-All models have a **free tier of 500 RPD** (requests per day). This project uses ~4 calls/day — well within the free tier for any model.
+| Model ID | Input limit | Output limit | Input $/MTok | Output $/MTok | Notes |
+|----------|-----------|-------------|-------------|--------------|-------|
+| `gemini-2.5-pro` | 1M | 65K | $1.25 | $10.00 | High quality, supports thinking |
+| `gemini-2.5-flash` | 1M | 65K | $0.30 | $2.50 | Good quality/cost, supports thinking |
+| `gemini-2.5-flash-lite` | 1M | 65K | $0.10 | $0.40 | Cheapest stable model |
+| `gemini-2.0-flash` | 1M | 8K | — | — | Previous gen |
+| `gemini-2.0-flash-lite` | 1M | 8K | — | — | Previous gen |
+
+### Preview models (Gemini 3.x)
+
+| Model ID | Input limit | Output limit | Input $/MTok | Output $/MTok | Notes |
+|----------|-----------|-------------|-------------|--------------|-------|
+| `gemini-3-flash-preview` | 1M | 65K | $0.50 | $3.00 | Sonnet 4.6 quality match |
+| `gemini-3.1-flash-lite-preview` | 1M | 65K | $0.25 | $1.50 | Fast + cheap, supports thinking |
+| `gemini-3.1-pro-preview` | 1M | 65K | $2.00 | $12.00 | Highest quality |
+| `gemini-3-pro-preview` | 1M | 65K | — | — | Previous 3.x gen |
+
+**Note:** This key is on **Paid tier 1** — all requests are billed at the rates above. The "free tier" (500 RPD, no billing) requires a separate project without billing enabled.
 
 ---
 
-## Sonnet 4.6 vs Gemini 2.5 Flash (Thinking Low) — Comparison
+## Sonnet 4.6 vs Gemini 3 Flash — Comparison
 
-### Pricing (paid tier)
+### Why Gemini 3 Flash?
 
-| | Claude Sonnet 4.6 | Gemini 2.5 Flash | Gemini 2.5 Flash-Lite |
+Gemini 3 Flash is the quality-matched Gemini alternative to Sonnet 4.6. It scores 78% on SWE-bench (vs Sonnet's 79.6%), leads on GPQA science reasoning (90.4%), and is 3× faster at 5–6× lower cost.
+
+### Pricing (Paid tier 1)
+
+| | Claude Sonnet 4.6 | Gemini 3 Flash | Gemini 2.5 Flash |
 |---|---|---|---|
-| **Input** | $3.00/MTok | $0.30/MTok | $0.10/MTok |
-| **Output** (incl. thinking) | $15.00/MTok | $2.50/MTok | $0.40/MTok |
-| **Input multiplier vs Sonnet** | 1× | **10× cheaper** | **30× cheaper** |
-| **Output multiplier vs Sonnet** | 1× | **6× cheaper** | **37× cheaper** |
-| **Free tier** | None | 500 RPD | 500 RPD |
-
-### Thinking budget impact
-
-Gemini 2.5 Flash supports adjustable thinking budgets (0–24,576 tokens). Thinking tokens are billed as output tokens at $2.50/MTok.
-
-| Thinking budget | Est. thinking tokens/call | Added output cost/call | Effect on narration |
-|----------------|--------------------------|----------------------|-------------------|
-| **Off** (0) | 0 | $0.000 | Fastest, no internal reasoning |
-| **Low** (~1,024) | ~500–1,024 | ~$0.003 | Slight structure improvement |
-| **Medium** (~8,192) | ~2,000–4,000 | ~$0.010 | Better metadata JSON accuracy |
-| **High** (~24,576) | ~4,000–8,000 | ~$0.020 | Overkill for creative writing |
-
-For the narration task (creative prose + structured metadata JSON), **thinking "low" or "off"** is sufficient. The task doesn't require deep reasoning — it's mostly creative writing with a structured output format.
+| **Input** | $3.00/MTok | $0.50/MTok | $0.30/MTok |
+| **Output** | $15.00/MTok | $3.00/MTok | $2.50/MTok |
+| **vs Sonnet (input)** | 1× | **6× cheaper** | **10× cheaper** |
+| **vs Sonnet (output)** | 1× | **5× cheaper** | **6× cheaper** |
 
 ### Quality comparison (for narration use case)
 
-| Dimension | Claude Sonnet 4.6 | Gemini 2.5 Flash (thinking low) |
-|-----------|-------------------|--------------------------------|
-| **Creative prose quality** | Excellent — nuanced, varied phrasing, natural family tone | Good — competent but may be more formulaic |
-| **Structured JSON output** | Reliable metadata extraction | Reliable with thinking; may need prompt tuning without |
-| **Instruction following** | Strong adherence to v7 prompt format | Strong; thinking budget helps with complex format |
-| **Multilingual (zh-TW/en)** | High quality in both languages | Good; Mandarin may need prompt adjustment |
-| **Coding benchmarks** | 79.6% SWE-bench | 78% SWE-bench (comparable) |
-| **Speed** | ~5–15s per call | ~2–5s per call (faster) |
-| **Consistency** | Very consistent output format | Slightly more variable without thinking |
+| Dimension | Claude Sonnet 4.6 | Gemini 3 Flash |
+|-----------|-------------------|----------------|
+| **Creative prose quality** | Excellent — nuanced, natural family tone | Strong — comparable quality, slightly different style |
+| **Structured JSON output** | Reliable | Reliable |
+| **Instruction following** | Strong adherence to v7 prompt format | Strong — matches Sonnet on complex formats |
+| **Multilingual (zh-TW/en)** | High quality in both | Good; may need prompt tuning for zh-TW |
+| **SWE-bench (coding)** | 79.6% | 78% |
+| **GPQA (science)** | — | 90.4% |
+| **Speed** | ~5–15s per call | ~2–5s per call (3× faster) |
 
-**Bottom line:** For structured weather narration, Gemini 2.5 Flash with thinking "low" produces adequate quality at a fraction of the cost. The main trade-off is in prose style — Sonnet's narration reads more naturally as a "family weather briefing." This is subjective and best evaluated by A/B testing.
+### Model mapping (mirrors Claude primary/fallback pattern)
 
-### Monthly cost comparison (narration only, ~4 calls/day)
+```
+Claude:  Sonnet 4.6            → Haiku 4.5           (quality → cheap)
+Gemini:  3 Flash (preview)     → 2.5 Flash           (quality → cheap)
+```
 
-| Provider & Model | Input cost | Output cost | **Monthly total** | vs Current |
+### Monthly cost comparison (narration only, ~4 calls/day, Paid tier 1)
+
+| Provider & Model | Input cost | Output cost | **Monthly total** | vs Sonnet |
 |-----------------|-----------|------------|-----------------|-----------|
 | **Claude Sonnet 4.6** (current) | $0.43 | $1.62 | **$2.05** | — |
-| **Gemini 2.5 Flash** (free tier) | $0.00 | $0.00 | **$0.00** | −$2.05 |
-| Gemini 2.5 Flash (paid, thinking off) | $0.04 | $0.27 | **$0.31** | −$1.74 |
-| Gemini 2.5 Flash (paid, thinking low) | $0.04 | $0.39 | **$0.43** | −$1.62 |
-| **Gemini 2.5 Flash-Lite** (free tier) | $0.00 | $0.00 | **$0.00** | −$2.05 |
-| Gemini 2.5 Flash-Lite (paid) | $0.01 | $0.04 | **$0.05** | −$2.00 |
+| **Gemini 3 Flash** (preview) | $0.07 | $0.32 | **$0.39** | −$1.66 |
+| Gemini 2.5 Flash | $0.04 | $0.27 | **$0.31** | −$1.74 |
+| Gemini 2.5 Flash-Lite | $0.01 | $0.04 | **$0.05** | −$2.00 |
 | **Claude Haiku 4.5** | $0.12 | $0.43 | **$0.55** | −$1.50 |
 
-### Grand total with each provider
+### Grand total with each provider (annual)
 
 | Scenario | Narration | Chat | TTS | Modal | GCS | **Grand Total/yr** |
 |----------|----------|------|-----|-------|-----|--------------------|
 | **Current** (Sonnet 4.6) | $24.97 | $1.28 | $4.82 | $3.00 | $0.12 | **$34.19** |
-| **Gemini 2.5 Flash** (free tier) | $0.00 | $1.28 | $4.82 | $3.00 | $0.12 | **$9.22** |
-| Gemini Flash (paid, thinking low) | $5.16 | $1.28 | $4.82 | $3.00 | $0.12 | **$14.38** |
-| **Gemini Flash-Lite** (free tier) | $0.00 | $1.28 | $4.82 | $3.00 | $0.12 | **$9.22** |
+| **Gemini 3 Flash** | $4.75 | $1.28 | $4.82 | $3.00 | $0.12 | **$13.97** |
+| Gemini 2.5 Flash | $3.77 | $1.28 | $4.82 | $3.00 | $0.12 | **$12.99** |
 | **Claude Haiku 4.5** | $6.60 | $1.28 | $4.82 | $3.00 | $0.12 | **$15.82** |
 
 ### Implementation
 
-The code already supports switching via a single env var:
-```
-NARRATION_PROVIDER=GEMINI
-GEMINI_PRO_MODEL=gemini-2.5-flash      # primary (replaces gemini-2.5-pro)
-GEMINI_FLASH_MODEL=gemini-2.5-flash-lite  # fallback
-```
+Provider is selectable via the settings toggle in the player sheet UI. The backend reads the `provider` parameter from the refresh request body.
 
-To enable thinking budget, `gemini_client.py` would need a small code change to pass `thinking_config` in `GenerateContentConfig`. Currently not wired up.
+Default model mapping (overridable via env vars):
+
+```bash
+# Claude (default)
+CLAUDE_MODEL=claude-sonnet-4-6              # primary
+CLAUDE_FALLBACK_MODEL=claude-haiku-4-5-20251001  # fallback
+
+# Gemini
+GEMINI_PRO_MODEL=gemini-3-flash-preview     # primary
+GEMINI_FLASH_MODEL=gemini-2.5-flash         # fallback
+```
 
 ---
 
 ## Other Minor Savings (not worth the complexity)
+
 - **Edge TTS instead of Google Cloud TTS:** Saves $0.40/month, but Edge TTS is blocked from Modal datacenter IPs — would require architectural changes.
 - **Reduce to 2 scheduled runs/day:** Saves ~$0.30/month but loses midday weather updates.
 - **Skip narration reuse more aggressively:** Already implemented via the conditions-unchanged check.

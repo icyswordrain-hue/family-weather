@@ -239,6 +239,19 @@
           <!-- Settings tab -->
           <div class="ps-tab-panel" id="ps-panel-settings" hidden>
             <div class="ps-section-card">
+              <span class="ps-section-label" data-i18n="provider_label">AI Provider</span>
+              <div class="seg-ctrl" role="group" aria-label="AI Provider">
+                <label class="seg-option">
+                  <input type="radio" name="provider" value="CLAUDE" checked aria-label="Claude">
+                  <span>Claude</span>
+                </label>
+                <label class="seg-option">
+                  <input type="radio" name="provider" value="GEMINI" aria-label="Gemini">
+                  <span>Gemini</span>
+                </label>
+              </div>
+            </div>
+            <div class="ps-section-card">
               <span class="ps-section-label" data-i18n="lang_label">Language</span>
               <div class="seg-ctrl" role="group" aria-label="Language">
                 <label class="seg-option">
