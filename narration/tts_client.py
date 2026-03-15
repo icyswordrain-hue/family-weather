@@ -196,7 +196,7 @@ def _cleanup_local(audio_root: Path, cutoff: date) -> int:
     return removed
 
 
-def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
+def synthesise_with_cache(text: str, lang: str, date: str, slot: str, force: bool = False) -> str:
     """Returns a playable audio URL. GCS public URL for MODAL/CLOUD, local path for LOCAL."""
     from config import LOCAL_DATA_DIR
     run_mode = os.environ.get("RUN_MODE", RUN_MODE)
@@ -206,7 +206,7 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
     if run_mode in ("MODAL", "CLOUD"):
         from google.cloud import storage
         blob = storage.Client().bucket(GCS_BUCKET_NAME).blob(gcs_path)
-        if blob.exists():
+        if not force and blob.exists():
             log.info("TTS cache hit (GCS): %s → %s", gcs_path, blob.public_url)
             return blob.public_url
         audio = _render_tts(text, lang)
@@ -216,7 +216,7 @@ def synthesise_with_cache(text: str, lang: str, date: str, slot: str) -> str:
 
     # LOCAL mode
     local_path = Path(LOCAL_DATA_DIR) / gcs_path
-    if local_path.exists():
+    if not force and local_path.exists():
         log.info("TTS cache hit (local): %s", local_path)
         return f"/api/audio/{rel_path}"
     audio = _render_tts(text, lang)

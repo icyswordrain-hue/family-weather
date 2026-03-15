@@ -325,6 +325,14 @@ async function fetchBroadcast(silent = false) {
     if (typeof getLang === 'function') url.searchParams.set('lang', getLang());
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // Detect NDJSON stream (no broadcast existed → pipeline runs progressively)
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('ndjson')) {
+      await _processNdjsonStream(res.body.getReader());
+      return;
+    }
+
     broadcastData = await res.json();
     if (broadcastData.error) throw new Error(broadcastData.error);
     // Reset chat history when new broadcast arrives (context snapshot changes)
@@ -1539,6 +1547,154 @@ function initRefreshButton() {
   });
 }
 
+/**
+ * Process an NDJSON stream from the pipeline, handling progressive events.
+ * Returns true if a final result was received.
+ */
+async function _processNdjsonStream(reader) {
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let gotResult = false;
+  const activeLang = getLang();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        if (!line.trim().startsWith('{')) {
+          addLog(`Server: ${line.trim()}`);
+          if (line.toLowerCase().includes('error')) {
+            showError(line.trim());
+            gotResult = true;
+          }
+          continue;
+        }
+
+        const msg = JSON.parse(line);
+        if (msg.type === 'log') {
+          stopLoadingAnimation();
+          addLog(msg.message);
+          const loadingTxt = document.getElementById('loading-text');
+          if (loadingTxt) loadingTxt.textContent = msg.message;
+          const optTxt = document.getElementById('optimistic-text');
+          if (optTxt) optTxt.textContent = msg.message;
+
+        } else if (msg.type === 'data') {
+          // Phase 1: Weather data ready — render dashboard + overview immediately
+          broadcastData = broadcastData || {};
+          broadcastData.date = msg.payload.date;
+          broadcastData.processed_data = msg.payload.processed_data;
+          broadcastData.slices = broadcastData.slices || {};
+          broadcastData.slices.current = msg.payload.slices.current;
+          broadcastData.slices.overview = msg.payload.slices.overview;
+          render(broadcastData);
+          showContent();
+          _showNarrationSkeleton(true);
+
+        } else if (msg.type === 'narration') {
+          // Phase 2: Narration ready — update lifestyle + narration views
+          const lang = msg.payload.lang;
+          broadcastData.langs = broadcastData.langs || {};
+          broadcastData.langs[lang] = broadcastData.langs[lang] || {};
+          Object.assign(broadcastData.langs[lang], {
+            narration_text: msg.payload.narration_text,
+            paragraphs: msg.payload.paragraphs,
+            metadata: msg.payload.metadata,
+            summaries: msg.payload.summaries,
+          });
+          if (lang === activeLang) {
+            broadcastData.slices.lifestyle = msg.payload.slices.lifestyle;
+            broadcastData.slices.narration = msg.payload.slices.narration;
+            broadcastData.narration_text = msg.payload.narration_text;
+            broadcastData.paragraphs = msg.payload.paragraphs;
+            broadcastData.metadata = msg.payload.metadata;
+            broadcastData.summaries = msg.payload.summaries;
+            render(broadcastData);
+            _showNarrationSkeleton(false);
+            // Wire player bar with text but no audio yet
+            if (window._playerBarSetAudio) {
+              const ns = msg.payload.slices.narration;
+              window._playerBarSetAudio(null, ns?.paragraphs || [], ns?.meta || {});
+            }
+          }
+
+        } else if (msg.type === 'audio') {
+          // Phase 3: Audio ready — enable playback
+          const lang = msg.payload.lang;
+          broadcastData.langs = broadcastData.langs || {};
+          broadcastData.langs[lang] = broadcastData.langs[lang] || {};
+          broadcastData.langs[lang].audio_urls = msg.payload.audio_urls;
+          if (lang === activeLang) {
+            broadcastData.audio_urls = msg.payload.audio_urls;
+            const audioUrl = msg.payload.audio_urls?.full_audio_url || null;
+            if (window._playerBarSetAudio && audioUrl) {
+              const ns = broadcastData.slices?.narration;
+              window._playerBarSetAudio(audioUrl, ns?.paragraphs || [], ns?.meta || {});
+            }
+          }
+
+        } else if (msg.type === 'result') {
+          if (msg.payload?.status === 'skipped') {
+            addLog('Conditions unchanged — keeping current broadcast');
+            showContent();
+            gotResult = true;
+          } else {
+            broadcastData = msg.payload;
+            applyLanguage(getLang());
+            saveBroadcastCache(broadcastData);
+            showContent();
+            _showNarrationSkeleton(false);
+            gotResult = true;
+          }
+          const autoRadio = document.querySelector('input[name="narration-mode"][value="auto"]');
+          if (autoRadio) { autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change')); }
+
+        } else if (msg.type === 'status') {
+          _addStatusRow(msg.sources);
+
+        } else if (msg.type === 'error') {
+          showError(msg.message || 'Pipeline failed');
+          gotResult = true;
+        }
+      } catch (e) {
+        console.error("Stream parse error:", e, "on line:", line);
+        if (line.toLowerCase().includes('failed') || line.toLowerCase().includes('error')) {
+          showError(line);
+          gotResult = true;
+        }
+      }
+    }
+  }
+  return gotResult;
+}
+
+/** Show/hide skeleton placeholders on narration-dependent cards. */
+function _showNarrationSkeleton(show) {
+  const lifestyleGrid = document.getElementById('lifestyle-grid');
+  if (!lifestyleGrid) return;
+
+  if (show) {
+    // Inject skeleton if not already present
+    if (!lifestyleGrid.querySelector('.narration-skeleton')) {
+      const skel = document.createElement('div');
+      skel.className = 'narration-skeleton';
+      skel.innerHTML = '<div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div>';
+      lifestyleGrid.prepend(skel);
+    }
+    lifestyleGrid.classList.add('skeleton-pending');
+  } else {
+    lifestyleGrid.querySelectorAll('.narration-skeleton').forEach(el => el.remove());
+    lifestyleGrid.classList.remove('skeleton-pending');
+  }
+}
+
 async function triggerRefresh() {
   const btn = document.getElementById('refresh-btn');
   if (btn) {
@@ -1554,8 +1710,6 @@ async function triggerRefresh() {
   console.log("DEBUG: Selected provider for refresh:", provider);
   addLog(`${T.log_requesting}${provider}`);
 
-  let gotResult = false;
-
   try {
     const res = await fetch('/api/refresh', {
       method: 'POST',
@@ -1564,69 +1718,7 @@ async function triggerRefresh() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          if (!line.trim().startsWith('{')) {
-            addLog(`Server: ${line.trim()}`);
-            if (line.toLowerCase().includes('error')) {
-              showError(line.trim());
-              gotResult = true; // treat as terminal
-            }
-            continue;
-          }
-
-          const msg = JSON.parse(line);
-          if (msg.type === 'log') {
-            stopLoadingAnimation();
-            addLog(msg.message);
-            const loadingTxt = document.getElementById('loading-text');
-            if (loadingTxt) loadingTxt.textContent = msg.message;
-            const optTxt = document.getElementById('optimistic-text');
-            if (optTxt) optTxt.textContent = msg.message;
-          } else if (msg.type === 'result') {
-            // Midday skip returns {status:"skipped", broadcast:...} — don't overwrite good data
-            if (msg.payload?.status === 'skipped') {
-              addLog('Conditions unchanged — keeping current broadcast');
-              showContent();
-              gotResult = true;
-            } else {
-              broadcastData = msg.payload;
-              applyLanguage(getLang());
-              saveBroadcastCache(broadcastData);
-              showContent();
-              gotResult = true;
-            }
-            // Reset force-narration toggle back to Auto after each refresh
-            const autoRadio = document.querySelector('input[name="narration-mode"][value="auto"]');
-            if (autoRadio) { autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change')); }
-          } else if (msg.type === 'status') {
-            _addStatusRow(msg.sources);
-          } else if (msg.type === 'error') {
-            showError(msg.message || 'Pipeline failed');
-            gotResult = true;
-          }
-        } catch (e) {
-          console.error("Stream parse error:", e, "on line:", line);
-          if (line.toLowerCase().includes('failed') || line.toLowerCase().includes('error')) {
-            showError(line);
-            gotResult = true;
-          }
-        }
-      }
-    }
+    const gotResult = await _processNdjsonStream(res.body.getReader());
 
     // Stream ended without a result — fetch latest cached broadcast instead of hanging
     if (!gotResult) {

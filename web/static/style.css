@@ -5260,3 +5260,44 @@ html.dark .player-sheet-handle {
     font-size: 0.9rem;
   }
 }
+
+
+/* ── Progressive Pipeline: Skeleton Placeholders ─────────────────────────── */
+
+.narration-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--card-bg, #f5f0eb);
+  border-radius: 12px;
+  grid-column: 1 / -1;
+}
+
+.narration-skeleton .skel-line {
+  height: 0.9rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg,
+    var(--skel-base, #e0dbd5) 25%,
+    var(--skel-shine, #ece8e2) 50%,
+    var(--skel-base, #e0dbd5) 75%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.5s ease-in-out infinite;
+}
+
+.narration-skeleton .skel-line:nth-child(1) { width: 85%; }
+.narration-skeleton .skel-line:nth-child(2) { width: 70%; }
+.narration-skeleton .skel-line:nth-child(3) { width: 60%; }
+
+@keyframes skel-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.lifestyle-grid.skeleton-pending > *:not(.narration-skeleton) {
+  display: none;
+}
+
+.narration-skeleton.hidden {
+  display: none;
+}

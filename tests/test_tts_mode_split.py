@@ -17,7 +17,7 @@ def _collect_result(gen):
 
 @patch("app.RUN_MODE", "LOCAL")
 @patch("app.synthesise_with_cache", return_value="/local_assets/audio/test.mp3")
-@patch("app.build_slices", return_value={})
+@patch("app.build_slices", return_value={"current": {}, "overview": {}, "lifestyle": {}, "narration": {}})
 @patch("app.save_day")
 @patch("app.parse_narration_response", return_value={
     "paragraphs": {"P1": "Hello."}, "metadata": {}, "regen": None, "cards": {}
@@ -46,7 +46,7 @@ def test_morning_tts_synthesised(
 
 @patch("app.RUN_MODE", "LOCAL")
 @patch("app.synthesise_with_cache", return_value="/local_assets/audio/test.mp3")
-@patch("app.build_slices", return_value={})
+@patch("app.build_slices", return_value={"current": {}, "overview": {}, "lifestyle": {}, "narration": {}})
 @patch("app.save_day")
 @patch("app.parse_narration_response", return_value={
     "paragraphs": {"P1": "Hello."}, "metadata": {}, "regen": None, "cards": {}
@@ -78,7 +78,7 @@ def test_midday_tts_synthesised(
 
 @patch("app.RUN_MODE", "LOCAL")
 @patch("app.synthesise_with_cache", return_value="/local_assets/audio/test.mp3")
-@patch("app.build_slices", return_value={})
+@patch("app.build_slices", return_value={"current": {}, "overview": {}, "lifestyle": {}, "narration": {}})
 @patch("app.save_day")
 @patch("app.parse_narration_response", return_value={
     "paragraphs": {"P1": "Hello."}, "metadata": {}, "regen": None, "cards": {}

@@ -259,13 +259,15 @@ def get_broadcast():
 
     cached = get_today_broadcast(date_str)
     if not cached:
-        # Trigger a refresh if there is no broadcast for today yet
-        try:
-            result = _run_pipeline(date_str)
-        except Exception as exc:
-            logger.error("Pipeline failed on-demand: %s", exc)
-            return jsonify({"error": str(exc)}), 500
-        return jsonify(result)
+        # No broadcast yet — stream progressive pipeline results (same as /api/refresh)
+        def _generate_on_demand():
+            try:
+                for step in _pipeline_steps(date_str, lang=lang):
+                    yield json.dumps(step) + "\n"
+            except Exception as exc:
+                logger.error("Pipeline error (on-demand): %s", exc, exc_info=True)
+                yield json.dumps({"type": "error", "message": str(exc)}) + "\n"
+        return Response(stream_with_context(_generate_on_demand()), mimetype='application/x-ndjson')
 
     # Build slices for every stored language so frontend can switch instantly
     from history.conversation import get_lang_data
@@ -505,6 +507,16 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
         logger.info("Regen cycle triggered for %s", date_str)
         processed["regenerate_meal_lists"] = True
 
+    # ── Phase 1: Data ready — yield dashboard/overview slices immediately ──
+    _data_slices = build_slices({
+        "paragraphs": {}, "metadata": {}, "processed_data": processed, "summaries": {},
+    })
+    yield {"type": "data", "payload": {
+        "date": date_str,
+        "processed_data": processed,
+        "slices": {"current": _data_slices["current"], "overview": _data_slices["overview"]},
+    }}
+
     # 4. Generate narration for both languages
     from history.conversation import get_lang_data
     _LANGS = ["zh-TW", "en"]
@@ -565,16 +577,39 @@ def _pipeline_steps(date_str: str, provider_override: str | None = None, lang: s
             _summaries["_top_activity"] = _ta
             _metadata["activity_suggested"] = _ta
 
+        # ── Phase 2: Narration ready — yield lifestyle + narration slices ──
+        _nar_slices = build_slices({
+            "paragraphs": _paragraphs, "metadata": _metadata,
+            "processed_data": processed, "summaries": _summaries,
+        }, lang=_lang)
+        yield {"type": "narration", "payload": {
+            "lang": _lang,
+            "narration_text": _nar_text,
+            "paragraphs": _paragraphs,
+            "metadata": _metadata,
+            "summaries": _summaries,
+            "slices": {
+                "lifestyle": _nar_slices.get("lifestyle"),
+                "narration": _nar_slices.get("narration"),
+            },
+        }}
+
         # TTS: always synthesise for every slot (Edge TTS is free)
         yield {"type": "log", "message": f"Synthesising {_lang} TTS audio\u2026"}
         try:
-            _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, slot)
+            _audio_url = synthesise_with_cache(_nar_text, _lang, date_str, slot, force=force)
         except Exception as _exc:
             logger.warning("TTS failed for %s \u2014 skipping audio.", _lang, exc_info=True)
             yield {"type": "log", "message": f"TTS failed ({_lang}): {_exc}"}
             _audio_url = None
         _audio_urls: dict[str, str | None] = {"full_audio_url": _audio_url}
         tts_generated_at = datetime.now(_TAIPEI_TZ).isoformat()
+
+        # ── Phase 3: Audio ready ──
+        yield {"type": "audio", "payload": {
+            "lang": _lang,
+            "audio_urls": _audio_urls,
+        }}
 
         langs_data[_lang] = {
             "narration_text": _nar_text,
