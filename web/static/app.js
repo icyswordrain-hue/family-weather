@@ -1597,12 +1597,19 @@ async function triggerRefresh() {
             const loadingTxt = document.getElementById('loading-text');
             if (loadingTxt) loadingTxt.textContent = msg.message;
           } else if (msg.type === 'result') {
-            addLog(T.render);
-            broadcastData = msg.payload;
-            render(broadcastData);
-            saveBroadcastCache(broadcastData);
-            showContent();
-            gotResult = true;
+            // Midday skip returns {status:"skipped", broadcast:...} — don't overwrite good data
+            if (msg.payload?.status === 'skipped') {
+              addLog('Conditions unchanged — keeping current broadcast');
+              showContent();
+              gotResult = true;
+            } else {
+              addLog(T.render);
+              broadcastData = msg.payload;
+              render(broadcastData);
+              saveBroadcastCache(broadcastData);
+              showContent();
+              gotResult = true;
+            }
             // Reset force-narration toggle back to Auto after each refresh
             const autoRadio = document.querySelector('input[name="narration-mode"][value="auto"]');
             if (autoRadio) { autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change')); }

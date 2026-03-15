@@ -130,6 +130,12 @@ if slot == "midday" and not force:
 
 Now force refresh bypasses both skip checks and always runs the full pipeline.
 
+### Frontend resilience for auto midday skip
+
+Even in auto mode, the midday skip result `{"status": "skipped", "broadcast": ...}` was fed directly into `render()`, overwriting the existing `broadcastData` with a skeleton object that has no `slices`. This caused blank views until the next full refresh.
+
+**Fix:** The frontend refresh handler (`app.js:triggerRefresh`) now checks `msg.payload?.status === 'skipped'` before calling `render()`. If skipped, it logs a message and keeps the current broadcast data intact.
+
 ## CSS Split Note
 
 When the CSS split refactor (`2026-03-15-css-split.md`) is executed, `.ps-columns`/`.ps-column` and the settings media query belong in `player.css`. The `.player-last-updated` rule belongs in `player.css` as well.
