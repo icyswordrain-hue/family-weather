@@ -26,12 +26,8 @@ function remoteLog(type, msg) {
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   const logList = document.getElementById('rp-log-list');
   if (logList) {
-    const div = document.createElement('div');
-    div.className = 'log-entry error';
-    const span = document.createElement('span');
-    span.className = 'log-msg';
-    span.textContent = `${(window._T_runtime_error || 'Runtime Error: ')}${msg}`;
-    div.appendChild(span);
+    const div = h('div', 'log-entry error');
+    div.appendChild(h('span', 'log-msg', `${(window._T_runtime_error || 'Runtime Error: ')}${msg}`));
     logList.appendChild(div);
   }
   remoteLog('error', `${msg} at ${url}:${lineNo}`);
@@ -54,6 +50,14 @@ const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const IMG = (name, alt) =>
   `<img src="/static/brand-icons/${name}.webp" class="brand-icon" alt="${alt}" />`;
+
+/** Create a DOM element with optional class and text content. */
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
 
 const ICONS = {
   'sunny': IMG('sunny', 'Sunny'), 'Sunny': IMG('sunny', 'Sunny'), 'Sunny/Clear': IMG('sunny', 'Sunny'), '1': IMG('sunny', 'Sunny'),
@@ -464,33 +468,16 @@ function renderGauge(id, mainVal, label, subVal = '', valueClass = '', icon = ''
   if (!el) return;
   el.innerHTML = '';
 
-  // Header row: icon (left) + label (right)
-  const hdr = document.createElement('div');
-  hdr.className = 'gauge-header';
+  const hdr = h('div', 'gauge-header');
   if (icon) {
-    const ic = document.createElement('div');
-    ic.className = 'gauge-icon';
+    const ic = h('div', 'gauge-icon');
     ic.innerHTML = icon;
     hdr.appendChild(ic);
   }
-  const l = document.createElement('div');
-  l.className = 'gauge-label';
-  l.textContent = label;
-  hdr.appendChild(l);
+  hdr.appendChild(h('div', 'gauge-label', label));
   el.appendChild(hdr);
-
-  const v = document.createElement('div');
-  v.className = `gauge-value ${valueClass}`;
-  v.textContent = mainVal;
-
-  el.appendChild(v);
-
-  if (subVal) {
-    const s = document.createElement('div');
-    s.className = 'gauge-sub';
-    s.textContent = subVal;
-    el.appendChild(s);
-  }
+  el.appendChild(h('div', `gauge-value ${valueClass}`, mainVal));
+  if (subVal) el.appendChild(h('div', 'gauge-sub', subVal));
 }
 
 // ── View 2: Overview ───────────────────────────────────────────────────────
@@ -535,39 +522,22 @@ function renderOverviewView(data) {
         } catch { return false; }
       })();
 
-      const row = document.createElement('div');
-      row.className = `tc-seg-row${isNight ? ' tc-seg-night' : ''}`;
+      const row = h('div', `tc-seg-row${isNight ? ' tc-seg-night' : ''}`);
 
-      // ── Left: label + icon + time ──────────────────────────────────
-      const leftEl = document.createElement('div');
-      leftEl.className = 'tc-seg-left';
-
-      const labelEl = document.createElement('div');
-      labelEl.className = 'tc-seg-label';
-      labelEl.textContent = seg.display_name || origSlotName;
-
-      const iconEl = document.createElement('div');
-      iconEl.className = 'tc-icon';
+      // ── Left: label + icon ─────────────────────────────────────────
+      const leftEl = h('div', 'tc-seg-left');
+      const iconEl = h('div', 'tc-icon');
       iconEl.innerHTML = getWeatherIcon(seg.cloud_cover || seg.Wx, 'Weather', isNight);
-
-      leftEl.appendChild(labelEl);
+      leftEl.appendChild(h('div', 'tc-seg-label', seg.display_name || origSlotName));
       leftEl.appendChild(iconEl);
 
       // ── Center: range bar only ─────────────────────────────────────
-      const centerEl = document.createElement('div');
-      centerEl.className = 'tc-seg-center';
-
-      const tempsRow = document.createElement('div');
-      tempsRow.className = 'wk-row-temps';
-
-      const minTempEl = document.createElement('span');
-      minTempEl.className = 'wk-min-temp tc-seg-temp';
-      const maxTempEl = document.createElement('span');
-      maxTempEl.className = 'wk-max-temp tc-seg-temp';
-      const rangeContainer = document.createElement('div');
-      rangeContainer.className = 'wk-range-container tc-seg-bar';
-      const rangeBar = document.createElement('div');
-      rangeBar.className = 'wk-range-bar';
+      const centerEl = h('div', 'tc-seg-center');
+      const tempsRow = h('div', 'wk-row-temps');
+      const minTempEl = h('span', 'wk-min-temp tc-seg-temp');
+      const maxTempEl = h('span', 'wk-max-temp tc-seg-temp');
+      const rangeContainer = h('div', 'wk-range-container tc-seg-bar');
+      const rangeBar = h('div', 'wk-range-bar');
 
       if (tlGlobalMax > tlGlobalMin && (seg.MinAT != null || seg.AT != null)) {
         const lo = seg.MinAT ?? seg.AT;
@@ -593,21 +563,17 @@ function renderOverviewView(data) {
       centerEl.appendChild(tempsRow);
 
       // ── Right: outdoor grade + Poisson precip text (conditional by time-of-day)
-      const rightEl = document.createElement('div');
-      rightEl.className = 'tc-seg-right';
+      const rightEl = h('div', 'tc-seg-right');
 
       const mkStat = (iconName, altText, labelHtml, lvlClass) => {
-        const el = document.createElement('div');
-        el.className = `tc-seg-stat ${lvlClass}`;
-        const textSpan = document.createElement('span');
-        textSpan.className = 'tc-stat-text';
+        const stat = h('div', `tc-seg-stat ${lvlClass}`);
+        const textSpan = h('span', 'tc-stat-text');
         textSpan.innerHTML = labelHtml;
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'tc-stat-icon';
+        const iconSpan = h('span', 'tc-stat-icon');
         iconSpan.innerHTML = IMG(iconName, altText);
-        el.appendChild(textSpan);
-        el.appendChild(iconSpan);
-        return el;
+        stat.appendChild(textSpan);
+        stat.appendChild(iconSpan);
+        return stat;
       };
 
       if (!isNight && seg.outdoor_label) {
@@ -626,30 +592,21 @@ function renderOverviewView(data) {
       row.appendChild(centerEl);
       row.appendChild(rightEl);
 
-      // ── Wrap + transitions (unchanged logic) ───────────────────────
-      const col = document.createElement('div');
-      col.className = 'tc-col';
+      // ── Wrap + transitions ──────────────────────────────────────────
+      const col = h('div', 'tc-col');
       col.appendChild(row);
 
       const nextSeg = data.timeline[idx + 1];
       const transition = nextSeg ? transitionMap[origSlotName] : null;
       if (transition && transition.is_transition) {
         const parts = [];
-        (transition.breaches || []).forEach(b => {
-          if (b.display) parts.push(b.display);
-        });
-        const t = document.createElement('div');
+        (transition.breaches || []).forEach(b => { if (b.display) parts.push(b.display); });
         const sev = transition.severity || 'mild';
-        t.className = 'tc-transition tc-transition--' + sev;
-        const tIcon = document.createElement('span');
-        tIcon.className = 'tc-transition-icon';
+        const t = h('div', 'tc-transition tc-transition--' + sev);
+        const tIcon = h('span', 'tc-transition-icon');
         tIcon.innerHTML = IMG('heads-up', 'Change');
-        const tText = document.createElement('span');
-        tText.className = 'tc-transition-text';
-        const bodyPart = parts.length ? parts.join(' · ') : '—';
-        tText.textContent = bodyPart;
         t.appendChild(tIcon);
-        t.appendChild(tText);
+        t.appendChild(h('span', 'tc-transition-text', parts.length ? parts.join(' · ') : '—'));
         col.appendChild(t);
       }
       timelineGrid.appendChild(col);
@@ -709,29 +666,22 @@ function renderOverviewView(data) {
       const nightItem = bottomItems[i];
       if (!dayItem && !nightItem) continue;
 
-      const row = document.createElement('div');
-      row.className = 'wk-row';
+      const row = h('div', 'wk-row');
 
       // ── Left: day icon + label
-      const daySection = document.createElement('div');
-      daySection.className = 'wk-row-day';
-
-      const dayIconEl = document.createElement('div');
-      dayIconEl.className = 'wk-icon';
+      const daySection = h('div', 'wk-row-day');
+      const dayIconEl = h('div', 'wk-icon');
       dayIconEl.innerHTML = dayItem
         ? getWeatherIcon(dayItem.cloud_cover || dayItem.Wx, 'Weather', false)
         : IMG('cloudy', 'Cloudy');
 
-      const labelEl = document.createElement('div');
-      labelEl.className = 'wk-row-label';
+      let dayLabel = '—';
       if (dayItem) {
         let dt;
         try { dt = new Date(dayItem.start_time.replace('+08:00', '')); } catch { dt = new Date(); }
-        labelEl.textContent = T.days[dt.getDay()];
-      } else {
-        labelEl.textContent = '—';
+        dayLabel = T.days[dt.getDay()];
       }
-      daySection.appendChild(labelEl);
+      daySection.appendChild(h('div', 'wk-row-label', dayLabel));
       daySection.appendChild(dayIconEl);
 
       // ── Center: min | range bar | max
@@ -745,23 +695,12 @@ function renderOverviewView(data) {
         if (hi != null) rowHi = rowHi == null ? hi : Math.max(rowHi, hi);
       });
 
-      const centerSection = document.createElement('div');
-      centerSection.className = 'wk-row-center';
-      const tempsRow = document.createElement('div');
-      tempsRow.className = 'wk-row-temps';
-
-      const minTempEl = document.createElement('span');
-      minTempEl.className = 'wk-min-temp';
-      minTempEl.textContent = rowLo != null ? `${Math.round(rowLo)}°` : '—';
-
-      const maxTempEl = document.createElement('span');
-      maxTempEl.className = 'wk-max-temp';
-      maxTempEl.textContent = rowHi != null ? `${Math.round(rowHi)}°` : '—';
-
-      const rangeContainer = document.createElement('div');
-      rangeContainer.className = 'wk-range-container';
-      const rangeBar = document.createElement('div');
-      rangeBar.className = 'wk-range-bar';
+      const centerSection = h('div', 'wk-row-center');
+      const tempsRow = h('div', 'wk-row-temps');
+      const minTempEl = h('span', 'wk-min-temp', rowLo != null ? `${Math.round(rowLo)}°` : '—');
+      const maxTempEl = h('span', 'wk-max-temp', rowHi != null ? `${Math.round(rowHi)}°` : '—');
+      const rangeContainer = h('div', 'wk-range-container');
+      const rangeBar = h('div', 'wk-range-bar');
       if (globalMax > globalMin && rowLo != null && rowHi != null) {
         const span = globalMax - globalMin;
         const leftPct = Math.max(0, ((rowLo - globalMin) / span) * 100);
@@ -779,10 +718,8 @@ function renderOverviewView(data) {
       centerSection.appendChild(tempsRow);
 
       // ── Right: night icon
-      const nightSection = document.createElement('div');
-      nightSection.className = 'wk-row-night';
-      const nightIconEl = document.createElement('div');
-      nightIconEl.className = 'wk-icon';
+      const nightSection = h('div', 'wk-row-night');
+      const nightIconEl = h('div', 'wk-icon');
       if (nightItem) {
         nightIconEl.innerHTML = getWeatherIcon(nightItem.cloud_cover || nightItem.Wx, 'Weather', true);
       } else {
@@ -861,36 +798,17 @@ function renderLifestyleView(data) {
   });
 
   const add = (icon, title, tagline, text) => {
-    const card = document.createElement('div');
-    card.className = 'ls-card';
-    const ic = document.createElement('div');
-    ic.className = 'ls-icon';
+    const card = h('div', 'ls-card');
+    const ic = h('div', 'ls-icon');
     ic.innerHTML = icon;
-    const content = document.createElement('div');
-    content.className = 'ls-content';
-    const t = document.createElement('div');
-    t.className = 'ls-title';
-    const titleSpan = document.createElement('span');
-    titleSpan.textContent = title;
-    const chevron = document.createElement('span');
-    chevron.className = 'ls-chevron';
-    t.appendChild(titleSpan);
-    t.appendChild(chevron);
+    const content = h('div', 'ls-content');
+    const t = h('div', 'ls-title');
+    t.appendChild(h('span', null, title));
+    t.appendChild(h('span', 'ls-chevron'));
     content.appendChild(t);
-    if (tagline) {
-      const tg = document.createElement('div');
-      tg.className = 'ls-tagline';
-      tg.textContent = tagline;
-      content.appendChild(tg);
-    }
-    const txt = document.createElement('div');
-    txt.className = 'ls-text';
-    txt.textContent = text;
-    content.appendChild(txt);
-    card.addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      updateExpandAllBtn();
-    });
+    if (tagline) content.appendChild(h('div', 'ls-tagline', tagline));
+    content.appendChild(h('div', 'ls-text', text));
+    card.addEventListener('click', () => { card.classList.toggle('expanded'); updateExpandAllBtn(); });
     card.appendChild(ic);
     card.appendChild(content);
     grid.appendChild(card);
@@ -900,41 +818,25 @@ function renderLifestyleView(data) {
   if (data.alert && data.alert.length > 0) {
     const hasCritical = data.alert.some(a => a.level === 'CRITICAL');
     const hasWarning = data.alert.some(a => a.level === 'WARNING');
-    const card = document.createElement('div');
     let alertClass = 'ls-card ls-alert-card';
     if (hasCritical) alertClass += ' ls-alert-critical';
     else if (hasWarning) alertClass += ' ls-alert-warning';
-    card.className = alertClass;
-    const ic = document.createElement('div');
-    ic.className = 'ls-icon';
+    const card = h('div', alertClass);
+    const ic = h('div', 'ls-icon');
     ic.innerHTML = hasCritical ? IMG('alert', 'Alert') : (hasWarning ? IMG('heads-up', 'Warning') : IMG('all-clear', 'Clear'));
-    const content = document.createElement('div');
-    content.className = 'ls-content';
-    const ttl = document.createElement('div');
-    ttl.className = 'ls-title';
-    ttl.textContent = T.heads_up_title;
-    content.appendChild(ttl);
+    const content = h('div', 'ls-content');
+    content.appendChild(h('div', 'ls-title', T.heads_up_title));
     const TYPE_ICONS = {
-      Health: IMG('heart-flag', 'Health'),
-      Commute: IMG('commute', 'Commute'),
-      Air: IMG('air-quality', 'Air Quality'),
-      General: IMG('general', 'General'),
+      Health: IMG('heart-flag', 'Health'), Commute: IMG('commute', 'Commute'),
+      Air: IMG('air-quality', 'Air Quality'), General: IMG('general', 'General'),
     };
     data.alert.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'ls-alert-item';
-      const ico = document.createElement('span');
-      ico.className = 'ls-alert-type-icon';
+      const row = h('div', 'ls-alert-item');
+      const ico = h('span', 'ls-alert-type-icon');
       ico.innerHTML = TYPE_ICONS[item.type] || IMG('general', 'General');
-      const msg = document.createElement('span');
-      msg.className = 'ls-alert-msg';
-      msg.textContent = item.msg;
-      const badge = document.createElement('span');
-      badge.className = 'ls-badge ls-alert-badge-' + (item.level || 'WARNING').toLowerCase();
-      badge.textContent = item.level || 'WARNING';
       row.appendChild(ico);
-      row.appendChild(msg);
-      row.appendChild(badge);
+      row.appendChild(h('span', 'ls-alert-msg', item.msg));
+      row.appendChild(h('span', 'ls-badge ls-alert-badge-' + (item.level || 'WARNING').toLowerCase(), item.level || 'WARNING'));
       content.appendChild(row);
     });
     card.appendChild(ic);
@@ -1322,10 +1224,8 @@ function initChat() {
     const chips = _buildSuggestions(getLang());
     suggestionsEl.innerHTML = '';
     chips.forEach(text => {
-      const btn = document.createElement('button');
+      const btn = h('button', 'chat-suggestion-chip', text);
       btn.type = 'button';
-      btn.className = 'chat-suggestion-chip';
-      btn.textContent = text;
       btn.addEventListener('click', () => { input.value = text; input.focus(); });
       suggestionsEl.appendChild(btn);
     });
@@ -1339,9 +1239,7 @@ function initChat() {
   });
 
   function appendMsg(role, text) {
-    const div = document.createElement('div');
-    div.className = `chat-msg chat-msg-${role}`;
-    div.textContent = text;
+    const div = h('div', `chat-msg chat-msg-${role}`, text);
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
     return div;
@@ -1718,13 +1616,9 @@ function stopLoadingAnimation() {
 function _addStatusRow(sources) {
   const list = document.getElementById('rp-log-list');
   if (!list) return;
-  const row = document.createElement('div');
-  row.className = 'log-entry log-status-row';
+  const row = h('div', 'log-entry log-status-row');
   (sources || []).forEach(src => {
-    const chip = document.createElement('span');
-    chip.className = `log-status-chip log-status-${src.state}`;
-    chip.textContent = `${src.name} ${src.detail}`;
-    row.appendChild(chip);
+    row.appendChild(h('span', `log-status-chip log-status-${src.state}`, `${src.name} ${src.detail}`));
   });
   list.appendChild(row);
   list.scrollTop = list.scrollHeight;
@@ -1733,31 +1627,17 @@ function _addStatusRow(sources) {
 function addLog(msg) {
   const list = document.getElementById('rp-log-list');
   if (!list) return;
-  const div = document.createElement('div');
-  div.className = 'log-entry';
+  const div = h('div', 'log-entry');
 
   let ts = '';
   try {
-    ts = new Date().toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    ts = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
     ts = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
   }
 
-  const tsSpan = document.createElement('span');
-  tsSpan.className = 'log-ts';
-  tsSpan.textContent = ts;
-
-  const msgSpan = document.createElement('span');
-  msgSpan.className = 'log-msg';
-  msgSpan.textContent = msg;
-
-  div.appendChild(tsSpan);
-  div.appendChild(msgSpan);
+  div.appendChild(h('span', 'log-ts', ts));
+  div.appendChild(h('span', 'log-msg', msg));
   list.appendChild(div);
   list.scrollTop = list.scrollHeight;
 }
