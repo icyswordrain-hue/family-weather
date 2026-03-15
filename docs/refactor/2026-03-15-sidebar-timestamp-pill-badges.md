@@ -34,11 +34,15 @@ Ported pill styling to the mobile compact header timestamps:
 - `.mobile-audio-age` — same pill treatment, removed `::before` dot separator
 - Stale color classes (`.stale-amber`, `.stale-red`) kept as-is — text color override on pill background
 
-### 4. Single-pill full-width match (style.css)
+### 4. Mobile location below timestamps (dashboard.html)
+
+Swapped order in `.mobile-meta`: timestamps now appear above the station location name, matching the desktop sidebar's visual hierarchy (clock → timestamps → location).
+
+### 5. Single-pill full-width match (desktop) (style.css)
 
 When audio-age is hidden, the timestamp pill is the only child of `.sidebar-meta-row`. Added `.sidebar-last-updated:only-child { width: 100%; text-align: center; }` so it stretches to match the "updated" pill above. `.sidebar-meta-row` also gets `align-self: stretch` to fill the column width.
 
-### 5. Stale coloring on desktop (style.css + app.js)
+### 6. Stale coloring on desktop (style.css + app.js)
 
 Extended stale-data coloring (previously mobile-only) to the desktop sidebar pill:
 
