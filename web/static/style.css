@@ -2785,6 +2785,12 @@ html.dark .tc-seg-row.tc-seg-night {
   white-space: nowrap;
 }
 
+.tc-seg-location {
+  font-size: 0.65rem;
+  opacity: 0.55;
+  margin-top: -2px;
+}
+
 /* Override tc-icon's default 0.5rem vertical margin */
 .tc-seg-left .tc-icon {
   margin: 0;

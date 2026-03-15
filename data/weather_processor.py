@@ -196,30 +196,88 @@ def process(
     primary_slots = forecasts.get("樹林區") or forecasts.get("板橋區") or []
     banqiao_slots = forecasts.get("板橋區") or []
 
-    # ── 2b. Choose 7-day primary forecast ────────────────────────────────────
+    # ── 2b. Choose 7-day primary forecast (location-aware) ───────────────────
     forecasts_7day = forecasts_7day or {}
-    primary_7day_slots = forecasts_7day.get("樹林區") or forecasts_7day.get("板橋區") or []
-    for slot in primary_7day_slots:
-        # AT is already apparent temperature from the CWA API (MaxAT/MinAT) — do not recalculate
-        slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
-        
-        pop = slot.get("PoP12h")
-        if pop is None:
-            pop = wx_to_pop(slot.get("Wx"))
-            
-        wx   = slot.get("Wx")
-        risk = _wx_to_rain_risk(wx)
-        if risk is None:
-            safe_min = 720
-        else:
-            safe_min = pop_to_safe_minutes(pop, window_minutes=720, risk_pct=risk * 100)
-        slot["safe_minutes"]  = safe_min
-        slot["precip_level"], slot["precip_text"] = safe_minutes_to_level(safe_min)
-        slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
+    home_7day_slots = forecasts_7day.get("樹林區") or forecasts_7day.get("板橋區") or []
+    work_7day_slots = forecasts_7day.get("板橋區") or []
 
-    # ── 3. Segment the forecast ───────────────────────────────────────────────
+    def _enrich_7day(slots: list[dict]) -> None:
+        for slot in slots:
+            slot["wind_text"] = wind_ms_to_beaufort(slot.get("WS"))
+            pop = slot.get("PoP12h")
+            if pop is None:
+                pop = wx_to_pop(slot.get("Wx"))
+            wx   = slot.get("Wx")
+            risk = _wx_to_rain_risk(wx)
+            if risk is None:
+                safe_min = 720
+            else:
+                safe_min = pop_to_safe_minutes(pop, window_minutes=720, risk_pct=risk * 100)
+            slot["safe_minutes"]  = safe_min
+            slot["precip_level"], slot["precip_text"] = safe_minutes_to_level(safe_min)
+            slot["cloud_cover"] = wx_to_cloud_cover(slot.get("Wx"))
+
+    _enrich_7day(home_7day_slots)
+    _enrich_7day(work_7day_slots)
+
+    # Merge: weekday Day slots → Banqiao (work), everything else → Shulin (home)
+    # 7-day slots have start_time hour 06:00 (Day) or 18:00 (Night).
+    def _is_day_slot(slot: dict) -> bool:
+        try:
+            return _parse_dt(slot["start_time"]).hour < 18
+        except Exception:
+            return False
+
+    def _slot_weekday(slot: dict) -> int:
+        """Return 0=Mon … 6=Sun for the slot's date."""
+        try:
+            return _parse_dt(slot["start_time"]).weekday()
+        except Exception:
+            return 5  # default to weekend (safe fallback)
+
+    if work_7day_slots:
+        # Index work slots by start_time for lookup
+        work_by_time: dict[str, dict] = {s["start_time"]: s for s in work_7day_slots}
+        primary_7day_slots = []
+        for slot in home_7day_slots:
+            is_day = _is_day_slot(slot)
+            is_wkday = _slot_weekday(slot) < 5
+            if is_day and is_wkday and slot["start_time"] in work_by_time:
+                chosen = work_by_time[slot["start_time"]]
+                chosen["location"] = "Banqiao"
+                primary_7day_slots.append(chosen)
+            else:
+                slot["location"] = "Shulin"
+                primary_7day_slots.append(slot)
+    else:
+        primary_7day_slots = home_7day_slots
+        for slot in primary_7day_slots:
+            slot["location"] = "Shulin"
+
+    # ── 3. Segment the forecast (location-aware on weekdays) ────────────────
     logger.debug("Step 3 - Segment forecast calling...")
-    segmented = _segment_forecast(primary_slots)
+    is_weekday = datetime.now().weekday() < 5  # Mon=0 … Fri=4
+
+    if is_weekday and banqiao_slots:
+        home_segments = _segment_forecast(primary_slots)
+        work_segments = _segment_forecast(banqiao_slots)
+        segmented = {
+            "Morning":   work_segments["Morning"] or home_segments["Morning"],
+            "Afternoon": work_segments["Afternoon"] or home_segments["Afternoon"],
+            "Evening":   home_segments["Evening"] or work_segments["Evening"],
+            "Overnight": home_segments["Overnight"] or work_segments["Overnight"],
+        }
+        _LOC_MAP = {"Morning": "Banqiao", "Afternoon": "Banqiao",
+                     "Evening": "Shulin", "Overnight": "Shulin"}
+        for seg_name, seg in segmented.items():
+            if seg:
+                seg["location"] = _LOC_MAP[seg_name]
+    else:
+        segmented = _segment_forecast(primary_slots)
+        for seg_name, seg in segmented.items():
+            if seg:
+                seg["location"] = "Shulin"
+
     logger.debug("Step 3 - Segmented done. Keys: %s", list(segmented.keys()))
 
     # ── 4. Enrich each segment ────────────────────────────────────────────────
@@ -263,8 +321,13 @@ def process(
     transitions = _detect_transitions(segmented, aqi)
 
     # ── 6. Commute windows ────────────────────────────────────────────────────
+    # Weekdays: morning → Banqiao (work), evening → Shulin (home)
+    # Weekends: both legs use home (Shulin) forecast
     logger.debug("Step 6 - Commute")
-    morning_commute = _commute_window(primary_slots, 7, 8.5, current)
+    if is_weekday and banqiao_slots:
+        morning_commute = _commute_window(banqiao_slots, 7, 8.5, current)
+    else:
+        morning_commute = _commute_window(primary_slots, 7, 8.5, current)
     evening_commute = _commute_window(primary_slots, 17, 18.5, current)
 
     # ── 7. Meal mood ─────────────────────────────────────────────────────────
@@ -630,6 +693,11 @@ def _detect_transitions(
         assert a is not None
         assert b is not None
 
+        # Detect cross-location transitions (e.g. Afternoon@Banqiao → Evening@Shulin)
+        a_loc = a.get("location", "Shulin")
+        b_loc = b.get("location", "Shulin")
+        location_change = a_loc != b_loc
+
         breaches = []
 
         # ── AT: use AvgAT for more accurate deltas ──
@@ -745,6 +813,7 @@ def _detect_transitions(
                 "breaches": breaches,
                 "is_transition": True,
                 "severity": overall_severity,
+                "location_change": location_change,
             })
         else:
             transitions.append({
@@ -752,6 +821,7 @@ def _detect_transitions(
                 "to_segment": b_name,
                 "breaches": [],
                 "is_transition": False,
+                "location_change": location_change,
             })
 
     return transitions

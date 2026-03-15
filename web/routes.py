@@ -361,6 +361,7 @@ def _slice_overview(
             seg_copy["outdoor_label"] = _loc_metric(seg_grade_data.get("label"), lang)
             seg_copy["precip_text"] = _loc_precip(seg.get("precip_text"), lang)
             seg_copy["aqi"] = _match_aqi_to_segment(seg.get("start_time"), hourly_aqi)
+            seg_copy["location"] = seg.get("location", "Shulin")
             timeline_list.append(seg_copy)
 
     timeline_list.sort(key=lambda x: x["start_time"])

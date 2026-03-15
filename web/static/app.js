@@ -557,6 +557,9 @@ function renderOverviewView(data) {
       const iconEl = h('div', 'tc-icon');
       iconEl.innerHTML = getWeatherIcon(seg.cloud_cover || seg.Wx, 'Weather', isNight);
       leftEl.appendChild(h('div', 'tc-seg-label', seg.display_name || origSlotName));
+      if (seg.location) {
+        leftEl.appendChild(h('div', 'tc-seg-location', seg.location));
+      }
       leftEl.appendChild(iconEl);
 
       // ── Center: range bar only ─────────────────────────────────────
@@ -710,6 +713,13 @@ function renderOverviewView(data) {
         dayLabel = T.days[dt.getDay()];
       }
       daySection.appendChild(h('div', 'wk-row-label', dayLabel));
+      const dayLoc = dayItem?.location;
+      const nightLoc = nightItem?.location;
+      if (dayLoc && nightLoc && dayLoc !== nightLoc) {
+        daySection.appendChild(h('div', 'tc-seg-location', `${dayLoc} / ${nightLoc}`));
+      } else if (dayLoc || nightLoc) {
+        daySection.appendChild(h('div', 'tc-seg-location', dayLoc || nightLoc));
+      }
       daySection.appendChild(dayIconEl);
 
       // ── Center: min | range bar | max

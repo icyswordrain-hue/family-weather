@@ -135,7 +135,7 @@ Weave in Cardiac (if cardiac_alert) and Ménière's (if menieres_alert) naturall
 Close with wardrobe. State explicitly if rain gear (umbrella or raincoat) is needed.
 
 P2 — Garden & Commute (4 sentences max):
-Start with a gardening tip based on history (or seasonal if no history). Pivot to the commute (Sanxia/Shulin). Cover AT, precip_text, wind, and hazards. Combine morning and evening legs into one summary.
+Start with a gardening tip based on history (or seasonal if no history). Pivot to the commute (Shulin → Banqiao morning, Banqiao → Shulin evening). Cover AT, precip_text, wind, and hazards for each leg. Combine into one summary noting any difference between destinations.
 
 P3 — Outdoor & Meal (4 sentences max):
 Recommend an outdoor activity for Dad (or indoor if weather is poor). Choose ONE location from top_locations that best fits today's weather — use its notes (shade, surface, terrain) to explain why it suits the conditions; {cfg["p3_location_note"]}
@@ -388,9 +388,18 @@ def build_prompt(
         climate_hint_parts.append(f"windows: {_windows}")
     climate_hint = " ".join(climate_hint_parts)
 
-    am_hazards = processed_data.get("commute", {}).get("morning", {}).get("hazards", [])
-    pm_hazards = processed_data.get("commute", {}).get("evening", {}).get("hazards", [])
-    commute_hints = f"Morning hazards: {', '.join(am_hazards) or 'none'}; Evening hazards: {', '.join(pm_hazards) or 'none'}"
+    am_commute = processed_data.get("commute", {}).get("morning", {})
+    pm_commute = processed_data.get("commute", {}).get("evening", {})
+    am_hazards = am_commute.get("hazards", [])
+    pm_hazards = pm_commute.get("hazards", [])
+    am_at = am_commute.get("AT")
+    pm_at = pm_commute.get("AT")
+    commute_hints = (
+        f"Morning (→Banqiao): hazards={', '.join(am_hazards) or 'none'}"
+        f"{f', feels {am_at:.0f}°C' if am_at is not None else ''}; "
+        f"Evening (→Shulin): hazards={', '.join(pm_hazards) or 'none'}"
+        f"{f', feels {pm_at:.0f}°C' if pm_at is not None else ''}"
+    )
 
     user_message = f"""Date: {today}
 
